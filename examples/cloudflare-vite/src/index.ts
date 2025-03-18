@@ -1,4 +1,5 @@
-export { Counter } from "./objects/counter";
+export { Counter } from "./backend/counter";
+export { MyWorkflow } from "./backend/workflow";
 
 // Worker script that uses the Counter Durable Object
 export default {

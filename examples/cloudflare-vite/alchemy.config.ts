@@ -1,11 +1,20 @@
 import { $, alchemize } from "../../src";
-import { StaticSite, Worker } from "../../src/cloudflare";
-import { DurableObjectNamespace } from "../../src/cloudflare/durable-object-namespace";
+import {
+  DurableObjectNamespace,
+  StaticSite,
+  Worker,
+  Workflow,
+} from "../../src/cloudflare";
 
 import "dotenv/config";
 
-const counter = new DurableObjectNamespace("COUNTER", {
-  bindingName: "COUNTER",
+const workflow = new Workflow("workflow", {
+  workflowName: "workflows-starter",
+  className: "Workflow",
+  scriptName: "workflows-starter",
+});
+
+const counter = new DurableObjectNamespace("counter", {
   className: "Counter",
   sqlite: true,
 });
@@ -13,7 +22,10 @@ const counter = new DurableObjectNamespace("COUNTER", {
 const api = new Worker("api", {
   name: "alchemy-example-vite-api",
   entrypoint: "./src/index.ts",
-  bindings: [counter],
+  bindings: {
+    COUNTER: counter,
+    WORKFLOW: workflow,
+  },
 });
 
 const website = new StaticSite("Website", {

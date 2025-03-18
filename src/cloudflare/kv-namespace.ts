@@ -1,3 +1,4 @@
+import type { Resolved } from "../output";
 import { type Context, Resource } from "../resource";
 import { createCloudflareApi } from "./api";
 
@@ -65,6 +66,13 @@ export interface KVNamespaceOutput extends KVNamespaceProps {
    * Time at which the namespace was last modified
    */
   modifiedAt: number;
+}
+
+export function isKVNamespace(binding: any): binding is Resolved<KVNamespace> {
+  return (
+    binding.type === "kv_namespace" &&
+    typeof (binding as any).namespaceId === "string"
+  );
 }
 
 export class KVNamespace extends Resource(

@@ -45,6 +45,7 @@ export interface ProviderOptions {
 
 export type Resource<In extends any[] = any[], Out = any> = {
   [ResourceID]: string;
+  [ResourceFQN]: string;
   [Provider]: Provider<any, any[], any>;
   [Input]: Inputs<In>;
   [Value]?: Out;
@@ -210,11 +211,11 @@ export function Resource<
       }
       scope.nodes.set(id, node as any);
 
-      // const resourceFQN = scope.getScopePath(id) + "/" + id;
+      const resourceFQN = scope.getScopePath(id) + "/" + id;
 
       this[ResourceID] = id;
       this[ResourceHandle] = new Object();
-      // this[ResourceFQN] = resourceFQN;
+      this[ResourceFQN] = resourceFQN;
       // this[ResourceFQN] = i++;
       this[Provider] = Resource as any;
       this[Input] = input;

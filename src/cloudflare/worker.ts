@@ -1,13 +1,20 @@
 import * as fs from "fs/promises";
 import { apply } from "../apply";
 import { Bundle, type BundleProps } from "../esbuild";
+import type { Resolved } from "../output";
 import { type Context, Resource } from "../resource";
 import { type CloudflareApi, createCloudflareApi } from "./api";
-import type { WorkerBinding, WorkerBindingSpec } from "./bindings";
+import type {
+  WorkerBinding,
+  WorkerBindingSpec,
+  WorkerBindings,
+} from "./bindings";
 import type { DurableObjectNamespace } from "./durable-object-namespace";
 import { isDurableObjectNamespace } from "./durable-object-namespace";
+import { isKVNamespace } from "./kv-namespace";
 import type { WorkerScriptMetadata } from "./worker-metadata";
 import type { SingleStepMigration } from "./worker-migration";
+import { isWorkflow } from "./workflow";
 /**
  * Properties for creating or updating a Worker
  */
@@ -54,7 +61,7 @@ export interface WorkerProps {
   /**
    * Bindings to attach to the worker
    */
-  bindings?: WorkerBinding[];
+  bindings?: WorkerBindings;
 
   /**
    * Environment variables to attach to the worker
@@ -93,7 +100,7 @@ export interface WorkerProps {
 /**
  * Output returned after Worker creation/update
  */
-export interface WorkerOutput extends Omit<WorkerProps, "url"> {
+export interface WorkerOutput extends Omit<WorkerProps, "url" | "bindings"> {
   /**
    * The ID of the worker
    */
@@ -118,7 +125,7 @@ export interface WorkerOutput extends Omit<WorkerProps, "url"> {
   /**
    * The bindings that were created
    */
-  bindings: WorkerBinding[];
+  bindings: WorkerBindingSpec[];
 }
 
 export class Worker extends Resource(
@@ -144,7 +151,7 @@ export class Worker extends Resource(
       await assertWorkerDoesNotExist(ctx, api, workerName);
     }
 
-    const oldBindings = await ctx.get<WorkerBinding[]>("bindings");
+    const oldBindings = await ctx.get<Resolved<WorkerBinding>[]>("bindings");
 
     const scriptMetadata = await prepareWorkerMetadata(ctx, oldBindings, props);
 
@@ -153,7 +160,7 @@ export class Worker extends Resource(
       props.script ?? (await bundleWorkerScript(ctx, props));
 
     // Upload the worker script
-    await putWorker(ctx, api, workerName, scriptContent, scriptMetadata);
+    await putWorker(api, workerName, scriptContent, scriptMetadata);
 
     // TODO: it is less than ideal that this can fail, resulting in state problem
     await ctx.set("bindings", props.bindings);
@@ -179,7 +186,7 @@ export class Worker extends Resource(
       script: scriptContent,
       format: props.format || "esm", // Include format in the output
       routes: props.routes || [],
-      bindings: props.bindings || [],
+      bindings: scriptMetadata.bindings,
       env: props.env,
       observability: scriptMetadata.observability,
       createdAt: now,
@@ -189,7 +196,9 @@ export class Worker extends Resource(
 
     return output;
   },
-) {}
+) {
+  public readonly type = "worker" as const;
+}
 
 async function deleteWorker(
   ctx: Context<WorkerOutput>,
@@ -261,7 +270,6 @@ async function deleteWorker(
 }
 
 async function putWorker(
-  ctx: Context<WorkerOutput>,
   api: CloudflareApi,
   workerName: string,
   scriptContent: string,
@@ -283,7 +291,7 @@ async function putWorker(
     scriptName,
   );
 
-  console.log("Script Metadata:", JSON.stringify(scriptMetadata, null, 2));
+  // console.log("Script Metadata:", JSON.stringify(scriptMetadata, null, 2));
 
   // Add metadata as JSON
   formData.append(
@@ -318,7 +326,7 @@ async function putWorker(
 }
 
 interface WorkerMetadata {
-  bindings: WorkerBinding[];
+  bindings: WorkerBindingSpec[];
   observability: {
     enabled: boolean;
   };
@@ -330,12 +338,12 @@ interface WorkerMetadata {
 
 async function prepareWorkerMetadata(
   ctx: Context<WorkerOutput>,
-  oldBindings: WorkerBinding[] | undefined,
+  oldBindings: Resolved<WorkerBinding>[] | undefined,
   props: WorkerProps,
 ): Promise<WorkerMetadata> {
   // Prepare metadata with bindings
   const meta: WorkerMetadata = {
-    bindings: [] as WorkerBinding[],
+    bindings: [] as WorkerBindingSpec[],
     observability: {
       enabled: props.observability?.enabled !== false,
     },
@@ -349,10 +357,18 @@ async function prepareWorkerMetadata(
     },
   };
 
+  for (const [key, text] of Object.entries(props.env ?? {})) {
+    meta.bindings.push({
+      type: "plain_text",
+      name: key,
+      text,
+    });
+  }
+
   // Convert bindings to the format expected by the API
-  for (const binding of props.bindings ?? []) {
+  for (const [bindingName, binding] of Object.entries(props.bindings ?? {})) {
     // Create a copy of the binding to avoid modifying the original
-    const bindingData = { ...binding };
+    const bindingData: any = { ...binding };
 
     if (isDurableObjectNamespace(bindingData)) {
       const stableId = bindingData.id;
@@ -360,16 +376,18 @@ async function prepareWorkerMetadata(
 
       meta.bindings.push({
         type: "durable_object_namespace",
-        name: bindingData.bindingName,
+        name: bindingName,
         class_name: className,
         script_name: bindingData.scriptName,
         environment: bindingData.environment,
         namespace_id: bindingData.namespaceId,
       });
 
-      const oldBinding: DurableObjectNamespace | undefined = oldBindings
-        ?.filter(isDurableObjectNamespace)
-        ?.find((b) => b.id === stableId);
+      const oldBinding: DurableObjectNamespace | undefined = Object.values(
+        oldBindings ?? {},
+      )
+        .filter(isDurableObjectNamespace)
+        .find((b) => b.id === stableId);
 
       if (!oldBinding) {
         if (bindingData.sqlite) {
@@ -383,20 +401,36 @@ async function prepareWorkerMetadata(
           to: className,
         });
       }
-    } else {
-      // For all other binding types, use as-is
-      meta.bindings.push(bindingData as WorkerBindingSpec);
-    }
-  }
-
-  // Convert env variables to plain_text bindings
-  if (props.env) {
-    for (const [key, value] of Object.entries(props.env)) {
+    } else if (isWorkflow(bindingData)) {
+      console.log("Workflow binding:", bindingData);
       meta.bindings.push({
-        name: key,
-        type: "plain_text",
-        text: value,
+        type: "workflow",
+        name: bindingName,
+        workflow_name: bindingData.workflowName,
+        class_name: bindingData.className,
+        script_name: bindingData.scriptName ?? bindingData.workflowName,
       });
+
+      const oldBinding = Object.values(oldBindings ?? {})
+        .filter(isWorkflow)
+        .find((b) => b.id === bindingData.id);
+
+      if (!oldBinding) {
+        meta.migrations!.new_classes!.push(bindingData.className);
+      } else if (oldBinding.className !== bindingData.className) {
+        meta.migrations!.renamed_classes!.push({
+          from: oldBinding.className,
+          to: bindingData.className,
+        });
+      }
+    } else if (isKVNamespace(bindingData)) {
+      meta.bindings.push({
+        type: "kv_namespace",
+        name: bindingName,
+        namespace_id: bindingData.id,
+      });
+    } else {
+      throw new Error(`Unknown binding type: ${bindingData.type}`);
     }
   }
 

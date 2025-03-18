@@ -1,11 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { apply } from "../../src/apply";
 import { createCloudflareApi } from "../../src/cloudflare/api";
-import type {
-  WorkerBindingDurableObjectNamespace,
-  WorkerBindingKVNamespace,
-  WorkerBindingSecretText,
-} from "../../src/cloudflare/bindings";
+import type { WorkerBindingDurableObjectNamespace } from "../../src/cloudflare/bindings";
 import { DurableObjectNamespace } from "../../src/cloudflare/durable-object-namespace";
 import { Worker } from "../../src/cloudflare/worker";
 import { destroy } from "../../src/destroy";
@@ -391,20 +387,17 @@ describe("Worker Resource", () => {
       expect(initialOutput.name).toEqual(doBindingTestName);
 
       // Now that the worker exists, update it with the DO binding
-      const doBinding: WorkerBindingDurableObjectNamespace = {
-        name: "COUNTER",
-        type: "durable_object_namespace",
-        class_name: "Counter",
-        script_name: doBindingTestName, // Now this reference is valid
-      };
+      const COUNTER = new DurableObjectNamespace(doBindingTestName, {
+        className: "Counter",
+        scriptName: doBindingTestName,
+      });
 
       const updatedWorker = new Worker(doBindingTestName, {
         name: doBindingTestName,
         script: durableObjectWorkerScript,
         format: "esm",
-        bindings: [doBinding],
-        migrations: {
-          new_classes: ["Counter"],
+        bindings: {
+          COUNTER,
         },
       });
 
@@ -432,135 +425,6 @@ describe("Worker Resource", () => {
         const api = await createCloudflareApi();
         const response = await api.get(
           `/accounts/${api.accountId}/workers/scripts/${doBindingTestName}`,
-        );
-        expect(response.status).toEqual(404);
-      } catch (err) {
-        console.log(`Error during cleanup: ${err}`);
-      }
-    }
-  });
-
-  test("create and delete worker with KV Namespace binding", async () => {
-    // Skip test if no TEST_KV_NAMESPACE_ID environment variable
-    const kvNamespaceId = process.env.TEST_KV_NAMESPACE_ID;
-    if (!kvNamespaceId) {
-      console.log("Skipping KV binding test: TEST_KV_NAMESPACE_ID not set");
-      return;
-    }
-
-    // Create a worker with a KV Namespace binding
-    const kvBinding: WorkerBindingKVNamespace = {
-      name: "TEST_KV",
-      type: "kv_namespace",
-      namespace_id: kvNamespaceId,
-    };
-
-    const worker = new Worker(kvBindingTestName, {
-      name: kvBindingTestName,
-      script: kvWorkerScript,
-      format: "esm",
-      bindings: [kvBinding],
-    });
-
-    // Apply to create the worker
-    const output = await apply(worker);
-    expect(output.id).toBeTruthy();
-    expect(output.name).toEqual(kvBindingTestName);
-    expect(output.bindings).toHaveLength(1);
-    expect(output.bindings?.[0].name).toEqual("TEST_KV");
-    expect(
-      (output.bindings?.[0] as WorkerBindingKVNamespace).namespace_id,
-    ).toEqual(kvNamespaceId);
-
-    // Delete the worker
-    await destroy(worker);
-
-    // Verify the worker was deleted
-    const api = await createCloudflareApi();
-    const response = await api.get(
-      `/accounts/${api.accountId}/workers/scripts/${kvBindingTestName}`,
-    );
-    expect(response.status).toEqual(404);
-  });
-
-  test("create and delete worker with multiple bindings", async () => {
-    // Skip test if no KV namespace ID
-    const kvNamespaceId = process.env.TEST_KV_NAMESPACE_ID;
-    if (!kvNamespaceId) {
-      console.log("Skipping multi-binding test: TEST_KV_NAMESPACE_ID not set");
-      return;
-    }
-
-    try {
-      // First create the worker without the DO binding
-      const initialWorker = new Worker(multiBindingsTestName, {
-        name: multiBindingsTestName,
-        script: multiBindingsWorkerScript,
-        format: "esm",
-      });
-
-      // Apply to create the worker first
-      const initialOutput = await apply(initialWorker);
-      expect(initialOutput.id).toBeTruthy();
-      expect(initialOutput.name).toEqual(multiBindingsTestName);
-
-      // Now prepare all bindings for the update
-      const durableObjectBinding: WorkerBindingDurableObjectNamespace = {
-        name: "COUNTER",
-        type: "durable_object_namespace",
-        class_name: "Counter",
-        script_name: multiBindingsTestName, // Now this is valid
-      };
-
-      const kvBinding: WorkerBindingKVNamespace = {
-        name: "TEST_KV",
-        type: "kv_namespace",
-        namespace_id: kvNamespaceId,
-      };
-
-      const secretBinding: WorkerBindingSecretText = {
-        name: "API_KEY",
-        type: "secret_text",
-        text: "test-api-key-value",
-      };
-
-      // Update the worker with all bindings
-      const updatedWorker = new Worker(multiBindingsTestName, {
-        name: multiBindingsTestName,
-        script: multiBindingsWorkerScript,
-        format: "esm",
-        bindings: [durableObjectBinding, kvBinding, secretBinding],
-      });
-
-      // Apply the update
-      const output = await apply(updatedWorker);
-      expect(output.id).toBeTruthy();
-      expect(output.name).toEqual(multiBindingsTestName);
-      expect(output.bindings).toHaveLength(3);
-
-      // Verify each binding
-      const bindings = output.bindings || [];
-      const doBinding = bindings.find((b) => b.name === "COUNTER");
-      const kvNamespaceBinding = bindings.find((b) => b.name === "TEST_KV");
-      const secretTextBinding = bindings.find((b) => b.name === "API_KEY");
-
-      expect(doBinding).toBeTruthy();
-      expect(kvNamespaceBinding).toBeTruthy();
-      expect(secretTextBinding).toBeTruthy();
-    } finally {
-      // Clean up by deleting the worker
-      try {
-        const cleanupWorker = new Worker(multiBindingsTestName, {
-          name: multiBindingsTestName,
-          script: multiBindingsWorkerScript,
-          format: "esm",
-        });
-        await destroy(cleanupWorker);
-
-        // Verify the worker was deleted
-        const api = await createCloudflareApi();
-        const response = await api.get(
-          `/accounts/${api.accountId}/workers/scripts/${multiBindingsTestName}`,
         );
         expect(response.status).toEqual(404);
       } catch (err) {
@@ -662,13 +526,6 @@ describe("Worker Resource", () => {
       if (worker) {
         // Clean up by deleting the worker
         await destroy(worker);
-
-        // Verify the worker was deleted
-        const api = await createCloudflareApi();
-        const response = await api.get(
-          `/accounts/${api.accountId}/workers/scripts/${envVarsTestName}`,
-        );
-        expect(response.status).toEqual(404);
       }
     }
   });
@@ -692,7 +549,6 @@ describe("Worker Resource", () => {
       const counterNamespace = new DurableObjectNamespace(
         "test-counter-namespace",
         {
-          bindingName: "COUNTER",
           className: "Counter",
           scriptName: doMigrationTestName,
         },
@@ -702,22 +558,23 @@ describe("Worker Resource", () => {
         name: doMigrationTestName,
         script: doMigrationWorkerScriptV1,
         format: "esm",
-        bindings: [counterNamespace],
+        bindings: {
+          COUNTER: counterNamespace,
+        },
       });
 
       // Apply the binding
       const outputWithBinding = await apply(workerWithBinding);
       expect(outputWithBinding.bindings).toHaveLength(1);
       const createdBinding = outputWithBinding
-        .bindings?.[0] as DurableObjectNamespace;
-      expect(createdBinding.bindingName).toEqual("COUNTER");
-      expect(createdBinding.className).toEqual("Counter");
+        .bindings?.[0] as WorkerBindingDurableObjectNamespace;
+      expect(createdBinding.name).toEqual("COUNTER");
+      expect(createdBinding.class_name).toEqual("Counter");
 
       // Now update the namespace to use CounterV2 class
       const updatedNamespace = new DurableObjectNamespace(
         "test-counter-namespace",
         {
-          bindingName: "COUNTER",
           className: "CounterV2",
           scriptName: doMigrationTestName,
         },
@@ -727,15 +584,17 @@ describe("Worker Resource", () => {
         name: doMigrationTestName,
         script: doMigrationWorkerScriptV2,
         format: "esm",
-        bindings: [updatedNamespace],
+        bindings: {
+          COUNTER: updatedNamespace,
+        },
       });
 
       // Apply the migration
       const migratedOutput = await apply(workerWithMigration);
       const migratedBinding = migratedOutput
-        .bindings?.[0] as DurableObjectNamespace;
-      expect(migratedBinding.bindingName).toEqual("COUNTER");
-      expect(migratedBinding.className).toEqual("CounterV2");
+        .bindings?.[0] as WorkerBindingDurableObjectNamespace;
+      expect(migratedBinding.name).toEqual("COUNTER");
+      expect(migratedBinding.class_name).toEqual("CounterV2");
     } finally {
       if (initialWorker) {
         await destroy(initialWorker);

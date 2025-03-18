@@ -4,11 +4,22 @@
  * https://developers.cloudflare.com/api/resources/workers/subresources/scripts/methods/update/
  */
 import type { DurableObjectNamespace } from "./durable-object-namespace";
+import type { KVNamespace } from "./kv-namespace";
+import type { Worker } from "./worker";
+import type { Workflow } from "./workflow";
+
+export type WorkerBindings = {
+  [bindingName: string]: WorkerBinding;
+};
 
 /**
  * Union type for all Worker binding types (Alchemy abstraction)
  */
-export type WorkerBinding = WorkerBindingSpec | DurableObjectNamespace;
+export type WorkerBinding =
+  | DurableObjectNamespace
+  | KVNamespace
+  | Worker
+  | Workflow;
 
 /**
  * Union type for all Worker binding types (API spec)
@@ -34,7 +45,8 @@ export type WorkerBindingSpec =
   | WorkerBindingTailConsumer
   | WorkerBindingVectorize
   | WorkerBindingVersionMetadata
-  | WorkerBindingWasmModule;
+  | WorkerBindingWasmModule
+  | WorkerBindingWorkflow;
 
 /**
  * AI binding type
@@ -294,4 +306,17 @@ export interface WorkerBindingStaticContent {
   name: string;
   /** Type identifier for Static Content binding */
   type: "static_content";
+}
+
+export interface WorkerBindingWorkflow {
+  /** Type identifier for Workflow binding */
+  type: "workflow";
+  /** The name of the binding in the worker */
+  name: string;
+  /** The name of the workflow */
+  workflow_name: string;
+  /** The name of the workflow script */
+  script_name: string;
+  /** The class name of the workflow */
+  class_name: string;
 }
