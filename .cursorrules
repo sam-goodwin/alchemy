@@ -2,6 +2,8 @@ Always use bun to install dependencies.
 
 All dependencies must be peer dependencies.
 
+Always use alchemy.secret() instead of new Secret() to create secrets.
+
 # Running Tests with Bun
 
 We use Bun for testing. Here's how to run tests:

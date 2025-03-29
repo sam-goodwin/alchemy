@@ -7,7 +7,7 @@ import { deserialize, serialize } from "./util/serde";
 
 export interface State<
   Kind extends string = string,
-  Props extends ResourceProps = ResourceProps,
+  Props extends ResourceProps | undefined = ResourceProps | undefined,
   Out extends Resource = Resource,
 > {
   status:

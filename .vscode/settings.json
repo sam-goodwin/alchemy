@@ -49,5 +49,5 @@
     "**/__pycache__": true,
     "**/*.pyc": true
   },
-  "cSpell.words": ["bunx", "deinit", "Pulumi", "qwik", "Shadcn"]
+  "cSpell.words": ["bunx", "cursorrules", "deinit", "Pulumi", "qwik", "Shadcn"]
 }

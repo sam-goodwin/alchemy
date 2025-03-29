@@ -4,6 +4,26 @@ import type { Context } from "../context";
 import { Resource } from "../resource";
 import { ignore } from "../util/ignore";
 
+import { alchemy } from "../alchemy";
+
+declare module "../alchemy" {
+  interface Alchemy {
+    files: (...paths: string[]) => Promise<{
+      [relativePath: string]: string;
+    }>;
+  }
+}
+
+alchemy.files = async (...paths: string[]) =>
+  Object.fromEntries(
+    await Promise.all(
+      paths.map(async (path) => [
+        path,
+        await fs.promises.readFile(path, "utf-8"),
+      ]),
+    ),
+  );
+
 export interface File extends Resource<"fs::File"> {
   path: string;
   content: string;

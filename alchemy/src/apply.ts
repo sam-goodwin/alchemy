@@ -17,12 +17,12 @@ export interface ApplyOptions {
 
 export async function apply<Out extends Resource>(
   resource: PendingResource<Out>,
-  props: ResourceProps,
+  props: ResourceProps | undefined,
   options?: ApplyOptions,
 ): Promise<Awaited<Out>> {
   const scope = resource.Scope;
   try {
-    const quiet = props.quiet ?? scope.quiet;
+    const quiet = props?.quiet ?? scope.quiet;
     await scope.init();
     let state: State | undefined = (await scope.state.get(resource.ID))!;
     const provider: Provider = PROVIDERS.get(resource.Kind);
@@ -92,6 +92,7 @@ export async function apply<Out extends Resource>(
       id: resource.ID,
       fqn: resource.FQN,
       seq: resource.Seq,
+      props: state.oldProps,
       state,
       replace: () => {
         if (isReplaced) {
@@ -104,9 +105,9 @@ export async function apply<Out extends Resource>(
       },
     });
 
-    const output = await alchemy.run(resource.ID, async () => {
-      return provider.handler.bind(ctx)(resource.ID, props);
-    });
+    const output = await alchemy.run(resource.ID, async () =>
+      provider.handler.bind(ctx)(resource.ID, props),
+    );
 
     if (!quiet) {
       console.log(

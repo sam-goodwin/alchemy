@@ -98,6 +98,14 @@ export class Scope {
     return [...this.chain, resourceID].join("/");
   }
 
+  public async run<T>(fn: (scope: Scope) => Promise<T>): Promise<T> {
+    return scopeStorage.run(this, () => fn(this));
+  }
+
+  [Symbol.asyncDispose]() {
+    return this.finalize();
+  }
+
   public async finalize() {
     if (!this.isErrored) {
       // TODO: need to detect if it is in error
@@ -118,18 +126,10 @@ export class Scope {
     }
   }
 
-  public async run<T>(fn: (scope: Scope) => Promise<T>): Promise<T> {
-    return scopeStorage.run(this, () => fn(this));
-  }
-
-  [Symbol.asyncDispose]() {
-    return this.finalize();
-  }
-
   /**
    * Returns a string representation of the scope.
    */
-  toString() {
+  public toString() {
     return `Scope(
   chain=${this.chain.join("/")},
   resources=[${Array.from(this.resources.values())

@@ -12,8 +12,9 @@ export const Folder = Resource(
   async function (
     this: Context<Folder>,
     id: string,
-    { path: dirPath }: { path: string },
+    props?: { path: string },
   ): Promise<Folder> {
+    const dirPath = props?.path || id;
     if (this.phase === "delete") {
       // we just do a best effort attempt
       await ignore(["ENOENT", "ENOTEMPTY"], async () =>

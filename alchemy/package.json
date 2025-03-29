@@ -12,6 +12,7 @@
     "./aws": "./lib/aws/index.js",
     "./aws/oidc": "./lib/aws/oidc/index.js",
     "./cloudflare": "./lib/cloudflare/index.js",
+    "./docs": "./lib/docs/index.js",
     "./esbuild": "./lib/esbuild/index.js",
     "./fs": "./lib/fs/index.js",
     "./github": "./lib/github/index.js",
@@ -22,6 +23,7 @@
   },
   "peerDependencies": {
     "@ai-sdk/openai": "^1.1.9",
+    "@ai-sdk/openai-compatible": "^0.2.2",
     "@aws-sdk/client-dynamodb": "^3.0.0",
     "@aws-sdk/client-iam": "^3.0.0",
     "@aws-sdk/client-lambda": "^3.0.0",

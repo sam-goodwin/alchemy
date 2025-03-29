@@ -67,7 +67,7 @@ type IsClass = {
 };
 
 type ResourceLifecycleHandler = (
-  this: Context<any>,
+  this: Context<any, any>,
   id: string,
   props: any,
 ) => Promise<Resource<string>>;
@@ -75,7 +75,7 @@ type ResourceLifecycleHandler = (
 // see: https://x.com/samgoodwin89/status/1904640134097887653
 type Handler<F extends (...args: any[]) => any> =
   | F
-  | (((this: any, id: string, props: Parameters<F>[1]) => never) & IsClass);
+  | (((this: any, id: string, props?: Parameters<F>[1]) => never) & IsClass);
 
 export function Resource<
   const Type extends string,
