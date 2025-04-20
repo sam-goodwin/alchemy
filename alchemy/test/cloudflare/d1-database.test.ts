@@ -128,6 +128,40 @@ describe("D1 Database Resource", async () => {
       await alchemy.destroy(scope);
     }
   });
+
+  test("create database with migrationsDir applies migrations", async (scope) => {
+    const migrationsDb = `${testId}-with-migrations`;
+    let database: D1Database | undefined = undefined;
+
+    try {
+      database = await D1Database(migrationsDb, {
+        name: migrationsDb,
+        migrationsDir: __dirname + "/migrations",
+        adopt: true,
+      });
+
+      expect(database.name).toEqual(migrationsDb);
+      expect(database.id).toBeTruthy();
+
+      // Now check if the test_migrations_table exists by querying the schema
+      const resp = await api.post(
+        `/accounts/${api.accountId}/d1/database/${database.id}/query`,
+        {
+          sql: "SELECT name FROM sqlite_master WHERE type='table' AND name='test_migrations_table';",
+        }
+      );
+      const data = await resp.json();
+      const tables = data.result?.results || data.result?.[0]?.results || [];
+
+      expect(tables.length).toBeGreaterThan(0);
+      expect(tables[0]?.name).toEqual("test_migrations_table");
+    } finally {
+      await alchemy.destroy(scope);
+      if (database) {
+        await assertDatabaseDeleted(database);
+      }
+    }
+  });
 });
 
 async function assertDatabaseDeleted(database: D1Database) {

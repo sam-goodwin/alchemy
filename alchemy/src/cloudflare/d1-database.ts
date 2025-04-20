@@ -6,6 +6,7 @@ import {
   type CloudflareApiOptions,
 } from "./api";
 import { CloudflareApiError, handleApiError } from "./api-error";
+import { applyMigrations, listMigrationsFiles } from "./d1-migrations";
 
 /**
  * Properties for creating or updating a D1 Database
@@ -57,6 +58,25 @@ export interface D1DatabaseProps extends CloudflareApiOptions {
    * @default false
    */
   adopt?: boolean;
+
+  /**
+   * These files will be generated internally with the D1Database wrapper function when migrationsDir is specified
+   *
+   * @private
+   */
+  migrationsFiles?: Array<{ id: string; sql: string }>;
+
+  /**
+   * Name of the table used to track migrations. Only used if migrationsDir is specified. Defaults to 'd1_migrations'
+   * This is analogous to wrangler's `migrations_table`.
+   */
+  migrationsTable?: string;
+
+  /**
+   * Directory containing migration SQL files. If not set, no migrations will be applied.
+   * This is analogous to wrangler's `migrations_dir`.
+   */
+  migrationsDir?: string;
 }
 
 /**
@@ -97,6 +117,20 @@ export interface D1Database
   };
 }
 
+export async function D1Database(
+  id: string,
+  props: Omit<D1DatabaseProps, "migrationsFiles">
+) {
+  const migrationsFiles = props.migrationsDir
+    ? await listMigrationsFiles(props.migrationsDir)
+    : [];
+
+  return D1DatabaseResource(id, {
+    ...props,
+    migrationsFiles,
+  });
+}
+
 /**
  * Creates and manages Cloudflare D1 Databases.
  *
@@ -126,9 +160,16 @@ export interface D1Database
  *   }
  * });
  *
+ * @example
+ * // Create a database with migrations
+ * const dbWithMigrations = await D1Database("mydb", {
+ *   name: "mydb",
+ *   migrationsDir: "./migrations",
+ * });
+ *
  * @see https://developers.cloudflare.com/d1/
  */
-export const D1Database = Resource(
+export const D1DatabaseResource = Resource(
   "cloudflare::D1Database",
   async function (
     this: Context<D1Database>,
@@ -201,6 +242,29 @@ export const D1Database = Resource(
             databaseName
           );
           dbData = await createDatabase(api, databaseName, props);
+        }
+      }
+
+      // Run migrations if provided
+      if (props.migrationsFiles && props.migrationsFiles.length > 0) {
+        try {
+          const migrationsTable = props.migrationsTable || "d1_migrations";
+          const databaseId = dbData.result.uuid || this.output?.id;
+
+          if (!databaseId) {
+            throw new Error("Database ID not found for migrations");
+          }
+
+          await applyMigrations({
+            migrationsFiles: props.migrationsFiles,
+            migrationsTable,
+            accountId: api.accountId,
+            databaseId,
+            api,
+          });
+        } catch (migrationErr) {
+          console.error("Failed to apply D1 migrations:", migrationErr);
+          throw migrationErr;
         }
       }
 
