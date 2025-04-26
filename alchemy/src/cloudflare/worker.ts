@@ -549,6 +549,7 @@ async function putWorker(
   scriptContent: string,
   scriptMetadata: WorkerMetadata
 ) {
+  console.log("scriptMetadata", scriptMetadata);
   return withExponentialBackoff(
     async () => {
       const scriptName =
@@ -936,7 +937,7 @@ async function bundleWorkerScript<B extends Bindings>(props: WorkerProps) {
   // Create and use a Bundle resource with worker-optimized configuration
   const defaultBundleOptions: Omit<BundleProps, "entryPoint"> = {
     format: props.format === "cjs" ? "cjs" : "esm", // Use the specified format or default to ESM
-    target: "es2020",
+    target: "esnext",
     platform: "browser",
     minify: true,
     options: {

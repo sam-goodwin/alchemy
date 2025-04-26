@@ -143,7 +143,7 @@ export const Bundle = Resource(
 
     const result = await bundle(props);
 
-    const bundlePath = Object.entries(result.metafile.outputs).find(
+    const bundlePath = Object.entries(result.metafile!.outputs).find(
       ([_, output]) => {
         if (output.entryPoint === undefined) {
           return false;
@@ -186,7 +186,7 @@ export const Bundle = Resource(
 );
 
 export async function bundle(props: BundleProps) {
-  return await esbuild.build({
+  const options = {
     ...props.options,
     write: !(props.outdir === undefined && props.outfile === undefined),
     // write:
@@ -207,5 +207,7 @@ export async function bundle(props: BundleProps) {
     ],
     platform: props.platform,
     metafile: true,
-  });
+  };
+  console.log(options);
+  return await esbuild.build(options);
 }

@@ -97,6 +97,11 @@ export async function Website<B extends Bindings>(
       ...props,
       name: props.name ?? id,
       entrypoint: props.main,
+      bundle: {
+        target: "esnext",
+        platform: "node",
+        ...props.bundle,
+      },
       assets: {
         html_handling: "auto-trailing-slash",
         not_found_handling: "single-page-application",
