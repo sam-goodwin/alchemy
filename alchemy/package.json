@@ -50,6 +50,7 @@
     "@cloudflare/workers-shared": "^0.17.5",
     "@iarna/toml": "^2.2.5",
     "@octokit/rest": "^21.1.1",
+    "@swc/core": "^1.11.24",
     "ai": "^4.0.0",
     "arktype": "^2.0.0",
     "aws4fetch": "^1.0.20",
