@@ -36,6 +36,7 @@ export class R2RestStateStore implements StateStore {
   private prefix: string;
   private bucketName: string;
   private initialized = false;
+  private readonly cache: Map<string, State>;
 
   /**
    * Create a new CloudflareR2StateStore
@@ -57,6 +58,8 @@ export class R2RestStateStore implements StateStore {
 
     // We'll initialize the API in init() to allow for async creation
     this.api = null as any;
+
+    this.cache = new Map<string, State>();
   }
 
   /**
@@ -177,6 +180,10 @@ export class R2RestStateStore implements StateStore {
   async get(key: string): Promise<State | undefined> {
     await this.ensureInitialized();
 
+    if (this.cache.has(key)) {
+      return this.cache.get(key);
+    }
+
     try {
       const response = await withExponentialBackoff(
         async () => {
@@ -204,14 +211,8 @@ export class R2RestStateStore implements StateStore {
       const rawData = await response.json();
       const state = (await deserialize(this.scope, rawData)) as State;
 
-      // Create a new state object with proper output
-      return {
-        ...state,
-        output: {
-          ...(state.output || {}),
-          Scope: this.scope,
-        },
-      };
+      this.cache.set(key, state);
+      return state;
     } catch (error: any) {
       if (error.message?.includes("404")) {
         return undefined;
@@ -288,6 +289,7 @@ export class R2RestStateStore implements StateStore {
       5, // 5 retry attempts
       1000, // Start with 1 second delay
     );
+    this.cache.set(key, value);
   }
 
   /**

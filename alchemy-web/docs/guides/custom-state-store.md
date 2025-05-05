@@ -214,16 +214,7 @@ export class InMemoryStateStore implements StateStore {
     }
     
     // Deserialize the state
-    const state = await deserialize(this.scope, serializedState) as State;
-    
-    // Ensure scope is set on output
-    return {
-      ...state,
-      output: {
-        ...(state.output || {}),
-        Scope: this.scope,
-      },
-    };
+    return await deserialize(this.scope, serializedState) as State;
   }
 
   // Get multiple states
@@ -316,19 +307,6 @@ Be sure to handle common errors gracefully:
 - Throw clear errors for authentication/permission issues
 - Consider implementing retry logic for transient failures
 
-### 5. Setting Scope on Output
-
-When returning a state, always ensure the scope is set on the output:
-
-```typescript
-return {
-  ...state,
-  output: {
-    ...(state.output || {}),
-    Scope: this.scope,
-  },
-};
-```
 
 ## Using a Custom State Store
 

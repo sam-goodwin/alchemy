@@ -29,6 +29,12 @@ export type Provider<
     handler: F;
   };
 
+export const ResourceKind = Symbol.for("Resource.Kind");
+export const ResourceID = Symbol.for("Resource.ID");
+export const ResourceFQN = Symbol.for("Resource.FQN");
+export const ResourceScope = Symbol.for("Resource.Scope");
+export const ResourceSeq = Symbol.for("Resource.Seq");
+
 export type PendingResource<
   Out = unknown,
   Kind extends ResourceKind = ResourceKind,
@@ -37,12 +43,11 @@ export type PendingResource<
   Scope extends _Scope = _Scope,
   Seq extends number = number,
 > = Promise<Out> & {
-  Kind: Kind;
-  ID: ID;
-  FQN: FQN;
-  Seq: Seq;
-  Scope: Scope;
-  signal: () => void;
+  [ResourceKind]: Kind;
+  [ResourceID]: ID;
+  [ResourceFQN]: FQN;
+  [ResourceSeq]: Seq;
+  [ResourceScope]: Scope;
 };
 
 export interface Resource<
@@ -54,11 +59,11 @@ export interface Resource<
   Seq extends number = number,
 > {
   // use capital letters to avoid collision with conventional camelCase typescript properties
-  Kind: Kind;
-  ID: ID;
-  FQN: FQN;
-  Scope: Scope;
-  Seq: Seq;
+  [ResourceKind]: Kind;
+  [ResourceID]: ID;
+  [ResourceFQN]: FQN;
+  [ResourceScope]: Scope;
+  [ResourceSeq]: Seq;
 }
 
 // helper for semantic syntax highlighting (color as a type/class instead of function/value)
@@ -113,10 +118,10 @@ export function Resource<
       // TODO(sam): do we want to throw?
       // it's kind of awesome that you can re-create a resource and call apply
       const otherResource = scope.resources.get(resourceID);
-      if (otherResource?.Kind !== type) {
+      if (otherResource?.[ResourceKind] !== type) {
         scope.fail();
         throw new Error(
-          `Resource ${resourceID} already exists in the stack and is of a different type: '${otherResource?.Kind}' !== '${type}'`,
+          `Resource ${resourceID} already exists in the stack and is of a different type: '${otherResource?.[ResourceKind]}' !== '${type}'`,
         );
       }
       // console.warn(
@@ -125,13 +130,13 @@ export function Resource<
     }
 
     // get a sequence number (unique within the scope) for the resource
-    const seq = scope.seq();
+    const seq = scope.nextSeq();
     const meta = {
-      Kind: type,
-      ID: resourceID,
-      FQN: scope.fqn(resourceID),
-      Seq: seq,
-      Scope: scope,
+      [ResourceKind]: type,
+      [ResourceID]: resourceID,
+      [ResourceFQN]: scope.fqn(resourceID),
+      [ResourceSeq]: seq,
+      [ResourceScope]: scope,
     } as any as PendingResource<Out>;
     const promise = apply(meta, props, options);
     const resource = Object.assign(promise, meta);

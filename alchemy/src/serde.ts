@@ -22,8 +22,7 @@ export async function serialize(
 ): Promise<any> {
   if (Array.isArray(value)) {
     return Promise.all(value.map((value) => serialize(scope, value, options)));
-  }
-  if (value instanceof Secret) {
+  } else if (value instanceof Secret) {
     if (!scope.password) {
       throw new Error("Cannot serialize secret without password");
     }
@@ -33,31 +32,45 @@ export async function serialize(
           ? await encrypt(value.unencrypted, scope.password)
           : value.unencrypted,
     };
-  }
-  if (isType(value)) {
+  } else if (isType(value)) {
     return {
       "@schema": value.toJSON(),
     };
-  }
-  if (value instanceof Date) {
+  } else if (value instanceof Date) {
     return {
       "@date": value.toISOString(),
     };
-  }
-  if (value instanceof Scope) {
-    return undefined;
-  }
-  if (value && typeof value === "object") {
+  } else if (typeof value === "symbol") {
+    assertNotUniqueSymbol(value);
+    return {
+      "@symbol": value.toString(),
+    };
+  } else if (value instanceof Scope) {
+    return {
+      "@scope": null,
+    };
+  } else if (value && typeof value === "object") {
+    for (const symbol of Object.getOwnPropertySymbols(value)) {
+      assertNotUniqueSymbol(symbol);
+    }
+    for (const key of Object.keys(value)) {
+      if (parseSymbol(key)) {
+        throw new Error(
+          `Cannot serialize property '${key}' because it looks like a stringified symbol.`,
+        );
+      }
+    }
     return Object.fromEntries(
       await Promise.all(
-        Object.entries(value).map(async ([key, value]) => [
-          key,
-          await serialize(scope, value, options),
-        ]),
+        [...Object.getOwnPropertySymbols(value), ...Object.keys(value)].map(
+          async (key) => [
+            key.toString(),
+            await serialize(scope, value[key], options),
+          ],
+        ),
       ),
     );
-  }
-  if (typeof value === "function") {
+  } else if (typeof value === "function") {
     // can't serialize functions
     return undefined;
   }
@@ -76,21 +89,43 @@ export async function deserialize(scope: Scope, value: any): Promise<any> {
         throw new Error("Cannot deserialize secret without password");
       }
       return new Secret(await decryptWithKey(value["@secret"], scope.password));
-    }
-    if ("@schema" in value) {
+    } else if ("@schema" in value) {
       return value["@schema"];
-    }
-    if ("@date" in value) {
+    } else if ("@date" in value) {
       return new Date(value["@date"]);
+    } else if ("@symbol" in value) {
+      return parseSymbol(value["@symbol"]);
+    } else if ("@scope" in value) {
+      return scope;
     }
+
     return Object.fromEntries(
       await Promise.all(
         Object.entries(value).map(async ([key, value]) => [
-          key,
+          parseSymbol(key) ?? key,
           await deserialize(scope, value),
         ]),
       ),
     );
   }
   return value;
+}
+
+const symbolPattern = /^Symbol\((.*)\)$/;
+
+function parseSymbol(value: string) {
+  const match = value.match(symbolPattern);
+  if (!match) {
+    return undefined;
+  }
+  return Symbol.for(match[1]);
+}
+
+function assertNotUniqueSymbol(symbol: Symbol) {
+  if (
+    symbol.description === undefined ||
+    symbol !== Symbol.for(symbol.description)
+  ) {
+    throw new Error(`Cannot serialize unique symbol: ${symbol.description}`);
+  }
 }

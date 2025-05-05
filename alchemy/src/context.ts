@@ -1,10 +1,12 @@
 import { DestroyedSignal } from "./destroy.js";
-import type {
-  Resource,
+import {
   ResourceFQN,
   ResourceID,
   ResourceKind,
-  ResourceProps,
+  ResourceScope,
+  ResourceSeq,
+  type Resource,
+  type ResourceProps,
 } from "./resource.js";
 import type { Scope } from "./scope.js";
 import type { State } from "./state.js";
@@ -94,7 +96,7 @@ export function context<
   seq: number;
   props: Props;
   state: State<Kind, Props, Out>;
-  replace: () => void;
+  replace?: () => void;
 }): Context<Out> {
   function create(props: Omit<Out, "Kind" | "ID" | "Scope">): Out;
   function create(id: string, props: Omit<Out, "Kind" | "ID" | "Scope">): Out;
@@ -108,22 +110,22 @@ export function context<
 
     return {
       ...props,
-      Kind: kind,
-      ID,
-      FQN: fqn,
-      Scope: scope,
-      Seq: seq,
+      [ResourceKind]: kind,
+      [ResourceID]: ID,
+      [ResourceFQN]: fqn,
+      [ResourceScope]: scope,
+      [ResourceSeq]: seq,
     } as Out;
   }
   return Object.assign(create, {
     stage: scope.stage,
-    scope,
+    scope: scope,
     id: id,
     fqn: fqn,
-    phase,
+    phase: phase,
     output: state.output,
     props: state.props,
-    replace,
+    replace: () => replace?.(),
     get: (key: string) => state.data[key],
     set: async (key: string, value: any) => {
       state.data[key] = value;
@@ -138,5 +140,5 @@ export function context<
       throw new DestroyedSignal();
     },
     create,
-  }) as Context<Out>;
+  }) as Context<any>;
 }

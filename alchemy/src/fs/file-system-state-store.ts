@@ -57,7 +57,6 @@ export class FileSystemStateStore implements StateStore {
       if (state.output === undefined) {
         state.output = {} as any;
       }
-      state.output.Scope = this.scope;
       return state;
     } catch (error: any) {
       if (error.code === "ENOENT") {

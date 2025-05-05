@@ -1,9 +1,16 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { destroy, DestroyedSignal } from "./destroy.js";
+import { destroy } from "./destroy.js";
 import { env } from "./env.js";
-import type { PendingResource } from "./resource.js";
+import {
+  ResourceFQN,
+  ResourceID,
+  ResourceKind,
+  ResourceScope,
+  ResourceSeq,
+  type PendingResource,
+} from "./resource.js";
 import { Scope } from "./scope.js";
 import { secret } from "./secret.js";
 import type { StateStoreType } from "./state.js";
@@ -276,13 +283,7 @@ export interface ScopeOptions extends AlchemyOptions {
   enter: boolean;
 }
 
-export interface RunOptions extends AlchemyOptions {
-  /**
-   * @default false
-   */
-  // TODO(sam): this is an awful hack to differentiate between naked scopes and resources
-  isResource?: boolean;
-}
+export interface RunOptions extends AlchemyOptions {}
 
 /**
  * Run a function in a new scope asynchronously.
@@ -316,45 +317,45 @@ async function run<T>(
           RunOptions,
           (this: Scope, scope: Scope) => Promise<T>,
         ]);
-  const _scope = new Scope({
+  const scope = await Scope.create({
     ...options,
     scopeName: id,
   });
   try {
-    if (options?.isResource !== true && _scope.parent) {
-      // TODO(sam): this is an awful hack to differentiate between naked scopes and resources
-      const seq = _scope.parent.seq();
+    if (scope.parent) {
+      // if this is not the root scope, then write a record into the parent scope for this scope
+      const seq = scope.parent.nextSeq();
+      const fqn = `${scope.parent.fqn(id)}`;
       const output = {
-        ID: id,
-        FQN: "",
-        Kind: "alchemy::Scope",
-        Scope: _scope,
-        Seq: seq,
+        [ResourceID]: id,
+        [ResourceFQN]: fqn,
+        [ResourceKind]: Scope.KIND,
+        [ResourceScope]: scope,
+        [ResourceSeq]: seq,
       } as const;
       const resource = {
-        kind: "scope",
+        kind: Scope.KIND,
         id,
         seq,
         data: {},
-        fqn: "",
+        fqn,
         props: {},
         status: "created",
         output,
       } as const;
-      await _scope.parent!.state.set(id, resource);
-      _scope.parent!.resources.set(
+
+      await scope.parent!.state.set(id, resource);
+
+      // TODO(sam): is this necessary? should we instead be pushing into scope.parent.scopes?
+      scope.parent!.resources.set(
         id,
         Object.assign(Promise.resolve(resource), output) as PendingResource,
       );
     }
-    return await _scope.run(async () => fn.bind(_scope)(_scope));
+    return await scope.run(async () => fn.bind(scope)(scope));
   } catch (error) {
-    if (!(error instanceof DestroyedSignal)) {
-      console.log(error);
-      _scope.fail();
-    }
+    // console.error(error);
+    scope.fail(error);
     throw error;
-  } finally {
-    await _scope.finalize();
   }
 }
