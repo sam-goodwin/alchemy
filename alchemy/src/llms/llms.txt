@@ -1,0 +1,688 @@
+Always use bun to install dependencies.
+
+All dependencies must be peer dependencies.
+
+Always use alchemy.secret() instead of new Secret() to create secrets.
+
+# Running Tests with Bun
+
+We use Bun for testing. Here's how to run tests:
+
+```bash
+# Run all tests
+bun test
+
+# Run tests in a specific file
+bun test alchemy/test/stripe/price.test.ts
+
+# Run a specific test in a specific file
+bun test --test-name-pattern="create and update price" alchemy/test/stripe/price.test.ts
+```
+
+For resource tests, create a dedicated test file for each resource type following the pattern `alchemy/test/service-name/resource-name.test.ts`.
+
+# Creating a New Service Resource
+
+This guide provides step-by-step instructions for creating a new resource for a service (like Stripe's Price, Product, or Webhook resources).
+
+## Step 1: Create the Resource File
+
+Create a new file in the service directory with kebab-case naming:
+
+```
+alchemy/src/{{service-name}}/{{resource-name}}.ts
+```
+
+Example: `alchemy/src/stripe/price.ts`
+
+## Step 2: Define Resource Interfaces
+
+Start by importing dependencies and defining the resource interfaces:
+
+```typescript
+import type { Context } from "../context";
+import { Resource } from "../resource";
+
+/**
+ * Properties for creating or updating a {{ResourceName}}
+ */
+export interface {{ResourceName}}Props {
+  /**
+   * {{Property description}}
+   */
+  propertyName: string;
+
+  /**
+   * {{Property description}}
+   */
+  anotherProperty?: number;
+
+  // Add all required and optional properties
+  // Include JSDoc comments for each property
+}
+
+/**
+ * Output returned after {{ResourceName}} creation/update
+ * IMPORTANT: The interface name MUST match the exported resource name
+ * For example, if your resource is exported as "Product", this interface
+ * should be named "Product" (not "ProductOutput")
+ * 
+ */
+export interface {{ResourceName}} extends Resource<"{{service-name}}::{{ResourceName}}"> {{ResourceName}}Props {
+  /**
+   * The ID of the resource
+   */
+  id: string;
+
+  /**
+   * Time at which the object was created
+   */
+  createdAt: number;
+
+  // Add all additional properties returned by the service
+  // Include JSDoc comments for each property
+}
+```
+
+## Step 3: API Client Implementation
+
+Create a minimal API client that wraps fetch calls without excessive abstraction:
+
+```typescript
+/**
+ * Options for {{ServiceName}} API requests
+ */
+export interface {{ServiceName}}ApiOptions {
+  /**
+   * API key or token to use (overrides environment variable)
+   */
+  apiKey?: string;
+
+  /**
+   * Account or project ID (overrides environment variable)
+   */
+  accountId?: string;
+}
+
+/**
+ * Minimal API client using raw fetch
+ */
+export class {{ServiceName}}Api {
+  /** Base URL for API */
+  readonly baseUrl: string;
+
+  /** API key or token */
+  readonly apiKey: string;
+
+  /** Account ID */
+  readonly accountId: string;
+
+  /**
+   * Create a new API client
+   *
+   * @param options API options
+   */
+  constructor(options: {{ServiceName}}ApiOptions = {}) {
+    // Initialize with environment variables or provided values
+    this.baseUrl = "https://api.{{service-name}}.com/v1";
+    this.apiKey = options.apiKey || process.env.{{SERVICE_API_KEY}} || '';
+    this.accountId = options.accountId || process.env.{{SERVICE_ACCOUNT_ID}} || '';
+
+    // Validate required configuration
+    if (!this.apiKey) {
+      throw new Error("{{SERVICE_API_KEY}} environment variable is required");
+    }
+  }
+
+  /**
+   * Make a request to the API
+   *
+   * @param path API path (without base URL)
+   * @param init Fetch init options
+   * @returns Raw Response object from fetch
+   */
+  async fetch(path: string, init: RequestInit = {}): Promise<Response> {
+    // Set up authentication headers
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${this.apiKey}`
+    };
+
+    // Add headers from init if provided
+    if (init.headers) {
+      const initHeaders = init.headers as Record<string, string>;
+      Object.keys(initHeaders).forEach(key => {
+        headers[key] = initHeaders[key];
+      });
+    }
+
+    // For FormData, remove Content-Type
+    if (init.body instanceof FormData) {
+      delete headers["Content-Type"];
+    }
+
+    // Make the request
+    return fetch(`${this.baseUrl}${path}`, {
+      ...init,
+      headers
+    });
+  }
+
+  /**
+   * Helper for GET requests
+   */
+  async get(path: string, init: RequestInit = {}): Promise<Response> {
+    return this.fetch(path, { ...init, method: "GET" });
+  }
+
+  /**
+   * Helper for POST requests
+   */
+  async post(path: string, body: any, init: RequestInit = {}): Promise<Response> {
+    const requestBody = body instanceof FormData ? body : JSON.stringify(body);
+    return this.fetch(path, { ...init, method: "POST", body: requestBody });
+  }
+
+  /**
+   * Helper for PUT requests
+   */
+  async put(path: string, body: any, init: RequestInit = {}): Promise<Response> {
+    const requestBody = body instanceof FormData ? body : JSON.stringify(body);
+    return this.fetch(path, { ...init, method: "PUT", body: requestBody });
+  }
+
+  /**
+   * Helper for DELETE requests
+   */
+  async delete(path: string, init: RequestInit = {}): Promise<Response> {
+    return this.fetch(path, { ...init, method: "DELETE" });
+  }
+}
+```
+
+## Step 4: Implement the Resource
+
+Create the resource with the pseudo-class pattern using `this` with Context type. The exported const MUST match the output interface name:
+
+```typescript
+/**
+ * (Resource description)
+ * 
+ * (followed by examples for distinct use-cases of the Resource)
+ * 
+ * @example
+ * // Create a basic table with just a hash key for simple 
+ * // key-value lookups:
+ * const basicTable = await DynamoTable("users", {
+ *   hashKey: {
+ *     name: "userId",
+ *     type: "string"
+ *   }
+ * });
+ * 
+ * @example
+ * // Create a time-series table with hash and sort key 
+ * // for efficient range queries:
+ * const timeSeriesTable = await DynamoTable("events", {
+ *   hashKey: {
+ *     name: "deviceId",
+ *     type: "string"
+ *   },
+ *   sortKey: {
+ *     name: "timestamp",
+ *     type: "number"
+ *   }
+ * });
+ * 
+ * @example
+ * // Create a table with a global secondary index 
+ * // for alternate access patterns:
+ * const ordersTable = await DynamoTable("orders", {
+ *   hashKey: {
+ *     name: "orderId",
+ *     type: "string"
+ *   },
+ *   globalSecondaryIndexes: [{
+ *     indexName: "by-customer",
+ *     hashKey: {
+ *       name: "customerId",
+ *       type: "string"
+ *     },
+ *     sortKey: {
+ *       name: "orderDate",
+ *       type: "string"
+ *     }
+ *   }]
+ * });
+ * 
+ * @example
+ * // Create a one-time fixed price for a product:
+ * const oneTimePrice = await Price("basic-license", {
+ *   currency: "usd",
+ *   unitAmount: 2999,
+ *   product: "prod_xyz"
+ * });
+ * 
+ * @example
+ * // Create a recurring subscription price with fixed 
+ * // monthly billing:
+ * const subscriptionPrice = await Price("pro-monthly", {
+ *   currency: "usd",
+ *   unitAmount: 1499,
+ *   product: "prod_xyz",
+ *   recurring: {
+ *     interval: "month",
+ *     usageType: "licensed"
+ *   }
+ * });
+ * 
+ * @example
+ * // Create a metered price for usage-based billing:
+ * const meteredPrice = await Price("storage", {
+ *   currency: "usd",
+ *   unitAmount: 25,
+ *   product: "prod_xyz",
+ *   recurring: {
+ *     interval: "month",
+ *     usageType: "metered",
+ *     aggregateUsage: "sum"
+ *   }
+ * });
+ */
+export const {{ResourceName}} = Resource(
+  "{{service-name}}::{{ResourceName}}",
+  async function(this: Context<{{ResourceName}}>, id: string, props: {{ResourceName}}Props): Promise<{{ResourceName}}> {
+    // Get API key from environment
+    const apiKey = process.env.{{SERVICE_API_KEY}};
+    if (!apiKey) {
+      throw new Error("{{SERVICE_API_KEY}} environment variable is required");
+    }
+
+    // Initialize API client
+    const api = new {{ServiceName}}Api();
+
+    if (this.phase === "delete") {
+      try {
+        if (this.output?.id) {
+          // Delete resource
+          const deleteResponse = await api.delete(`/accounts/${api.accountId}/resources/${this.output.id}`);
+
+          // Check response status directly instead of relying on exceptions
+          if (!deleteResponse.ok && deleteResponse.status !== 404) {
+            console.error("Error deleting resource:", deleteResponse.statusText);
+          }
+        }
+      } catch (error) {
+        console.error("Error deleting resource:", error);
+      }
+
+      // Return destroyed state
+      return this.destroy();
+    } else {
+      try {
+        let response;
+
+        if (this.phase === "update" && this.output?.id) {
+          // Update existing resource
+          response = await api.put(
+            `/accounts/${api.accountId}/resources/${this.output.id}`,
+            {
+              // Map props to API-expected format
+              name: props.name,
+              description: props.description
+            }
+          );
+        } else {
+          // Create new resource
+          response = await api.post(
+            `/accounts/${api.accountId}/resources`,
+            {
+              // Map props to API-expected format
+              name: props.name,
+              description: props.description
+            }
+          );
+        }
+
+        // Check response status directly
+        if (!response.ok) {
+          throw new Error(`API error: ${response.statusText}`);
+        }
+
+        // Parse response JSON
+        const data = await response.json();
+        const resource = data.result || data;
+
+        // Return the resource using this() to construct output
+        return this({
+          id: resource.id,
+          name: resource.name,
+          description: resource.description,
+          createdAt: resource.created_at || Date.now(),
+          // Include all other required properties from the interface
+          ...props // Include any additional properties from props
+        });
+      } catch (error) {
+        console.error("Error creating/updating resource:", error);
+        throw error;
+      }
+    }
+  }
+);
+```
+
+### Important Notes on Resource Implementation
+
+1. **Pseudo-Class Pattern**: The resource is implemented as a constant that matches the interface name, creating a pseudo-class construct:
+
+   ```typescript
+   export interface Product extends ProductProps {...}
+   export const Product = Resource(...);
+   ```
+
+2. **Context Type**: The implementation function uses `this: Context<T>` to provide type-safe access to the resource context.
+
+3. **Phase Handling**:
+
+   - Use `this.phase` to check the current operation phase ("create", "update", or "delete")
+   - For deletion, return `this.destroy()`
+   - For creation/update, return `this({...})` with the resource properties
+
+4. **Output Construction**:
+
+   - Use `this({...})` to construct the resource output
+   - Include all required properties from the interface
+   - Spread the props object to include any additional properties
+
+5. **Error Handling**:
+   - Check response status codes directly
+   - Preserve original error details when possible
+   - Log errors before rethrowing
+
+## Step 5: Export from Service Index
+
+Create or update the service index file to export the new resource:
+
+```typescript
+// alchemy/src/{{service-name}}/index.ts
+export * from "./{{resource-name}}";
+```
+
+## Step 6: Update Package.json
+
+Add the service to package.json exports if not already present:
+
+```json
+"exports": {
+  // ... existing exports
+  "./{{service-name}}": "./lib/{{service-name}}/index.js"
+}
+```
+
+Add the service SDK as a peer dependency if not already present:
+
+```json
+"peerDependencies": {
+  // ... existing dependencies
+  "{{service-sdk}}": "^x.y.z"
+}
+```
+
+## Step 7: Create Tests
+
+Create a test file that uses direct API interaction for verification:
+
+```typescript
+// alchemy/test/{{service-name}}/{{resource-name}}.test.ts
+import { describe, expect } from "bun:test";
+import { alchemy } from "../../src/alchemy";
+import { destroy } from "../../src/destroy";
+import { {{ResourceName}} } from "../../src/{{service-name}}/{{resource-name}}";
+import { {{ServiceName}}Api } from "../../src/{{service-name}}/api";
+import { BRANCH_PREFIX } from "../util";
+// must import this or else alchemy.test won't exist
+import "../../src/test/bun";
+
+const api = new {{ServiceName}}Api();
+
+const test = alchemy.test(import.meta);
+
+describe("{{ResourceName}} Resource", () => {
+  // Use BRANCH_PREFIX for deterministic, non-colliding resource names
+  const testId = `${BRANCH_PREFIX}-test-resource`;
+
+  test("create, update, and delete resource", async (scope) => {
+    let resource: {{ResourceName}} | undefined;
+    try {
+      // Create a test resource
+      resource = await {{ResourceName}}(testId, {
+        name: `Test Resource ${testId}`,
+        description: "This is a test resource"
+      });
+
+      expect(resource.id).toBeTruthy();
+      expect(resource.name).toEqual(`Test Resource ${testId}`);
+
+      // Verify resource was created by querying the API directly
+      const getResponse = await api.get(`/accounts/${api.accountId}/resources/${resource.id}`);
+      expect(getResponse.status).toEqual(200);
+
+      const responseData = await getResponse.json();
+      expect(responseData.result.name).toEqual(`Test Resource ${testId}`);
+
+      // Update the resource
+      resource = await {{ResourceName}}(testId, {
+        name: `Updated Resource ${testId}`,
+        description: "This is an updated test resource"
+      });
+
+      expect(resource.id).toEqual(resource.id);
+      expect(resource.name).toEqual(`Updated Resource ${testId}`);
+
+      // Verify resource was updated
+      const getUpdatedResponse = await api.get(`/accounts/${api.accountId}/resources/${resource.id}`);
+      const updatedData = await getUpdatedResponse.json();
+      expect(updatedData.result.name).toEqual(`Updated Resource ${testId}`);
+    } catch(err) {
+      // log the error or else it's silently swallowed by destroy errors
+      console.log(err);
+      throw err;
+    } finally {
+      // Always clean up, even if test assertions fail
+      await destroy(scope);
+
+      // Verify resource was deleted
+      const getDeletedResponse = await api.get(`/accounts/${api.accountId}/resources/${resource?.id}`);
+      expect(getDeletedResponse.status).toEqual(404);
+    }
+  });
+});
+```
+
+### Important Notes on Testing
+
+1. **Test Scope**: Use `alchemy.test(import.meta)` to create a test with proper scope management.
+
+2. **Resource Cleanup**:
+
+   - Use `try/finally` to ensure resources are cleaned up
+   - Call `destroy(scope)` to clean up all resources created in the test
+   - Verify resources are properly deleted after cleanup
+
+3. **Direct API Verification**:
+
+   - Use the service's API client to verify changes directly
+   - Check both successful operations and cleanup
+   - Verify resource state after each operation
+
+4. **Naming Convention**:
+
+   - Use `BRANCH_PREFIX` for unique test resource names
+   - Follow the pattern: `${BRANCH_PREFIX}-test-resource-type`
+   - Keep names consistent and descriptive
+
+5. **Error Handling**:
+   - Let test failures propagate for visibility
+   - Catch errors only in cleanup to ensure proper resource deletion
+   - Log cleanup errors but don't throw
+
+## Resource Naming Convention
+
+When implementing resources, follow this important naming convention:
+
+1. The output interface must have the same name as the exported resource. For example:
+
+   - If your resource constant is `export const Product = Resource(...)`,
+   - Then your output interface must be named "Product" (not "ProductOutput")
+
+2. The name of the interface and the exported constant create a pseudo-class construct:
+
+   ```typescript
+   // This naming pattern allows the resource to work correctly with type system
+   export interface Product extends ProductProps {...}
+   export const Product = Resource(...);
+   ```
+
+3. Always use this pattern for consistency across resources.
+
+## API Design Principles
+
+When implementing resources that interact with external APIs, follow these design principles:
+
+1. **Minimal abstraction**: Use a thin wrapper around fetch rather than complex SDK clients.
+
+2. **Explicit path construction**: Construct API paths explicitly at the call site instead of using helper methods:
+
+   ```typescript
+   // DO THIS:
+   await api.get(`/accounts/${api.accountId}/resources/${resourceId}`);
+
+   // NOT THIS:
+   await api.get(api.accountPath(`/resources/${resourceId}`));
+   ```
+
+3. **Direct HTTP status handling**: Check response status codes directly rather than relying on exceptions:
+
+   ```typescript
+   // DO THIS:
+   const response = await api.get(`/path/to/resource`);
+   if (!response.ok) {
+     // Handle error case
+   }
+
+   // NOT THIS:
+   try {
+     const data = await api.get(`/path/to/resource`);
+   } catch (error) {
+     // Handle error
+   }
+   ```
+
+4. **Explicit JSON parsing**: Parse JSON responses explicitly where needed:
+
+   ```typescript
+   const response = await api.get(`/path/to/resource`);
+   if (response.ok) {
+     const data = await response.json();
+     // Process data
+   }
+   ```
+
+5. **Public properties over helper methods**: Expose properties like `api.accountId` publicly to construct URLs instead of creating helper methods.
+
+6. **Minimal error transformation**: Report errors with minimal transformation to preserve original error details.
+
+## Using Raw Fetch Calls Instead of SDKs
+
+Always prefer using raw fetch calls instead of service SDKs unless explicitly instructed not to by the user. This approach:
+
+- Reduces dependency bloat
+- Minimizes version compatibility issues
+- Gives you more control over the request/response cycle
+- Often results in smaller bundle sizes
+
+For both implementation and tests, directly interact with APIs using fetch.
+
+## Resource Implementation Pattern
+
+Alchemy resources follow an async/await pattern with a pseudo-class implementation. Key concepts:
+
+1. **Async/Await Pattern**:
+
+   - Resources are implemented as async functions
+   - Direct use of async/await for all operations
+   - No Input<T>/Output<T> wrappers needed
+
+2. **Pseudo-Class Structure**:
+
+   ```typescript
+   // Define the props interface
+   export interface ResourceProps {
+     name: string;
+     // ... other properties
+   }
+
+   // Define the resource interface extending props
+   export interface Resource extends ResourceProps {
+     id: string;
+     createdAt: number;
+     // ... other properties
+   }
+
+   // Implement the resource
+   export const Resource = Resource(
+     "service::Resource",
+     async function (
+       this: Context<Resource>,
+       id: string,
+       props: ResourceProps
+     ): Promise<Resource> {
+       // Implementation
+     }
+   );
+   ```
+
+3. **Context Usage**:
+
+   - Access context through `this: Context<T>`
+   - Use `this.phase` for operation type ("create", "update", "delete")
+   - Use `this.output` for current resource state
+   - Use `this({...})` to construct resource output
+   - Use `this.destroy()` for deletion
+
+4. **Phase Handling**:
+
+   ```typescript
+   if (this.phase === "delete") {
+     // Handle deletion
+     return this.destroy();
+   } else if (this.phase === "update") {
+     // Handle update
+     return this({ ...updatedProps });
+   } else {
+     // Handle create
+     return this({ ...newProps });
+   }
+   ```
+
+5. **Resource Construction**:
+
+   ```typescript
+   // Construct resource output
+   return this({
+     id: resourceId,
+     ...props,
+     // Add computed properties
+     createdAt: Date.now(),
+   });
+   ```
+
+6. **Error Handling**:
+   ```typescript
+   try {
+     // Resource operations
+   } catch (error) {
+     console.error("Operation failed:", error);
+     throw error; // Propagate errors
+   }
+   ```
