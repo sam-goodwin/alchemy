@@ -10,6 +10,13 @@ import {
 } from "./api.js";
 import { createBucket, getBucket } from "./bucket.js";
 
+const retryOptions = [
+  // Retry on transient errors
+  isRetryableError,
+  10, // 5 retry attempts
+  100, // Start with 1 second delay
+] as const;
+
 /**
  * Options for CloudflareR2StateStore
  */
@@ -36,6 +43,7 @@ export class R2RestStateStore implements StateStore {
   private prefix: string;
   private bucketName: string;
   private initialized = false;
+  private readonly cache: Map<string, State>;
 
   /**
    * Create a new CloudflareR2StateStore
@@ -57,6 +65,8 @@ export class R2RestStateStore implements StateStore {
 
     // We'll initialize the API in init() to allow for async creation
     this.api = null as any;
+
+    this.cache = new Map<string, State>();
   }
 
   /**
@@ -72,9 +82,7 @@ export class R2RestStateStore implements StateStore {
     try {
       await withExponentialBackoff(
         () => getBucket(this.api, this.bucketName),
-        isRetryableError,
-        5,
-        1000,
+        ...retryOptions,
       );
     } catch (error) {
       // If not, create the alchemy state bucket
@@ -82,9 +90,7 @@ export class R2RestStateStore implements StateStore {
         try {
           await withExponentialBackoff(
             () => createBucket(this.api, this.bucketName),
-            isRetryableError,
-            5,
-            1000,
+            ...retryOptions,
           );
         } catch (error) {
           // this can happen when the bucket is being created in parallel
@@ -140,10 +146,7 @@ export class R2RestStateStore implements StateStore {
 
           return response;
         },
-        // Retry on transient errors
-        isRetryableError,
-        5, // 5 retry attempts
-        1000, // Start with 1 second delay
+        ...retryOptions,
       );
 
       const data = (await response.json()) as any;
@@ -187,6 +190,10 @@ export class R2RestStateStore implements StateStore {
   async get(key: string): Promise<State | undefined> {
     await this.ensureInitialized();
 
+    if (this.cache.has(key)) {
+      return this.cache.get(key);
+    }
+
     try {
       const response = await withExponentialBackoff(
         async () => {
@@ -200,10 +207,7 @@ export class R2RestStateStore implements StateStore {
 
           return response;
         },
-        // Retry on transient errors
-        isRetryableError,
-        5, // 5 retry attempts
-        1000, // Start with 1 second delay
+        ...retryOptions,
       );
 
       if (response.status === 404) {
@@ -215,13 +219,16 @@ export class R2RestStateStore implements StateStore {
       const state = (await deserialize(this.scope, rawData)) as State;
 
       // Create a new state object with proper output
-      return {
+      const value = {
         ...state,
         output: {
           ...(state.output || {}),
           Scope: this.scope,
         },
       };
+
+      this.cache.set(key, value);
+      return value;
     } catch (error: any) {
       if (error.message?.includes("404")) {
         return undefined;
@@ -293,11 +300,10 @@ export class R2RestStateStore implements StateStore {
         }
         return response;
       },
-      // Retry on transient errors
-      isRetryableError,
-      5, // 5 retry attempts
-      1000, // Start with 1 second delay
+      ...retryOptions,
     );
+
+    this.cache.set(key, value);
   }
 
   /**
@@ -320,10 +326,10 @@ export class R2RestStateStore implements StateStore {
 
         return response;
       },
-      isRetryableError,
-      5, // 5 retry attempts
-      1000, // Start with 1 second delay
+      ...retryOptions,
     );
+
+    this.cache.delete(key);
   }
 
   /**
