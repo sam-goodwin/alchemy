@@ -15,6 +15,7 @@
     ".": "./lib/index.js",
     "./ai": "./lib/ai/index.js",
     "./aws": "./lib/aws/index.js",
+    "./aws/control": "./lib/aws/control/index.js",
     "./aws/oidc": "./lib/aws/oidc/index.js",
     "./cloudflare": "./lib/cloudflare/index.js",
     "./dns": "./lib/dns/index.js",

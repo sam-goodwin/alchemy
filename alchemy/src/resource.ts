@@ -1,12 +1,43 @@
 import { apply } from "./apply.js";
 import type { Context } from "./context.js";
+import { context } from "./context.js";
 import { Scope as _Scope } from "./scope.js";
 
 export const PROVIDERS = new Map<ResourceKind, Provider<string, any>>();
+export const WILDCARD_DELETION_HANDLERS = new Map<
+  string,
+  WildcardDeletionHandler
+>();
 
 export type ResourceID = string;
 export type ResourceFQN = string;
 export type ResourceKind = string;
+
+/**
+ * Handler function for wildcard deletion patterns
+ */
+export type WildcardDeletionHandler = (
+  this: Context<any>,
+  pattern: string,
+  options?: { quiet?: boolean }
+) => Promise<void>;
+
+/**
+ * Register a wildcard deletion handler for a given pattern
+ * @param pattern The wildcard pattern to match (e.g. "AWS::*")
+ * @param handler The handler function to call for matching resources
+ */
+export function registerDeletionHandler(
+  pattern: string,
+  handler: WildcardDeletionHandler
+): void {
+  if (WILDCARD_DELETION_HANDLERS.has(pattern)) {
+    throw new Error(
+      `Wildcard deletion handler for pattern '${pattern}' already registered`
+    );
+  }
+  WILDCARD_DELETION_HANDLERS.set(pattern, handler);
+}
 
 export interface ProviderOptions {
   /**
@@ -69,7 +100,7 @@ type IsClass = {
 type ResourceLifecycleHandler = (
   this: Context<any, any>,
   id: string,
-  props: any,
+  props: any
 ) => Promise<Resource<string>>;
 
 // see: https://x.com/samgoodwin89/status/1904640134097887653
@@ -100,9 +131,50 @@ export function Resource<
 
   const provider = ((
     resourceID: string,
-    props: ResourceProps,
+    props: ResourceProps
   ): Promise<Resource<string>> => {
     const scope = _Scope.current;
+
+    // Handle wildcard deletion pattern
+    if (scope.stage === "destroy") {
+      // Check for AWS::* pattern or explicit wildcard in the type
+      const isWildcardType = type.includes("*");
+      const isWildcardId = resourceID.includes("*");
+
+      if (isWildcardType || isWildcardId) {
+        // First check registered handlers
+        for (const [pattern, handler] of WILDCARD_DELETION_HANDLERS.entries()) {
+          if (
+            type.startsWith(pattern.replace("*", "")) ||
+            resourceID.startsWith(pattern.replace("*", ""))
+          ) {
+            const ctx = context({
+              scope,
+              phase: "delete",
+              kind: type,
+              id: resourceID,
+              fqn: scope.fqn(resourceID),
+              seq: scope.seq(),
+              props: props,
+              state: undefined as any,
+              replace: () => {
+                throw new Error(
+                  "Cannot replace a resource during wildcard deletion. " +
+                    "The wildcardDelete handler should handle cleanup of matching resources."
+                );
+              },
+            });
+            return handler.call(ctx, resourceID, { quiet: scope.quiet }) as any;
+          }
+        }
+
+        throw new Error(
+          `No wildcard deletion handler registered for pattern '${isWildcardType ? type : resourceID}'. ` +
+            `To handle wildcard deletions, register a handler using registerDeletionHandler(). ` +
+            `This is required for resource type '${type}' to support cleanup of multiple resources.`
+        );
+      }
+    }
 
     if (resourceID.includes(":")) {
       // we want to use : as an internal separator for resources
@@ -116,7 +188,7 @@ export function Resource<
       if (otherResource?.Kind !== type) {
         scope.fail();
         throw new Error(
-          `Resource ${resourceID} already exists in the stack and is of a different type: '${otherResource?.Kind}' !== '${type}'`,
+          `Resource ${resourceID} already exists in the stack and is of a different type: '${otherResource?.Kind}' !== '${type}'`
         );
       }
       // console.warn(
