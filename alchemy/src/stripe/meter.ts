@@ -141,7 +141,7 @@ export const Meter = Resource(
   "stripe::Meter",
   async function (
     this: Context<Meter>,
-    logicalId: string,
+    _logicalId: string,
     props: MeterProps,
   ): Promise<Meter> {
     const apiKey = process.env.STRIPE_API_KEY;

@@ -36,7 +36,6 @@ const mimeTypes: Record<string, string> = {
  * @param filePath Path to the file
  * @returns The content type for the file
  */
-export function getContentType(filePath: string): string {
-  const extension = path.extname(filePath).toLowerCase();
-  return mimeTypes[extension] || "application/octet-stream";
+export function getContentType(filePath: string): string | undefined {
+  return mimeTypes[path.extname(filePath).toLowerCase()];
 }

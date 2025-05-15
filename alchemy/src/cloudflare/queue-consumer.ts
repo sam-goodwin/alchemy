@@ -6,7 +6,7 @@ import {
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.js";
-import type { Queue } from "./queue.js";
+import type { QueueResource } from "./queue.js";
 
 /**
  * Settings for configuring a Queue Consumer
@@ -51,7 +51,7 @@ export interface QueueConsumerProps extends CloudflareApiOptions {
    * The queue to consume
    * Either queue or queueId must be provided
    */
-  queue?: Queue;
+  queue?: QueueResource;
 
   /**
    * The queue ID to consume (alternative to providing a queue)
@@ -138,7 +138,7 @@ export const QueueConsumer = Resource(
   "cloudflare::QueueConsumer",
   async function (
     this: Context<QueueConsumer>,
-    id: string,
+    _id: string,
     props: QueueConsumerProps,
   ): Promise<QueueConsumer> {
     const api = await createCloudflareApi(props);

@@ -18,8 +18,8 @@ describe("Browser Rendering Resource", () => {
     const workerName = `${BRANCH_PREFIX}-browser-renderer`;
     const kvNamespaceName = `${BRANCH_PREFIX}-browser-kv-demo`;
 
-    let worker: Worker | undefined = undefined;
-    let kvNamespace: KVNamespace | undefined = undefined;
+    let worker: Worker | undefined;
+    let kvNamespace: KVNamespace | undefined;
 
     try {
       // Create a KV namespace for caching screenshots

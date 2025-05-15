@@ -158,7 +158,7 @@ export const AstroFile = Resource(
   "ai::AstroFile",
   async function (
     this: Context<AstroFile>,
-    id: string,
+    _id: string,
     props: AstroFileProps,
   ): Promise<AstroFile> {
     // Handle deletion phase

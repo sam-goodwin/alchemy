@@ -17,7 +17,7 @@ export async function getGitHubTokenFromCLI(): Promise<string | null> {
     // Get the auth token
     const { stdout: token } = await execAsync("gh auth token");
     return token?.trim() || null;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

@@ -104,7 +104,7 @@ export const Assets = Resource(
       if (!stats.isDirectory()) {
         throw new Error(`Assets path ${props.path} is not a directory`);
       }
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
         `Assets directory ${props.path} does not exist or is not accessible`,
       );
@@ -121,7 +121,7 @@ export const Assets = Resource(
       return {
         path: normalizedPath,
         filePath,
-        contentType: getContentType(filePath),
+        contentType: getContentType(filePath) ?? "application/null",
       };
     });
 

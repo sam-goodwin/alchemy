@@ -65,7 +65,7 @@ export const PolicyAttachment = Resource(
   "iam::PolicyAttachment",
   async function (
     this: Context<PolicyAttachment>,
-    id: string,
+    _id: string,
     props: PolicyAttachmentProps,
   ) {
     const client = new IAMClient({});

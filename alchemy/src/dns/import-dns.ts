@@ -133,7 +133,7 @@ export const ImportDnsRecords = Resource(
   "dns::ImportDnsRecords",
   async function (
     this: Context<ImportDnsRecords>,
-    id: string,
+    _id: string,
     props: ImportDnsRecordsProps,
   ): Promise<ImportDnsRecords> {
     // For delete phase, just return destroyed state since this is a read-only resource

@@ -160,7 +160,7 @@ export const SES = Resource(
   "aws::SES",
   async function (
     this: Context<SES>,
-    id: string,
+    _id: string,
     props: SESProps,
   ): Promise<SES> {
     // Create SES client

@@ -79,14 +79,14 @@ const MAX_RETRIES = 10;
  */
 export async function withRateLimitRetry<T>(fn: () => Promise<T>): Promise<T> {
   let retryCount = 0;
-  let lastError: Error | null = null;
+  let _lastError: Error | null = null;
   const startTime = Date.now();
 
   while (true) {
     try {
       return await fn();
     } catch (error: any) {
-      lastError = error;
+      _lastError = error;
 
       console.log("retry error", error);
 

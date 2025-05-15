@@ -192,7 +192,7 @@ export const Price = Resource(
   "stripe::Price",
   async function (
     this: Context<Price>,
-    id: string,
+    _id: string,
     props: PriceProps,
   ): Promise<Price> {
     // Get Stripe API key from context or environment

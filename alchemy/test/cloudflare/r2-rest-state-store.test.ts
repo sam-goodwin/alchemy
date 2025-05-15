@@ -18,7 +18,7 @@ describe("R2RestStateStore", async () => {
   // This is one feature not available through the S3 API
   const api = await createCloudflareApi();
 
-  test("optimistically creates alchemy-state bucket", async (scope) => {
+  test("optimistically creates alchemy-state bucket", async () => {
     const defaultBucketName = "alchemy-state";
     const bucket = await getBucket(api, defaultBucketName);
 

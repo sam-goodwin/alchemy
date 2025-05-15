@@ -53,11 +53,11 @@ export async function handleApiError(
 
   try {
     errorData = await response.json();
-  } catch (e) {
+  } catch (_e) {
     // If we can't parse JSON, just use the response text
     try {
       errorData = { message: await response.text() };
-    } catch (textError) {
+    } catch (_textError) {
       errorData = { message: response.statusText };
     }
   }

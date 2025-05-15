@@ -151,7 +151,7 @@ export const CSSFile = Resource(
   "ai::CSSFile",
   async function (
     this: Context<CSSFile>,
-    id: string,
+    _id: string,
     props: CSSFileProps,
   ): Promise<CSSFile> {
     // Handle deletion phase

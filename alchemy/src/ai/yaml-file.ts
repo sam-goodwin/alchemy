@@ -195,7 +195,7 @@ const DEFAULT_YAML_SYSTEM_PROMPT =
  */
 export const YAMLFile = Resource("ai::YAMLFile", async function <
   const T extends Type<any, any> | undefined = undefined,
->(this: Context<YAMLFile<T extends Type<any, any> ? type.infer<T> : any>>, id: string, props: YAMLFileProps<T>): Promise<
+>(this: Context<YAMLFile<T extends Type<any, any> ? type.infer<T> : any>>, _id: string, props: YAMLFileProps<T>): Promise<
   YAMLFile<T extends Type<any, any> ? type.infer<T> : any>
 > {
   // Handle deletion phase
@@ -272,7 +272,7 @@ export const YAMLFile = Resource("ai::YAMLFile", async function <
     yamlContent = content;
 
     // Create the file with the string content
-    const file = await StaticYamlFile("file", props.path, yamlContent);
+    const _file = await StaticYamlFile("file", props.path, yamlContent);
 
     // We need to parse the YAML to get the object representation
     const yaml = await import("yaml");

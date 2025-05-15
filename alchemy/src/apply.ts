@@ -12,15 +12,25 @@ import {
   type Resource,
   type ResourceProps,
 } from "./resource.js";
+import { Scope } from "./scope.js";
 import { serialize } from "./serde.js";
 import type { State } from "./state.js";
 
 export interface ApplyOptions {
   quiet?: boolean;
   alwaysUpdate?: boolean;
+  resolveInnerScope?: (scope: Scope) => void;
 }
 
-export async function apply<Out extends Resource>(
+export function apply<Out extends Resource>(
+  resource: PendingResource<Out>,
+  props: ResourceProps | undefined,
+  options?: ApplyOptions,
+): Promise<Awaited<Out>> {
+  return _apply(resource, props, options);
+}
+
+async function _apply<Out extends Resource>(
   resource: PendingResource<Out>,
   props: ResourceProps | undefined,
   options?: ApplyOptions,
@@ -42,6 +52,12 @@ export async function apply<Out extends Resource>(
           `Resource "${resource[ResourceFQN]}" not found and running in 'read' phase.`,
         );
       }
+      options?.resolveInnerScope?.(
+        new Scope({
+          parent: scope,
+          scopeName: resource[ResourceID],
+        }),
+      );
       return state.output as Awaited<Out>;
     }
     if (state === undefined) {
@@ -83,6 +99,12 @@ export async function apply<Out extends Resource>(
         if (!quiet) {
           // console.log(`Skip:    "${resource.FQN}" (no changes)`);
         }
+        options?.resolveInnerScope?.(
+          new Scope({
+            parent: scope,
+            scopeName: resource[ResourceID],
+          }),
+        );
         return state.output as Awaited<Out>;
       }
     }
@@ -127,7 +149,10 @@ export async function apply<Out extends Resource>(
       {
         isResource: true,
       },
-      async () => provider.handler.bind(ctx)(resource[ResourceID], props),
+      async (scope) => {
+        options?.resolveInnerScope?.(scope);
+        return provider.handler.bind(ctx)(resource[ResourceID], props);
+      },
     );
     if (!quiet) {
       console.log(

@@ -1,8 +1,12 @@
-import * as crypto from "node:crypto";
-import * as fs from "node:fs/promises";
+import crypto from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { getBindKey } from "../bootstrap/bind.js";
+import { isRuntime } from "../bootstrap/env.js";
 import type { Context } from "../context.js";
 import type { BundleProps } from "../esbuild/bundle.js";
 import { Resource } from "../resource.js";
+import { Scope, walkScope } from "../scope.js";
 import { getContentType } from "../util/content-type.js";
 import { withExponentialBackoff } from "../util/retry.js";
 import { slugify } from "../util/slugify.js";
@@ -13,7 +17,12 @@ import {
   createCloudflareApi,
 } from "./api.js";
 import type { Assets } from "./assets.js";
-import { type Bindings, Self, type WorkerBindingSpec } from "./bindings.js";
+import {
+  type Binding,
+  type Bindings,
+  Self,
+  type WorkerBindingSpec,
+} from "./bindings.js";
 import type { Bound } from "./bound.js";
 import { bundleWorkerScript } from "./bundle/bundle-worker.js";
 import type { DurableObjectNamespace } from "./durable-object-namespace.js";
@@ -26,6 +35,7 @@ import {
 import { isQueue } from "./queue.js";
 import type { WorkerScriptMetadata } from "./worker-metadata.js";
 import type { SingleStepMigration } from "./worker-migration.js";
+import { WorkerStub, isWorkerStub } from "./worker-stub.js";
 import { type Workflow, upsertWorkflow } from "./workflow.js";
 
 /**
@@ -72,39 +82,19 @@ export interface AssetsConfig {
   serve_directly?: boolean;
 }
 
-/**
- * Properties for creating or updating a Worker
- */
-export interface WorkerProps<B extends Bindings = Bindings>
+export interface BaseWorkerProps<B extends Bindings = Bindings>
   extends CloudflareApiOptions {
-  /**
-   * The worker script content (JavaScript or WASM)
-   * One of script, entryPoint, or bundle must be provided
-   */
-  script?: string;
-
-  /**
-   * Path to the entry point file
-   *
-   * Will be bundled using esbuild
-   *
-   * One of script, entryPoint, or bundle must be provided
-   */
-  entrypoint?: string;
-
-  /**
-   * The project root directory used to resolve aliases.
-   *
-   * @default process.cwd()
-   */
-  projectRoot?: string;
-
   /**
    * Bundle options when using entryPoint
    *
    * Ignored if bundle is provided
    */
   bundle?: Omit<BundleProps, "entryPoint">;
+
+  /**
+   * The root directory of the project
+   */
+  projectRoot?: string;
 
   /**
    * Module format for the worker script
@@ -202,65 +192,103 @@ export interface WorkerProps<B extends Bindings = Bindings>
   eventSources?: EventSource[];
 }
 
+export interface InlineWorkerProps<B extends Bindings = Bindings>
+  extends BaseWorkerProps<B> {
+  script: string;
+
+  // never
+  entrypoint?: undefined;
+  meta?: undefined;
+  fetch?: undefined;
+}
+
+export interface EntrypointWorkerProps<B extends Bindings = Bindings>
+  extends BaseWorkerProps<B> {
+  entrypoint: string;
+
+  // never
+  script?: undefined;
+  meta?: undefined;
+  fetch?: undefined;
+}
+
+export interface ImportMetaWorkerProps<B extends Bindings = Bindings>
+  extends BaseWorkerProps<B> {
+  meta?: ImportMeta;
+  fetch: (request: Request) => Promise<Response>;
+
+  // never
+  script?: undefined;
+  entrypoint?: undefined;
+}
+
+/**
+ * Properties for creating or updating a Worker
+ */
+export type WorkerProps<B extends Bindings = Bindings> =
+  | InlineWorkerProps<B>
+  | EntrypointWorkerProps<B>
+  | ImportMetaWorkerProps<B>;
+
 /**
  * Output returned after Worker creation/update
  */
-export interface Worker<B extends Bindings = Bindings>
-  extends Resource<"cloudflare::Worker">,
-    Omit<WorkerProps<B>, "url" | "script"> {
-  type: "service";
+export type Worker<B extends Bindings = Bindings> =
+  Resource<"cloudflare::Worker"> &
+    Omit<WorkerProps<B>, "url" | "script"> & {
+      type: "service";
 
-  /**
-   * The ID of the worker
-   */
-  id: string;
+      /**
+       * The ID of the worker
+       */
+      id: string;
 
-  /**
-   * The name of the worker
-   */
-  name: string;
+      /**
+       * The name of the worker
+       */
+      name: string;
 
-  /**
-   * Time at which the worker was created
-   */
-  createdAt: number;
+      /**
+       * Time at which the worker was created
+       */
+      createdAt: number;
 
-  /**
-   * Time at which the worker was last updated
-   */
-  updatedAt: number;
+      /**
+       * Time at which the worker was last updated
+       */
+      updatedAt: number;
 
-  /**
-   * The worker's URL if enabled
-   * Format: {name}.{subdomain}.workers.dev
-   */
-  url?: string;
+      /**
+       * The worker's URL if enabled
+       * Format: {name}.{subdomain}.workers.dev
+       */
+      url?: string;
 
-  /**
-   * The bindings that were created
-   */
-  bindings: B | undefined;
+      /**
+       * The bindings that were created
+       */
+      bindings: B | undefined;
 
-  /**
-   * Configuration for static assets
-   */
-  assets?: AssetsConfig;
+      /**
+       * Configuration for static assets
+       */
+      assets?: AssetsConfig;
 
-  // phantom property (for typeof myWorker.Env)
-  Env: {
-    [bindingName in keyof B]: Bound<B[bindingName]>;
-  };
+      // phantom property (for typeof myWorker.Env)
+      Env: {
+        [bindingName in keyof B]: Bound<B[bindingName]>;
+      };
 
-  /**
-   * The compatibility date for the worker
-   */
-  compatibilityDate: string;
+      /**
+       * The compatibility date for the worker
+       */
+      compatibilityDate: string;
 
-  /**
-   * The compatibility flags for the worker
-   */
-  compatibilityFlags: string[];
-}
+      /**
+       * The compatibility flags for the worker
+       */
+      compatibilityFlags: string[];
+    };
 
 /**
  * A Cloudflare Worker is a serverless function that can be deployed to the Cloudflare network.
@@ -354,7 +382,94 @@ export interface Worker<B extends Bindings = Bindings>
  * @see
  * https://developers.cloudflare.com/workers/
  */
-export const Worker = Resource(
+export function Worker<const B extends Bindings>(
+  id: string,
+  props: WorkerProps<B>,
+): Promise<Worker<B>>;
+export function Worker<const B extends Bindings>(
+  id: string,
+  meta: ImportMeta,
+  props: WorkerProps<B>,
+): Promise<Worker<B>>;
+export function Worker<const B extends Bindings>(
+  ...args:
+    | [id: string, props: WorkerProps<B>]
+    | [id: string, meta: ImportMeta, props: WorkerProps<B>]
+): Promise<Worker<B>> {
+  const [id, meta, props] =
+    args.length === 2 ? [args[0], undefined, args[1]] : args;
+  if (props.fetch) {
+    const scope = Scope.current;
+
+    const workerName = props.name ?? id;
+
+    // we need to make sure the worker exists
+    const stub = WorkerStub(`${id}/stub`, {
+      name: workerName,
+      accountId: props.accountId,
+      apiKey: props.apiKey,
+      apiToken: props.apiToken,
+      baseUrl: props.baseUrl,
+      email: props.email,
+    });
+
+    const deferred = scope.defer(async () => {
+      const autoBindings: Record<string, Binding> = {};
+      for await (const pendingResource of walkScope(scope)) {
+        const resource: Resource = await pendingResource;
+        if (isQueue(resource)) {
+          autoBindings[getBindKey(resource)] = resource;
+        } else if (isWorkerStub(resource)) {
+          autoBindings[getBindKey(resource)] = resource;
+        } // else if (isPipeline(...))
+        // TODO(sam): make this generic/pluggable
+      }
+
+      // TODO(sam): now find all secretrs
+
+      return _Worker(id, {
+        meta,
+        ...(props as ImportMetaWorkerProps<B>),
+        name: workerName,
+        bindings: {
+          ...props.bindings,
+          __ALCHEMY_WORKER_NAME__: workerName,
+          // TODO(sam): prune un-needed bindings
+          ...autoBindings,
+        },
+      });
+    }) as Promise<Worker<B>>;
+
+    // defer construction of this worker until the app is about to finaloze
+    // this ensures that the Worker's dependencies are instantiated before we bundle
+    // it is then safe to bundle and import the Worker to detect which resources need to be auto-bound
+    const promise = Promise.all([deferred, stub]).then(
+      ([worker]) => worker,
+    ) as Promise<Worker<B>> & {
+      fetch: (request: Request) => Promise<Response>;
+    };
+
+    if (isRuntime) {
+      promise.fetch = props.fetch;
+    } else {
+      promise.fetch = async (request: Request) => {
+        console.log(request);
+        const worker = await promise;
+        if (worker.url === undefined) {
+          throw new Error("Worker URL is not available in runtime");
+        }
+        const workerURL = new URL(worker.url);
+        const requestURL = new URL(request.url);
+        requestURL.host = workerURL.host;
+        return fetch(requestURL, request);
+      };
+    }
+    return promise;
+  }
+  return _Worker(id, props);
+}
+
+export const _Worker = Resource(
   "cloudflare::Worker",
   {
     alwaysUpdate: true,
@@ -364,11 +479,6 @@ export const Worker = Resource(
     id: string,
     props: WorkerProps<B>,
   ): Promise<Worker<B>> {
-    // Validate input - we need either script, entryPoint, or bundle
-    if (!props.script && !props.entrypoint) {
-      throw new Error("One of script or entryPoint must be provided");
-    }
-
     // Create Cloudflare API client with automatic account discovery
     const api = await createCloudflareApi(props);
 
@@ -532,6 +642,14 @@ export const Worker = Resource(
 
       return this.destroy();
     }
+    // Validate input - we need either script, entryPoint, or bundle
+    if (!props.script && !props.entrypoint && !props.fetch) {
+      throw new Error("One of script, entryPoint or fetch must be provided");
+    }
+    if (props.fetch && !props.meta) {
+      throw new Error("meta is required when using fetch");
+    }
+
     if (this.phase === "create") {
       if (!props.adopt) {
         await assertWorkerDoesNotExist(this, api, workerName);
@@ -1075,7 +1193,7 @@ async function getWorkerScriptMetadata(
   return ((await response.json()) as any).result as WorkerScriptMetadata;
 }
 
-async function getWorkerBindings(
+async function _getWorkerBindings(
   api: CloudflareApi,
   workerName: string,
   environment = "production",
@@ -1203,8 +1321,6 @@ async function uploadAssets(
   for (const bucket of buckets) {
     const formData = new FormData();
 
-    let totalBytes = 0;
-
     // Add each file in the bucket to the form
     for (const fileHash of bucket) {
       // Find the file with this hash
@@ -1225,9 +1341,9 @@ async function uploadAssets(
 
       // Add the file to the form with the hash as the key and set the correct content type
       const blob = new Blob([base64Content], {
-        type: getContentType(file.filePath),
+        // if you set application/octet-stream, you get weird `-1` errors with a message to contact support
+        type: getContentType(file.filePath) ?? "application/null",
       });
-      totalBytes += blob.size;
       formData.append(fileHash, blob, fileHash);
     }
 
@@ -1250,6 +1366,15 @@ async function uploadAssets(
     }
 
     const uploadData = (await uploadResponse.json()) as UploadResponse;
+    if (!uploadData.success) {
+      const error = uploadData.errors[0];
+      const message = error.message;
+      const code = error.code;
+      throw new Error(
+        `Failed to upload asset files: ${message} (Code: ${code})`,
+      );
+    }
+
     // Update the completion token for the next batch
     if (uploadData.result.jwt) {
       completionToken = uploadData.result.jwt;
@@ -1272,15 +1397,17 @@ async function uploadAssets(
 async function calculateFileMetadata(
   filePath: string,
 ): Promise<{ hash: string; size: number }> {
-  const hash = crypto.createHash("sha256");
-  const fileContent = await fs.readFile(filePath);
+  const contents = await fs.readFile(filePath);
 
-  hash.update(fileContent);
-  const fileHash = hash.digest("hex").substring(0, 32); // First 32 chars of hash
+  const hash = crypto.createHash("sha256");
+  hash.update(contents);
+
+  const extension = path.extname(filePath).substring(1);
+  hash.update(extension);
 
   return {
-    hash: fileHash,
-    size: fileContent.length,
+    hash: hash.digest("hex").slice(0, 32),
+    size: contents.length,
   };
 }
 

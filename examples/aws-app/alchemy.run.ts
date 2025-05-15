@@ -18,7 +18,7 @@ const app = await alchemy("aws-app", {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const [queue, table, role] = await Promise.all([
+const [_queue, table, role] = await Promise.all([
   Queue("alchemy-items-queue", {
     queueName: "alchemy-items-queue",
     visibilityTimeout: 30,
@@ -65,7 +65,7 @@ const bundle = await Bundle("api-bundle", {
   external: ["@aws-sdk/*"],
 });
 
-const api = await Function("api", {
+const _api = await Function("api", {
   functionName: "alchemy-items-api",
   bundle,
   roleArn: role.arn,

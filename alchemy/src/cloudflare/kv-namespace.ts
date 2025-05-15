@@ -1,3 +1,4 @@
+import { bind } from "../bootstrap/bind.js";
 import type { Context } from "../context.js";
 import { Resource } from "../resource.js";
 import { withExponentialBackoff } from "../util/retry.js";
@@ -7,6 +8,7 @@ import {
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.js";
+import type { Bound } from "./bound.js";
 
 /**
  * Properties for creating or updating a KV Namespace
@@ -73,9 +75,9 @@ export interface KVPair {
 /**
  * Output returned after KV Namespace creation/update
  */
-export interface KVNamespace
+export interface KVNamespaceResource
   extends Resource<"cloudflare::KVNamespace">,
-    KVNamespaceProps {
+    Omit<KVNamespaceProps, "delete"> {
   type: "kv_namespace";
   /**
    * The ID of the namespace
@@ -92,6 +94,8 @@ export interface KVNamespace
    */
   modifiedAt: number;
 }
+
+export type KVNamespace = KVNamespaceResource & Bound<KVNamespaceResource>;
 
 /**
  * A Cloudflare KV Namespace is a key-value store that can be used to store data for your application.
@@ -147,13 +151,30 @@ export interface KVNamespace
  *   delete: false
  * });
  */
-export const KVNamespace = Resource(
+
+export async function KVNamespace(
+  name: string,
+  props: KVNamespaceProps,
+): Promise<KVNamespace> {
+  const kv = await _KVNamespace(name, props);
+  const binding = await bind(kv);
+  return {
+    ...kv,
+    delete: binding.delete,
+    get: binding.get,
+    getWithMetadata: binding.getWithMetadata,
+    list: binding.list,
+    put: binding.put,
+  };
+}
+
+const _KVNamespace = Resource(
   "cloudflare::KVNamespace",
   async function (
-    this: Context<KVNamespace>,
-    id: string,
+    this: Context<KVNamespaceResource>,
+    _id: string,
     props: KVNamespaceProps,
-  ) {
+  ): Promise<KVNamespaceResource> {
     // Create Cloudflare API client with automatic account discovery
     const api = await createCloudflareApi(props);
 

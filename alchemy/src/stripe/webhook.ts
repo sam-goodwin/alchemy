@@ -135,7 +135,7 @@ export const WebhookEndpoint = Resource(
   "stripe::WebhookEndpoint",
   async function (
     this: Context<WebhookEndpoint>,
-    id: string,
+    _id: string,
     props: WebhookEndpointProps,
   ) {
     // Get Stripe API key from context or environment

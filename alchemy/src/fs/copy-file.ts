@@ -63,7 +63,7 @@ export const CopyFile = Resource(
   "fs::CopyFile",
   async function (
     this: Context<CopyFile>,
-    id: string,
+    _id: string,
     props: CopyFileProps,
   ): Promise<CopyFile> {
     const { src, dest, overwrite = true } = props;

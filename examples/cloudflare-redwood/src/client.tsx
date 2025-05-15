@@ -1,3 +1,3 @@
-import { initClient } from "@redwoodjs/sdk/client";
+import { initClient } from "rwsdk/client";
 
 initClient();

@@ -305,7 +305,7 @@ export const Zone = Resource(
   "cloudflare::Zone",
   async function (
     this: Context<Zone>,
-    id: string,
+    _id: string,
     props: ZoneProps,
   ): Promise<Zone> {
     // Create Cloudflare API client with automatic account discovery

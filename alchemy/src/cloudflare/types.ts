@@ -64,7 +64,7 @@ export async function extractCloudflareError(
       return data.errors.map((e) => `Error ${e.code}: ${e.message}`).join(", ");
     }
     return `HTTP ${response.status}: ${response.statusText}`;
-  } catch (e) {
+  } catch {
     return `HTTP ${response.status}: ${response.statusText}`;
   }
 }

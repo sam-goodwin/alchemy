@@ -128,7 +128,7 @@ export interface Bucket extends Resource<"s3::Bucket">, BucketProps {
  */
 export const Bucket = Resource(
   "s3::Bucket",
-  async function (this: Context<Bucket>, id: string, props: BucketProps) {
+  async function (this: Context<Bucket>, _id: string, props: BucketProps) {
     const client = new S3Client({});
 
     if (this.phase === "delete") {

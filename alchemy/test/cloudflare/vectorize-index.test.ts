@@ -22,7 +22,7 @@ describe("Vectorize Index Resource", async () => {
 
   test("create and delete index", async (scope) => {
     // Create a test index
-    let index: VectorizeIndex | undefined = undefined;
+    let index: VectorizeIndex | undefined;
 
     try {
       index = await VectorizeIndex(testId, {

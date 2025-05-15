@@ -4,6 +4,7 @@
   "references": [
     { "path": "./tsconfig.stacks.json" },
     { "path": "./alchemy/tsconfig.json" },
+    { "path": "./alchemy/tsconfig.test.json" },
     { "path": "./examples/aws-app/tsconfig.json" },
     { "path": "./examples/cloudflare-vite/tsconfig.json" },
     { "path": "./examples/cloudflare-nuxt-pipeline/tsconfig.json" },

@@ -19,7 +19,7 @@ describe("Cloudflare Queue Resource", async () => {
 
   test("create and delete queue", async (scope) => {
     // Create a test queue
-    let queue: Queue | undefined = undefined;
+    let queue: Queue | undefined;
 
     try {
       queue = await Queue(testId, {

@@ -19,7 +19,7 @@
     /* Specify how TypeScript looks up a file from a given module specifier. */
     "moduleResolution": "bundler",
     /* Specify type package names to be included without being referenced in a source file. */
-    "types": ["./types/rw.d.ts"],
+    "types": ["./types/rw.d.ts", "./types/env.d.ts"],
     "paths": {
       "@/*": ["./src/*"],
       "src/*": ["./src/app/*"]

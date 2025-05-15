@@ -165,7 +165,7 @@ async function deleteCustomDomain(
 async function ensureCustomDomain(
   context: Context<CustomDomain>,
   api: CloudflareApi,
-  logicalId: string,
+  _logicalId: string,
   props: CustomDomainProps,
 ): Promise<CustomDomain> {
   const environment = props.environment || "production";

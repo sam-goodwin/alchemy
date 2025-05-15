@@ -218,7 +218,7 @@ export const Exec = Resource(
       }
 
       // Wait for the process to complete
-      exitCode = await new Promise<number>((resolve, reject) => {
+      exitCode = await new Promise<number>((resolve, _reject) => {
         childProcess.on("close", (code) => {
           resolve(code || 0);
         });

@@ -61,7 +61,7 @@ describe("AccountApiToken Resource", () => {
       );
       expect(getResponse.status).toEqual(200);
 
-      const responseData = await getResponse.json();
+      const responseData: any = await getResponse.json();
       expect(responseData.result.name).toEqual(`Test Token ${testId}`);
 
       // Update the token
@@ -88,7 +88,7 @@ describe("AccountApiToken Resource", () => {
       const getUpdatedResponse = await api.get(
         `/accounts/${api.accountId}/tokens/${tokenId}`,
       );
-      const updatedData = await getUpdatedResponse.json();
+      const updatedData: any = await getUpdatedResponse.json();
       expect(updatedData.result.name).toEqual(`Updated Token ${testId}`);
     } catch (err) {
       // Log the error or else it's silently swallowed by destroy errors

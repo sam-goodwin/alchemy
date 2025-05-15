@@ -62,7 +62,7 @@ describe("D1 Clone", async () => {
           sql: "SELECT * FROM test_clone ORDER BY id",
         },
       );
-      const data = await response.json();
+      const data: any = await response.json();
       const results = data.result?.[0]?.results || [];
 
       // Verify the cloned data
@@ -129,7 +129,7 @@ describe("D1 Clone", async () => {
           sql: "SELECT * FROM users",
         },
       );
-      const usersData = await usersResponse.json();
+      const usersData: any = await usersResponse.json();
       const usersResults = usersData.result?.[0]?.results || [];
       expect(usersResults.length).toEqual(1);
       expect(usersResults[0].username).toEqual("user1");
@@ -141,7 +141,7 @@ describe("D1 Clone", async () => {
           sql: "SELECT * FROM posts",
         },
       );
-      const postsData = await postsResponse.json();
+      const postsData: any = await postsResponse.json();
       const postsResults = postsData.result?.[0]?.results || [];
       expect(postsResults.length).toEqual(1);
       expect(postsResults[0].title).toEqual("post1");
@@ -153,7 +153,7 @@ describe("D1 Clone", async () => {
           sql: "SELECT name FROM sqlite_master WHERE type='table' AND name='comments'",
         },
       );
-      const commentsData = await commentsResponse.json();
+      const commentsData: any = await commentsResponse.json();
       const commentsResults = commentsData.result?.[0]?.results || [];
       expect(commentsResults.length).toEqual(0); // Should not find the comments table
     } finally {

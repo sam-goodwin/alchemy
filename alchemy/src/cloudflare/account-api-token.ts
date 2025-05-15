@@ -248,7 +248,7 @@ export const AccountApiToken = Resource(
   "cloudflare::AccountApiToken",
   async function (
     this: Context<AccountApiToken>,
-    id: string,
+    _id: string,
     props: AccountApiTokenProps,
   ): Promise<AccountApiToken> {
     // Create Cloudflare API client with automatic account discovery

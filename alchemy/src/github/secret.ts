@@ -134,7 +134,7 @@ export const GitHubSecret = Resource(
   "github::Secret",
   async function (
     this: Context<GitHubSecretOutput>,
-    id: string,
+    _id: string,
     props: GitHubSecretProps,
   ): Promise<GitHubSecretOutput> {
     // Create authenticated Octokit client - will automatically handle token resolution

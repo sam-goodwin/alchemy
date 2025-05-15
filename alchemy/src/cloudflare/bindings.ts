@@ -4,19 +4,20 @@
  * https://developers.cloudflare.com/api/resources/workers/subresources/scripts/methods/update/
  */
 import type { Secret } from "../secret.js";
-import type { AiGateway } from "./ai-gateway.js";
+import type { AiGatewayResource } from "./ai-gateway.js";
 import type { Ai } from "./ai.js";
 import type { Assets } from "./assets.js";
 import type { Bound } from "./bound.js";
 import type { BrowserRendering } from "./browser-rendering.js";
-import type { R2Bucket } from "./bucket.js";
-import type { D1Database } from "./d1-database.js";
+import type { R2BucketResource } from "./bucket.js";
+import type { D1DatabaseResource } from "./d1-database.js";
 import type { DurableObjectNamespace } from "./durable-object-namespace.js";
 import type { Hyperdrive } from "./hyperdrive.js";
-import type { KVNamespace } from "./kv-namespace.js";
-import type { Pipeline } from "./pipeline.js";
-import type { Queue } from "./queue.js";
-import type { VectorizeIndex } from "./vectorize-index.js";
+import type { KVNamespaceResource } from "./kv-namespace.js";
+import type { PipelineResource } from "./pipeline.js";
+import type { QueueResource } from "./queue.js";
+import type { VectorizeIndexResource } from "./vectorize-index.js";
+import type { WorkerStub } from "./worker-stub.js";
 import type { Worker } from "./worker.js";
 import type { Workflow } from "./workflow.js";
 
@@ -35,19 +36,20 @@ export declare namespace Bindings {
  */
 export type Binding =
   | Ai
-  | AiGateway
+  | AiGatewayResource
   | Assets
-  | D1Database
+  | D1DatabaseResource
   | DurableObjectNamespace
   | Hyperdrive
-  | KVNamespace
-  | Pipeline
-  | Queue
-  | R2Bucket
+  | KVNamespaceResource
+  | PipelineResource
+  | QueueResource
+  | R2BucketResource
   | Secret
   | string
-  | VectorizeIndex
+  | VectorizeIndexResource
   | Worker
+  | WorkerStub
   | Workflow
   | BrowserRendering
   | Self;

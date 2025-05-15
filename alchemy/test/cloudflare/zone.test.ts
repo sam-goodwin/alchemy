@@ -76,7 +76,7 @@ describe("Zone Resource", () => {
       const getResponse = await api.get(`/zones/${zone.id}`);
       expect(getResponse.status).toEqual(200);
 
-      const responseData = await getResponse.json();
+      const responseData: any = await getResponse.json();
       expect(responseData.result.name).toEqual(testDomain);
 
       // Update the zone with different settings
@@ -117,7 +117,7 @@ describe("Zone Resource", () => {
 
       // Verify settings were updated in the API
       const settingsResponse = await api.get(`/zones/${zone.id}/settings`);
-      const settingsData = await settingsResponse.json();
+      const settingsData: any = await settingsResponse.json();
 
       // Helper function to find setting value
       const getSetting = (id: string) =>

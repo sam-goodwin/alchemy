@@ -1,13 +1,18 @@
 // ensure providers are registered (for deletion purposes)
 
-import "../alchemy/src/cloudflare";
-import "../alchemy/src/dns";
-import "../alchemy/src/os";
+import "../alchemy/src/cloudflare/index.js";
+import "../alchemy/src/dns/index.js";
+import "../alchemy/src/os/index.js";
 
 import path from "node:path";
-import alchemy from "../alchemy/src";
-import { Assets, CustomDomain, Worker, Zone } from "../alchemy/src/cloudflare";
-import { Exec } from "../alchemy/src/os";
+import {
+  Assets,
+  CustomDomain,
+  Worker,
+  Zone,
+} from "../alchemy/src/cloudflare/index.js";
+import alchemy from "../alchemy/src/index.js";
+import { Exec } from "../alchemy/src/os/index.js";
 import options from "./env.js";
 
 const app = await alchemy("alchemy:website", options);

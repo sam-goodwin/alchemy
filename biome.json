@@ -1,11 +1,11 @@
 {
   "files": {
     "includes": [
-      "./alchemy/src/**",
-      "./alchemy/test/**",
-      "./scripts/**",
-      "./stacks/**",
-      "./examples/*/src/**",
+      "./alchemy/src/**/*.ts",
+      "./alchemy/test/**/*.ts",
+      "./scripts/**/*.ts",
+      "./stacks/**/*.ts",
+      "./examples/*/src/**/*.ts",
       "./examples/*/alchemy.run.ts",
       "!**/node_modules"
     ]
@@ -45,7 +45,9 @@
         "noExplicitAny": "off",
         "noImplicitAnyLet": "off",
         "noAssignInExpressions": "off",
-        "noShadowRestrictedNames": "off"
+        "noShadowRestrictedNames": "off",
+        "noEmptyInterface": "off",
+        "noRedeclare": "off"
       },
       "style": {
         "useLiteralEnumMembers": "error",

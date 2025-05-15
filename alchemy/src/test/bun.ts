@@ -132,7 +132,7 @@ export function test(meta: ImportMeta, defaultOptions?: TestOptions): test {
   test.skipIf = (condition: boolean) => {
     if (condition) {
       // TODO: proxy through to bun:test.skipIf
-      return (...args: any[]) => {};
+      return (..._args: any[]) => {};
     }
     return test;
   };

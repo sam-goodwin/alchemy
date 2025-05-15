@@ -218,7 +218,7 @@ export const Role = Resource(
   "iam::Role",
   async function (
     this: Context<Role>,
-    id: string,
+    _id: string,
     props: RoleProps,
   ): Promise<Role> {
     const client = new IAMClient({});

@@ -1,7 +1,7 @@
 import puppeteer from "@cloudflare/puppeteer";
 
 export default {
-  async fetch(request, env) {
+  async fetch(request: Request, env: any) {
     const { searchParams } = new URL(request.url);
     let url = searchParams.get("url");
     let img;

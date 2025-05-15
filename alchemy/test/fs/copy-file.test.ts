@@ -29,7 +29,7 @@ describe("CopyFile Resource", () => {
     try {
       await fs.promises.unlink(sourceFilePath);
       await fs.promises.unlink(destinationFilePath);
-    } catch (error) {
+    } catch (_error) {
       // Ignore errors if files don't exist
     }
   });

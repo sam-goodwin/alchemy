@@ -129,7 +129,7 @@ async function getDependencies(testFile: string): Promise<Set<string>> {
       format: "esm",
       bundle: true,
       metafile: true,
-      external: ["@cloudflare/workers-types", "bun:test"],
+      external: ["@cloudflare/workers-types", "bun:test", "@swc/*"],
       logLevel: "error",
     });
 

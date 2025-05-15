@@ -108,6 +108,7 @@ export async function Website<B extends Bindings>(
       command: props.command,
     });
 
+    // @ts-expect-error - the WorkerProps union type not happy
     const worker = await Worker("worker", {
       ...props,
       name: props.name ?? id,

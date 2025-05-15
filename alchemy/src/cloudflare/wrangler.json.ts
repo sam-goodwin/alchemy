@@ -66,7 +66,7 @@ export const WranglerJson = Resource(
   "cloudflare::WranglerJson",
   async function (
     this: Context<WranglerJson>,
-    id: string,
+    _id: string,
     props: WranglerJsonProps,
   ): Promise<WranglerJson> {
     // Default path is wrangler.json in current directory

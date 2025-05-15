@@ -1,5 +1,7 @@
 import fs from "node:fs/promises";
+import { bootstrapPlugin } from "../../bootstrap/plugin.js";
 import { Bundle } from "../../esbuild/bundle.js";
+import { Scope, serializeScope } from "../../scope.js";
 import type { Bindings } from "../bindings.js";
 import type { WorkerProps } from "../worker.js";
 import { createAliasPlugin } from "./alias-plugin.js";
@@ -19,7 +21,7 @@ export async function bundleWorkerScript<B extends Bindings>(
 ) {
   const projectRoot = props.projectRoot ?? process.cwd();
 
-  const nodeJsCompatMode = getNodeJSCompatMode(
+  const nodeJsCompatMode = await getNodeJSCompatMode(
     props.compatibilityDate,
     props.compatibilityFlags,
   );
@@ -29,16 +31,32 @@ export async function bundleWorkerScript<B extends Bindings>(
       "You must set your compatibilty date >= 2024-09-23 when using 'nodejs_compat' compatibility flag",
     );
   }
+  const main = props.entrypoint ?? props.meta?.path;
+  if (!main) {
+    throw new Error("One of entrypoint or meta.file must be provided");
+  }
 
   try {
     const bundle = await Bundle("bundle", {
-      entryPoint: props.entrypoint!,
+      entryPoint: main,
       format: props.format === "cjs" ? "cjs" : "esm", // Use the specified format or default to ESM
       target: "esnext",
       platform: "node",
       minify: false,
       ...(props.bundle || {}),
       conditions: ["workerd", "worker", "browser"],
+      banner: props.fetch
+        ? {
+            js: `import { env as __ALCHEMY_ENV__ } from "cloudflare:workers";
+
+var __ALCHEMY_STATE__ = ${JSON.stringify(await serializeScope(Scope.root))};
+
+var STATE = {
+  get: (id) => Promise.resolve(null),
+  // get: (id) => __ALCHEMY_ENV__.STATE.get(id),
+}`,
+          }
+        : undefined,
       options: {
         absWorkingDir: projectRoot,
         ...(props.bundle?.options || {}),
@@ -48,6 +66,8 @@ export async function bundleWorkerScript<B extends Bindings>(
           ".json": "json",
         },
         plugins: [
+          ...(props.fetch ? [bootstrapPlugin] : []),
+          ...(props.bundle?.plugins ?? []),
           ...(nodeJsCompatMode === "v2" ? [await nodeJsCompatPlugin()] : []),
           ...(props.bundle?.alias
             ? [
@@ -60,6 +80,18 @@ export async function bundleWorkerScript<B extends Bindings>(
         ],
       },
       external: [
+        ...(props.fetch
+          ? [
+              // for alchemy
+              "libsodium*",
+              "@swc/*",
+              "esbuild",
+              // TODO(sam): this is for fetch, why is it a package?
+              "undici",
+              // TODO(sam): no idea where this came from, feels dangerous to externalize it
+              "ws",
+            ]
+          : []),
         ...(nodeJsCompatMode === "als" ? external_als : external),
         ...(props.bundle?.external ?? []),
         ...(props.bundle?.options?.external ?? []),

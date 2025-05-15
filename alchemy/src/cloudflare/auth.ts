@@ -226,7 +226,7 @@ async function parseTOML(input: string): Promise<any> {
 async function isDirectory(dir: string) {
   try {
     return (await fs.stat(dir)).isDirectory();
-  } catch (err) {
+  } catch (_err) {
     return false;
   }
 }

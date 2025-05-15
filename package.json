@@ -28,11 +28,12 @@
   ],
   "devDependencies": {
     "@biomejs/biome": "beta",
+    "@redwoodjs/sdk": "^0.0.80",
     "@types/bun": "latest",
     "@types/node": "latest",
     "aws4fetch": "^1.0.20",
+    "braintrust": "*",
     "typescript": "latest",
-    "yaml": "^2.7.1",
-    "braintrust": "*"
+    "yaml": "^2.7.1"
   }
 }

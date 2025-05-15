@@ -81,3 +81,50 @@ export async function deserializeState(
   await scope.state.set(state.id, state);
   return state;
 }
+
+export class ReadOnlyMemoryStateStore implements StateStore {
+  constructor(
+    public readonly scope: Scope,
+    public readonly states: Record<string, State>,
+  ) {}
+
+  async count(): Promise<number> {
+    return Object.keys(await this.list()).length;
+  }
+
+  async list(): Promise<string[]> {
+    return Object.keys(this.states);
+  }
+
+  async get(key: string): Promise<State | undefined> {
+    return this.states[key];
+  }
+
+  async set(key: string, _state: State): Promise<void> {
+    throw new Error(`Tried to set '${key}' in read-only memory store`);
+  }
+
+  async delete(key: string): Promise<void> {
+    throw new Error(`Tried to delete '${key}' in read-only memory store`);
+  }
+
+  async all(): Promise<Record<string, State>> {
+    return this.getBatch(await this.list());
+  }
+
+  async getBatch(ids: string[]): Promise<Record<string, State>> {
+    return Object.fromEntries(
+      (
+        await Promise.all(
+          Array.from(ids).flatMap(async (id) => {
+            const s = await this.get(id);
+            if (s === undefined) {
+              return [] as const;
+            }
+            return [[id, s]] as const;
+          }),
+        )
+      ).flat(),
+    );
+  }
+}

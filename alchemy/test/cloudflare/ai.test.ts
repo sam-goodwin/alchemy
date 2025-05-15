@@ -15,7 +15,7 @@ describe("AI Resource Binding", () => {
   test("create worker with AI binding and make a prompt call", async (scope) => {
     const workerName = `${BRANCH_PREFIX}-ai-worker`;
 
-    let worker: Worker | undefined = undefined;
+    let worker: Worker | undefined;
 
     try {
       // Create a worker with an AI binding
@@ -57,7 +57,7 @@ describe("AI Resource Binding", () => {
       );
 
       // Parse the response and verify it contains the expected AI model output
-      const result = await response.json();
+      const result: any = await response.json();
       expect(result).toBeDefined();
 
       // For the specific question, we expect the response to contain "Paris"

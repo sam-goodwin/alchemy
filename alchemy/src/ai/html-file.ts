@@ -148,7 +148,7 @@ export const HTMLFile = Resource(
   "ai::HTMLFile",
   async function (
     this: Context<HTMLFile>,
-    id: string,
+    _id: string,
     props: HTMLFileProps,
   ): Promise<HTMLFile> {
     // Handle deletion phase

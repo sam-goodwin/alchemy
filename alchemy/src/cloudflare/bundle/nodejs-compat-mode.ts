@@ -1,5 +1,4 @@
 import type { NodeJSCompatMode } from "miniflare";
-import { getNodeCompat } from "miniflare";
 
 /**
  * Computes and validates the Node.js compatibility mode we are running.
@@ -13,13 +12,14 @@ import { getNodeCompat } from "miniflare";
  * @param noBundle Whether to skip internal build steps and directly deploy script
  *
  */
-export function getNodeJSCompatMode(
+export async function getNodeJSCompatMode(
   compatibilityDateStr: string,
   compatibilityFlags: string[],
   props?: {
     noBundle?: boolean;
   },
-): NodeJSCompatMode {
+): Promise<NodeJSCompatMode> {
+  const { getNodeCompat } = await import("miniflare");
   const {
     mode,
     hasNodejsCompatFlag,

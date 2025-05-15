@@ -1,11 +1,7 @@
 import { describe, expect } from "bun:test";
 import { alchemy } from "../../src/alchemy.js";
-import { createCloudflareApi } from "../../src/cloudflare/api.js";
 import { VectorizeIndex } from "../../src/cloudflare/vectorize-index.js";
-import {
-  VectorizeMetadataIndex,
-  listMetadataIndexes,
-} from "../../src/cloudflare/vectorize-metadata-index.js";
+import { VectorizeMetadataIndex } from "../../src/cloudflare/vectorize-metadata-index.js";
 import { BRANCH_PREFIX } from "../util.js";
 
 import "../../src/test/bun.js";
@@ -18,9 +14,6 @@ describe("Vectorize Metadata Index Resource", async () => {
   // Use BRANCH_PREFIX for deterministic, non-colliding resource names
   const testId = `${BRANCH_PREFIX}-meta-test`;
 
-  // Create Cloudflare API client for direct verification
-  const api = await createCloudflareApi();
-
   test("create and delete metadata index", async (scope) => {
     // First create a parent vectorize index
     const vectorIndex = await VectorizeIndex(`${testId}-parent`, {
@@ -31,7 +24,7 @@ describe("Vectorize Metadata Index Resource", async () => {
     });
 
     // Then create a metadata index
-    let metadataIndex: VectorizeMetadataIndex | undefined = undefined;
+    let metadataIndex: VectorizeMetadataIndex | undefined;
 
     try {
       metadataIndex = await VectorizeMetadataIndex(`${testId}-category`, {
@@ -97,30 +90,3 @@ describe("Vectorize Metadata Index Resource", async () => {
     }
   });
 });
-
-async function assertMetadataIndexDeleted(
-  indexName: string,
-  propertyName: string,
-) {
-  const api = await createCloudflareApi();
-  try {
-    // List metadata indexes and check if our index is still there
-    const metadataIndexes = await listMetadataIndexes(api, indexName);
-    const foundIndex = metadataIndexes.find(
-      (idx) => idx.propertyName === propertyName,
-    );
-
-    if (foundIndex) {
-      throw new Error(
-        `Metadata index ${propertyName} was not deleted as expected`,
-      );
-    }
-  } catch (error: any) {
-    // If we get a 404, the parent index itself might have been deleted (which is fine)
-    if (error.status === 404 || error.status === 410) {
-      return; // This is expected
-    } else {
-      throw new Error(`Unexpected error type: ${error}`);
-    }
-  }
-}

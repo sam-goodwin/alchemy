@@ -7,7 +7,7 @@ export class HelloWorldDO implements DurableObject {
   /**
    * Handle HTTP requests to the Durable Object
    */
-  async fetch(request: Request): Promise<Response> {
+  async fetch(_request: Request): Promise<Response> {
     // Get the current count from storage or initialize to 0
     let count = (await this.state.storage.get("count")) || 0;
 

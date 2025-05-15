@@ -143,7 +143,7 @@ describe("KV Namespace Resource", () => {
     );
 
     expect(response.ok).toBe(true);
-    const data = await response.json();
+    const data: any = await response.json();
     expect(data.result.id).toEqual(namespaceId);
   }
 

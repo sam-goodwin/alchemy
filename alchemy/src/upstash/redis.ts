@@ -156,7 +156,7 @@ export const UpstashRedis = Resource(
   "upstash::Redis",
   async function (
     this: Context<UpstashRedis>,
-    id: string,
+    _id: string,
     props: UpstashRedisProps,
   ): Promise<UpstashRedis> {
     const api = new UpstashApi({

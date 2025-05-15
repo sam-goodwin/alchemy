@@ -76,7 +76,7 @@ describe("DnsRecords Resource", async () => {
         );
         expect(response.ok).toBe(true);
 
-        const data = await response.json();
+        const data: any = await response.json();
         expect(data.result.name).toBe(record.name);
         expect(data.result.type).toBe(record.type);
         expect(data.result.content).toBe(record.content);
@@ -147,7 +147,7 @@ describe("DnsRecords Resource", async () => {
       );
       expect(listResponse.ok).toBe(true);
 
-      const listData = await listResponse.json();
+      const listData: any = await listResponse.json();
       const apiRecords = listData.result;
 
       // Should find our 3 records

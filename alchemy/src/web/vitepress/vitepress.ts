@@ -10,7 +10,7 @@ import { StaticTypeScriptFile } from "../../fs/static-typescript-file.js";
 import { Resource } from "../../resource.js";
 import { InstallDependencies, fixedDependencies } from "./dependencies.js";
 
-const execAsync = promisify(exec);
+const _execAsync = promisify(exec);
 
 export interface VitePressProjectProps {
   /**

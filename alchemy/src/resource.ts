@@ -1,6 +1,6 @@
 import { apply } from "./apply.js";
 import type { Context } from "./context.js";
-import { Scope as _Scope } from "./scope.js";
+import { Scope as _Scope, type Scope } from "./scope.js";
 
 export const PROVIDERS = new Map<ResourceKind, Provider<string, any>>();
 
@@ -11,6 +11,7 @@ export const ResourceFQN = Symbol.for("alchemy::ResourceFQN");
 export type ResourceKind = string;
 export const ResourceKind = Symbol.for("alchemy::ResourceKind");
 export const ResourceScope = Symbol.for("alchemy::ResourceScope");
+export const InnerResourceScope = Symbol.for("alchemy::InnerResourceScope");
 export const ResourceSeq = Symbol.for("alchemy::ResourceSeq");
 
 export interface ProviderOptions {
@@ -34,35 +35,21 @@ export type Provider<
     handler: F;
   };
 
-export type PendingResource<
-  Out = unknown,
-  Kind extends ResourceKind = ResourceKind,
-  ID extends ResourceID = ResourceID,
-  FQN extends ResourceFQN = ResourceFQN,
-  Scope extends _Scope = _Scope,
-  Seq extends number = number,
-> = Promise<Out> & {
-  [ResourceKind]: Kind;
-  [ResourceID]: ID;
-  [ResourceFQN]: FQN;
+export interface PendingResource<Out = unknown> extends Promise<Out> {
+  [ResourceKind]: ResourceKind;
+  [ResourceID]: ResourceID;
+  [ResourceFQN]: ResourceFQN;
   [ResourceScope]: Scope;
-  [ResourceSeq]: Seq;
-};
+  [ResourceSeq]: number;
+  [InnerResourceScope]: Promise<Scope>;
+}
 
-export interface Resource<
-  // give each name types for syntax highlighting (differentiation)
-  Kind extends ResourceKind = ResourceKind,
-  ID extends ResourceID = ResourceID,
-  FQN extends ResourceFQN = ResourceFQN,
-  Scope extends _Scope = _Scope,
-  Seq extends number = number,
-> {
-  // use capital letters to avoid collision with conventional camelCase typescript properties
+export interface Resource<Kind extends ResourceKind = ResourceKind> {
   [ResourceKind]: Kind;
-  [ResourceID]: ID;
-  [ResourceFQN]: FQN;
+  [ResourceID]: ResourceID;
+  [ResourceFQN]: ResourceFQN;
   [ResourceScope]: Scope;
-  [ResourceSeq]: Seq;
+  [ResourceSeq]: number;
 }
 
 // helper for semantic syntax highlighting (color as a type/class instead of function/value)
@@ -102,7 +89,7 @@ export function Resource<
 
   type Out = Awaited<ReturnType<F>>;
 
-  const provider = ((
+  const provider = (async (
     resourceID: string,
     props: ResourceProps,
   ): Promise<Resource<string>> => {
@@ -123,21 +110,25 @@ export function Resource<
           `Resource ${resourceID} already exists in the stack and is of a different type: '${otherResource?.[ResourceKind]}' !== '${type}'`,
         );
       }
-      // console.warn(
-      //   `Resource ${resourceID} already exists in the stack: ${scope.chain.join("/")}`,
-      // );
     }
 
     // get a sequence number (unique within the scope) for the resource
     const seq = scope.seq();
+    let resolveInnerScope: ((scope: Scope) => void) | undefined;
     const meta = {
       [ResourceKind]: type,
       [ResourceID]: resourceID,
       [ResourceFQN]: scope.fqn(resourceID),
       [ResourceSeq]: seq,
       [ResourceScope]: scope,
+      [InnerResourceScope]: new Promise<Scope>((resolve) => {
+        resolveInnerScope = resolve;
+      }),
     } as any as PendingResource<Out>;
-    const promise = apply(meta, props, options);
+    const promise = apply(meta, props, {
+      ...options,
+      resolveInnerScope,
+    });
     const resource = Object.assign(promise, meta);
     scope.resources.set(resourceID, resource);
     return resource;

@@ -4,7 +4,7 @@ import crypto from "crypto";
 import crypto2 from "node:crypto";
 
 export default {
-  async fetch(request, env, ctx): Promise<Response> {
+  async fetch(_request: Request, env: any): Promise<Response> {
     const logger = initLogger({
       projectName: "My Project",
       apiKey: env.BRAINTRUST_API_KEY,

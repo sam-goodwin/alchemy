@@ -56,7 +56,7 @@ describe("Hyperdrive Resource", () => {
       );
       expect(getResponse.status).toEqual(200);
 
-      const responseData = await getResponse.json();
+      const responseData: any = await getResponse.json();
       expect(responseData.result.name).toEqual(
         `test-hyperdrive-${BRANCH_PREFIX}`,
       );
@@ -112,7 +112,7 @@ describe("Hyperdrive Resource", () => {
       const getUpdatedResponse = await api.get(
         `/accounts/${api.accountId}/hyperdrive/configs/${hyperdrive.hyperdriveId}`,
       );
-      const updatedData = await getUpdatedResponse.json();
+      const updatedData: any = await getUpdatedResponse.json();
       expect(updatedData.result.name).toEqual(
         `updated-hyperdrive-${BRANCH_PREFIX}`,
       );

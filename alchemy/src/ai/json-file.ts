@@ -188,7 +188,7 @@ const DEFAULT_JSON_SYSTEM_PROMPT =
  */
 export const JSONFile = Resource("ai::JSONFile", async function <
   const T extends Type<any, any> | undefined = undefined,
->(this: Context<JSONFile<T extends Type<any, any> ? type.infer<T> : any>>, id: string, props: JSONFileProps<T>): Promise<
+>(this: Context<JSONFile<T extends Type<any, any> ? type.infer<T> : any>>, _id: string, props: JSONFileProps<T>): Promise<
   JSONFile<T extends Type<any, any> ? type.infer<T> : any>
 > {
   // Handle deletion phase

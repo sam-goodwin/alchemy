@@ -93,7 +93,7 @@ export const Route = Resource(
   "cloudflare::Route",
   async function (
     this: Context<Route>,
-    id: string,
+    _id: string,
     props: RouteProps,
   ): Promise<Route> {
     const api = await createCloudflareApi(props);

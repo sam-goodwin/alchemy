@@ -14,7 +14,7 @@ export const InstallDependencies = Resource(
   },
   async function (
     this: Context<InstallDependencies>,
-    id: string,
+    _id: string,
     {
       cwd,
       dependencies,

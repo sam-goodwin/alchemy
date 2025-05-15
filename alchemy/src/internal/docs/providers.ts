@@ -52,7 +52,7 @@ export type Providers = {
 export async function Providers({
   srcDir,
   outDir,
-  filter,
+  // filter,
   parallel = true,
 }: DocsProps): Promise<Providers> {
   outDir = typeof outDir === "string" ? outDir : outDir.path;

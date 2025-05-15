@@ -1,7 +1,7 @@
-import { index, render } from "@redwoodjs/sdk/router";
-import { defineApp } from "@redwoodjs/sdk/worker";
 import { env } from "cloudflare:workers";
 import { drizzle } from "drizzle-orm/d1";
+import { index, render } from "rwsdk/router";
+import { defineApp } from "rwsdk/worker";
 import { Document } from "src/Document";
 import { setCommonHeaders } from "src/headers";
 import { Home } from "src/pages/Home";

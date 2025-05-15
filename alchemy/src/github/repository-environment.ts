@@ -173,7 +173,7 @@ export const RepositoryEnvironment = Resource(
   "github::RepositoryEnvironment",
   async function (
     this: Context<RepositoryEnvironment>,
-    id: string,
+    _id: string,
     props: RepositoryEnvironmentProps,
   ): Promise<RepositoryEnvironment> {
     // Create authenticated Octokit client
@@ -210,7 +210,7 @@ export const RepositoryEnvironment = Resource(
     }
     try {
       // Check if the environment already exists
-      let environmentId: number | undefined = undefined; // Use undefined instead of 0
+      let environmentId: number | undefined; // Use undefined instead of 0
       try {
         const { data: environments } =
           await octokit.rest.repos.getAllEnvironments({

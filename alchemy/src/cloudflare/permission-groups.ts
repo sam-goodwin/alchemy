@@ -110,7 +110,7 @@ export const PermissionGroups = Resource(
   "cloudflare::PermissionGroups",
   async function (
     this: Context<PermissionGroups>,
-    id: string,
+    _id: string,
     options: CloudflareApiOptions = {},
   ): Promise<PermissionGroups> {
     // Only create and update phases are supported

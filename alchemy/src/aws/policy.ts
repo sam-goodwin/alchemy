@@ -229,7 +229,7 @@ export const Policy = Resource(
   "iam::Policy",
   async function (
     this: Context<Policy>,
-    id: string,
+    _id: string,
     props: PolicyProps,
   ): Promise<Policy> {
     const client = new IAMClient({});

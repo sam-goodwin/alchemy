@@ -136,7 +136,7 @@ export const Queue = Resource(
   "sqs::Queue",
   async function (
     this: Context<Queue>,
-    id: string,
+    _id: string,
     props: QueueProps,
   ): Promise<Queue> {
     const client = new SQSClient({});

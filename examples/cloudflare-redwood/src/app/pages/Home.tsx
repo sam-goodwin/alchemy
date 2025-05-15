@@ -1,4 +1,4 @@
-import type { RequestInfo } from "@redwoodjs/sdk/worker";
+import type { RequestInfo } from "rwsdk/worker";
 import { users } from "../../db/schema.js";
 
 export async function Home({ ctx }: RequestInfo) {

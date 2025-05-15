@@ -28,7 +28,7 @@ describe("R2 Bucket Resource", async () => {
 
   test("create, update, and delete bucket", async (scope) => {
     // Create a test bucket
-    let bucket: R2Bucket | undefined = undefined;
+    let bucket: R2Bucket | undefined;
 
     try {
       bucket = await R2Bucket(testId, {
@@ -55,7 +55,7 @@ describe("R2 Bucket Resource", async () => {
       const publicAccessResponse = await api.get(
         `/accounts/${api.accountId}/r2/buckets/${testId}/domains/managed`,
       );
-      const publicAccessData = await publicAccessResponse.json();
+      const publicAccessData: any = await publicAccessResponse.json();
       expect(publicAccessData.result.enabled).toEqual(true);
     } finally {
       await alchemy.destroy(scope);
@@ -96,7 +96,7 @@ describe("R2 Bucket Resource", async () => {
 
   test("bucket with file is properly emptied and deleted", async (scope) => {
     // Create a test bucket
-    let bucket: R2Bucket | undefined = undefined;
+    let bucket: R2Bucket | undefined;
 
     try {
       const bucketName = `${testId}-with-files`;

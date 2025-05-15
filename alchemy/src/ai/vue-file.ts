@@ -146,7 +146,7 @@ export const VueFile = Resource(
   "ai::VueFile",
   async function (
     this: Context<VueFile>,
-    id: string,
+    _id: string,
     props: VueFileProps,
   ): Promise<VueFile> {
     // Handle deletion phase

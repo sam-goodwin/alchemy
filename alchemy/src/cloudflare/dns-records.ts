@@ -127,7 +127,7 @@ export const DnsRecords = Resource(
   "cloudflare::DnsRecords",
   async function (
     this: Context<DnsRecords>,
-    id: string,
+    _id: string,
     props: DnsRecordsProps,
   ): Promise<DnsRecords> {
     // Create Cloudflare API client
@@ -307,7 +307,7 @@ async function createOrUpdateRecord(
             zoneId,
           );
         }
-      } catch (err) {
+      } catch (_err) {
         // Fall through to the original error
       }
     }

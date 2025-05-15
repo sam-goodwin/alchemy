@@ -1,4 +1,4 @@
-import esbuild from "esbuild";
+import type esbuild from "esbuild";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -122,7 +122,7 @@ export const Bundle = Resource(
   },
   async function <Props extends BundleProps>(
     this: Context<Bundle<any>>,
-    id: string,
+    _id: string,
     props: Props,
   ): Promise<Bundle<Props>> {
     if (this.phase === "delete") {
@@ -193,7 +193,7 @@ export async function bundle(props: BundleProps) {
     // write:
     //   props.outdir === undefined && props.outfile === undefined ? false : true,
     // write: false,
-    entryPoints: [props.entryPoint],
+    entryPoints: [entryPoint],
     outdir: props.outdir ? props.outdir : props.outfile ? undefined : ".out",
     outfile: props.outfile,
     bundle: true,
@@ -208,5 +208,6 @@ export async function bundle(props: BundleProps) {
   if (process.env.DEBUG) {
     console.log(options);
   }
+  const esbuild = await import("esbuild");
   return await esbuild.build(options);
 }

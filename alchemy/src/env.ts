@@ -26,6 +26,6 @@ async function _env<T = string>(
     if (name in env) {
       return env[name as keyof typeof env] as T;
     }
-  } catch (error) {}
+  } catch (_error) {}
   throw new Error(error ?? `Environment variable ${name} is not set`);
 }

@@ -52,7 +52,7 @@ export async function handleApiError(
   let json: any;
   try {
     json = JSON.parse(text);
-  } catch (error) {
+  } catch {
     json = { errors: [{ message: text }] };
   }
   const errors: { message: string }[] = json?.errors || [

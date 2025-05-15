@@ -27,7 +27,7 @@
     "destroy": "bun run --env-file ../../.env ./alchemy.run.ts --destroy"
   },
   "dependencies": {
-    "@redwoodjs/sdk": "^0.0.68",
+    "rwsdk": "^0.0.83",
     "dotenv": "^16.5.0",
     "drizzle-orm": "beta"
   },

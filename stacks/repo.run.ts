@@ -1,14 +1,17 @@
 // ensure providers are registered (for deletion purposes)
-import "../alchemy/src/aws";
-import "../alchemy/src/aws/oidc";
-import "../alchemy/src/cloudflare";
-import "../alchemy/src/os";
+import "../alchemy/src/aws/index.js";
+import "../alchemy/src/aws/oidc/index.js";
+import "../alchemy/src/cloudflare/index.js";
+import "../alchemy/src/os/index.js";
 
-import alchemy from "../alchemy/src";
-import { AccountId, Role } from "../alchemy/src/aws";
-import { GitHubOIDCProvider } from "../alchemy/src/aws/oidc";
-import { AccountApiToken, R2Bucket } from "../alchemy/src/cloudflare";
-import { GitHubSecret, RepositoryEnvironment } from "../alchemy/src/github";
+import { AccountId, Role } from "../alchemy/src/aws/index.js";
+import { GitHubOIDCProvider } from "../alchemy/src/aws/oidc/index.js";
+import { AccountApiToken, R2Bucket } from "../alchemy/src/cloudflare/index.js";
+import {
+  GitHubSecret,
+  RepositoryEnvironment,
+} from "../alchemy/src/github/index.js";
+import alchemy from "../alchemy/src/index.js";
 import env, {
   CLOUDFLARE_ACCOUNT_ID,
   CLOUDFLARE_API_KEY,

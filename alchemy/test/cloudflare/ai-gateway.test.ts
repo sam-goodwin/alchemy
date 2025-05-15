@@ -37,7 +37,7 @@ describe("AiGateway Resource", () => {
       );
       expect(getResponse.status).toEqual(200);
 
-      const responseData = await getResponse.json();
+      const responseData: any = await getResponse.json();
       expect(responseData.result.id).toEqual(testId);
       expect(responseData.result.collect_logs).toEqual(true);
 
@@ -60,7 +60,7 @@ describe("AiGateway Resource", () => {
       const getUpdatedResponse = await api.get(
         `/accounts/${api.accountId}/ai-gateway/gateways/${testId}`,
       );
-      const updatedData = await getUpdatedResponse.json();
+      const updatedData: any = await getUpdatedResponse.json();
       expect(updatedData.result.id).toEqual(testId);
       expect(updatedData.result.cache_ttl).toEqual(60);
       expect(updatedData.result.rate_limiting_technique).toEqual("sliding");
@@ -104,7 +104,7 @@ describe("AiGateway Resource", () => {
       );
       expect(getResponse.status).toEqual(200);
 
-      const responseData = await getResponse.json();
+      const responseData: any = await getResponse.json();
       expect(responseData.result.authentication).toEqual(true);
       expect(responseData.result.log_management).toEqual(10000);
       expect(responseData.result.log_management_strategy).toEqual(
@@ -145,7 +145,7 @@ describe("AiGateway Resource", () => {
       );
       expect(getResponse.status).toEqual(200);
 
-      const responseData = await getResponse.json();
+      const responseData: any = await getResponse.json();
       expect(responseData.result.rate_limiting_interval).toEqual(30);
       expect(responseData.result.rate_limiting_limit).toEqual(50);
       expect(responseData.result.rate_limiting_technique).toEqual("sliding");

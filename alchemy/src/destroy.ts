@@ -39,11 +39,11 @@ export async function destroy<Type extends string>(
     } satisfies DestroyOptions;
 
     // destroy all active resources
-    await destroy.all(Array.from(scope.resources.values()), options);
+    await destroyAll(Array.from(scope.resources.values()), options);
 
     // then detect orphans and destroy them
     const orphans = await scope.state.all();
-    await destroy.all(
+    await destroyAll(
       Object.values(orphans).map((orphan) => ({
         ...orphan.output,
         Scope: scope,
@@ -151,27 +151,16 @@ export async function destroy<Type extends string>(
   }
 }
 
-export namespace destroy {
-  export async function all(resources: Resource[], options?: DestroyOptions) {
-    if (options?.strategy !== "parallel") {
-      const sorted = resources.sort((a, b) => b[ResourceSeq] - a[ResourceSeq]);
-      for (const resource of sorted) {
-        await destroy(resource, options);
-      }
-    } else {
-      await Promise.all(
-        resources.map((resource) => destroy(resource, options)),
-      );
+export async function destroyAll(
+  resources: Resource[],
+  options?: DestroyOptions,
+) {
+  if (options?.strategy !== "parallel") {
+    const sorted = resources.sort((a, b) => b[ResourceSeq] - a[ResourceSeq]);
+    for (const resource of sorted) {
+      await destroy(resource, options);
     }
-  }
-
-  export async function sequentially(
-    ...resources: (Resource<string> | undefined | null)[]
-  ) {
-    for (const resource of resources) {
-      if (resource) {
-        await destroy(resource);
-      }
-    }
+  } else {
+    await Promise.all(resources.map((resource) => destroy(resource, options)));
   }
 }

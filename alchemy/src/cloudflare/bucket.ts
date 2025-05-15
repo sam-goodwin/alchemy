@@ -1,9 +1,11 @@
 import { AwsClient } from "aws4fetch";
+import { bind } from "../bootstrap/bind.js";
 import type { Context } from "../context.js";
 import { Resource } from "../resource.js";
 import type { Secret } from "../secret.js";
 import { CloudflareApiError, handleApiError } from "./api-error.js";
 import { type CloudflareApi, createCloudflareApi } from "./api.js";
+import type { Bound } from "./bound.js";
 
 /**
  * Properties for creating or updating an R2 Bucket
@@ -89,29 +91,30 @@ export interface BucketProps {
 /**
  * Output returned after R2 Bucket creation/update
  */
-export interface R2Bucket
-  extends Resource<"cloudflare::R2Bucket">,
-    BucketProps {
-  /**
-   * Resource type identifier
-   */
-  type: "r2_bucket";
+export type R2BucketResource = Resource<"cloudflare::R2Bucket"> &
+  Omit<BucketProps, "delete"> & {
+    /**
+     * Resource type identifier
+     */
+    type: "r2_bucket";
 
-  /**
-   * The name of the bucket
-   */
-  name: string;
+    /**
+     * The name of the bucket
+     */
+    name: string;
 
-  /**
-   * Location of the bucket
-   */
-  location: string;
+    /**
+     * Location of the bucket
+     */
+    location: string;
 
-  /**
-   * Time at which the bucket was created
-   */
-  creationDate: Date;
-}
+    /**
+     * Time at which the bucket was created
+     */
+    creationDate: Date;
+  };
+
+export type R2Bucket = R2BucketResource & Bound<R2BucketResource>;
 
 /**
  * Creates and manages Cloudflare R2 Buckets for object storage.
@@ -157,13 +160,31 @@ export interface R2Bucket
  *
  * @see https://developers.cloudflare.com/r2/buckets/
  */
-export const R2Bucket = Resource(
+export async function R2Bucket(
+  name: string,
+  props: BucketProps = {},
+): Promise<R2Bucket> {
+  const bucket = await R2BucketResource(name, props);
+  const binding = await bind(bucket);
+  return {
+    ...bucket,
+    createMultipartUpload: binding.createMultipartUpload,
+    delete: binding.delete,
+    get: binding.get,
+    list: binding.list,
+    put: binding.put,
+    head: binding.head,
+    resumeMultipartUpload: binding.resumeMultipartUpload,
+  };
+}
+
+const R2BucketResource = Resource(
   "cloudflare::R2Bucket",
   async function (
-    this: Context<R2Bucket>,
-    id: string,
+    this: Context<R2BucketResource>,
+    _id: string,
     props: BucketProps = {},
-  ): Promise<R2Bucket> {
+  ): Promise<R2BucketResource> {
     const api = await createCloudflareApi(props);
     const bucketName = props.name || this.id;
 

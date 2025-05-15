@@ -132,10 +132,9 @@ describe("RepositoryEnvironment Resource", () => {
   test.skipIf(!!process.env.CI)(
     "branch policy operations (add, update, remove)",
     async (scope) => {
-      let environment;
       try {
         // 1. Create environment with initial branch patterns
-        environment = await RepositoryEnvironment("branch-policy-test", {
+        await RepositoryEnvironment("branch-policy-test", {
           owner,
           repository,
           name: branchPolicyTestEnvName,
@@ -185,7 +184,7 @@ describe("RepositoryEnvironment Resource", () => {
         ]);
 
         // 3. Update via resource - the manually added policy should remain
-        environment = await RepositoryEnvironment("branch-policy-test", {
+        await RepositoryEnvironment("branch-policy-test", {
           owner,
           repository,
           name: branchPolicyTestEnvName,
@@ -214,7 +213,7 @@ describe("RepositoryEnvironment Resource", () => {
         expect(branchPatterns.includes("feature/*")).toBeTruthy();
 
         // 4. Update by completely different patterns
-        environment = await RepositoryEnvironment("branch-policy-test", {
+        await RepositoryEnvironment("branch-policy-test", {
           owner,
           repository,
           name: branchPolicyTestEnvName,
@@ -242,7 +241,7 @@ describe("RepositoryEnvironment Resource", () => {
         expect(branchPatterns.includes("manually-added/*")).toBeTruthy();
 
         // 5. Change from selected to protected branches
-        environment = await RepositoryEnvironment("branch-policy-test", {
+        await RepositoryEnvironment("branch-policy-test", {
           owner,
           repository,
           name: branchPolicyTestEnvName,
@@ -308,7 +307,6 @@ describe("RepositoryEnvironment Resource", () => {
   );
 
   test.skipIf(!!process.env.CI)("reviewer operations", async (scope) => {
-    let environment;
     try {
       // First, get the user ID for the test user to demonstrate both approaches
       const { data: userData } = await octokit.rest.users.getByUsername({
@@ -319,7 +317,7 @@ describe("RepositoryEnvironment Resource", () => {
       console.log(`Using user ID ${userId} for user sam-goodwin`);
 
       // Create environment with reviewers using username (string)
-      environment = await RepositoryEnvironment("reviewer-test", {
+      await RepositoryEnvironment("reviewer-test", {
         owner,
         repository,
         name: reviewerTestEnvName,
@@ -346,7 +344,7 @@ describe("RepositoryEnvironment Resource", () => {
       expect(reviewerRules?.length).toBeGreaterThan(0);
 
       // Update using numeric ID (more efficient as it skips the lookup)
-      environment = await RepositoryEnvironment("reviewer-test", {
+      await RepositoryEnvironment("reviewer-test", {
         owner,
         repository,
         name: reviewerTestEnvName,

@@ -112,7 +112,13 @@ async function _alchemy(
       stage: options?.stage,
       phase,
     });
-    root.enter();
+    try {
+      Scope.storage.enterWith(root);
+    } catch {
+      // we are in Cloudflare Workers, we will emulate the enterWith behavior
+      // see Scope.finalize for where we pop the global scope
+      Scope.globals.push(root);
+    }
     if (options?.phase === "destroy") {
       await destroy(root);
       return process.exit(0);

@@ -1,10 +1,10 @@
 import type { QueueConsumerSettings } from "./queue-consumer.js";
-import type { Queue } from "./queue.js";
+import type { QueueResource } from "./queue.js";
 
 /**
  * Base interface for event sources that can be bound to a Worker
  */
-export type EventSource = QueueEventSource | Queue;
+export type EventSource = QueueEventSource | QueueResource;
 
 /**
  * Configuration for a Queue as an event source for a Worker
@@ -13,7 +13,7 @@ export interface QueueEventSource {
   /**
    * The queue to consume messages from
    */
-  readonly queue: Queue;
+  readonly queue: QueueResource;
 
   /**
    * Optional settings for configuring how the Worker consumes the queue

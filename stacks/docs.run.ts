@@ -1,13 +1,13 @@
 import path from "node:path";
 
-import "../alchemy/src/fs";
-import "../alchemy/src/web/vitepress";
+import "../alchemy/src/fs/index.js";
+import "../alchemy/src/web/vitepress/index.js";
 
-import alchemy from "../alchemy/src";
 import { CopyFile } from "../alchemy/src/fs/copy-file.js";
 import { Folder } from "../alchemy/src/fs/folder.js";
+import alchemy from "../alchemy/src/index.js";
 import { Providers } from "../alchemy/src/internal/docs/providers.js";
-import { VitepressProject } from "../alchemy/src/web/vitepress";
+import { VitepressProject } from "../alchemy/src/web/vitepress/index.js";
 import env from "./env.js";
 
 const app = await alchemy("alchemy:docs", env);
@@ -21,7 +21,7 @@ const docs = await Folder("docs", {
   path: path.join(project.dir, "docs"),
 });
 
-const [pub, blogs, guides, providers, conceptsDir] = await Promise.all([
+const [pub, _blogs, _guides, providers, _conceptsDir] = await Promise.all([
   Folder("public", {
     path: path.join(project.dir, "public"),
   }),

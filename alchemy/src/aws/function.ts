@@ -307,7 +307,7 @@ export interface Function extends Resource<"lambda::Function">, FunctionProps {
  */
 export const Function = Resource(
   "lambda::Function",
-  async function (this: Context<Function>, id: string, props: FunctionProps) {
+  async function (this: Context<Function>, _id: string, props: FunctionProps) {
     const client = new LambdaClient({});
     const region = await resolveRegion(client);
 
@@ -644,7 +644,7 @@ export const Function = Resource(
     }
 
     // Get complete function details
-    const [func, config] = await Promise.all([
+    const [_func, config] = await Promise.all([
       client.send(
         new GetFunctionCommand({
           FunctionName: props.functionName,

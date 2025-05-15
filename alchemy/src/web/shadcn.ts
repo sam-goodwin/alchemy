@@ -120,7 +120,7 @@ export const ShadcnUI = Resource(
   "project::ShadcnUI",
   async function (
     this: Context<ShadcnUI>,
-    id: string,
+    _id: string,
     props: ShadcnUIProps,
   ): Promise<ShadcnUI> {
     if (this.phase === "delete") {

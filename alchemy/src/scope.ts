@@ -1,11 +1,14 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { Phase } from "./alchemy.js";
-import { destroy } from "./destroy.js";
+import { destroyAll } from "./destroy.js";
 import { FileSystemStateStore } from "./fs/file-system-state-store.js";
-import { ResourceID, type PendingResource } from "./resource.js";
+import {
+  InnerResourceScope,
+  ResourceID,
+  type PendingResource,
+} from "./resource.js";
+import { serialize } from "./serde.js";
 import type { StateStore, StateStoreType } from "./state.js";
-
-const scopeStorage = new AsyncLocalStorage<Scope>();
 
 export type ScopeOptions = {
   appName?: string;
@@ -24,13 +27,23 @@ const DEFAULT_STAGE = process.env.ALCHEMY_STAGE ?? process.env.USER ?? "dev";
 export class Scope {
   public static readonly KIND = "alchemy::Scope" as const;
 
+  public static storage = new AsyncLocalStorage<Scope>();
+  public static globals: Scope[] = [];
+
   public static get(): Scope | undefined {
-    return scopeStorage.getStore();
+    return Scope.storage.getStore();
+  }
+
+  public static get root(): Scope {
+    return Scope.current.root;
   }
 
   public static get current(): Scope {
     const scope = Scope.get();
     if (!scope) {
+      if (Scope.globals.length > 0) {
+        return Scope.globals[Scope.globals.length - 1];
+      }
       throw new Error("Not running within an Alchemy Scope");
     }
     return scope;
@@ -48,6 +61,9 @@ export class Scope {
   public readonly phase: Phase;
 
   private isErrored = false;
+  private finalized = false;
+
+  private deferred: (() => Promise<any>)[] = [];
 
   constructor(options: ScopeOptions) {
     this.appName = options.appName;
@@ -77,6 +93,14 @@ export class Scope {
     this.state = this.stateStore(this);
   }
 
+  public get root(): Scope {
+    let root: Scope = this;
+    while (root.parent) {
+      root = root.parent;
+    }
+    return root;
+  }
+
   public async delete(resourceID: ResourceID) {
     await this.state.delete(resourceID);
     this.resources.delete(resourceID);
@@ -102,10 +126,6 @@ export class Scope {
     this.isErrored = true;
   }
 
-  public enter() {
-    scopeStorage.enterWith(this);
-  }
-
   public async init() {
     await this.state.init?.();
   }
@@ -120,7 +140,7 @@ export class Scope {
   }
 
   public async run<T>(fn: (scope: Scope) => Promise<T>): Promise<T> {
-    return scopeStorage.run(this, () => fn(this));
+    return Scope.storage.run(this, () => fn(this));
   }
 
   [Symbol.asyncDispose]() {
@@ -131,6 +151,20 @@ export class Scope {
     if (this.phase === "read") {
       return;
     }
+    if (this.finalized) {
+      return;
+    }
+    if (this.parent === undefined && Scope.globals.length > 0) {
+      const last = Scope.globals.pop();
+      if (last !== this) {
+        throw new Error(
+          "Running in AsyncLocaStorage.enterWith emultation mode and attempted to finalize a global Scope that wasn't top of the stack",
+        );
+      }
+    }
+    this.finalized = true;
+    // trigger and await all deferred promises
+    await Promise.all(this.deferred.map((fn) => fn()));
     if (!this.isErrored) {
       // TODO: need to detect if it is in error
       const resourceIds = await this.state.list();
@@ -141,13 +175,35 @@ export class Scope {
       const orphans = await Promise.all(
         orphanIds.map(async (id) => (await this.state.get(id))!.output),
       );
-      await destroy.all(orphans, {
+      await destroyAll(orphans, {
         quiet: this.quiet,
         strategy: "sequential",
       });
     } else {
       console.warn("Scope is in error, skipping finalize");
     }
+  }
+
+  /**
+   * Defers execution of a function until the Alchemy application finalizes.
+   */
+  public defer<T>(fn: () => Promise<T>): Promise<T> {
+    let _resolve: (value: T) => void;
+    let _reject: (reason?: any) => void;
+    const promise = new Promise<T>((resolve, reject) => {
+      _resolve = resolve;
+      _reject = reject;
+    });
+    this.deferred.push(() => {
+      if (!this.finalized) {
+        throw new Error(
+          "Attempted to await a deferred Promise before finalization",
+        );
+      }
+      // lazily trigger the worker on first await
+      return this.run(() => fn()).then(_resolve, _reject);
+    });
+    return promise;
   }
 
   /**
@@ -160,5 +216,54 @@ export class Scope {
     .map((r) => r[ResourceID])
     .join(",\n  ")}]
 )`;
+  }
+}
+
+export type SerializedScope = {
+  [id: string]: {
+    state: string;
+    children?: SerializedScope;
+  };
+};
+
+export async function serializeScope(scope: Scope): Promise<SerializedScope> {
+  return Object.fromEntries(
+    await Promise.all(
+      Array.from(scope.resources.values()).map(async (resource) => {
+        const innerScope = resource[InnerResourceScope];
+        if (innerScope === undefined) {
+          // TODO(sam): better error
+          throw new Error(
+            `Resource has no inner scope: ${resource[ResourceID]}`,
+          );
+        }
+        return [
+          resource[ResourceID],
+          {
+            state: await serialize(
+              scope,
+              await scope.state.get(resource[ResourceID]),
+              {
+                // TODO(sam): we need to move them to Secet bindings
+                encrypt: false,
+              },
+            ),
+            children: await serializeScope(await innerScope),
+          },
+        ];
+      }),
+    ),
+  );
+}
+
+export async function* walkScope(
+  scope: Scope,
+): AsyncGenerator<PendingResource<any>> {
+  for (const resource of scope.resources.values()) {
+    yield resource;
+    const innerScope = resource[InnerResourceScope];
+    if (innerScope) {
+      yield* walkScope(await innerScope);
+    }
   }
 }

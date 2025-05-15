@@ -165,7 +165,7 @@ export interface Data<T> extends Resource<"ai::Object"> {
  */
 export const Data = Resource("ai::Object", async function <
   const T extends Type<any, any>,
->(this: Context<Data<any>>, id: string, props: DataProps<T>): Promise<
+>(this: Context<Data<any>>, _id: string, props: DataProps<T>): Promise<
   Data<type.infer<T>>
 > {
   if (this.phase === "delete") {

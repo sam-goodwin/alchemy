@@ -1,7 +1,9 @@
+import { bind } from "../bootstrap/bind.js";
 import type { Context } from "../context.js";
 import { Resource } from "../resource.js";
 import { handleApiError } from "./api-error.js";
 import { createCloudflareApi, type CloudflareApiOptions } from "./api.js";
+import type { Bound } from "./bound.js";
 
 /**
  * Properties for creating or updating a Cloudflare AI Gateway.
@@ -85,7 +87,7 @@ export interface AiGatewayProps extends CloudflareApiOptions {
  * Output returned after Cloudflare AI Gateway creation/update.
  * IMPORTANT: The interface name MUST match the exported resource name.
  */
-export interface AiGateway
+export interface AiGatewayResource
   extends Resource<"cloudflare::AiGateway">,
     AiGatewayProps {
   /**
@@ -125,6 +127,8 @@ export interface AiGateway
   type: "ai_gateway";
 }
 
+export type AiGateway = AiGatewayResource & Bound<AiGatewayResource>;
+
 /**
  * Represents a Cloudflare AI Gateway.
  *
@@ -149,13 +153,28 @@ export interface AiGateway
  *   logpushPublicKey: "mypublickey..." // Replace with actual public key
  * });
  */
-export const AiGateway = Resource(
+export async function AiGateway(
+  name: string,
+  props: AiGatewayProps = {},
+): Promise<AiGateway> {
+  const gateway = await AiGatewayResource(name, props);
+  const binding = await bind(gateway);
+  return {
+    ...gateway,
+    getLog: binding.getLog,
+    getUrl: binding.getUrl,
+    patchLog: binding.patchLog,
+    run: binding.run,
+  } as AiGateway;
+}
+
+const AiGatewayResource = Resource(
   "cloudflare::AiGateway",
   async function (
-    this: Context<AiGateway>,
+    this: Context<AiGatewayResource>,
     id: string,
     props: AiGatewayProps = {},
-  ): Promise<AiGateway> {
+  ): Promise<AiGatewayResource> {
     const api = await createCloudflareApi(props);
     const gatewayPath = `/accounts/${api.accountId}/ai-gateway/gateways/${id}`;
     const gatewaysPath = `/accounts/${api.accountId}/ai-gateway/gateways`;

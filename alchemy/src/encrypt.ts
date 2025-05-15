@@ -1,5 +1,3 @@
-import sodium from "libsodium-wrappers";
-
 /**
  * Encrypt a value with a symmetric key using libsodium
  *
@@ -8,6 +6,7 @@ import sodium from "libsodium-wrappers";
  * @returns The base64-encoded encrypted value with nonce
  */
 export async function encrypt(value: string, key: string): Promise<string> {
+  const sodium = (await import("libsodium-wrappers")).default;
   // Initialize libsodium
   await sodium.ready;
 
@@ -46,6 +45,7 @@ export async function decryptWithKey(
   encryptedValue: string,
   key: string,
 ): Promise<string> {
+  const sodium = (await import("libsodium-wrappers")).default;
   // Initialize libsodium
   await sodium.ready;
 

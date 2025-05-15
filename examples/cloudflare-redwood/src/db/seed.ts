@@ -1,5 +1,5 @@
-import { defineScript } from "@redwoodjs/sdk/worker";
 import { drizzle } from "drizzle-orm/d1";
+import { defineScript } from "rwsdk/worker";
 import { users } from "./schema.js";
 
 export default defineScript(async ({ env }) => {

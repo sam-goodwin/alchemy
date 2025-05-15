@@ -1,9 +1,9 @@
-import alchemy from "../../alchemy/src/";
 import {
   D1Database,
   R2RestStateStore,
   Redwood,
-} from "../../alchemy/src/cloudflare";
+} from "../../alchemy/src/cloudflare/index.js";
+import alchemy from "../../alchemy/src/index.js";
 
 const BRANCH_PREFIX = process.env.BRANCH_PREFIX ?? "";
 

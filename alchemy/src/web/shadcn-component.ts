@@ -43,7 +43,7 @@ export const ShadcnComponent = Resource(
   "project::ShadcnComponent",
   async function (
     this: Context<ShadcnComponent>,
-    id: string,
+    _id: string,
     props: ShadcnComponentProps,
   ): Promise<ShadcnComponent> {
     if (this.phase === "delete") {

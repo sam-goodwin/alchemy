@@ -120,7 +120,7 @@ export const OIDCProvider = Resource(
   "aws::OIDCProvider",
   async function (
     this: Context<OIDCProvider>,
-    id: string,
+    _id: string,
     props: OIDCProviderProps,
   ) {
     // Initialize AWS SDK client

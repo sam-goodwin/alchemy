@@ -142,7 +142,7 @@ export const Table = Resource(
   "dynamo::Table",
   async function (
     this: Context<Table>,
-    id: string,
+    _id: string,
     props: TableProps,
   ): Promise<Table> {
     const client = new DynamoDBClient({});

@@ -162,7 +162,7 @@ export const TypeScriptFile = Resource(
   "ai::TypeScriptFile",
   async function (
     this: Context<TypeScriptFile>,
-    id: string,
+    _id: string,
     props: TypeScriptFileProps,
   ): Promise<TypeScriptFile> {
     // Handle delete phase
