@@ -48,7 +48,7 @@ export async function destroy<Type extends string>(
         ...orphan.output,
         Scope: scope,
       })),
-      options,
+      options
     );
     // finally, destroy the scope container
     await scope.deinit();
@@ -160,7 +160,7 @@ export namespace destroy {
       }
     } else {
       await Promise.all(
-        resources.map((resource) => destroy(resource, options)),
+        resources.map((resource) => destroy(resource, options))
       );
     }
   }

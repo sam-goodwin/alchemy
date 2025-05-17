@@ -191,7 +191,7 @@ export function test(meta: ImportMeta, defaultOptions?: TestOptions): test {
 
     return it(
       testName,
-      async () =>
+      () =>
         alchemy.run(
           testName,
           {
@@ -199,7 +199,6 @@ export function test(meta: ImportMeta, defaultOptions?: TestOptions): test {
             parent: scope,
           },
           async (scope) => {
-            // Enter test scope since bun calls from different scope
             await scope.run(() => fn(scope));
           },
         ),

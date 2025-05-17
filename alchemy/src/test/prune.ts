@@ -13,7 +13,7 @@ const execAsync = promisify(exec);
  */
 export async function runChangedTests(
   directory: string,
-  baseCommit?: string,
+  baseCommit?: string
 ): Promise<void> {
   const changedTests = await findChangedTestFiles(directory, baseCommit);
 
@@ -45,7 +45,7 @@ export async function runChangedTests(
  */
 export async function findChangedTestFiles(
   directory: string,
-  baseCommit = "HEAD~1",
+  baseCommit = "HEAD~1"
 ): Promise<string[]> {
   // 1. Find all test files
   const testFiles = await findTestFiles(directory);
@@ -62,7 +62,7 @@ export async function findChangedTestFiles(
 
     // Check if any dependencies have changed
     const changedDependencies = [...dependencies].filter((dep) =>
-      changedFiles.has(dep),
+      changedFiles.has(dep)
     );
 
     if (changedDependencies.length > 0) {
@@ -90,7 +90,7 @@ async function findTestFiles(directory: string): Promise<string[]> {
 async function getChangedFiles(baseCommit: string): Promise<Set<string>> {
   // Get changed files from git
   const { stdout: gitOutput } = await execAsync(
-    `git diff --name-only ${baseCommit}`,
+    `git diff --name-only ${baseCommit}`
   );
 
   // Convert to set of absolute paths

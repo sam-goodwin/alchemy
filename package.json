@@ -31,8 +31,9 @@
     "@types/bun": "latest",
     "@types/node": "latest",
     "aws4fetch": "^1.0.20",
+    "braintrust": "*",
+    "json-schema-to-typescript": "^15.0.4",
     "typescript": "latest",
-    "yaml": "^2.7.1",
-    "braintrust": "*"
+    "yaml": "^2.7.1"
   }
 }

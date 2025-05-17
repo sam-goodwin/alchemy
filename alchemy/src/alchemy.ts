@@ -364,7 +364,6 @@ async function run<T>(
     return await _scope.run(async () => fn.bind(_scope)(_scope));
   } catch (error) {
     if (!(error instanceof DestroyedSignal)) {
-      console.log(error);
       _scope.fail();
     }
     throw error;
