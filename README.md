@@ -1,5 +1,7 @@
 # Alchemy
 
+[![sam-goodwin/alchemy context](https://badge.forgithub.com/sam-goodwin/alchemy/tree/main/alchemy-web/docs?accept=text%2Fhtml&maxTokens=10000000)](https://uithub.com/sam-goodwin/alchemy/tree/main/alchemy-web/docs?accept=text%2Fhtml&maxTokens=10000000)
+
 Alchemy is an embeddable, zero-dependency, TypeScript-native Infrastructure-as-Code (IaC) library for modeling Resources that are Created, Updated and Deleted automatically.
 
 Unlike similar tools like Pulumi, Terraform, and CloudFormation, Alchemy is implemented in pure ESM-native TypeScript code with zero dependencies.
