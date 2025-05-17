@@ -896,6 +896,12 @@ async function prepareWorkerMetadata<B extends Bindings>(
         type: "ai",
         name: bindingName,
       });
+    } else if (binding.type === "analytics_engine") {
+      meta.bindings.push({
+        type: "analytics_engine",
+        name: bindingName,
+        dataset: binding.dataset,
+      });
     } else {
       // @ts-expect-error - we should never reach here
       throw new Error(`Unsupported binding type: ${binding.type}`);
