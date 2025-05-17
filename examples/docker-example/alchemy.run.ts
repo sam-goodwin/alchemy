@@ -9,61 +9,92 @@ const app = await alchemy("docker-example", {
   quiet: process.argv.includes("--quiet"),
 });
 
-// This example shows how to use Alchemy's Docker provider to:
-// 1. Create a Docker network
-// 2. Build and deploy a custom Node.js application
-// 3. Deploy a Redis container
-// 4. Connect both containers to the network
+// Get configuration values (matching the provided Pulumi config)
+const frontendPort = 3000;
+const backendPort = 3001;
+const mongoPort = 27017;
+const mongoHost = process.env.mongoHost;
+const database = process.env.database;
+const nodeEnvironment = process.env.nodeEnvironment;
+const protocol = process.env.protocol;
 
-// Create a Docker network for the application
-const appNetwork = await DockerNetwork("app-network", {
-  name: "app-example-network",
+const stack = app.stage || "dev";
+
+// Create a Docker network
+const network = await DockerNetwork("network", {
+  name: `services-${stack}`,
   driver: "bridge"
 });
 
-// Build a custom Node.js application image
-const appImage = await DockerImage("app-image", {
-  name: "node-app-example",
-  tag: "latest",
-  build: {
-    context: "./app", // Directory containing your app code and Dockerfile
-    args: {
-      NODE_ENV: "production"
-    }
-  }
+// Pull the backend image
+const backendImageName = "backend";
+const backend = await DockerImage(`${backendImageName}Image`, {
+  name: "pulumi/tutorial-pulumi-fundamentals-backend",
+  tag: "latest"
 });
 
-// Deploy Redis container
-const redisContainer = await DockerContainer("redis", {
-  image: "redis:alpine",
-  name: "redis-example",
+// Pull the frontend image
+const frontendImageName = "frontend";
+const frontend = await DockerImage(`${frontendImageName}Image`, {
+  name: "pulumi/tutorial-pulumi-fundamentals-frontend",
+  tag: "latest"
+});
+
+// Pull the MongoDB image
+const mongoImage = await DockerImage("mongoImage", {
+  name: "pulumi/tutorial-pulumi-fundamentals-database",
+  tag: "latest"
+});
+
+// Create the MongoDB container
+const mongoContainer = await DockerContainer("mongoContainer", {
+  image: mongoImage,
+  name: `mongo-${stack}`,
   ports: [
-    { external: 6379, internal: 6379 }
+    { external: mongoPort, internal: mongoPort }
   ],
-  networks: ["app-example-network"], // Use the string name directly
+  networks: [`services-${stack}`],
   restart: "always",
   start: true
 });
 
-// Deploy the Node.js application container
-const appContainer = await DockerContainer("node-app", {
-  image: appImage, // Using the image resource we created above
-  name: "node-app-example",
+// Create the backend container
+const backendContainer = await DockerContainer("backendContainer", {
+  image: backend,
+  name: `backend-${stack}`,
+  ports: [
+    { external: backendPort, internal: backendPort }
+  ],
   environment: {
-    NODE_ENV: "production",
-    REDIS_HOST: "redis-example" // Use the string name directly
+    DATABASE_HOST: mongoHost,
+    DATABASE_NAME: database,
+    NODE_ENV: nodeEnvironment
   },
-  ports: [
-    { external: 3000, internal: 3000 }
-  ],
-  networks: ["app-example-network"], // Use the string name directly
+  networks: [`services-${stack}`],
   restart: "always",
   start: true
 });
 
+// Create the frontend container
+const frontendContainer = await DockerContainer("frontendContainer", {
+  image: frontend,
+  name: `frontend-${stack}`,
+  ports: [
+    { external: frontendPort, internal: frontendPort }
+  ],
+  environment: {
+    PORT: frontendPort.toString(),
+    HTTP_PROXY: `backend-${stack}:${backendPort}`,
+    PROXY_PROTOCOL: protocol
+  },
+  networks: [`services-${stack}`],
+  restart: "always",
+  start: true
+});
 
 await app.finalize();
 
 // Export relevant information
-export { appNetwork, redisContainer, appContainer };
-export const appUrl = "http://localhost:3000";
+export { network, mongoContainer, backendContainer, frontendContainer };
+export const frontendUrl = `http://localhost:${frontendPort}`;
+export const backendUrl = `http://localhost:${backendPort}`;
