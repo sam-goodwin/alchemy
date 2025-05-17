@@ -23,6 +23,7 @@
     "./github": "./lib/github/index.js",
     "./neon": "./lib/neon/index.js",
     "./os": "./lib/os/index.js",
+    "./sentry": "./lib/sentry/index.js",
     "./shadcn": "./lib/shadcn/index.js",
     "./stripe": "./lib/stripe/index.js",
     "./test/bun": "./lib/test/bun.js",
