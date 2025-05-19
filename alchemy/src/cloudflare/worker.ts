@@ -611,6 +611,7 @@ async function putWorker(
   scriptContent: string,
   scriptMetadata: WorkerMetadata,
 ) {
+  console.log("scriptMetadata", scriptMetadata);
   return withExponentialBackoff(
     async () => {
       const scriptName =
