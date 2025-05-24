@@ -1,57 +1,93 @@
 ---
-title: Deploying Nuxt Applications to Cloudflare with Alchemy
-description: Learn how to deploy Nuxt.js applications to Cloudflare Pages/Workers using Alchemy for a seamless experience.
+title: Nuxt with Alchemy
+description: Creates and deploys a Nuxt application using the Cloudflare Workers preset. This resource simplifies deploying Nuxt applications by providing sensible defaults for the build command, main entrypoint, and assets directory based on the `cloudflare-module` preset output.
 ---
 
 # Nuxt
 
-Deploy a [Nuxt](https://nuxt.com) application to Cloudflare Pages with automatically configured defaults.
+Creates and deploys a Nuxt application using the Cloudflare Workers preset.
 
-## Minimal Example
+This resource simplifies deploying Nuxt applications by providing sensible
+defaults for the build command, main entrypoint, and assets directory
+based on the `cloudflare-module` preset output.
 
-Deploy a basic Nuxt site with default settings.
+It wraps the underlying `Website` resource.
 
-```ts
+
+Represents the output of a Nuxt resource deployment.
+It resolves to the underlying Cloudflare Worker type, ensuring type safety.
+Prevents overriding the internal ASSETS binding.
+
+## Examples
+
+### A basic Nuxt site with default settings
+
+```typescript
 import { Nuxt } from "alchemy/cloudflare";
 
+// Deploy a basic Nuxt site with default settings
 const nuxtSite = await Nuxt("my-nuxt-app");
 ```
 
-## Custom Bindings
+---
 
-Add database and other bindings to your Nuxt app.
+### With custom bindings and build command
 
-```ts
-import { Nuxt, D1Database } from "alchemy/cloudflare";
-
-const db = await D1Database("my-db", {
-  name: "my-db"
-});
-
+```typescript
+// Deploy with custom bindings and build command
+const db = await D1Database("my-db");
 const nuxtSiteWithDb = await Nuxt("my-nuxt-app-with-db", {
-  command: "npm run build:cloudflare", // Custom build command
+  command: "npm run build:cloudflare", // Specify a custom build command
   bindings: {
-    DB: db // Add custom bindings
-  }
+    DB: db, // Add custom bindings
+  },
 });
 ```
 
-## Bind to a Worker
 
-Bind a Nuxt app to a Cloudflare Worker.
+## Properties
 
-```ts
-import { Worker, Nuxt } from "alchemy/cloudflare";
+### Nuxt
 
-const nuxtApp = await Nuxt("my-nuxt-app", {
-  command: "npm run build"
-});
+*Note: This includes properties from dependent resources: Assets, WebsiteProps.*
 
-await Worker("my-worker", {
-  name: "my-worker",
-  script: "console.log('Hello, world!')",
-  bindings: {
-    NUXT: nuxtApp
-  }
-});
-```
+| Name | Type | Required | Description | Default |
+|------|------|----------|-------------|---------|
+| `command` | `string` | Yes | The command to run to build the site (From WebsiteProps) | bun run build |
+| `createdAt` | `number` | Yes | Time at which the assets were created (From Assets) |  |
+| `files` | `AssetFile[]` | Yes | Asset files that were found (From Assets) |  |
+| `id` | `string` | Yes | The ID of the assets bundle (From Assets) |  |
+| `type` | `"assets"` | Yes | The type of binding (From Assets) |  |
+| `updatedAt` | `number` | Yes | Time at which the assets were last updated (From Assets) |  |
+| `assets` | `\| string \| ({ dist?: string; } & AssetsConfig)` | No | The directory containing your static assets (From WebsiteProps) | ./.output/public |
+| `cwd` | `string` | No |  (From WebsiteProps) | process.cwd() |
+| `main` | `string` | No | The entrypoint to your server (From WebsiteProps) | ./index.ts |
+| `name` | `string` | No | The name of the worker (From WebsiteProps) | id |
+| `wrangler` | `\| boolean \| string \| { path?: string; // override main main?: string; }` | No | Write a wrangler.jsonc file (From WebsiteProps) | true |
+
+
+## Dependent Types
+
+*These types are used by this resource and may provide additional configuration options:*
+
+### Assets
+
+| Name | Type | Required | Description | Default |
+|------|------|----------|-------------|---------|
+| `type` | `"assets"` | Yes | The type of binding |  |
+| `id` | `string` | Yes | The ID of the assets bundle |  |
+| `files` | `AssetFile[]` | Yes | Asset files that were found |  |
+| `createdAt` | `number` | Yes | Time at which the assets were created |  |
+| `updatedAt` | `number` | Yes | Time at which the assets were last updated |  |
+
+### WebsiteProps
+
+| Name | Type | Required | Description | Default |
+|------|------|----------|-------------|---------|
+| `command` | `string` | Yes | The command to run to build the site |  |
+| `name` | `string` | No | The name of the worker | id |
+| `main` | `string` | No | The entrypoint to your server | - a simple server that serves static assets is generated |
+| `assets` | `\| string \| ({ dist?: string; } & AssetsConfig)` | No | The directory containing your static assets | "./dist" |
+| `cwd` | `string` | No |  | process.cwd() |
+| `wrangler` | `\| boolean \| string \| { path?: string; // override main main?: string; }` | No | Write a wrangler.jsonc file | - no wrangler.jsonc file is written |
+
