@@ -152,22 +152,6 @@ export async function generateOgImage(
       (totalHeight - totalTextHeight) / 2
     );
 
-    const logoPath = path.resolve(__dirname, `../../public/${logoFileName}`);
-    const logoBuffer = await fs.readFile(logoPath);
-    const logoResized = await sharp(logoBuffer)
-      .resize(logoSize, logoSize, {
-        fit: "contain",
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      })
-      .png()
-      .toBuffer();
-    const logoBase64 = logoResized.toString("base64");
-
-    // New position: Inside main area (below first horizontal line), aligned with text
-    const newLogoX = leftMargin - 20; // Adjusted to move logo further left
-    const newLogoY = firstHorizontalLineY + 20; // 20px padding below the first horizontal line
-    const logoSvg = `<image x="${newLogoX}" y="${newLogoY}" width="${logoSize}" height="${logoSize}" href="data:image/png;base64,${logoBase64}" />`;
-
     const lineStrokeColor = "#222222"; // Darker grid lines for the darkest bg
 
     let gridLines = "";
@@ -201,7 +185,6 @@ export async function generateOgImage(
     <svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" overflow="visible" xmlns="http://www.w3.org/2000/svg">
       <rect width="${totalWidth}" height="${totalHeight}" fill="${backgroundColor}" />
       ${gridLines}
-      ${logoSvg}
       <g>
         ${titleSvg}
         ${descriptionSvg}
