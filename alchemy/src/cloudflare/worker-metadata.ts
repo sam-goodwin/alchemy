@@ -182,6 +182,7 @@ export interface WorkerMetadata {
     cron: string;
     suspended: boolean;
   }[];
+  dispatch_namespace?: string;
 }
 
 export async function prepareWorkerMetadata<B extends Bindings>(
@@ -228,6 +229,10 @@ export async function prepareWorkerMetadata<B extends Bindings>(
       new_sqlite_classes: props.migrations?.new_sqlite_classes ?? [],
     },
   };
+
+  if (props.dispatchNamespace) {
+    meta.dispatch_namespace = props.dispatchNamespace;
+  }
 
   // If we have asset upload results, add them to the metadata
   if (assetUploadResult) {

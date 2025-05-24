@@ -198,6 +198,13 @@ export interface BaseWorkerProps<B extends Bindings = Bindings>
    * Can include queues, streams, or other event sources.
    */
   eventSources?: EventSource[];
+
+  /**
+   * Dispatch namespace for the worker
+   *
+   * @see https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/get-started/user-workers/
+   */
+  dispatchNamespace?: string;
 }
 
 export interface InlineWorkerProps<B extends Bindings = Bindings>
@@ -847,9 +854,13 @@ export async function deleteWorker<B extends Bindings>(
 ) {
   const workerName = props.workerName;
 
+  const targetUrl = props.dispatchNamespace
+    ? `/accounts/${api.accountId}/workers/dispatch/namespaces/${props.dispatchNamespace}/scripts/${workerName}`
+    : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+    
   // Delete worker
   const deleteResponse = await api.delete(
-    `/accounts/${api.accountId}/workers/scripts/${workerName}`,
+    targetUrl,
   );
 
   // Check for success (2xx status code)
@@ -909,9 +920,13 @@ export async function putWorker(
         }),
       );
 
+      const targetUploadUrl = scriptMetadata.dispatch_namespace
+        ? `/accounts/${api.accountId}/workers/dispatch/namespaces/${scriptMetadata.dispatch_namespace}/scripts/${workerName}`
+        : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+
       // Upload worker script with bindings
       const uploadResponse = await api.put(
-        `/accounts/${api.accountId}/workers/scripts/${workerName}`,
+        targetUploadUrl,
         formData,
         {
           headers: {
