@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as ts from 'typescript';
 
 // --- Data Types ---
 
@@ -16,6 +17,8 @@ interface ResourceInfo {
   properties?: Property[];
   // Track dependencies
   dependencies?: Map<string, DependencyInfo>;
+  // Track function-specific defaults
+  functionDefaults?: Map<string, string>;
 }
 
 interface Property {
@@ -33,281 +36,376 @@ interface DependencyInfo {
   properties?: Property[];
 }
 
-// --- Parsing Functions ---
+// --- TypeScript Parser Helpers ---
 
 /**
- * Extract JSDoc from file content
+ * Create a TypeScript program for a single file
  */
-function extractResourceJSDoc(content: string): string | null {
-  // First try the traditional Resource() format
-  const resourceRegex = /export\s+const\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*Resource\s*\(/;
-  let match = resourceRegex.exec(content);
-  
-  // If no Resource() match, try function-based resources
-  if (!match) {
-    const functionRegex = /export\s+(async\s+)?function\s+([A-Za-z_][A-Za-z0-9_]*)/;
-    match = functionRegex.exec(content);
-  }
-  
-  if (!match) return null;
-  
-  // Look for JSDoc block before the resource definition
-  const precedingContent = content.substring(0, match.index);
-  const jsDocMatch = precedingContent.match(/\/\*\*[\s\S]*?\*\//g);
-  
-  // Return the last JSDoc comment before the resource definition
-  return jsDocMatch && jsDocMatch.length > 0 ? jsDocMatch[jsDocMatch.length - 1] : null;
+function createProgram(filePath: string) {
+  return ts.createProgram([filePath], {});
 }
 
 /**
- * Extract import statements to track dependencies
+ * Get JSDoc description from a symbol
  */
-function extractImports(content: string): Map<string, string[]> {
-  const importMap = new Map<string, string[]>();
-  const importRegex = /import\s+(?:{([^}]+)})?\s*from\s+['"]([^'"]+)['"]/g;
-  let match;
+function getJSDocDescription(symbol: ts.Symbol, typeChecker: ts.TypeChecker): string {
+  return symbol.getDocumentationComment(typeChecker).map(part => part.text).join('\n');
+}
+
+/**
+ * Extract examples from JSDoc tags with captions
+ */
+function getJSDocExamples(symbol: ts.Symbol): Example[] {
+  const examples: Example[] = [];
+  const jsDocTags = symbol.getJsDocTags();
   
-  while ((match = importRegex.exec(content)) !== null) {
-    const importPath = match[2];
-    const importedItems = match[1] ? match[1].split(',').map(item => {
-      // Extract type/name, handling 'type' keyword and aliases
-      const cleanItem = item.trim().replace(/^type\s+/, '').split(' as ')[0].trim();
-      return cleanItem;
-    }) : [];
+  jsDocTags.forEach(tag => {
+    if (tag.name === 'example') {
+      if (tag.text) {
+        const exampleText = tag.text.map(part => part.text).join('\n');
+        const caption = extractExampleCaption(exampleText);
+        examples.push({
+          caption,
+          code: exampleText.trim()
+        });
+      }
+    }
+  });
+  
+  return examples;
+}
+
+/**
+ * Extract a meaningful caption from example code by looking at comments
+ */
+function extractExampleCaption(exampleText: string): string | undefined {
+  const lines = exampleText.trim().split('\n');
+  const firstLine = lines[0]?.trim();
+  
+  // Look for a comment line that describes the example
+  if (firstLine?.startsWith('//')) {
+    let caption = firstLine.replace(/^\/\/\s*/, '');
     
-    importMap.set(importPath, importedItems);
+    // Clean up the caption
+    caption = caption.replace(/^(Deploy|Create|Set up|Configure)\s+/, '');
+    caption = caption.charAt(0).toUpperCase() + caption.slice(1);
+    
+    // If the caption doesn't end with proper punctuation, don't add a period
+    // if it's already a complete phrase
+    if (!caption.match(/[.!?]$/)) {
+      caption = caption;
+    }
+    
+    return caption;
   }
+  
+  return undefined;
+}
+
+/**
+ * Get JSDoc @see tag from a symbol
+ */
+function getJSDocSee(symbol: ts.Symbol): string | undefined {
+  const jsDocTags = symbol.getJsDocTags();
+  
+  for (const tag of jsDocTags) {
+    if (tag.name === 'see' && tag.text) {
+      return tag.text.map(part => part.text).join('').trim();
+    }
+  }
+  
+  return undefined;
+}
+
+/**
+ * Get default value from JSDoc @default tag
+ */
+function getJSDocDefault(symbol: ts.Symbol): string | undefined {
+  const jsDocTags = symbol.getJsDocTags();
+  
+  for (const tag of jsDocTags) {
+    if (tag.name === 'default' && tag.text) {
+      return tag.text.map(part => part.text).join('').trim();
+    }
+  }
+  
+  return undefined;
+}
+
+// --- Parsing Functions ---
+
+/**
+ * Extract JSDoc from file content using TypeScript parser
+ */
+function extractResourceJSDoc(filePath: string): { 
+  description: string; 
+  examples: Example[]; 
+  see?: string; 
+  resourceName: string 
+} | null {
+  const program = createProgram(filePath);
+  const sourceFile = program.getSourceFile(filePath);
+  const typeChecker = program.getTypeChecker();
+  
+  if (!sourceFile) {
+    return null;
+  }
+  
+  let result: { 
+    description: string; 
+    examples: Example[]; 
+    see?: string; 
+    resourceName: string 
+  } | null = null;
+  
+  function visit(node: ts.Node) {
+    // Check for exported const (Resource definitions)
+    if (ts.isVariableStatement(node) && 
+        node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)) {
+      const declaration = node.declarationList.declarations[0];
+      
+      if (declaration && ts.isIdentifier(declaration.name)) {
+        const name = declaration.name.text;
+        const symbol = typeChecker.getSymbolAtLocation(declaration.name);
+        
+        if (symbol) {
+          const description = getJSDocDescription(symbol, typeChecker);
+          const examples = getJSDocExamples(symbol);
+          const see = getJSDocSee(symbol);
+          
+          // Check if it has examples (indicating it's a resource)
+          if (examples.length > 0) {
+            result = {
+              description,
+              examples,
+              see,
+              resourceName: name
+            };
+          }
+        }
+      }
+    }
+    
+    // Check for exported functions (function-based resources)
+    if (ts.isFunctionDeclaration(node) && 
+        node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword) &&
+        node.name) {
+      const name = node.name.text;
+      const symbol = typeChecker.getSymbolAtLocation(node.name);
+      
+      if (symbol) {
+        const examples = getJSDocExamples(symbol);
+        
+        // Check if it has examples (indicating it's a resource)
+        if (examples.length > 0) {
+          result = {
+            description: getJSDocDescription(symbol, typeChecker),
+            examples,
+            see: getJSDocSee(symbol),
+            resourceName: name
+          };
+        }
+      }
+    }
+    
+    ts.forEachChild(node, visit);
+  }
+  
+  visit(sourceFile);
+  
+  return result;
+}
+
+/**
+ * Extract import statements using TypeScript parser
+ */
+function extractImports(filePath: string): Map<string, string[]> {
+  const importMap = new Map<string, string[]>();
+  const program = createProgram(filePath);
+  const sourceFile = program.getSourceFile(filePath);
+  
+  if (!sourceFile) {
+    return importMap;
+  }
+  
+  function visit(node: ts.Node) {
+    if (ts.isImportDeclaration(node)) {
+      const moduleSpecifier = node.moduleSpecifier;
+      
+      if (ts.isStringLiteral(moduleSpecifier)) {
+        const importPath = moduleSpecifier.text;
+        const importedItems: string[] = [];
+        
+        if (node.importClause) {
+          // Handle named imports
+          if (node.importClause.namedBindings && ts.isNamedImports(node.importClause.namedBindings)) {
+            for (const element of node.importClause.namedBindings.elements) {
+              const name = element.name.text;
+              importedItems.push(name);
+            }
+          }
+          
+          // Handle default imports
+          if (node.importClause.name) {
+            importedItems.push(node.importClause.name.text);
+          }
+          
+          // Handle namespace imports
+          if (node.importClause.namedBindings && ts.isNamespaceImport(node.importClause.namedBindings)) {
+            importedItems.push(node.importClause.namedBindings.name.text);
+          }
+        }
+        
+        importMap.set(importPath, importedItems);
+      }
+    }
+    
+    ts.forEachChild(node, visit);
+  }
+  
+  visit(sourceFile);
   
   return importMap;
 }
 
 /**
- * Parse JSDoc content to extract description, examples, and other metadata
+ * Extract default values from wrapper function implementations
  */
-function parseJSDoc(jsDocContent: string): { 
-  description: string, 
-  examples: Example[], 
-  see?: string 
-} {
-  // Remove /** and */ from the JSDoc
-  jsDocContent = jsDocContent.replace(/^\/\*\*/, '').replace(/\*\/$/, '');
+function extractFunctionDefaults(filePath: string, functionName: string): Map<string, string> {
+  const defaults = new Map<string, string>();
+  const program = createProgram(filePath);
+  const sourceFile = program.getSourceFile(filePath);
   
-  const lines = jsDocContent.split('\n');
-  
-  const examples: Example[] = [];
-  let description = '';
-  let see: string | undefined;
-  let currentExample: string | null = null;
-  let captionLine: string | undefined;
-  let inExample = false;
-  
-  // Track the minimum indentation in the current example
-  let minIndent = Infinity;
-  let exampleLines: string[] = [];
-  
-  lines.forEach((line) => {
-    // Remove the leading asterisk but preserve whitespace after it
-    const processedLine = line.replace(/^\s*\*/, '');
-    
-    // Detect example blocks
-    if (processedLine.trim().startsWith('@example')) {
-      if (inExample) {
-        // Store previous example before starting a new one
-        const cleanedCaption = captionLine ? captionLine.trim() : undefined;
-        
-        // Remove common indentation from all lines
-        const formattedCode = exampleLines
-          .map(line => line.length >= minIndent ? line.substring(minIndent) : line)
-          .join('\n');
-        
-        examples.push({
-          caption: cleanedCaption,
-          code: formattedCode
-        });
-      }
-      
-      // Reset for new example
-      inExample = true;
-      exampleLines = [];
-      minIndent = Infinity;
-      captionLine = undefined;
-      
-    } else if (processedLine.trim().startsWith('@see')) {
-      inExample = false;
-      see = processedLine.trim().substring('@see'.length).trim();
-      
-    } else if (inExample) {
-      // We're inside an example block
-      
-      // Look for caption as the first comment line in the example
-      if (exampleLines.length === 0 && processedLine.trim().startsWith('//')) {
-        captionLine = processedLine.trim().replace(/^\/\/\s*/, '');
-      } else {
-        // Calculate indentation for code lines (only if the line isn't empty)
-        const trimmedLine = processedLine.trimRight();
-        if (trimmedLine.length > 0) {
-          const currentIndent = processedLine.length - processedLine.trimLeft().length;
-          minIndent = Math.min(minIndent, currentIndent);
-        }
-        
-        // Add to example lines
-        exampleLines.push(processedLine);
-      }
-      
-    } else if (!processedLine.trim().startsWith('@')) {
-      // Add to description if not a tag
-      description += (description ? '\n' : '') + processedLine.trim();
-    }
-  });
-  
-  // Add the last example if there is one
-  if (inExample && exampleLines.length > 0) {
-    const cleanedCaption = captionLine ? captionLine.trim() : undefined;
-    
-    // Remove common indentation from all lines
-    const formattedCode = exampleLines
-      .map(line => line.length >= minIndent ? line.substring(minIndent) : line)
-      .join('\n');
-    
-    examples.push({
-      caption: cleanedCaption,
-      code: formattedCode
-    });
+  if (!sourceFile) {
+    return defaults;
   }
   
-  return {
-    description: description.trim(),
-    examples,
-    see
-  };
+  function visit(node: ts.Node) {
+    // Find the specific function
+    if (ts.isFunctionDeclaration(node) && 
+        node.name?.text === functionName) {
+      
+      // Look for object literals with default assignments
+      function visitFunctionBody(bodyNode: ts.Node) {
+        // Look for object literal expressions (like the props object passed to Website)
+        if (ts.isObjectLiteralExpression(bodyNode)) {
+          bodyNode.properties.forEach(prop => {
+            if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
+              const propName = prop.name.text;
+              
+              // Handle different types of default value expressions
+              if (ts.isBinaryExpression(prop.initializer) && 
+                  prop.initializer.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken) {
+                // Handle nullish coalescing: props?.command ?? "default"
+                const rightSide = prop.initializer.right;
+                if (ts.isStringLiteral(rightSide)) {
+                  defaults.set(propName, rightSide.text);
+                } else if (ts.isNumericLiteral(rightSide)) {
+                  defaults.set(propName, rightSide.text);
+                } else if (rightSide.kind === ts.SyntaxKind.TrueKeyword) {
+                  defaults.set(propName, 'true');
+                } else if (rightSide.kind === ts.SyntaxKind.FalseKeyword) {
+                  defaults.set(propName, 'false');
+                } else {
+                  // For complex expressions, get the text representation
+                  const defaultText = sourceFile!.text.substring(rightSide.pos, rightSide.end).trim();
+                  defaults.set(propName, defaultText);
+                }
+              } else if (ts.isStringLiteral(prop.initializer)) {
+                // Handle direct string assignments
+                defaults.set(propName, prop.initializer.text);
+              } else if (ts.isArrayLiteralExpression(prop.initializer)) {
+                // Handle arrays (like compatibilityFlags)
+                const elements = prop.initializer.elements.map(el => {
+                  if (ts.isStringLiteral(el)) {
+                    return `"${el.text}"`;
+                  } else if (ts.isSpreadElement(el)) {
+                    return '...';
+                  }
+                  return sourceFile!.text.substring(el.pos, el.end).trim();
+                });
+                defaults.set(propName, `[${elements.join(', ')}]`);
+              }
+            }
+          });
+        }
+        
+        ts.forEachChild(bodyNode, visitFunctionBody);
+      }
+      
+      if (node.body) {
+        visitFunctionBody(node.body);
+      }
+    }
+    
+    ts.forEachChild(node, visit);
+  }
+  
+  visit(sourceFile);
+  
+  return defaults;
 }
 
 /**
- * Extract properties from an interface definition
+ * Extract all interfaces and their properties using TypeScript parser
  */
-function extractPropertiesFromInterface(content: string, interfaceName: string): Property[] {
-  const properties: Property[] = [];
-  
-  // Find the interface definition - more robust pattern
-  const startPattern = `export\\s+interface\\s+${interfaceName}`;
-  const start = content.search(new RegExp(startPattern));
-  
-  if (start === -1) return properties;
-  
-  // Find the opening brace
-  const openBracePos = content.indexOf('{', start);
-  if (openBracePos === -1) return properties;
-  
-  // Find the matching closing brace by counting
-  let braceCount = 1;
-  let closeBracePos = openBracePos + 1;
-  
-  while (braceCount > 0 && closeBracePos < content.length) {
-    const char = content[closeBracePos];
-    if (char === '{') braceCount++;
-    if (char === '}') braceCount--;
-    closeBracePos++;
-  }
-  
-  if (braceCount !== 0) return properties; // Malformed interface
-  
-  // Extract the interface content
-  const interfaceContent = content.substring(openBracePos + 1, closeBracePos - 1);
-  
-  // Split by property definitions (looking for lines ending with semicolons)
-  const propLines = interfaceContent.split('\n');
-  
-  let currentJSDoc: string[] = [];
-  let currentLine = '';
-  
-  for (let i = 0; i < propLines.length; i++) {
-    const line = propLines[i].trim();
-    
-    if (line.startsWith('/**')) {
-      // Start of JSDoc comment
-      currentJSDoc = [line];
-    } 
-    else if (line.startsWith('*')) {
-      // Continue JSDoc comment
-      currentJSDoc.push(line);
-    }
-    else if (line.match(/^\s*[a-zA-Z_][a-zA-Z0-9_]*\??:/)) {
-      // Property definition
-      currentLine = line;
-      
-      // Handle multi-line property definitions
-      while (!currentLine.includes(';') && i < propLines.length - 1) {
-        i++;
-        currentLine += ' ' + propLines[i].trim();
-      }
-      
-      // Extract property details
-      const propMatch = currentLine.match(/([a-zA-Z_][a-zA-Z0-9_]*)(\??)\s*:\s*([^;]*);/);
-      
-      if (propMatch) {
-        // Parse JSDoc
-        let description = '';
-        let defaultValue: string | undefined = undefined;
-        
-        if (currentJSDoc.length > 0) {
-          const jsDocText = currentJSDoc.join('\n');
-          
-          // Extract description
-          const descriptionMatch = jsDocText.match(/\/\*\*\s*([\s\S]*?)(?:\s*\*\s*@|\s*\*\/)/);
-          if (descriptionMatch) {
-            description = descriptionMatch[1]
-              .replace(/^\s*\*\s?/gm, '')
-              .trim();
-          }
-          
-          // Extract default value
-          const defaultMatch = jsDocText.match(/@default\s+(.*?)(?:\s*\*\s*@|\s*\*\/)/);
-          if (defaultMatch) {
-            defaultValue = defaultMatch[1].trim();
-          }
-        }
-        
-        properties.push({
-          name: propMatch[1],
-          isRequired: !propMatch[2], // If there's a '?', it's optional
-          type: propMatch[3].trim(),
-          description,
-          defaultValue
-        });
-      }
-      
-      // Reset for next property
-      currentJSDoc = [];
-    }
-  }
-  
-  return properties;
-}
-
-/**
- * Extract all interfaces and their properties
- */
-function extractAllTypeDefinitions(content: string): Map<string, Property[]> {
+function extractAllTypeDefinitions(filePath: string): Map<string, Property[]> {
   const typeDefinitions = new Map<string, Property[]>();
+  const program = createProgram(filePath);
+  const sourceFile = program.getSourceFile(filePath);
+  const typeChecker = program.getTypeChecker();
   
-  // Find all interface names
-  const interfaceRegex = /export\s+interface\s+([A-Za-z0-9_]+)/g;
-  let match;
-  
-  while ((match = interfaceRegex.exec(content)) !== null) {
-    const interfaceName = match[1];
-    const properties = extractPropertiesFromInterface(content, interfaceName);
-    
-    if (properties.length > 0) {
-      typeDefinitions.set(interfaceName, properties);
-    }
+  if (!sourceFile) {
+    return typeDefinitions;
   }
+  
+  function visit(node: ts.Node) {
+    if (ts.isInterfaceDeclaration(node)) {
+      const interfaceName = node.name.text;
+      const properties: Property[] = [];
+      
+      // Process each property in the interface
+      node.members.forEach(member => {
+        if (ts.isPropertySignature(member) && member.name && ts.isIdentifier(member.name)) {
+          const propName = member.name.text;
+          const propSymbol = typeChecker.getSymbolAtLocation(member.name);
+          
+          if (propSymbol) {
+            const description = getJSDocDescription(propSymbol, typeChecker);
+            const defaultValue = getJSDocDefault(propSymbol);
+            
+            // Get type text from the type node
+            let typeText = 'any';
+            if (member.type && sourceFile) {
+              typeText = sourceFile.text.substring(member.type.pos, member.type.end).trim();
+            }
+            
+            properties.push({
+              name: propName,
+              isRequired: !member.questionToken, // If there's a '?', it's optional
+              type: typeText,
+              description,
+              defaultValue
+            });
+          }
+        }
+      });
+      
+      if (properties.length > 0) {
+        typeDefinitions.set(interfaceName, properties);
+      }
+    }
+    
+    ts.forEachChild(node, visit);
+  }
+  
+  visit(sourceFile);
   
   return typeDefinitions;
 }
 
 /**
- * Find and parse dependent types based on imports
+ * Find and parse dependent types based on imports using TypeScript parser
  */
 async function resolveDependentTypes(
   baseDir: string,
@@ -317,8 +415,7 @@ async function resolveDependentTypes(
   const dependencies = new Map<string, DependencyInfo>();
   
   try {
-    const content = await fs.readFile(filePath, 'utf-8');
-    const importMap = extractImports(content);
+    const importMap = extractImports(filePath);
     
     for (const [importPath, importedItems] of importMap.entries()) {
       // Skip non-relative/internal imports and node modules
@@ -350,8 +447,7 @@ async function resolveDependentTypes(
       
       if (relevantTypes.length > 0) {
         try {
-          const importedContent = await fs.readFile(resolvedPath, 'utf-8');
-          const typeDefinitions = extractAllTypeDefinitions(importedContent);
+          const typeDefinitions = extractAllTypeDefinitions(resolvedPath);
           
           for (const typeName of relevantTypes) {
             const properties = typeDefinitions.get(typeName);
@@ -376,62 +472,53 @@ async function resolveDependentTypes(
 }
 
 /**
- * Extract interface properties with their JSDoc comments
+ * Extract interface properties with their JSDoc comments using TypeScript parser
  */
-function extractProperties(content: string): Property[] {
-  // This is a simplified implementation - in a real scenario you'd want more robust TS parsing
+function extractProperties(filePath: string): Property[] {
   const properties: Property[] = [];
+  const program = createProgram(filePath);
+  const sourceFile = program.getSourceFile(filePath);
+  const typeChecker = program.getTypeChecker();
   
-  // First try to find specific props interface (e.g., KVNamespaceProps)
-  // Look for any interface that ends with 'Props'
-  const propsRegex = /export\s+interface\s+([A-Za-z_][A-Za-z0-9_]*Props)[^{]*{([^}]*)}/gs;
-  let propsMatch = propsRegex.exec(content);
-  
-  if (propsMatch) {
-    const propsContent = propsMatch[2];
-    const propLines = propsContent.split('\n');
-    
-    let currentDescription = '';
-    let defaultValue: string | undefined;
-    
-    for (let i = 0; i < propLines.length; i++) {
-      const line = propLines[i].trim();
-      
-      // Collect JSDoc comments
-      if (line.startsWith('/**')) {
-        currentDescription = '';
-        defaultValue = undefined;
-        
-        // Collect all lines until the end of the comment
-        while (i < propLines.length && !propLines[i].includes('*/')) {
-          const commentLine = propLines[i].replace(/^\s*\*\s?/, '').trim();
-          
-          if (commentLine.startsWith('@default')) {
-            defaultValue = commentLine.substring('@default'.length).trim();
-          } else if (!commentLine.startsWith('/') && !commentLine.startsWith('*')) {
-            currentDescription += (currentDescription ? '\n' : '') + commentLine;
-          }
-          
-          i++;
-        }
-      }
-      // Look for property definition after a JSDoc block
-      else if (line.match(/^\s*[a-zA-Z_][a-zA-Z0-9_]*\??:/)) {
-        const propMatch = line.match(/^\s*([a-zA-Z_][a-zA-Z0-9_]*)(\\??):\s*(.+?);/);
-        if (propMatch) {
-          properties.push({
-            name: propMatch[1],
-            isRequired: !propMatch[2], // If there's a '?', it's optional
-            type: propMatch[3],
-            description: currentDescription,
-            defaultValue
-          });
-        }
-        currentDescription = '';
-        defaultValue = undefined;
-      }
-    }
+  if (!sourceFile) {
+    return properties;
   }
+  
+  function visit(node: ts.Node) {
+    // Look for interfaces ending with 'Props'
+    if (ts.isInterfaceDeclaration(node) && node.name.text.endsWith('Props')) {
+      // Process each property in the interface
+      node.members.forEach(member => {
+        if (ts.isPropertySignature(member) && member.name && ts.isIdentifier(member.name)) {
+          const propName = member.name.text;
+          const propSymbol = typeChecker.getSymbolAtLocation(member.name);
+          
+          if (propSymbol) {
+            const description = getJSDocDescription(propSymbol, typeChecker);
+            const defaultValue = getJSDocDefault(propSymbol);
+            
+            // Get type text from the type node
+            let typeText = 'any';
+            if (member.type && sourceFile) {
+              typeText = sourceFile.text.substring(member.type.pos, member.type.end).trim();
+            }
+            
+            properties.push({
+              name: propName,
+              isRequired: !member.questionToken, // If there's a '?', it's optional
+              type: typeText,
+              description,
+              defaultValue
+            });
+          }
+        }
+      });
+    }
+    
+    ts.forEachChild(node, visit);
+  }
+  
+  visit(sourceFile);
   
   return properties;
 }
@@ -441,56 +528,60 @@ function extractProperties(content: string): Property[] {
  */
 async function parseResourceFile(filePath: string): Promise<ResourceInfo | null> {
   try {
-    const content = await fs.readFile(filePath, 'utf-8');
-    const jsDocContent = extractResourceJSDoc(content);
+    const jsDocData = extractResourceJSDoc(filePath);
     
-    if (!jsDocContent) {
+    if (!jsDocData) {
       console.warn(`No resource JSDoc found in ${filePath}`);
       return null;
     }
     
-    const { description, examples, see } = parseJSDoc(jsDocContent);
+    const { description, examples, see, resourceName: name } = jsDocData;
     
-    // Extract resource name from the file
-    let name = path.basename(filePath, '.ts');
+    // Examples are already in the correct format from getJSDocExamples
+    const formattedExamples: Example[] = examples;
     
-    // Try traditional Resource() format first
-    const resourceNameMatch = content.match(/export\s+const\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*Resource/);
-    if (resourceNameMatch) {
-      name = resourceNameMatch[1];
-    } else {
-      // Try function-based resources
-      const functionNameMatch = content.match(/export\s+(async\s+)?function\s+([A-Za-z_][A-Za-z0-9_]*)/);
-      if (functionNameMatch) {
-        name = functionNameMatch[2];
-      }
+    const properties = extractProperties(filePath);
+    
+    // Extract function-specific defaults if this is a wrapper function
+    const functionDefaults = extractFunctionDefaults(filePath, name);
+    
+    // Apply function defaults to properties
+    if (functionDefaults.size > 0) {
+      properties.forEach(prop => {
+        if (functionDefaults.has(prop.name)) {
+          prop.defaultValue = functionDefaults.get(prop.name);
+        }
+      });
     }
     
-    const properties = extractProperties(content);
-    
-    // Extract type imports for dependency resolution
-    const importMap = extractImports(content);
+    // Extract type imports for dependency resolution using TypeScript parser
+    const importMap = extractImports(filePath);
     const typeDependencies = new Set<string>();
     
-    // Let's look for types that are extended or referenced in return types
-    const typeExtensionRegex = /extends\s+([A-Za-z0-9_]+)(?:<[^>]+>)?/g;
-    let extMatch;
-    while ((extMatch = typeExtensionRegex.exec(content)) !== null) {
-      typeDependencies.add(extMatch[1]);
-    }
+    // Parse the source file to find type references
+    const program = createProgram(filePath);
+    const sourceFile = program.getSourceFile(filePath);
     
-    // Look for generic type params e.g., Worker<B & { ASSETS: Assets }>
-    const genericTypeRegex = /\w+<[^>]*?([A-Za-z0-9_]+)[^>]*>/g;
-    let genMatch;
-    while ((genMatch = genericTypeRegex.exec(content)) !== null) {
-      typeDependencies.add(genMatch[1]);
-    }
-    
-    // Add explicit return types
-    const returnTypeRegex = /Promise<([A-Za-z0-9_]+)(?:<[^>]+>)?>/g;
-    let retMatch;
-    while ((retMatch = returnTypeRegex.exec(content)) !== null) {
-      typeDependencies.add(retMatch[1]);
+    if (sourceFile) {
+      function visit(node: ts.Node) {
+        // Look for type references in heritage clauses (extends)
+        if (ts.isHeritageClause(node)) {
+          node.types.forEach(typeNode => {
+            if (ts.isExpressionWithTypeArguments(typeNode) && ts.isIdentifier(typeNode.expression)) {
+              typeDependencies.add(typeNode.expression.text);
+            }
+          });
+        }
+        
+        // Look for type references in type nodes
+        if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName)) {
+          typeDependencies.add(node.typeName.text);
+        }
+        
+        ts.forEachChild(node, visit);
+      }
+      
+      visit(sourceFile);
     }
     
     // Resolve dependencies for the discovered types
@@ -504,10 +595,11 @@ async function parseResourceFile(filePath: string): Promise<ResourceInfo | null>
     return {
       name,
       description,
-      examples,
+      examples: formattedExamples,
       see,
       properties,
-      dependencies
+      dependencies,
+      functionDefaults
     };
   }
   catch (error) {
@@ -521,7 +613,8 @@ async function parseResourceFile(filePath: string): Promise<ResourceInfo | null>
  */
 function mergeProperties(
   baseProps: Property[] = [], 
-  dependencies: Map<string, DependencyInfo> = new Map()
+  dependencies: Map<string, DependencyInfo> = new Map(),
+  functionDefaults: Map<string, string> = new Map()
 ): Property[] {
   const mergedProps = [...baseProps];
   const existingPropNames = new Set(mergedProps.map(p => p.name));
@@ -542,6 +635,13 @@ function mergeProperties(
     }
   }
   
+  // Apply function defaults to all properties
+  mergedProps.forEach(prop => {
+    if (functionDefaults.has(prop.name)) {
+      prop.defaultValue = functionDefaults.get(prop.name);
+    }
+  });
+  
   // Sort: required first, then alphabetically
   return mergedProps.sort((a, b) => {
     if (a.isRequired !== b.isRequired) {
@@ -554,10 +654,60 @@ function mergeProperties(
 // --- Markdown Generation ---
 
 /**
+ * Generate SEO frontmatter for a resource
+ */
+function generateFrontmatter(resource: ResourceInfo): string {
+  // Extract a clean title from the resource name and description
+  let title = `Deploying ${resource.name}`;
+  
+  // Try to extract more context from the description
+  if (resource.description) {
+    const descMatch = resource.description.match(/^([^.]+)/);
+    if (descMatch) {
+      const firstSentence = descMatch[1].trim();
+      // If the first sentence mentions what the resource is, use that for better context
+      const resourceTypeMatch = firstSentence.match(/^A\s+([A-Za-z\s]+)\s+is\s+(.+)/);
+      if (resourceTypeMatch) {
+        const resourceType = resourceTypeMatch[1];
+        const purpose = resourceTypeMatch[2];
+        title = `${resourceType} with Alchemy`;
+      } else {
+        title = `${resource.name} with Alchemy`;
+      }
+    }
+  }
+  
+  // Generate description from the resource description, cleaning it up for SEO
+  let description = resource.description;
+  if (description) {
+    // Take the first sentence or two, clean up for meta description
+    const sentences = description.match(/[^.!?]+[.!?]+/g);
+    if (sentences) {
+      description = sentences.slice(0, 2).join(' ').trim();
+      // Remove JSDoc formatting and clean up
+      description = description.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+      // Ensure it doesn't exceed typical meta description length
+      
+    }
+  } else {
+    description = `Learn how to deploy and configure ${resource.name} resources with Alchemy for Cloudflare.`;
+  }
+  
+  return `---
+title: ${title}
+description: ${description}
+---
+
+`;
+}
+
+/**
  * Generate Markdown documentation for a resource
  */
 function generateMarkdown(resource: ResourceInfo, typeDefinitions: Map<string, Property[]>): string {
-  let markdown = `# ${resource.name}\n\n`;
+  let markdown = generateFrontmatter(resource);
+  
+  markdown += `# ${resource.name}\n\n`;
   
   // Add description with embedded link if available
   if (resource.description) {
@@ -586,7 +736,18 @@ function generateMarkdown(resource: ResourceInfo, typeDefinitions: Map<string, P
     let description = prop.description || '';
     description = description.replace(/\n/g, ' ');
     description = description.replace(/\.\s+/g, '. ');
-    const typeFormatted = prop.type.replace(/\|/g, '\\|');
+    
+    // Clean up the type string
+    let typeFormatted = prop.type;
+    // Replace newlines with spaces
+    typeFormatted = typeFormatted.replace(/\n/g, ' ');
+    // Replace multiple spaces with single space
+    typeFormatted = typeFormatted.replace(/\s+/g, ' ');
+    // Trim whitespace
+    typeFormatted = typeFormatted.trim();
+    // Escape pipe characters for markdown table
+    typeFormatted = typeFormatted.replace(/\|/g, '\\|');
+    
     return `| \`${prop.name}\` | \`${typeFormatted}\` | ${prop.isRequired ? 'Yes' : 'No'} | ${description} | ${prop.defaultValue || ''} |\n`;
   };
   
@@ -641,7 +802,7 @@ function generateMarkdown(resource: ResourceInfo, typeDefinitions: Map<string, P
     
     // Now merge with properties from dependencies
     if (resource.dependencies) {
-      combinedProps = mergeProperties(combinedProps, resource.dependencies);
+      combinedProps = mergeProperties(combinedProps, resource.dependencies, resource.functionDefaults || new Map());
     }
     
     // Sort combined properties: required first, then alphabetically
@@ -754,36 +915,32 @@ async function main() {
 
     for (const file of filesToProcess) {
       try {
-        // Read the full file content to extract interfaces
-        const fullContent = await fs.readFile(file, 'utf-8');
-        
-        // Expanded check for resource files:
-        // 1. Directly calls Resource()
-        // 2. Is an exported function that returns another resource
-        const isResourceFile = fullContent.includes('Resource(') || 
-                              /export\s+(async\s+)?function\s+\w+/.test(fullContent);
+        // Check if this is a resource file using TypeScript parser
+        const resourceInfo = extractResourceJSDoc(file);
+        const isResourceFile = resourceInfo !== null;
         
         if (!isResourceFile) {
           console.log(`Skipping ${path.basename(file)}: Not a resource file`);
           continue;
         }
         
-        const typeDefinitions = extractAllTypeDefinitions(fullContent);
+        // Read the full file to extract interfaces
+        const typeDefinitions = extractAllTypeDefinitions(file);
         
-        const resourceInfo = await parseResourceFile(file);
+        const fullResourceInfo = await parseResourceFile(file);
         
-        if (!resourceInfo) {
+        if (!fullResourceInfo) {
           console.log(`Skipping ${path.basename(file)}: Failed to parse resource`);
           continue;
         }
         
         // Skip files without examples (requirement)
-        if (!resourceInfo.examples || resourceInfo.examples.length === 0) {
-          console.log(`Skipping ${resourceInfo.name}: No examples found`);
+        if (!fullResourceInfo.examples || fullResourceInfo.examples.length === 0) {
+          console.log(`Skipping ${fullResourceInfo.name}: No examples found`);
           continue;
         }
         
-        const markdown = generateMarkdown(resourceInfo, typeDefinitions);
+        const markdown = generateMarkdown(fullResourceInfo, typeDefinitions);
         
         // Generate the output filename based on the source file name (kebab-case)
         const sourceFileName = path.basename(file, '.ts');
@@ -797,7 +954,7 @@ async function main() {
         // Write the markdown file
         await fs.writeFile(outputPath, markdown, 'utf-8');
         
-        console.log(`Generated documentation for ${resourceInfo.name} at ${outputPath}`);
+        console.log(`Generated documentation for ${fullResourceInfo.name} at ${outputPath}`);
         
         // Show the markdown in the console if we're only processing one file (the targetFile case)
         if (targetFile && filesToProcess.length === 1) {
