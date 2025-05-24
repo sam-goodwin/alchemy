@@ -19,6 +19,7 @@
     "./aws/oidc": "./lib/aws/oidc/index.js",
     "./cloudflare": "./lib/cloudflare/index.js",
     "./dns": "./lib/dns/index.js",
+    "./docker": "./lib/docker/index.js",
     "./esbuild": "./lib/esbuild/index.js",
     "./fs": "./lib/fs/index.js",
     "./github": "./lib/github/index.js",
@@ -31,6 +32,7 @@
     "./upstash": "./lib/upstash/index.js",
     "./vercel": "./lib/vercel/index.js",
     "./web/astro": "./lib/web/astro/index.js",
+    "./web/docker": "./lib/web/docker/index.js",
     "./web/tailwind": "./lib/web/tailwind/index.js",
     "./web/vite": "./lib/web/vite/index.js",
     "./web/vitepress": "./lib/web/vitepress/index.js"

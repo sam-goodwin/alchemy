@@ -267,29 +267,71 @@ const defaultOptions: SpawnOptions = {
 };
 
 /**
+ * Options for exec function
+ */
+export interface ExecOptions extends Partial<SpawnOptions> {
+  /**
+   * Whether to capture stdout and stderr
+   * @default false
+   */
+  captureOutput?: boolean;
+}
+
+/**
  * Execute a shell command.
+ *
+ * @param command The command to execute
+ * @param options Options for the command execution
+ * @returns Promise that resolves when the command completes.
+ *          If captureOutput is true, resolves with { stdout, stderr } strings.
  */
 export async function exec(
   command: string,
-  options?: Partial<SpawnOptions>,
-): Promise<void> {
+  options?: ExecOptions,
+): Promise<{ stdout: string; stderr: string } | undefined> {
   const [cmd, ...args] = command.split(/\s+/);
+  const captureOutput = options?.captureOutput === true;
 
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args, {
+    // Set stdio to pipe only if we're capturing output
+    const spawnOptions = {
       ...defaultOptions,
       ...options,
       env: {
         ...defaultOptions.env,
         ...options?.env,
       },
-    });
+      stdio: captureOutput ? "pipe" : defaultOptions.stdio,
+    };
+
+    const child = spawn(cmd, args, spawnOptions);
+
+    let stdout = "";
+    let stderr = "";
+
+    if (captureOutput) {
+      child.stdout?.on("data", (data) => {
+        stdout += data.toString();
+      });
+
+      child.stderr?.on("data", (data) => {
+        stderr += data.toString();
+      });
+    }
 
     child.on("close", (code) => {
       if (code === 0) {
-        resolve();
+        if (captureOutput) {
+          resolve({ stdout, stderr });
+        } else {
+          resolve(undefined);
+        }
       } else {
-        reject(new Error(`Command failed with exit code ${code}`));
+        reject(
+          new Error(
+            `Command failed with exit code ${code}${stderr ? `: ${stderr}` : ""}`,
+          ),
+        );
       }
     });
 
