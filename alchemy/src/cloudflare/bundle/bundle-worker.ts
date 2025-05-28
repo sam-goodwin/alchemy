@@ -1,4 +1,7 @@
 import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import type { ResolvedEnvironment } from "unenv";
 import { Bundle } from "../../esbuild/bundle.js";
 import type { Bindings } from "../bindings.js";
 import type { WorkerProps } from "../worker.js";
@@ -9,7 +12,6 @@ import {
 } from "./build-failures.js";
 import { external, external_als } from "./external.js";
 import { getNodeJSCompatMode } from "./nodejs-compat-mode.js";
-import { nodeJsCompatPlugin } from "./nodejs-compat.js";
 
 export async function bundleWorkerScript<B extends Bindings>(
   props: WorkerProps<B> & {
@@ -32,6 +34,17 @@ export async function bundleWorkerScript<B extends Bindings>(
   }
   const main = props.entrypoint;
 
+  let env: ResolvedEnvironment | undefined;
+  if (nodeJsCompatMode === "v2") {
+    const { defineEnv } = await import("unenv");
+    const { cloudflare } = await import("@cloudflare/unenv-preset");
+    env = defineEnv({
+      presets: [cloudflare],
+      npmShims: true,
+    }).env;
+  }
+  console.log(env?.inject);
+
   try {
     const bundle = await Bundle("bundle", {
       entryPoint: main,
@@ -49,9 +62,10 @@ export async function bundleWorkerScript<B extends Bindings>(
           ".sql": "text",
           ".json": "json",
         },
+        alias: env?.alias,
         plugins: [
           ...(props.bundle?.plugins ?? []),
-          ...(nodeJsCompatMode === "v2" ? [await nodeJsCompatPlugin()] : []),
+          // ...(nodeJsCompatMode === "v2" ? [await nodeJsCompatPlugin()] : []),
           ...(props.bundle?.alias
             ? [
                 createAliasPlugin({
@@ -63,12 +77,22 @@ export async function bundleWorkerScript<B extends Bindings>(
         ],
       },
       external: [
+        ...(env?.external ?? []),
         ...(nodeJsCompatMode === "als" ? external_als : external),
         ...(props.bundle?.external ?? []),
         ...(props.bundle?.options?.external ?? []),
       ],
+      inject:
+        props.bundle?.inject || env
+          ? [
+              ...(props.bundle?.inject ?? []),
+              ...(env?.polyfill ?? []),
+              ...(env?.inject ? [await makeInjectFile(env)] : []),
+            ]
+          : undefined,
     });
     if (bundle.content) {
+      await fs.writeFile("script.js", bundle.content);
       return bundle.content;
     }
     if (bundle.path) {
@@ -89,4 +113,35 @@ export async function bundleWorkerScript<B extends Bindings>(
     console.error("Error reading bundle:", e);
     throw new Error("Error reading bundle");
   }
+}
+
+async function makeInjectFile(env: ResolvedEnvironment): Promise<string> {
+  const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "alchemy-inject-"));
+  const stub = path.join(tmp, "globals.mjs");
+
+  const lines: string[] = [];
+
+  for (const [id, spec] of Object.entries(env.inject)) {
+    console.log(id);
+    const [modulePath, exportName = "default"] = Array.isArray(spec)
+      ? [spec[0], spec[1]]
+      : [spec, "default"];
+
+    // generate a unique local symbol to avoid clashes
+    const local = `${id}__shim`;
+
+    const importStmt =
+      exportName === "default"
+        ? `import ${local} from "${modulePath}";`
+        : `import { ${exportName} as ${local} } from "${modulePath}";`;
+
+    lines.push(
+      importStmt,
+      `globalThis.${id} = ${local};`,
+      `export const ${id} = ${local};`,
+    );
+  }
+
+  await fs.writeFile(stub, lines.join("\n"));
+  return stub; // add this to esbuild's `inject`
 }

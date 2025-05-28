@@ -4,15 +4,13 @@
 
 import type { Plugin, PluginBuild } from "esbuild";
 import assert from "node:assert";
-import module, { createRequire } from "node:module";
+import { createRequire } from "node:module";
 import nodePath from "node:path";
+import type { ResolvedEnvironment } from "unenv";
 import { dedent } from "../../util/dedent.js";
 
 const _require =
   typeof require === "undefined" ? createRequire(import.meta.url) : require;
-
-const REQUIRED_NODE_BUILT_IN_NAMESPACE = "node-built-in-modules";
-const REQUIRED_UNENV_ALIAS_NAMESPACE = "required-unenv-alias";
 
 /**
  * ESBuild plugin to apply the unenv preset.
@@ -23,7 +21,7 @@ export async function nodeJsCompatPlugin(): Promise<Plugin> {
   // `unenv` and `@cloudflare/unenv-preset` only publish esm
   const { defineEnv } = await import("unenv");
   const { cloudflare } = await import("@cloudflare/unenv-preset");
-  const { alias, inject, external, polyfill } = defineEnv({
+  const env = defineEnv({
     presets: [cloudflare],
     npmShims: true,
   }).env;
@@ -31,26 +29,13 @@ export async function nodeJsCompatPlugin(): Promise<Plugin> {
   return {
     name: "hybrid-nodejs_compat",
     setup(build) {
-      errorOnServiceWorkerFormat(build);
-      handleRequireCallsToNodeJSBuiltins(build);
-      handleUnenvAliasedPackages(build, alias, external);
-      handleNodeJSGlobals(build, inject, polyfill);
+      errorOnServiceWorkerFormat(build, env);
+      handleRequireCallsToNodeJSBuiltins(build, env);
+      // handleUnenvAliasedPackages(build, env);
+      handleNodeJSGlobals(build, env);
     },
   };
 }
-
-const NODEJS_MODULES_RE = new RegExp(
-  `^(node:)?(${module.builtinModules
-    .filter(
-      (m) =>
-        ![
-          // in some runtimes (like bun), `ws` is a built-in module but is not in `node`
-          // bundling for `nodejs_compat` should not polyfill these modules
-          "ws",
-        ].includes(m),
-    )
-    .join("|")})$`,
-);
 
 /**
  * If we are bundling a "Service Worker" formatted Worker, imports of external modules,
@@ -58,10 +43,13 @@ const NODEJS_MODULES_RE = new RegExp(
  *
  * This `onResolve()` handler will error if it identifies node.js external imports.
  */
-function errorOnServiceWorkerFormat(build: PluginBuild) {
+function errorOnServiceWorkerFormat(
+  build: PluginBuild,
+  env: ResolvedEnvironment,
+) {
   const paths = new Set();
   build.onStart(() => paths.clear());
-  build.onResolve({ filter: NODEJS_MODULES_RE }, (args) => {
+  build.onResolve({ filter: builtins(env) }, (args) => {
     paths.add(args.path);
     return null;
   });
@@ -89,22 +77,29 @@ function errorOnServiceWorkerFormat(build: PluginBuild) {
   });
 }
 
+function builtins(env: ResolvedEnvironment) {
+  return new RegExp(`^(node:)?(${env.external.join("|")})$`);
+}
+
 /**
  * We must convert `require()` calls for Node.js modules to a virtual ES Module that can be imported avoiding the require calls.
  * We do this by creating a special virtual ES module that re-exports the library in an onLoad handler.
  * The onLoad handler is triggered by matching the "namespace" added to the resolve.
  */
-function handleRequireCallsToNodeJSBuiltins(build: PluginBuild) {
-  build.onResolve({ filter: NODEJS_MODULES_RE }, (args) => {
+function handleRequireCallsToNodeJSBuiltins(
+  build: PluginBuild,
+  env: ResolvedEnvironment,
+) {
+  build.onResolve({ filter: builtins(env) }, (args) => {
     if (args.kind === "require-call") {
       return {
         path: args.path,
-        namespace: REQUIRED_NODE_BUILT_IN_NAMESPACE,
+        namespace: "node-built-in-modules",
       };
     }
   });
   build.onLoad(
-    { filter: /.*/, namespace: REQUIRED_NODE_BUILT_IN_NAMESPACE },
+    { filter: /.*/, namespace: "node-built-in-modules" },
     ({ path }) => {
       return {
         contents: dedent`
@@ -125,12 +120,13 @@ function handleRequireCallsToNodeJSBuiltins(build: PluginBuild) {
  */
 function handleUnenvAliasedPackages(
   build: PluginBuild,
-  alias: Record<string, string>,
-  external: readonly string[],
+  env: ResolvedEnvironment,
+  // alias: Record<string, string>,
+  // external: readonly string[],
 ) {
   // esbuild expects alias paths to be absolute
   const aliasAbsolute: Record<string, string> = {};
-  for (const [module, unresolvedAlias] of Object.entries(alias)) {
+  for (const [module, unresolvedAlias] of Object.entries(env.alias)) {
     try {
       aliasAbsolute[module] = _require.resolve(unresolvedAlias);
     } catch (_e) {
@@ -143,7 +139,7 @@ function handleUnenvAliasedPackages(
   );
 
   build.onResolve({ filter: UNENV_ALIAS_RE }, (args) => {
-    const unresolvedAlias = alias[args.path];
+    const unresolvedAlias = env.alias[args.path];
     // Convert `require()` calls for NPM packages to a virtual ES Module that can be imported avoiding the require calls.
     // Note: Does not apply to Node.js packages that are handled in `handleRequireCallsToNodeJSBuiltins`
     if (
@@ -153,19 +149,19 @@ function handleUnenvAliasedPackages(
     ) {
       return {
         path: args.path,
-        namespace: REQUIRED_UNENV_ALIAS_NAMESPACE,
+        namespace: "required-unenv-alias",
       };
     }
 
     // Resolve the alias to its absolute path and potentially mark it as external
     return {
       path: aliasAbsolute[args.path],
-      external: external.includes(unresolvedAlias),
+      external: env.external.includes(unresolvedAlias),
     };
   });
 
   build.onLoad(
-    { filter: /.*/, namespace: REQUIRED_UNENV_ALIAS_NAMESPACE },
+    { filter: /.*/, namespace: "required-unenv-alias" },
     ({ path }) => {
       return {
         contents: dedent`
@@ -188,11 +184,7 @@ function handleUnenvAliasedPackages(
  * - an `inject` injects virtual module defining the name on `globalThis`
  * - a `polyfill` is injected directly
  */
-function handleNodeJSGlobals(
-  build: PluginBuild,
-  inject: Record<string, string | readonly string[]>,
-  polyfill: readonly string[],
-) {
+function handleNodeJSGlobals(build: PluginBuild, env: ResolvedEnvironment) {
   const UNENV_VIRTUAL_MODULE_RE = /_virtual_unenv_global_polyfill-(.+)$/;
   const prefix = nodePath.resolve(
     // getBasePath(),
@@ -214,7 +206,7 @@ function handleNodeJSGlobals(
   // Module specifier (i.e. `/unenv/runtime/node/...`) keyed by path (i.e. `/prefix/_virtual_unenv_global_polyfill-...`)
   const virtualModulePathToSpecifier = new Map<string, string>();
 
-  for (const [injectedName, moduleSpecifier] of Object.entries(inject)) {
+  for (const [injectedName, moduleSpecifier] of Object.entries(env.inject)) {
     const [module, exportName, importName] = Array.isArray(moduleSpecifier)
       ? [moduleSpecifier[0], moduleSpecifier[1], moduleSpecifier[1]]
       : [moduleSpecifier, "default", "defaultExport"];
@@ -235,7 +227,7 @@ function handleNodeJSGlobals(
     // Inject the virtual modules
     ...virtualModulePathToSpecifier.keys(),
     // Inject the polyfills - needs an absolute path
-    ...polyfill.map((m) => _require.resolve(m)),
+    ...env.polyfill.map((m) => _require.resolve(m)),
   ];
 
   build.onResolve({ filter: UNENV_VIRTUAL_MODULE_RE }, ({ path }) => ({
