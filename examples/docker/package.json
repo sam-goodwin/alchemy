@@ -1,0 +1,10 @@
+{
+  "name": "docker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "bun run --env-file .env ./alchemy.run.ts",
+    "destroy": "bun run --env-file .env ./alchemy.run.ts destroy"
+  }
+}

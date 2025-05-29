@@ -25,7 +25,8 @@
     "examples/cloudflare-nuxt-pipeline",
     "examples/cloudflare-redwood",
     "examples/cloudflare-worker",
-    "examples/cloudflare-worker-bootstrap"
+    "examples/cloudflare-worker-bootstrap",
+    "examples/docker"
   ],
   "devDependencies": {
     "@biomejs/biome": "beta",
