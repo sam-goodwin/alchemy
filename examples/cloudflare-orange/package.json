@@ -1,0 +1,36 @@
+{
+  "name": "cloudflare-orange",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite build && wrangler dev",
+    "deploy": "bun run --env-file ../../.env ./alchemy.run.ts",
+    "destroy": "bun run --env-file ../../.env ./alchemy.run.ts --destroy",
+    "types": "orange types --no-wrangler"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250224.0",
+    "@orange-js/cli": "0.2.1",
+    "@orange-js/vite": "0.2.1",
+    "@types/react": "^19.0.2",
+    "esbuild": "^0.24.2",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "wrangler": "^4.14.4"
+  },
+  "dependencies": {
+    "@orange-js/orange": "0.2.1",
+    "@tailwindcss/vite": "^4.0.14",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.14"
+  }
+}
