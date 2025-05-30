@@ -14,6 +14,7 @@ export type ScopeOptions = {
   stateStore?: StateStoreType;
   quiet?: boolean;
   phase?: Phase;
+  dev?: boolean;
 };
 
 // TODO: support browser
@@ -55,6 +56,7 @@ export class Scope {
   public readonly stateStore: StateStoreType;
   public readonly quiet: boolean;
   public readonly phase: Phase;
+  public readonly dev: boolean;
 
   private isErrored = false;
   private finalized = false;
@@ -88,6 +90,7 @@ export class Scope {
       this.parent?.stateStore ??
       ((scope) => new FileSystemStateStore(scope));
     this.state = this.stateStore(this);
+    this.dev = options.dev ?? this.parent?.dev ?? false;
   }
 
   public get root(): Scope {
