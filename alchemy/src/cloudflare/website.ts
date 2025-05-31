@@ -81,7 +81,7 @@ export async function Website<B extends Bindings>(
           ? wrangler
           : (wrangler?.path ?? "wrangler.jsonc");
     const wranglerPath =
-      fileName && path.relative(cwd, path.join(cwd, fileName));
+      fileName && path.join(cwd, fileName);
     const wranglerMain =
       typeof wrangler === "object" ? (wrangler.main ?? props.main) : props.main;
 
