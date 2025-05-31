@@ -31,6 +31,7 @@ export type State<
   props: Props;
   oldProps?: Props;
   output: Out;
+  version?: number;
 };
 
 export type StateStoreType = (scope: Scope) => StateStore;

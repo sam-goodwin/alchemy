@@ -77,6 +77,7 @@ async function _apply<Out extends Resource>(
         },
         // deps: [...deps],
         props,
+        version: provider.options?.version,
       };
       await scope.state.set(resource[ResourceID], state);
     }
@@ -92,8 +93,11 @@ async function _apply<Out extends Resource>(
       const newProps = await serialize(scope, props, {
         encrypt: false,
       });
+      const currentVersion = provider.options?.version;
+      const storedVersion = state.version;
       if (
         JSON.stringify(oldProps) === JSON.stringify(newProps) &&
+        currentVersion === storedVersion &&
         alwaysUpdate !== true
       ) {
         if (!quiet) {
@@ -169,6 +173,7 @@ async function _apply<Out extends Resource>(
       status: phase === "create" ? "created" : "updated",
       output,
       props,
+      version: provider.options?.version,
       // deps: [...deps],
     });
     // if (output !== undefined) {

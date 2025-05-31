@@ -50,6 +50,11 @@ export interface ProviderOptions {
    * If true, the resource will be updated even if the inputs have not changed.
    */
   alwaysUpdate: boolean;
+  /**
+   * Version number for the resource provider. When incremented, will trigger
+   * updates even if props haven't changed. Defaults to undefined.
+   */
+  version?: number;
 }
 
 export type ResourceProps = {
