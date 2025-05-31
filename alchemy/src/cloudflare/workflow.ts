@@ -19,6 +19,13 @@ export interface WorkflowProps {
    * @default - workflowName if provided, otherwise id
    */
   className?: string;
+
+  /**
+   * Name of the script containing the workflow implementation
+   *
+   * @default - bound worker script
+   */
+  scriptName?: string;
 }
 
 export function isWorkflow(binding: Binding): binding is Workflow {
@@ -36,6 +43,7 @@ export class Workflow<PARAMS = unknown> {
 
   public readonly workflowName: string;
   public readonly className: string;
+  public readonly scriptName?: string;
 
   constructor(
     public readonly id: string,
@@ -43,6 +51,7 @@ export class Workflow<PARAMS = unknown> {
   ) {
     this.workflowName = props.workflowName ?? props.className ?? id;
     this.className = props.className ?? this.workflowName;
+    this.scriptName = props.scriptName;
   }
 }
 

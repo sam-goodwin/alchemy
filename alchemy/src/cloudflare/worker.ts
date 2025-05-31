@@ -805,7 +805,7 @@ export const _Worker = Resource(
         await upsertWorkflow(api, {
           workflowName: workflow.workflowName,
           className: workflow.className,
-          scriptName: workerName,
+          scriptName: workflow.scriptName ?? workerName,
         });
       }
 

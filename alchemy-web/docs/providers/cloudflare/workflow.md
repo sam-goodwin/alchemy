@@ -20,6 +20,20 @@ const workflow = await Workflow("my-workflow", {
 });
 ```
 
+## Use a Workflow Defined in Another Script
+
+Reference a workflow implemented in a different worker script using `scriptName`.
+
+```ts
+import { Workflow } from "alchemy/cloudflare";
+
+const workflow = await Workflow("shared-workflow", {
+  workflowName: "my-workflow",
+  className: "MyWorkflow",
+  scriptName: "shared-worker"
+});
+```
+
 ## Bind to a Worker
 
 Bind a workflow to a Worker to use its functionality.

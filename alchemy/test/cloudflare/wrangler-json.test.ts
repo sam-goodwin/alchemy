@@ -325,6 +325,7 @@ describe("WranglerJson Resource", () => {
         const workflow = new Workflow("test-workflow", {
           className: "TestWorkflow",
           workflowName: "test-workflow",
+          scriptName: "other-script",
         });
 
         const worker = await Worker(name, {
@@ -345,6 +346,7 @@ describe("WranglerJson Resource", () => {
         expect(spec.workflows?.[0].name).toEqual("test-workflow");
         expect(spec.workflows?.[0].binding).toEqual("WF");
         expect(spec.workflows?.[0].class_name).toEqual("TestWorkflow");
+        expect(spec.workflows?.[0].script_name).toEqual("other-script");
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true });
         await destroy(scope);

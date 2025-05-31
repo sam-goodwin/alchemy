@@ -261,6 +261,7 @@ export interface WranglerJsonSpec {
     name: string;
     binding: string;
     class_name: string;
+    script_name?: string;
   }[];
 
   /**
@@ -366,7 +367,12 @@ function processBindings(
   const services: { binding: string; service: string; environment?: string }[] =
     [];
   const secrets: string[] = [];
-  const workflows: { name: string; binding: string; class_name: string }[] = [];
+  const workflows: {
+    name: string;
+    binding: string;
+    class_name: string;
+    script_name?: string;
+  }[] = [];
   const d1Databases: {
     binding: string;
     database_id: string;
@@ -481,6 +487,7 @@ function processBindings(
         name: binding.workflowName,
         binding: bindingName,
         class_name: binding.className,
+        script_name: binding.scriptName,
       });
     } else if (binding.type === "d1") {
       d1Databases.push({
