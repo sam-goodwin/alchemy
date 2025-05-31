@@ -821,7 +821,9 @@ export const _Worker = Resource(
               accountId: api.accountId,
               settings: isQueueEventSource(eventSource)
                 ? eventSource.settings
-                : undefined,
+                : queue.dlq
+                  ? { deadLetterQueue: queue.dlq }
+                  : undefined,
             });
           }
           throw new Error(`Unsupported event source type: ${eventSource}`);

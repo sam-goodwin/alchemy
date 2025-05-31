@@ -23,6 +23,17 @@ export const queue = await Queue<{
   name: string;
   email: string;
 }>("my-worker-queue");
+
+// Create a dead letter queue for failed messages
+export const dlq = await Queue("failed-messages-dlq");
+
+// Create main queue with DLQ support
+export const queueWithDlq = await Queue<{
+  name: string;
+  email: string;
+}>("my-worker-queue-with-dlq", {
+  dlq: dlq  // or dlq: "failed-messages-dlq"
+});
 ```
 
 ## Configure Queue Producer

@@ -6,7 +6,7 @@ import {
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.ts";
-import type { QueueResource } from "./queue.ts";
+import type { QueueResource, Queue } from "./queue.ts";
 
 /**
  * Settings for configuring a Queue Consumer
@@ -41,6 +41,12 @@ export interface QueueConsumerSettings {
    * @default 30
    */
   retryDelay?: number;
+
+  /**
+   * Dead letter queue for messages that exceed max retries
+   * Can be either a queue name (string) or a Queue object
+   */
+  deadLetterQueue?: string | Queue;
 }
 
 /**
@@ -188,6 +194,7 @@ export const QueueConsumer = Resource(
             maxRetries: consumerData.result.settings.max_retries,
             maxWaitTimeMs: consumerData.result.settings.max_wait_time_ms,
             retryDelay: consumerData.result.settings.retry_delay,
+            deadLetterQueue: consumerData.result.settings.dead_letter_queue,
           }
         : undefined,
       createdOn: consumerData.result.created_on,
@@ -209,6 +216,7 @@ interface CloudflareQueueConsumerResponse {
       max_retries?: number;
       max_wait_time_ms?: number;
       retry_delay?: number;
+      dead_letter_queue?: string;
     };
     type: "worker";
     queue_id?: string;
@@ -255,6 +263,14 @@ export async function createQueueConsumer(
 
     if (props.settings.retryDelay !== undefined) {
       createPayload.settings.retry_delay = props.settings.retryDelay;
+    }
+
+    if (props.settings.deadLetterQueue !== undefined) {
+      const dlqName =
+        typeof props.settings.deadLetterQueue === "string"
+          ? props.settings.deadLetterQueue
+          : props.settings.deadLetterQueue.name;
+      createPayload.settings.dead_letter_queue = dlqName;
     }
   }
 
@@ -336,6 +352,14 @@ async function updateQueueConsumer(
     if (props.settings.retryDelay !== undefined) {
       updatePayload.settings.retry_delay = props.settings.retryDelay;
     }
+
+    if (props.settings.deadLetterQueue !== undefined) {
+      const dlqName =
+        typeof props.settings.deadLetterQueue === "string"
+          ? props.settings.deadLetterQueue
+          : props.settings.deadLetterQueue.name;
+      updatePayload.settings.dead_letter_queue = dlqName;
+    }
   }
 
   // Use PUT to update the consumer
@@ -397,6 +421,7 @@ export async function listQueueConsumers(
         max_retries?: number;
         max_wait_time_ms?: number;
         retry_delay?: number;
+        dead_letter_queue?: string;
       };
     }>;
   };
@@ -420,6 +445,7 @@ export async function listQueueConsumers(
           maxRetries: consumer.settings.max_retries,
           maxWaitTimeMs: consumer.settings.max_wait_time_ms,
           retryDelay: consumer.settings.retry_delay,
+          deadLetterQueue: consumer.settings.dead_letter_queue,
         }
       : undefined,
   }));

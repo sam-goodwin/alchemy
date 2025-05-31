@@ -55,3 +55,22 @@ await Worker("my-worker", {
   }
 });
 ```
+
+## Queue with Dead Letter Queue
+
+Configure a dead letter queue for handling failed messages.
+
+```ts
+import { Queue } from "alchemy/cloudflare";
+
+// Create the dead letter queue first
+const dlq = await Queue("dlq", {
+  name: "failed-messages-dlq"
+});
+
+// Create main queue with DLQ reference
+const queue = await Queue("main-queue", {
+  name: "main-queue",
+  dlq: dlq  // or dlq: "failed-messages-dlq"
+});
+```
