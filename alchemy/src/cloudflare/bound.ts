@@ -15,6 +15,7 @@ import type { QueueResource as _Queue } from "./queue.ts";
 import type { VectorizeIndexResource as _VectorizeIndex } from "./vectorize-index.ts";
 import type { Worker as _Worker } from "./worker.ts";
 import type { Workflow as _Workflow } from "./workflow.ts";
+import type { Images as _Images } from "./images.ts";
 
 export type Bound<T extends Binding> = T extends _DurableObjectNamespace<
   infer O
@@ -61,8 +62,10 @@ export type Bound<T extends Binding> = T extends _DurableObjectNamespace<
                                   ? Fetcher
                                   : T extends _Ai<infer M>
                                     ? Ai<M>
-                                    : T extends Self
-                                      ? Service
-                                      : T extends Json<infer T>
-                                        ? T
-                                        : Service;
+                                    : T extends _Images
+                                      ? ImagesBinding
+                                      : T extends Self
+                                        ? Service
+                                        : T extends Json<infer T>
+                                          ? T
+                                          : Service;

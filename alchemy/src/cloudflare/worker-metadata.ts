@@ -461,6 +461,11 @@ export async function prepareWorkerMetadata<B extends Bindings>(
         name: bindingName,
         dataset: binding.dataset,
       });
+    } else if (binding.type === "images") {
+      meta.bindings.push({
+        type: "images",
+        name: bindingName,
+      });
     } else {
       // @ts-expect-error - we should never reach here
       throw new Error(`Unsupported binding type: ${binding.type}`);

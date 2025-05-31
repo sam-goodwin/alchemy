@@ -19,6 +19,7 @@ export * from "./d1-import.ts";
 export * from "./dns-records.ts";
 export * from "./durable-object-namespace.ts";
 export * from "./hyperdrive.ts";
+export * from "./images.ts";
 export * from "./kv-namespace.ts";
 export * from "./nuxt.ts";
 export * from "./permission-groups.ts";
