@@ -1,4 +1,4 @@
-import { decryptWithKey, encrypt } from "./encrypt.ts";
+import { decryptWithKey, encryptSecure } from "./encrypt.ts";
 import {
   InnerResourceScope,
   ResourceFQN,
@@ -121,7 +121,7 @@ export async function serialize(
     return {
       "@secret":
         options?.encrypt !== false
-          ? await encrypt(value.unencrypted, scope.password)
+          ? await encryptSecure(value.unencrypted, scope.password)
           : value.unencrypted,
     };
   } else if (isType(value)) {

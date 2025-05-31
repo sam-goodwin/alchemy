@@ -164,4 +164,63 @@ describe("serde", async () => {
       }),
     ).rejects.toThrow();
   });
+
+  test("backwards compatibility can decrypt old v1 encrypted secrets", async (scope) => {
+    const { encrypt: encryptV1 } = await import("../src/encrypt.js");
+    const oldSecret = alchemy.secret("legacy-secret-data");
+
+    if (!scope.password) {
+      throw new Error("Password required for test");
+    }
+
+    const oldEncrypted = await encryptV1(oldSecret.unencrypted, scope.password);
+
+    const oldSerializedData = {
+      "@secret": oldEncrypted.startsWith("v1:")
+        ? oldEncrypted.slice(3)
+        : oldEncrypted,
+    };
+
+    const deserialized = await deserialize(scope, oldSerializedData);
+    expect(deserialized).toBeInstanceOf(Secret);
+    expect(deserialized.unencrypted).toBe("legacy-secret-data");
+  });
+
+  test("new encryption uses secure v2 method", async (scope) => {
+    const secret = alchemy.secret("new-secure-data");
+
+    const serialized = await serialize(scope, secret);
+    expect(serialized).toHaveProperty("@secret");
+    expect(typeof serialized["@secret"]).toBe("string");
+    expect(serialized["@secret"]).toMatch(/^v2:/);
+    expect(serialized["@secret"]).not.toContain("new-secure-data");
+
+    const deserialized = await deserialize(scope, serialized);
+    expect(deserialized).toBeInstanceOf(Secret);
+    expect(deserialized.unencrypted).toBe("new-secure-data");
+  });
+
+  test("can decrypt both v1 and v2 encrypted data in same session", async (scope) => {
+    const { encrypt: encryptV1 } = await import("../src/encrypt.js");
+
+    if (!scope.password) {
+      throw new Error("Password required for test");
+    }
+
+    const v1Encrypted = await encryptV1("v1-data", scope.password);
+    const v1Data = {
+      "@secret": v1Encrypted.startsWith("v1:")
+        ? v1Encrypted.slice(3)
+        : v1Encrypted,
+    };
+
+    const v2Secret = alchemy.secret("v2-data");
+    const v2Data = await serialize(scope, v2Secret);
+
+    const v1Deserialized = await deserialize(scope, v1Data);
+    const v2Deserialized = await deserialize(scope, v2Data);
+
+    expect(v1Deserialized.unencrypted).toBe("v1-data");
+    expect(v2Deserialized.unencrypted).toBe("v2-data");
+  });
 });
