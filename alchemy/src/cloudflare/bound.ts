@@ -12,6 +12,7 @@ import type { DurableObjectNamespace as _DurableObjectNamespace } from "./durabl
 import type { HyperdriveResource as _Hyperdrive } from "./hyperdrive.ts";
 import type { PipelineResource as _Pipeline } from "./pipeline.ts";
 import type { QueueResource as _Queue } from "./queue.ts";
+import type { SecretsStoreResource as _SecretsStore } from "./secrets-store.ts";
 import type { VectorizeIndexResource as _VectorizeIndex } from "./vectorize-index.ts";
 import type { Worker as _Worker } from "./worker.ts";
 import type { Workflow as _Workflow } from "./workflow.ts";
@@ -51,18 +52,24 @@ export type Bound<T extends Binding> = T extends _DurableObjectNamespace<
                         ? VectorizeIndex
                         : T extends _Queue<infer Body>
                           ? Queue<Body>
-                          : T extends _AnalyticsEngineDataset
-                            ? AnalyticsEngineDataset
-                            : T extends _Pipeline<infer R>
-                              ? Pipeline<R>
-                              : T extends string
-                                ? string
-                                : T extends BrowserRendering
-                                  ? Fetcher
-                                  : T extends _Ai<infer M>
-                                    ? Ai<M>
-                                    : T extends Self
-                                      ? Service
-                                      : T extends Json<infer T>
-                                        ? T
-                                        : Service;
+                          : T extends _SecretsStore
+                            ? SecretsStoreBinding
+                            : T extends _AnalyticsEngineDataset
+                              ? AnalyticsEngineDataset
+                              : T extends _Pipeline<infer R>
+                                ? Pipeline<R>
+                                : T extends string
+                                  ? string
+                                  : T extends BrowserRendering
+                                    ? Fetcher
+                                    : T extends _Ai<infer M>
+                                      ? Ai<M>
+                                      : T extends Self
+                                        ? Service
+                                        : T extends Json<infer T>
+                                          ? T
+                                          : Service;
+
+interface SecretsStoreBinding {
+  get: (secretName: string) => Promise<string | null>;
+}

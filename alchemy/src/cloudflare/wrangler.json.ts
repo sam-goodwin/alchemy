@@ -530,6 +530,8 @@ function processBindings(
       });
     } else if (binding.type === "json") {
       // TODO(sam): anything to do here? not sure wrangler.json supports this
+    } else if (binding.type === "secrets_store") {
+      // Secrets Store bindings are handled via secrets_store_secrets array in wrangler.json
     } else {
       // biome-ignore lint/correctness/noVoidTypeReturn: it returns never
       return assertNever(binding);

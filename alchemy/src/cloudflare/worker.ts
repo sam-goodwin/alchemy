@@ -49,6 +49,7 @@ import {
   listQueueConsumers,
 } from "./queue-consumer.ts";
 import { type QueueResource, isQueue } from "./queue.ts";
+
 import { isVectorizeIndex } from "./vectorize-index.ts";
 import { type AssetUploadResult, uploadAssets } from "./worker-assets.ts";
 import {

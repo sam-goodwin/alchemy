@@ -12,6 +12,7 @@ import type { Bound } from "./bound.ts";
 import type { BrowserRendering } from "./browser-rendering.ts";
 import type { R2BucketResource } from "./bucket.ts";
 import type { D1DatabaseResource } from "./d1-database.ts";
+import type { SecretsStoreResource } from "./secrets-store.ts";
 import type { DurableObjectNamespace } from "./durable-object-namespace.ts";
 import type { HyperdriveResource } from "./hyperdrive.ts";
 import type { KVNamespaceResource } from "./kv-namespace.ts";
@@ -47,6 +48,7 @@ export type Binding =
   | PipelineResource
   | QueueResource
   | R2BucketResource
+  | SecretsStoreResource
   | {
       type: "kv_namespace";
       id: string;
@@ -96,6 +98,7 @@ export type WorkerBindingSpec =
   | WorkerBindingQueue
   | WorkerBindingR2Bucket
   | WorkerBindingSecretText
+  | WorkerBindingSecretsStore
   | WorkerBindingService
   | WorkerBindingStaticContent
   | WorkerBindingTailConsumer
@@ -289,6 +292,17 @@ export interface WorkerBindingSecretText {
   type: "secret_text";
   /** Secret value */
   text: string;
+}
+
+export interface WorkerBindingSecretsStore {
+  /** The name of the binding */
+  name: string;
+  /** Type identifier for Secrets Store binding */
+  type: "secrets_store";
+  /** Store ID */
+  store_id: string;
+  /** Secret name */
+  secret_name: string;
 }
 
 /**
