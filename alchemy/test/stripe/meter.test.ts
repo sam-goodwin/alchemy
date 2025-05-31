@@ -18,7 +18,7 @@ const test = alchemy.test(import.meta, {
 });
 
 describe("Stripe Meter Resource", () => {
-  const testRunSuffix = Date.now();
+  const testRunSuffix = "test1";
   const baseLogicalId = `${BRANCH_PREFIX}-test-stripe-meter`;
 
   const generateMeterDisplayName = (suffix: string | number) =>

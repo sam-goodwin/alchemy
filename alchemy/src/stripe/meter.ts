@@ -1,6 +1,8 @@
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
+import type { Secret } from "../secret.ts";
+import { createStripeClient } from "./client.ts";
 
 /**
  * Properties for creating or updating a Stripe Meter.
@@ -22,6 +24,10 @@ export interface MeterProps {
   valueSettings: {
     eventPayloadKey: string;
   };
+  /**
+   * API key to use (overrides environment variable)
+   */
+  apiKey?: Secret;
 }
 
 /**
@@ -144,11 +150,7 @@ export const Meter = Resource(
     _logicalId: string,
     props: MeterProps,
   ): Promise<Meter> {
-    const apiKey = process.env.STRIPE_API_KEY;
-    if (!apiKey) {
-      throw new Error("STRIPE_API_KEY environment variable is required");
-    }
-    const stripe = new Stripe(apiKey);
+    const stripe = createStripeClient({ apiKey: props.apiKey });
 
     const currentOutputId = this.output?.id;
 

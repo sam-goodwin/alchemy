@@ -1,6 +1,8 @@
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
+import type { Secret } from "../secret.ts";
+import { createStripeClient, handleStripeDeleteError } from "./client.ts";
 
 export type EnabledEvent = Stripe.WebhookEndpointUpdateParams.EnabledEvent;
 
@@ -42,6 +44,11 @@ export interface WebhookEndpointProps {
    * Webhook endpoint metadata
    */
   metadata?: Record<string, string>;
+
+  /**
+   * API key to use (overrides environment variable)
+   */
+  apiKey?: Secret;
 }
 
 /**
@@ -138,14 +145,7 @@ export const WebhookEndpoint = Resource(
     _id: string,
     props: WebhookEndpointProps,
   ) {
-    // Get Stripe API key from context or environment
-    const apiKey = process.env.STRIPE_API_KEY;
-    if (!apiKey) {
-      throw new Error("STRIPE_API_KEY environment variable is required");
-    }
-
-    // Initialize Stripe client
-    const stripe = new Stripe(apiKey);
+    const stripe = createStripeClient({ apiKey: props.apiKey });
 
     if (this.phase === "delete") {
       try {
@@ -154,8 +154,7 @@ export const WebhookEndpoint = Resource(
           await stripe.webhookEndpoints.del(this.output.id);
         }
       } catch (error) {
-        // Ignore if the webhook doesn't exist
-        console.error("Error deleting webhook:", error);
+        handleStripeDeleteError(error, "WebhookEndpoint", this.output?.id);
       }
 
       return this.destroy();

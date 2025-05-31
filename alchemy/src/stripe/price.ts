@@ -1,6 +1,8 @@
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
+import type { Secret } from "../secret.ts";
+import { createStripeClient, handleStripeDeleteError } from "./client.ts";
 
 /**
  * Properties for price recurring configuration
@@ -106,6 +108,11 @@ export interface PriceProps {
    * If set to true, will atomically transfer the lookup key from an existing price to this price.
    */
   transferLookupKey?: boolean;
+
+  /**
+   * API key to use (overrides environment variable)
+   */
+  apiKey?: Secret;
 }
 
 /**
@@ -195,14 +202,7 @@ export const Price = Resource(
     _id: string,
     props: PriceProps,
   ): Promise<Price> {
-    // Get Stripe API key from context or environment
-    const apiKey = process.env.STRIPE_API_KEY;
-    if (!apiKey) {
-      throw new Error("STRIPE_API_KEY environment variable is required");
-    }
-
-    // Initialize Stripe client
-    const stripe = new Stripe(apiKey);
+    const stripe = createStripeClient({ apiKey: props.apiKey });
 
     if (this.phase === "delete") {
       try {
@@ -211,8 +211,7 @@ export const Price = Resource(
           await stripe.prices.update(this.output.id, { active: false });
         }
       } catch (error) {
-        // Ignore if the price doesn't exist
-        console.error("Error deactivating price:", error);
+        handleStripeDeleteError(error, "Price", this.output?.id);
       }
 
       return this.destroy();
