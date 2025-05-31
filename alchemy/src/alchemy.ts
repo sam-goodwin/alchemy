@@ -141,8 +141,8 @@ async function _alchemy(
   const indent = " ".repeat(leadingSpaces);
 
   const [{ isFileRef }, { isFileCollection }] = await Promise.all([
-    import("./fs/file-ref.ts"),
-    import("./fs/file-collection.ts"),
+    import("./fs/file-ref.js"),
+    import("./fs/file-collection.js"),
   ]);
 
   const appendices: Record<string, string> = {};

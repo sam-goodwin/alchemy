@@ -63,7 +63,7 @@ export type Bound<T extends Binding> = T extends _DurableObjectNamespace<
                                   : T extends _Ai<infer M>
                                     ? Ai<M>
                                     : T extends _VersionMetadata
-                                      ? Fetcher
+                                      ? WorkerVersionMetadata
                                       : T extends Self
                                         ? Service
                                         : T extends Json<infer T>
