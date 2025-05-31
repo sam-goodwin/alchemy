@@ -131,6 +131,7 @@
     "hono": "^4.0.0",
     "jszip": "^3.0.0",
     "libsodium-wrappers": "^0.7.15",
+    "miniflare": "^4.0.0",
     "prettier": "^3.0.0",
     "stripe": "^17.0.0",
     "turndown": "^7.0.0",
@@ -153,6 +154,7 @@
     "@types/libsodium-wrappers": "^0.7.14",
     "@types/node": "latest",
     "@types/turndown": "^5.0.5",
+    "@types/ws": "^8.18.1",
     "ai": "^4.1.16",
     "arktype": "^2.1.16",
     "braintrust": "^0.0.201",
@@ -167,7 +169,8 @@
     "typescript": "latest",
     "vite": "^6.0.7",
     "vitepress": "^1.6.3",
-    "wrangler": "^3.114.0",
+    "wrangler": "^4.16.1",
+    "ws": "^8.18.2",
     "xdg-app-paths": "^8.3.0",
     "yaml": "^2.7.1"
   }

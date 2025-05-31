@@ -291,6 +291,13 @@ export interface AlchemyOptions {
    * Required if using alchemy.secret() in this scope.
    */
   password?: string;
+
+  /**
+   * If true, some resources will switch their behavior to a local dev-friendly mode.
+   *
+   * @default false
+   */
+  dev?: boolean;
 }
 
 export interface ScopeOptions extends AlchemyOptions {

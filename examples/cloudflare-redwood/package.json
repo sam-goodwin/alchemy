@@ -39,6 +39,6 @@
     "drizzle-kit": "beta",
     "tsx": "^4.19.3",
     "vite": "^6.3.2",
-    "wrangler": "^4.12.1"
+    "wrangler": "^4.16.1"
   }
 }

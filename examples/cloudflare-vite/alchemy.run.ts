@@ -18,6 +18,7 @@ const app = await alchemy("cloudflare-vite", {
     process.env.ALCHEMY_STATE_STORE === "cloudflare"
       ? (scope) => new R2RestStateStore(scope)
       : undefined,
+  dev: process.argv.includes("--dev"),
 });
 
 export const [authStore, storage] = await Promise.all([

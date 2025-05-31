@@ -2,7 +2,6 @@ import alchemy, { type } from "alchemy";
 import {
   DurableObjectNamespace,
   Queue,
-  R2Bucket,
   R2RestStateStore,
   Worker,
   Workflow,
@@ -19,6 +18,8 @@ const app = await alchemy("cloudflare-worker", {
     process.env.ALCHEMY_STATE_STORE === "cloudflare"
       ? (scope) => new R2RestStateStore(scope)
       : undefined,
+  dev: process.argv.includes("--dev"),
+  quiet: !process.argv.includes("--verbose"),
 });
 
 export const queue = await Queue<{
@@ -37,10 +38,10 @@ export const rpc = await Worker(`cloudflare-worker-rpc${BRANCH_PREFIX}`, {
 export const worker = await Worker(`cloudflare-worker-worker${BRANCH_PREFIX}`, {
   entrypoint: "./src/worker.ts",
   bindings: {
-    BUCKET: await R2Bucket(`cloudflare-worker-bucket${BRANCH_PREFIX}`, {
-      // so that CI is idempotent
-      adopt: true,
-    }),
+    // BUCKET: await R2Bucket(`cloudflare-worker-bucket${BRANCH_PREFIX}`, {
+    //   // so that CI is idempotent
+    //   adopt: true,
+    // }),
     QUEUE: queue,
     WORKFLOW: new Workflow("OFACWorkflow", {
       className: "OFACWorkflow",
