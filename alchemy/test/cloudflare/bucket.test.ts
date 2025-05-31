@@ -169,6 +169,25 @@ describe("R2 Bucket Resource", async () => {
       console.log("Visit the Cloudflare dashboard to verify bucket deletion");
     }
   });
+
+  test("should throw error when trying to change bucket name during update", async (scope) => {
+    const nameChangeTestId = `${testId}-name-change`;
+    
+    const bucket = await R2Bucket(nameChangeTestId, {
+      name: `${nameChangeTestId}-original`,
+      adopt: true,
+    });
+
+    expect(bucket.name).toEqual(`${nameChangeTestId}-original`);
+
+    await expect(async () => {
+      await R2Bucket(nameChangeTestId, {
+        name: `${nameChangeTestId}-changed`,
+      });
+    }).toThrow(
+      "Cannot update R2Bucket name after creation. Bucket name is immutable.",
+    );
+  });
 });
 
 async function assertBucketDeleted(bucket: R2Bucket) {
