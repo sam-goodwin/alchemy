@@ -125,6 +125,7 @@
     "aws4fetch": "^1.0.20",
     "cloudflare": "^4.0.0",
     "diff": "^7.0.0",
+    "dofs": "^0.0.1",
     "esbuild": "^0.25.1",
     "fast-json-patch": "^3.1.1",
     "glob": "^10.0.0",
