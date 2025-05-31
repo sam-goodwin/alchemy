@@ -1,33 +1,33 @@
 ---
-title: Managing Cloudflare KV Namespaces with Alchemy
-description: Learn how to create and manage Cloudflare KV Namespaces using Alchemy for key-value data storage at the edge.
+title: Cloudflare KV Namespace with Alchemy
+description: A Cloudflare KV Namespace is a key-value store that can be used to store data for your application.
 ---
 
 # KVNamespace
 
 A [Cloudflare KV Namespace](https://developers.cloudflare.com/kv/concepts/kv-namespaces/) is a key-value store that can be used to store data for your application.
 
-## Minimal Example
+## Examples
 
-Create a basic KV namespace for storing user data.
+### A basic KV namespace for storing user data
 
-```ts
+```typescript
 import { KVNamespace } from "alchemy/cloudflare";
 
+// Create a basic KV namespace for storing user data
 const users = await KVNamespace("users", {
   title: "user-data"
 });
 ```
 
-## With Initial Values and TTL
+---
 
-Create a KV namespace with initial values and expiration.
+### A KV namespace with initial values and TTL
 
-```ts
-import { KVNamespace } from "alchemy/cloudflare";
-
+```typescript
+// Create a KV namespace with initial values and TTL
 const sessions = await KVNamespace("sessions", {
-  title: "user-sessions", 
+  title: "user-sessions",
   values: [{
     key: "session_123",
     value: { userId: "user_456", role: "admin" },
@@ -36,13 +36,12 @@ const sessions = await KVNamespace("sessions", {
 });
 ```
 
-## With Metadata
+---
 
-Create a KV namespace with metadata for caching.
+### A KV namespace with metadata for caching
 
-```ts
-import { KVNamespace } from "alchemy/cloudflare";
-
+```typescript
+// Create a KV namespace with metadata for caching
 const assets = await KVNamespace("assets", {
   title: "static-assets",
   values: [{
@@ -56,22 +55,31 @@ const assets = await KVNamespace("assets", {
 });
 ```
 
-## Bind to a Worker
+---
 
-Bind a KV namespace to a Worker for data access.
+### Adopt an existing namespace if it already exists instead of failing
 
-```ts
-import { Worker, KVNamespace } from "alchemy/cloudflare";
-
-const store = await KVNamespace("store", {
-  title: "data-store"
-});
-
-await Worker("api", {
-  name: "api-worker",
-  script: "console.log('Hello, world!')",
-  bindings: {
-    STORE: store
-  }
+```typescript
+// Adopt an existing namespace if it already exists instead of failing
+const existingNamespace = await KVNamespace("existing-ns", {
+  title: "existing-namespace",
+  adopt: true,
+  values: [{
+    key: "config",
+    value: { setting: "updated-value" }
+  }]
 });
 ```
+
+---
+
+### When removing from Alchemy state, keep the namespace in Cloudflare
+
+```typescript
+// When removing from Alchemy state, keep the namespace in Cloudflare
+const preservedNamespace = await KVNamespace("preserve-ns", {
+  title: "preserved-namespace",
+  delete: false
+});
+```
+
