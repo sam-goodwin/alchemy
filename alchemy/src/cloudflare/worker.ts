@@ -820,7 +820,13 @@ export const _Worker = Resource(
               scriptName: workerName,
               accountId: api.accountId,
               settings: isQueueEventSource(eventSource)
-                ? eventSource.settings
+                ? {
+                    batchSize: eventSource.batchSize,
+                    maxConcurrency: eventSource.maxConcurrency,
+                    maxRetries: eventSource.maxRetries,
+                    maxWaitTimeMs: eventSource.maxWaitTimeMs,
+                    retryDelay: eventSource.retryDelay,
+                  }
                 : undefined,
             });
           }
