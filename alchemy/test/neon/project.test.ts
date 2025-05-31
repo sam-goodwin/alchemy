@@ -112,11 +112,57 @@ describe("NeonProject Resource", () => {
       const getUpdatedResponse = await api.get(`/projects/${project.id}`);
       const updatedData: any = await getUpdatedResponse.json();
       expect(updatedData.project.name).toEqual(updatedName);
+
+      try {
+        await NeonProject(testId, {
+          name: updatedName,
+          region_id: "aws-us-east-1",
+          pg_version: 16,
+          existing_project_id: project.id,
+        });
+
+        expect(false).toBe(true);
+      } catch (error) {
+        expect((error as Error).message).toContain(
+          "pg_version cannot be updated after project creation",
+        );
+      }
     } finally {
       // Always clean up, even if test assertions fail
       await destroy(scope);
 
       // Verify project was deleted
+      if (project?.id) {
+        const getDeletedResponse = await api.get(`/projects/${project.id}`);
+        expect(getDeletedResponse.status).toEqual(404);
+      }
+    }
+  });
+
+  test("create project without pg_version uses Neon default", async (scope) => {
+    let project: NeonProject | undefined;
+    try {
+      // Create a project without specifying pg_version
+      const projectName = generateProjectName();
+      project = await NeonProject(`${testId}-default`, {
+        name: projectName,
+        region_id: "aws-us-east-1",
+      });
+
+      expect(project.id).toBeTruthy();
+      expect(project.name).toEqual(projectName);
+      expect(project.pg_version).toBeTruthy();
+
+      // Verify project was created by querying the API directly
+      const getResponse = await api.get(`/projects/${project.id}`);
+      expect(getResponse.status).toEqual(200);
+
+      const responseData: any = await getResponse.json();
+      expect(responseData.project.name).toEqual(projectName);
+      expect(responseData.project.pg_version).toBeTruthy();
+    } finally {
+      await destroy(scope);
+
       if (project?.id) {
         const getDeletedResponse = await api.get(`/projects/${project.id}`);
         expect(getDeletedResponse.status).toEqual(404);

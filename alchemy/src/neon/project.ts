@@ -38,7 +38,7 @@ export interface NeonProjectProps extends NeonApiOptions {
 
   /**
    * PostgreSQL version to use
-   * @default 16
+   * If not specified, Neon will use its default version
    */
   pg_version?: 14 | 15 | 16 | 17;
 
@@ -537,6 +537,16 @@ export const NeonProject = Resource(
       if (this.phase === "update" && projectId) {
         // Update existing project
         // Neon only allows updating the project name
+        if (
+          props.pg_version &&
+          this.output?.pg_version &&
+          props.pg_version !== this.output.pg_version
+        ) {
+          throw new Error(
+            `pg_version cannot be updated after project creation. The project will keep its current PostgreSQL version (${this.output.pg_version}). To use a different version, create a new project.`,
+          );
+        }
+
         const projectResponse = await api.patch(`/projects/${projectId}`, {
           project: {
             name: props.name,
@@ -561,6 +571,18 @@ export const NeonProject = Resource(
           const getResponse = await api.get(`/projects/${projectId}`);
           if (getResponse.ok) {
             // Project exists, update it
+            const existingProject =
+              (await getResponse.json()) as NeonApiResponse;
+            if (
+              props.pg_version &&
+              existingProject.project?.pg_version &&
+              props.pg_version !== existingProject.project.pg_version
+            ) {
+              throw new Error(
+                `pg_version cannot be updated after project creation. The project will keep its current PostgreSQL version (${existingProject.project.pg_version}). To use a different version, create a new project.`,
+              );
+            }
+
             const projectResponse = await api.patch(`/projects/${projectId}`, {
               project: {
                 name: props.name,
@@ -646,7 +668,7 @@ async function createNewProject(
     project: {
       name: props.name,
       region_id: props.region_id || "aws-us-east-1",
-      pg_version: props.pg_version || 16,
+      pg_version: props.pg_version,
       default_endpoint: defaultEndpoint,
       branch: defaultEndpoint
         ? { name: props.default_branch_name || "main" }
