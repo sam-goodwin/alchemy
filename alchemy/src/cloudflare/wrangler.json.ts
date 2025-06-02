@@ -406,16 +406,16 @@ function processBindings(
   for (const eventSource of eventSources ?? []) {
     if (isQueueEventSource(eventSource)) {
       queues.consumers.push({
-        queue: eventSource.queue.id,
-        max_batch_size: eventSource.settings?.batchSize,
-        max_concurrency: eventSource.settings?.maxConcurrency,
-        max_retries: eventSource.settings?.maxRetries,
-        max_wait_time_ms: eventSource.settings?.maxWaitTimeMs,
-        retry_delay: eventSource.settings?.retryDelay,
+        queue: eventSource.queue.name,
+        max_batch_size: eventSource.batchSize,
+        max_concurrency: eventSource.maxConcurrency,
+        max_retries: eventSource.maxRetries,
+        max_wait_time_ms: eventSource.maxWaitTimeMs,
+        retry_delay: eventSource.retryDelay,
       });
     } else if (isQueue(eventSource)) {
       queues.consumers.push({
-        queue: eventSource.id,
+        queue: eventSource.name,
       });
     }
   }

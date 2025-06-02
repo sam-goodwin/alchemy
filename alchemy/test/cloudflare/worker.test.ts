@@ -1486,10 +1486,8 @@ describe("Worker Resource", () => {
       // Create a Queue
       queue = await Queue(queueName, {
         name: queueName,
-        settings: {
-          deliveryDelay: 0, // No delay for testing
-          deliveryPaused: false,
-        },
+        deliveryDelay: 0, // No delay for testing
+        deliveryPaused: false,
       });
 
       expect(queue.id).toBeTruthy();

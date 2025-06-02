@@ -53,19 +53,16 @@ describe("Cloudflare Queue Resource", async () => {
       // Create a queue with custom settings
       const queue = await Queue(settingsQueueName, {
         name: settingsQueueName,
-        settings: {
-          deliveryDelay: 10,
-          deliveryPaused: true,
-          messageRetentionPeriod: 3600, // 1 hour
-        },
+        deliveryDelay: 10,
+        deliveryPaused: true,
+        messageRetentionPeriod: 3600, // 1 hour
       });
 
       expect(queue.name).toEqual(settingsQueueName);
       expect(queue.id).toBeTruthy();
-      expect(queue.settings).toBeTruthy();
-      expect(queue.settings?.deliveryDelay).toEqual(10);
-      expect(queue.settings?.deliveryPaused).toEqual(true);
-      expect(queue.settings?.messageRetentionPeriod).toEqual(3600);
+      expect(queue.deliveryDelay).toEqual(10);
+      expect(queue.deliveryPaused).toEqual(true);
+      expect(queue.messageRetentionPeriod).toEqual(3600);
     } finally {
       await alchemy.destroy(scope);
     }
@@ -78,28 +75,24 @@ describe("Cloudflare Queue Resource", async () => {
       // Create a queue with initial settings
       let queue = await Queue(updateQueueName, {
         name: updateQueueName,
-        settings: {
-          deliveryDelay: 5,
-          deliveryPaused: false,
-        },
+        deliveryDelay: 5,
+        deliveryPaused: false,
       });
 
       expect(queue.name).toEqual(updateQueueName);
-      expect(queue.settings?.deliveryDelay).toEqual(5);
-      expect(queue.settings?.deliveryPaused).toEqual(false);
+      expect(queue.deliveryDelay).toEqual(5);
+      expect(queue.deliveryPaused).toEqual(false);
 
       // Update the queue settings
       queue = await Queue(updateQueueName, {
         name: updateQueueName,
-        settings: {
-          deliveryDelay: 15,
-          deliveryPaused: true,
-        },
+        deliveryDelay: 15,
+        deliveryPaused: true,
       });
 
       // Verify the update
-      expect(queue.settings?.deliveryDelay).toEqual(15);
-      expect(queue.settings?.deliveryPaused).toEqual(true);
+      expect(queue.deliveryDelay).toEqual(15);
+      expect(queue.deliveryPaused).toEqual(true);
     } finally {
       await alchemy.destroy(scope);
     }
@@ -137,32 +130,28 @@ describe("Cloudflare Queue Resource", async () => {
       // Create first queue
       const firstQueue = await Queue(firstId, {
         name: adoptQueueName,
-        settings: {
-          deliveryDelay: 5,
-          deliveryPaused: false,
-        },
+        deliveryDelay: 5,
+        deliveryPaused: false,
       });
 
       expect(firstQueue.name).toEqual(adoptQueueName);
       expect(firstQueue.id).toBeTruthy();
-      expect(firstQueue.settings?.deliveryDelay).toEqual(5);
-      expect(firstQueue.settings?.deliveryPaused).toEqual(false);
+      expect(firstQueue.deliveryDelay).toEqual(5);
+      expect(firstQueue.deliveryPaused).toEqual(false);
 
       // Create second queue with same name but different ID and adopt: true
       const secondQueue = await Queue(secondId, {
         name: adoptQueueName,
         adopt: true,
-        settings: {
-          deliveryDelay: 10,
-          deliveryPaused: true,
-        },
+        deliveryDelay: 10,
+        deliveryPaused: true,
       });
 
       // Verify second queue adopted the first queue's ID
       expect(secondQueue.name).toEqual(adoptQueueName);
       expect(secondQueue.id).toEqual(firstQueue.id);
-      expect(secondQueue.settings?.deliveryDelay).toEqual(10);
-      expect(secondQueue.settings?.deliveryPaused).toEqual(true);
+      expect(secondQueue.deliveryDelay).toEqual(10);
+      expect(secondQueue.deliveryPaused).toEqual(true);
 
       // Verify only one queue exists with this name
       const queues = await listQueues(api);

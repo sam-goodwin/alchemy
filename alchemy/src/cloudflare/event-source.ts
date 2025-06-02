@@ -9,16 +9,11 @@ export type EventSource = QueueEventSource | QueueResource;
 /**
  * Configuration for a Queue as an event source for a Worker
  */
-export interface QueueEventSource {
+export interface QueueEventSource extends QueueConsumerSettings {
   /**
    * The queue to consume messages from
    */
   readonly queue: QueueResource;
-
-  /**
-   * Optional settings for configuring how the Worker consumes the queue
-   */
-  readonly settings?: QueueConsumerSettings;
 }
 
 /**

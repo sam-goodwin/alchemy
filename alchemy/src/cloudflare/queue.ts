@@ -35,7 +35,7 @@ export interface QueueSettings {
 /**
  * Properties for creating or updating a Cloudflare Queue
  */
-export interface QueueProps extends CloudflareApiOptions {
+export interface QueueProps extends CloudflareApiOptions, QueueSettings {
   /**
    * Name of the queue
    * Required during creation
@@ -44,12 +44,6 @@ export interface QueueProps extends CloudflareApiOptions {
    * @default id
    */
   name?: string;
-
-  /**
-   * Settings for the queue
-   * These can be updated after queue creation
-   */
-  settings?: QueueSettings;
 
   /**
    * Whether to delete the queue.
@@ -133,19 +127,33 @@ export type Queue<Body = unknown> = QueueResource<Body> &
  * // Create a queue with custom settings
  * const customQueue = await Queue("delayed-queue", {
  *   name: "delayed-queue",
- *   settings: {
- *     deliveryDelay: 30, // 30 second delay before message delivery
- *     messageRetentionPeriod: 86400 // Store messages for 1 day
- *   }
+ *   deliveryDelay: 30, // 30 second delay before message delivery
+ *   messageRetentionPeriod: 86400 // Store messages for 1 day
  * });
  *
  * @example
  * // Create a paused queue for later activation
  * const pausedQueue = await Queue("paused-queue", {
  *   name: "paused-queue",
- *   settings: {
- *     deliveryPaused: true
- *   }
+ *   deliveryPaused: true
+ * });
+ *
+ * @example
+ * // consume from a Worker
+ * const queue = await Queue("my-queue");
+ * const worker = await Worker("my-worker", {
+ *   eventSources: [queue]
+ * });
+ *
+ * @example
+ * // consume from a Worker with custom settings
+ * const queue = await Queue("my-queue");
+ * const worker = await Worker("my-worker", {
+ *   eventSources: [{
+ *     queue,
+ *     batchSize: 10,
+ *     maxConcurrency: 5
+ *   }]
  * });
  *
  * @see https://developers.cloudflare.com/queues/
@@ -236,14 +244,9 @@ const QueueResource = Resource("cloudflare::Queue", async function <
     type: "queue",
     id: queueData.result.queue_id || "",
     name: queueName,
-    settings: queueData.result.settings
-      ? {
-          deliveryDelay: queueData.result.settings.delivery_delay,
-          deliveryPaused: queueData.result.settings.delivery_paused,
-          messageRetentionPeriod:
-            queueData.result.settings.message_retention_period,
-        }
-      : undefined,
+    deliveryDelay: queueData.result.settings?.delivery_delay,
+    deliveryPaused: queueData.result.settings?.delivery_paused,
+    messageRetentionPeriod: queueData.result.settings?.message_retention_period,
     createdOn: queueData.result.created_on || new Date().toISOString(),
     modifiedOn: queueData.result.modified_on || new Date().toISOString(),
     accountId: api.accountId,
@@ -284,20 +287,24 @@ export async function createQueue(
   };
 
   // Add settings if provided
-  if (props.settings) {
+  if (
+    props.deliveryDelay !== undefined ||
+    props.deliveryPaused !== undefined ||
+    props.messageRetentionPeriod !== undefined
+  ) {
     createPayload.settings = {};
 
-    if (props.settings.deliveryDelay !== undefined) {
-      createPayload.settings.delivery_delay = props.settings.deliveryDelay;
+    if (props.deliveryDelay !== undefined) {
+      createPayload.settings.delivery_delay = props.deliveryDelay;
     }
 
-    if (props.settings.deliveryPaused !== undefined) {
-      createPayload.settings.delivery_paused = props.settings.deliveryPaused;
+    if (props.deliveryPaused !== undefined) {
+      createPayload.settings.delivery_paused = props.deliveryPaused;
     }
 
-    if (props.settings.messageRetentionPeriod !== undefined) {
+    if (props.messageRetentionPeriod !== undefined) {
       createPayload.settings.message_retention_period =
-        props.settings.messageRetentionPeriod;
+        props.messageRetentionPeriod;
     }
   }
 
@@ -374,20 +381,24 @@ export async function updateQueue(
   const updatePayload: any = {};
 
   // Add settings if provided
-  if (props.settings) {
+  if (
+    props.deliveryDelay !== undefined ||
+    props.deliveryPaused !== undefined ||
+    props.messageRetentionPeriod !== undefined
+  ) {
     updatePayload.settings = {};
 
-    if (props.settings.deliveryDelay !== undefined) {
-      updatePayload.settings.delivery_delay = props.settings.deliveryDelay;
+    if (props.deliveryDelay !== undefined) {
+      updatePayload.settings.delivery_delay = props.deliveryDelay;
     }
 
-    if (props.settings.deliveryPaused !== undefined) {
-      updatePayload.settings.delivery_paused = props.settings.deliveryPaused;
+    if (props.deliveryPaused !== undefined) {
+      updatePayload.settings.delivery_paused = props.deliveryPaused;
     }
 
-    if (props.settings.messageRetentionPeriod !== undefined) {
+    if (props.messageRetentionPeriod !== undefined) {
       updatePayload.settings.message_retention_period =
-        props.settings.messageRetentionPeriod;
+        props.messageRetentionPeriod;
     }
   }
 
