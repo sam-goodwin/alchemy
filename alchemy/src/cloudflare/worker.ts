@@ -14,47 +14,46 @@ import { withExponentialBackoff } from "../util/retry.ts";
 import { slugify } from "../util/slugify.ts";
 import { CloudflareApiError, handleApiError } from "./api-error.ts";
 import {
-  type CloudflareApi,
-  type CloudflareApiOptions,
-  createCloudflareApi,
+    type CloudflareApi,
+    type CloudflareApiOptions,
+    createCloudflareApi,
 } from "./api.ts";
 import type { Assets } from "./assets.ts";
 import {
-  type Binding,
-  type Bindings,
-  Json,
-  type WorkerBindingSpec,
+    type Binding,
+    type Bindings,
+    Json,
+    type WorkerBindingSpec,
 } from "./bindings.ts";
 import type { Bound } from "./bound.ts";
 import { isBucket } from "./bucket.ts";
 import {
-  type NoBundleResult,
-  bundleWorkerScript,
+    bundleWorkerScript
 } from "./bundle/bundle-worker.ts";
 import { isD1Database } from "./d1-database.ts";
 import {
-  DurableObjectNamespace,
-  isDurableObjectNamespace,
+    DurableObjectNamespace,
+    isDurableObjectNamespace,
 } from "./durable-object-namespace.ts";
 import {
-  type EventSource,
-  type QueueEventSource,
-  isQueueEventSource,
+    type EventSource,
+    type QueueEventSource,
+    isQueueEventSource,
 } from "./event-source.ts";
 import { isKVNamespace } from "./kv-namespace.ts";
 import { isPipeline } from "./pipeline.ts";
 import {
-  QueueConsumer,
-  deleteQueueConsumer,
-  listQueueConsumers,
+    QueueConsumer,
+    deleteQueueConsumer,
+    listQueueConsumers,
 } from "./queue-consumer.ts";
 import { type QueueResource, isQueue } from "./queue.ts";
 import { isVectorizeIndex } from "./vectorize-index.ts";
 import { type AssetUploadResult, uploadAssets } from "./worker-assets.ts";
 import {
-  type WorkerMetadata,
-  type WorkerScriptMetadata,
-  prepareWorkerMetadata,
+    type WorkerMetadata,
+    type WorkerScriptMetadata,
+    prepareWorkerMetadata,
 } from "./worker-metadata.ts";
 import type { SingleStepMigration } from "./worker-migration.ts";
 import { WorkerStub, isWorkerStub } from "./worker-stub.ts";
@@ -221,6 +220,13 @@ export interface BaseWorkerProps<
    * This is only used when using the rpc property.
    */
   rpc?: (new (...args: any[]) => RPC) | type<RPC>;
+
+  /**
+   * Whether to generate and upload source maps for the worker.
+   * This is only applicable when the worker is bundled (i.e., `noBundle` is false).
+   * @default false
+   */
+  sourceMaps?: boolean;
 }
 
 export interface InlineWorkerProps<
@@ -746,13 +752,16 @@ export const _Worker = Resource(
       const oldTags = oldMetadata?.default_environment?.script?.tags;
 
       // Get the script content - either from props.script, or by bundling
-      const scriptBundle =
-        props.script ??
-        (await bundleWorkerScript({
-          ...props,
-          compatibilityDate,
-          compatibilityFlags,
-        }));
+      const scriptBundle: WorkerScriptOutput =
+        props.script ? 
+          { scriptName: props.name ?? id, scriptContent: props.script } : // Treat raw script string as BundledWorkerScript with no map
+          (await bundleWorkerScript({
+            ...props, // props.sourceMaps is now passed through
+            compatibilityDate,
+            compatibilityFlags,
+            // entrypoint must be asserted for bundleWorkerScript if props.script is not given
+            entrypoint: props.entrypoint!, 
+          }));
 
       // Find any assets bindings
       const assetsBindings: { name: string; assets: Assets }[] = [];
@@ -1008,25 +1017,23 @@ export async function deleteWorker<B extends Bindings>(
 export async function putWorker(
   api: CloudflareApi,
   workerName: string,
-  scriptBundle: string | NoBundleResult,
+  scriptBundleInput: WorkerScriptOutput,
   scriptMetadata: WorkerMetadata,
 ) {
   return withExponentialBackoff(
     async () => {
-      const scriptName =
-        scriptMetadata.main_module ?? scriptMetadata.body_part!;
-
       // Create FormData for the upload
       const formData = new FormData();
 
-      function addFile(fileName: string, content: Buffer | string) {
-        const contentType = getContentType(fileName) ?? "application/null";
+      function addFile(fileName: string, content: Buffer | string, typeOverride?: string) {
+        const contentType = typeOverride ?? getContentType(fileName) ?? "application/octet-stream";
         formData.append(
           fileName,
           new Blob([content], {
             type:
-              contentType === "application/javascript" &&
-              scriptMetadata.main_module
+              // Check if the current file IS the main module and its base type is JavaScript
+              fileName === scriptMetadata.main_module && 
+              (contentType === "application/javascript" || contentType === "text/javascript")
                 ? "application/javascript+module"
                 : contentType,
           }),
@@ -1034,11 +1041,29 @@ export async function putWorker(
         );
       }
 
-      if (typeof scriptBundle === "string") {
-        addFile(scriptName, scriptBundle);
-      } else {
-        for (const [fileName, content] of Object.entries(scriptBundle)) {
-          // Add the actual script content as a named file part
+      if ('scriptContent' in scriptBundleInput) { // It's BundledWorkerScript
+        // Ensure scriptMetadata.main_module is aligned with the bundled scriptName
+        if (scriptMetadata.main_module && scriptMetadata.main_module !== scriptBundleInput.scriptName) {
+          console.warn(
+            `Cloudflare Worker: main_module in metadata ('${scriptMetadata.main_module}') ` +
+            `differs from bundled script name ('${scriptBundleInput.scriptName}'). ` +
+            `Using bundled script name as main_module.`
+          );
+        }
+        scriptMetadata.main_module = scriptBundleInput.scriptName;
+        // body_part is for service_worker format, main_module for es_module. Clear body_part if main_module is set.
+        if (scriptMetadata.body_part) {
+          delete scriptMetadata.body_part;
+        }
+
+        addFile(scriptBundleInput.scriptName, scriptBundleInput.scriptContent);
+
+        // Note: Source maps are now inline (embedded in the JavaScript content)
+        // No need to upload them as separate files
+      } else { // It's NoBundleResult (multiple files, typically from noBundle=true)
+        // Original logic for NoBundleResult
+        const mainEntryFile = scriptMetadata.main_module ?? scriptMetadata.body_part!;
+        for (const [fileName, content] of Object.entries(scriptBundleInput)) {
           addFile(fileName, content);
         }
       }
