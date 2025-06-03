@@ -2,14 +2,14 @@ import path from "node:path";
 import type { Context } from "../context.ts";
 import { slugify } from "../util/slugify.ts";
 import {
-  Self,
-  type Bindings,
-  type WorkerBindingDurableObjectNamespace,
-  type WorkerBindingSpec,
+    Self,
+    type Bindings,
+    type WorkerBindingDurableObjectNamespace,
+    type WorkerBindingSpec,
 } from "./bindings.ts";
 import {
-  isDurableObjectNamespace,
-  type DurableObjectNamespace,
+    isDurableObjectNamespace,
+    type DurableObjectNamespace,
 } from "./durable-object-namespace.ts";
 import { createAssetConfig, type AssetUploadResult } from "./worker-assets.ts";
 import type { SingleStepMigration } from "./worker-migration.ts";

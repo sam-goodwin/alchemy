@@ -13,3 +13,9 @@ lib/
 .repomix-output.txt
 alchemy-web/public/og-images/
 wrangler.jsonc
+
+FIXES.md
+TESTING.md
+FIXREPORT.md
+
+.cursor/
