@@ -15,6 +15,7 @@
     "fix": "biome check --write",
     "deploy:repo": "bun ./stacks/repo.run.ts",
     "deploy:website": "bun ./stacks/website.run.ts",
+    "deploy:telemetry": "bun ./stacks/telemetry.run.ts",
     "generate:docs": "bun ./stacks/docs.run.ts",
     "generate:aws-control": "bun ./scripts/generate-aws-control.ts",
     "publish:npm": "bun run --filter alchemy publish:npm",

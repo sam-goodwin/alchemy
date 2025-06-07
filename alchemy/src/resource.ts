@@ -137,9 +137,15 @@ export function Resource<
       const otherResource = scope.resources.get(resourceID);
       if (otherResource?.[ResourceKind] !== type) {
         scope.fail();
-        throw new Error(
+        const error = new Error(
           `Resource ${resourceID} already exists in the stack and is of a different type: '${otherResource?.[ResourceKind]}' !== '${type}'`,
         );
+        scope.telemetryClient.record({
+          event: "resource.error",
+          resource: type,
+          error,
+        });
+        throw error;
       }
     }
 

@@ -1,6 +1,6 @@
 {
   "extends": "../tsconfig.base.json",
-  "include": ["src/**/*.ts", "src/**/*.js"],
+  "include": ["package.json", "src/**/*.ts", "src/**/*.js"],
   "compilerOptions": {
     "composite": true,
     "noEmit": false,

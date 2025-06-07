@@ -1,6 +1,11 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*.ts", "test/**/*.ts", "src/runtime/shims.js"],
+  "include": [
+    "package.json",
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "src/runtime/shims.js"
+  ],
   "compilerOptions": {
     "rootDir": ".",
     "noEmit": true,

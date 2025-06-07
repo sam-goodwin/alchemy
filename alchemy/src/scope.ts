@@ -4,8 +4,9 @@ import { destroyAll } from "./destroy.ts";
 import { FileSystemStateStore } from "./fs/file-system-state-store.ts";
 import { ResourceID, type PendingResource } from "./resource.ts";
 import type { StateStore, StateStoreType } from "./state.ts";
+import type { ITelemetryClient } from "./util/telemetry/client.ts";
 
-export type ScopeOptions = {
+export interface ScopeOptions {
   appName?: string;
   stage?: string;
   parent?: Scope;
@@ -14,7 +15,8 @@ export type ScopeOptions = {
   stateStore?: StateStoreType;
   quiet?: boolean;
   phase?: Phase;
-};
+  telemetryClient?: ITelemetryClient;
+}
 
 // TODO: support browser
 const DEFAULT_STAGE = process.env.ALCHEMY_STAGE ?? process.env.USER ?? "dev";
@@ -55,9 +57,11 @@ export class Scope {
   public readonly stateStore: StateStoreType;
   public readonly quiet: boolean;
   public readonly phase: Phase;
+  public readonly telemetryClient: ITelemetryClient;
 
   private isErrored = false;
   private finalized = false;
+  private startedAt = performance.now();
 
   private deferred: (() => Promise<any>)[] = [];
 
@@ -88,6 +92,11 @@ export class Scope {
       this.parent?.stateStore ??
       ((scope) => new FileSystemStateStore(scope));
     this.state = this.stateStore(this);
+    if (!options.telemetryClient && !this.parent?.telemetryClient) {
+      throw new Error("Telemetry client is required");
+    }
+    this.telemetryClient =
+      options.telemetryClient ?? this.parent?.telemetryClient!;
   }
 
   public get root(): Scope {
@@ -124,7 +133,7 @@ export class Scope {
   }
 
   public async init() {
-    await this.state.init?.();
+    await Promise.all([this.state.init?.(), this.rootTelemetryClient?.init()]);
   }
 
   public async deinit() {
@@ -144,8 +153,23 @@ export class Scope {
     return this.finalize();
   }
 
+  /**
+   * The telemetry client for the root scope.
+   * This is used so that app-level hooks are only called once.
+   */
+  private get rootTelemetryClient(): ITelemetryClient | null {
+    if (!this.parent) {
+      return this.telemetryClient;
+    }
+    return null;
+  }
+
   public async finalize() {
     if (this.phase === "read") {
+      this.rootTelemetryClient?.record({
+        event: "app.success",
+        elapsed: performance.now() - this.startedAt,
+      });
       return;
     }
     if (this.finalized) {
@@ -155,7 +179,7 @@ export class Scope {
       const last = Scope.globals.pop();
       if (last !== this) {
         throw new Error(
-          "Running in AsyncLocaStorage.enterWith emultation mode and attempted to finalize a global Scope that wasn't top of the stack",
+          "Running in AsyncLocaStorage.enterWith emulation mode and attempted to finalize a global Scope that wasn't top of the stack",
         );
       }
     }
@@ -176,9 +200,20 @@ export class Scope {
         quiet: this.quiet,
         strategy: "sequential",
       });
+      this.rootTelemetryClient?.record({
+        event: "app.success",
+        elapsed: performance.now() - this.startedAt,
+      });
     } else {
       console.warn("Scope is in error, skipping finalize");
+      this.rootTelemetryClient?.record({
+        event: "app.error",
+        error: new Error("Scope failed"),
+        elapsed: performance.now() - this.startedAt,
+      });
     }
+
+    await this.rootTelemetryClient?.finalize();
   }
 
   /**
