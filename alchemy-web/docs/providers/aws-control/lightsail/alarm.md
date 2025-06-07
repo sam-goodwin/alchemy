@@ -5,74 +5,61 @@ description: Learn how to create, update, and manage AWS Lightsail Alarms using 
 
 # Alarm
 
-The Alarm resource allows you to manage [AWS Lightsail Alarms](https://docs.aws.amazon.com/lightsail/latest/userguide/) for monitoring your Lightsail resources. You can set thresholds for various metrics to receive notifications when those thresholds are breached.
+The Alarm resource lets you manage [AWS Lightsail Alarms](https://docs.aws.amazon.com/lightsail/latest/userguide/) to monitor your Lightsail resources based on specified metrics and conditions.
 
 ## Minimal Example
 
-Create a basic alarm that monitors CPU utilization:
+Create a basic Lightsail Alarm with required properties and some common optional settings:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const cpuAlarm = await AWS.Lightsail.Alarm("cpu-utilization-alarm", {
+const basicAlarm = await AWS.Lightsail.Alarm("BasicAlarm", {
+  AlarmName: "CPUUsageAlarm",
   MetricName: "CPUUtilization",
   ComparisonOperator: "GreaterThanThreshold",
-  TreatMissingData: "missing",
-  AlarmName: "HighCPUUtilization",
-  MonitoredResourceName: "my-lightsail-instance",
+  Threshold: 80,
   EvaluationPeriods: 1,
+  MonitoredResourceName: "MyLightsailInstance",
   NotificationEnabled: true,
-  Threshold: 80
+  ContactProtocols: ["Email"],
+  TreatMissingData: "missing"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an alarm that monitors network in/out traffic with multiple notification protocols:
+Configure an alarm with more advanced settings, such as multiple notification triggers and custom datapoints to alarm.
 
 ```ts
-const networkAlarm = await AWS.Lightsail.Alarm("network-traffic-alarm", {
+const advancedAlarm = await AWS.Lightsail.Alarm("AdvancedAlarm", {
+  AlarmName: "DiskUsageAlarm",
+  MetricName: "DiskUtilization",
+  ComparisonOperator: "GreaterThanThreshold",
+  Threshold: 75,
+  EvaluationPeriods: 5,
+  MonitoredResourceName: "MyLightsailInstance",
+  NotificationEnabled: true,
+  ContactProtocols: ["SMS"],
+  DatapointsToAlarm: 3,
+  NotificationTriggers: ["ALARM", "OK"],
+  TreatMissingData: "breaching"
+});
+```
+
+## Example with Resource Adoption
+
+Create an alarm while adopting an existing resource to prevent failures if the resource already exists.
+
+```ts
+const adoptAlarm = await AWS.Lightsail.Alarm("AdoptAlarm", {
+  AlarmName: "NetworkTrafficAlarm",
   MetricName: "NetworkIn",
   ComparisonOperator: "GreaterThanThreshold",
-  AlarmName: "HighNetworkInTraffic",
-  MonitoredResourceName: "my-lightsail-instance",
-  EvaluationPeriods: 2,
   Threshold: 1000000,
+  EvaluationPeriods: 2,
+  MonitoredResourceName: "MyLightsailInstance",
   NotificationEnabled: true,
-  ContactProtocols: ["Email", "SMS"],
-  NotificationTriggers: ["Alarm"]
-});
-```
-
-## Alarm with Datapoints Configuration
-
-Create an alarm that triggers when there are multiple data points that exceed the threshold:
-
-```ts
-const multiDataPointAlarm = await AWS.Lightsail.Alarm("multi-data-point-alarm", {
-  MetricName: "DiskReadOps",
-  ComparisonOperator: "GreaterThanThreshold",
-  AlarmName: "HighDiskReadOperations",
-  MonitoredResourceName: "my-lightsail-instance",
-  EvaluationPeriods: 3,
-  DatapointsToAlarm: 2,
-  NotificationEnabled: true,
-  Threshold: 5000
-});
-```
-
-## Alarm with Missing Data Treatment
-
-Set up an alarm that treats missing data as "breaching" the threshold:
-
-```ts
-const missingDataAlarm = await AWS.Lightsail.Alarm("missing-data-alarm", {
-  MetricName: "CPUUtilization",
-  ComparisonOperator: "GreaterThanThreshold",
-  AlarmName: "CPUUtilizationMissingData",
-  MonitoredResourceName: "my-lightsail-instance",
-  EvaluationPeriods: 1,
-  Threshold: 70,
-  TreatMissingData: "breaching"
+  adopt: true
 });
 ```

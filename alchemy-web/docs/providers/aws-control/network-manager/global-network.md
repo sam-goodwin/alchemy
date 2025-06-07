@@ -5,69 +5,73 @@ description: Learn how to create, update, and manage AWS NetworkManager GlobalNe
 
 # GlobalNetwork
 
-The GlobalNetwork resource lets you manage [AWS NetworkManager GlobalNetworks](https://docs.aws.amazon.com/networkmanager/latest/userguide/) which facilitate the creation and management of a global network across multiple AWS Regions.
+The GlobalNetwork resource allows you to manage [AWS NetworkManager GlobalNetworks](https://docs.aws.amazon.com/networkmanager/latest/userguide/) and their configurations. This resource is essential for managing your global network architecture across AWS regions.
 
 ## Minimal Example
 
-Create a basic Global Network with a description and tags.
+Create a basic GlobalNetwork with a description and tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const globalNetwork = await AWS.NetworkManager.GlobalNetwork("myGlobalNetwork", {
-  Description: "My global network for branch connectivity",
+const BasicGlobalNetwork = await AWS.NetworkManager.GlobalNetwork("BasicGlobalNetwork", {
+  Description: "My first global network for cross-region connectivity",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "GlobalExpansion" }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Networking" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Create a Global Network with a defined state and additional properties.
+Configure a GlobalNetwork with additional properties like state and creation time.
 
 ```ts
-const advancedGlobalNetwork = await AWS.NetworkManager.GlobalNetwork("myAdvancedGlobalNetwork", {
-  Description: "Advanced global network configuration",
-  State: "ACTIVE", // Possible values: PENDING | ACTIVE | DELETING | DELETED
+import AWS from "alchemy/aws/control";
+
+const AdvancedGlobalNetwork = await AWS.NetworkManager.GlobalNetwork("AdvancedGlobalNetwork", {
+  Description: "Advanced global network with specific state",
+  State: "AVAILABLE",
   Tags: [
-    { Key: "Department", Value: "IT" },
-    { Key: "Owner", Value: "Alice" }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Infrastructure" }
   ],
-  adopt: true // Adopt existing resource if present
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Monitoring Creation Time
+## Connecting Multiple Regions
 
-Utilize the created time property to monitor when the Global Network was established.
+Create a GlobalNetwork that connects multiple regions with specific configurations.
 
 ```ts
-const networkWithCreationTime = await AWS.NetworkManager.GlobalNetwork("myNetworkWithCreationTime", {
-  Description: "Global network with creation monitoring",
+import AWS from "alchemy/aws/control";
+
+const MultiRegionGlobalNetwork = await AWS.NetworkManager.GlobalNetwork("MultiRegionGlobalNetwork", {
+  Description: "Global network connecting multiple AWS regions",
   Tags: [
-    { Key: "Service", Value: "NetworkManagement" }
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Global Networking" }
   ]
 });
 
-// Log the creation time of the Global Network
-console.log(`Global Network created at: ${networkWithCreationTime.CreationTime}`);
+// Additional configurations can be added here when connecting regions
 ```
 
-## Handling State Changes
+## Updating an Existing GlobalNetwork
 
-Set up a Global Network and handle state changes programmatically.
+Update an existing GlobalNetwork's description and state.
 
 ```ts
-const stateChangeNetwork = await AWS.NetworkManager.GlobalNetwork("myStateChangeNetwork", {
-  Description: "Network to demonstrate state handling",
-  State: "PENDING"
-});
+import AWS from "alchemy/aws/control";
 
-// Example of checking and updating state
-if (stateChangeNetwork.State === "PENDING") {
-  console.log("Network is still pending, please check back later.");
-  // Logic to update or retry can be added here
-}
+const UpdatedGlobalNetwork = await AWS.NetworkManager.GlobalNetwork("ExistingGlobalNetwork", {
+  Description: "Updated description for existing global network",
+  State: "UPDATING",
+  Tags: [
+    { Key: "Environment", Value: "Testing" },
+    { Key: "Team", Value: "DevOps" }
+  ]
+});
 ```

@@ -5,62 +5,56 @@ description: Learn how to create, update, and manage AWS EC2 NetworkInsightsAnal
 
 # NetworkInsightsAnalysis
 
-The NetworkInsightsAnalysis resource allows you to analyze network paths within your Amazon EC2 environment, providing insights into connectivity and performance. For more details, refer to the [AWS EC2 NetworkInsightsAnalysiss documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The NetworkInsightsAnalysis resource lets you analyze network paths in your AWS EC2 instances, providing insights into any network connectivity issues. For more information, refer to the official AWS documentation: [AWS EC2 NetworkInsightsAnalysiss](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic Network Insights Analysis with required properties and one optional property.
+Create a basic Network Insights Analysis with the required properties and a couple of optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const networkInsightsAnalysis = await AWS.EC2.NetworkInsightsAnalysis("basicAnalysis", {
-  NetworkInsightsPathId: "nip-0123456789abcdef0", // Network Insights Path ID
-  FilterInArns: ["arn:aws:ec2:us-east-1:123456789012:filter/myFilter"] // Optional filter
+const BasicNetworkInsightsAnalysis = await AWS.EC2.NetworkInsightsAnalysis("BasicNetworkInsightsAnalysis", {
+  NetworkInsightsPathId: "nip-12345678", // Replace with your Network Insights Path ID
+  FilterInArns: ["arn:aws:ec2:us-east-1:123456789012:network-interface/eni-12345678"], // Replace with your ARNs
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Networking" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a more complex Network Insights Analysis with additional accounts and tags.
+Configure a more complex Network Insights Analysis with additional accounts and filter options.
 
 ```ts
-const advancedAnalysis = await AWS.EC2.NetworkInsightsAnalysis("advancedAnalysis", {
-  NetworkInsightsPathId: "nip-0123456789abcdef1", // Network Insights Path ID
-  AdditionalAccounts: ["123456789012", "987654321098"], // Additional AWS accounts to include
+const AdvancedNetworkInsightsAnalysis = await AWS.EC2.NetworkInsightsAnalysis("AdvancedNetworkInsightsAnalysis", {
+  NetworkInsightsPathId: "nip-87654321", // Replace with your Network Insights Path ID
+  AdditionalAccounts: ["123456789012", "987654321098"], // Additional AWS Account IDs
+  FilterOutArns: ["arn:aws:ec2:us-east-1:123456789012:network-interface/eni-87654321"], // ARNs to filter out
   Tags: [
-    { Key: "Environment", Value: "Production" },
+    { Key: "Environment", Value: "staging" },
     { Key: "Team", Value: "DevOps" }
-  ] // Tags for resource management
+  ]
 });
 ```
 
-## Analysis with Adoption
+## Use Case: Analyzing Multi-Account Network Paths
 
-Create an analysis that adopts an existing resource instead of failing if it already exists.
-
-```ts
-const adoptAnalysis = await AWS.EC2.NetworkInsightsAnalysis("adoptAnalysis", {
-  NetworkInsightsPathId: "nip-0123456789abcdef2", // Network Insights Path ID
-  adopt: true // Adopt existing resource
-});
-```
-
-## Detailed Path Analysis
-
-Perform a detailed analysis with multiple filters and tags for enhanced insights.
+Create a Network Insights Analysis that includes multiple AWS accounts and custom filtering.
 
 ```ts
-const detailedAnalysis = await AWS.EC2.NetworkInsightsAnalysis("detailedAnalysis", {
-  NetworkInsightsPathId: "nip-0123456789abcdef3", // Network Insights Path ID
+const MultiAccountNetworkInsightsAnalysis = await AWS.EC2.NetworkInsightsAnalysis("MultiAccountNetworkInsightsAnalysis", {
+  NetworkInsightsPathId: "nip-12345678", // Replace with your Network Insights Path ID
+  AdditionalAccounts: ["111111111111", "222222222222"], // Include multiple AWS Account IDs for analysis
   FilterInArns: [
-    "arn:aws:ec2:us-east-1:123456789012:filter/filter1",
-    "arn:aws:ec2:us-east-1:123456789012:filter/filter2"
-  ], // Multiple filters
-  AdditionalAccounts: ["123456789012"], // Including another AWS account
+    "arn:aws:ec2:us-east-1:123456789012:network-interface/eni-12345678",
+    "arn:aws:ec2:us-east-1:123456789012:network-interface/eni-87654321"
+  ],
   Tags: [
-    { Key: "Purpose", Value: "Network Analysis" },
-    { Key: "Owner", Value: "NetworkTeam" }
-  ] // Additional tags
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Analytics" }
+  ]
 });
 ```

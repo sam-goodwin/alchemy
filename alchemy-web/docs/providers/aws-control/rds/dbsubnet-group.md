@@ -5,56 +5,69 @@ description: Learn how to create, update, and manage AWS RDS DBSubnetGroups usin
 
 # DBSubnetGroup
 
-The DBSubnetGroup resource allows you to manage [AWS RDS DBSubnetGroups](https://docs.aws.amazon.com/rds/latest/userguide/) and their configuration settings, making it essential for defining the subnets that your RDS instances can use.
+The DBSubnetGroup resource lets you manage [AWS RDS DBSubnetGroups](https://docs.aws.amazon.com/rds/latest/userguide/) which are used to group subnets for your RDS instances in a VPC.
 
 ## Minimal Example
 
-This example demonstrates how to create a basic DBSubnetGroup with required properties and an optional description.
+Create a basic DBSubnetGroup with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbSubnetGroup = await AWS.RDS.DBSubnetGroup("myDbSubnetGroup", {
-  DBSubnetGroupName: "my-db-subnet-group",
-  DBSubnetGroupDescription: "A DB subnet group for my RDS instances",
-  SubnetIds: [
-    "subnet-12345678",
-    "subnet-87654321"
+const dbSubnetGroup = await AWS.RDS.DBSubnetGroup("MyDBSubnetGroup", {
+  DBSubnetGroupDescription: "My RDS DB Subnet Group",
+  SubnetIds: ["subnet-0abcd1234efgh5678", "subnet-1abcd2345efgh6789"],
+  DBSubnetGroupName: "MyCustomDBSubnetGroup",
+  Tags: [
+    { Key: "Environment", Value: "Development" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we add tags to the DBSubnetGroup for better resource management and tracking.
+Configure a DBSubnetGroup with multiple subnets and additional tags for better resource management.
 
 ```ts
-const advancedDbSubnetGroup = await AWS.RDS.DBSubnetGroup("advancedDbSubnetGroup", {
-  DBSubnetGroupName: "advanced-db-subnet-group",
-  DBSubnetGroupDescription: "An advanced DB subnet group with tags",
+const advancedDbSubnetGroup = await AWS.RDS.DBSubnetGroup("AdvancedDBSubnetGroup", {
+  DBSubnetGroupDescription: "Advanced configuration for RDS DB Subnet Group",
   SubnetIds: [
-    "subnet-12345678",
-    "subnet-87654321"
+    "subnet-0abcd1234efgh5678",
+    "subnet-1abcd2345efgh6789",
+    "subnet-2abcd3456efgh7890"
   ],
+  DBSubnetGroupName: "AdvancedDBSubnetGroup",
   Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyApp" }
+    { Key: "Team", Value: "DatabaseOps" }
   ]
 });
 ```
 
-## Adoption of Existing Resources
+## Adoption of Existing Resource
 
-This example shows how to adopt an existing DBSubnetGroup if it already exists, preventing failure on creation.
+If you need to adopt an existing DBSubnetGroup instead of creating a new one, you can enable the `adopt` property.
 
 ```ts
-const existingDbSubnetGroup = await AWS.RDS.DBSubnetGroup("existingDbSubnetGroup", {
-  DBSubnetGroupName: "existing-db-subnet-group",
-  DBSubnetGroupDescription: "Adopting an existing DB subnet group",
-  SubnetIds: [
-    "subnet-12345678",
-    "subnet-87654321"
-  ],
+const adoptDbSubnetGroup = await AWS.RDS.DBSubnetGroup("AdoptedDBSubnetGroup", {
+  DBSubnetGroupDescription: "Adopting an existing DB Subnet Group",
+  SubnetIds: ["subnet-0abcd1234efgh5678"],
   adopt: true
+});
+```
+
+## Using Tags for Resource Management
+
+Create a DBSubnetGroup with multiple tags for effective resource tracking and management.
+
+```ts
+const taggedDbSubnetGroup = await AWS.RDS.DBSubnetGroup("TaggedDBSubnetGroup", {
+  DBSubnetGroupDescription: "DB Subnet Group with multiple tags",
+  SubnetIds: ["subnet-0abcd1234efgh5678"],
+  Tags: [
+    { Key: "Project", Value: "DataWarehouse" },
+    { Key: "Owner", Value: "DataTeam" },
+    { Key: "CostCenter", Value: "CC123" }
+  ]
 });
 ```

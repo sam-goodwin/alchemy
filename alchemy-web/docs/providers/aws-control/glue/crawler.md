@@ -5,91 +5,88 @@ description: Learn how to create, update, and manage AWS Glue Crawlers using Alc
 
 # Crawler
 
-The Crawler resource allows you to create and manage AWS Glue Crawlers, which can automatically discover and catalog data stored in various data sources. For more detailed information, refer to the [AWS Glue Crawlers documentation](https://docs.aws.amazon.com/glue/latest/userguide/).
+The Crawler resource allows you to create, update, and manage [AWS Glue Crawlers](https://docs.aws.amazon.com/glue/latest/userguide/) which automatically infer the schema of your data stored in various sources.
 
 ## Minimal Example
 
-This example demonstrates how to create a basic Glue Crawler with required properties and a couple of common optional properties.
+Create a basic AWS Glue Crawler with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicCrawler = await AWS.Glue.Crawler("basicCrawler", {
-  role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
-  targets: {
-    s3Targets: [{
-      path: "s3://my-data-bucket/"
+const BasicCrawler = await AWS.Glue.Crawler("BasicCrawler", {
+  Role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
+  Targets: {
+    S3Targets: [{
+      Path: "s3://my-data-bucket/"
     }]
   },
-  databaseName: "my_database",
-  name: "basic-crawler"
+  DatabaseName: "my_database",
+  Description: "A simple crawler to infer schema from S3 data."
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we configure a Glue Crawler with additional settings such as a schema change policy and a schedule for regular crawling.
+Configure a crawler with advanced settings including classifiers and a schedule.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const advancedCrawler = await AWS.Glue.Crawler("advancedCrawler", {
-  role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
-  targets: {
-    s3Targets: [{
-      path: "s3://my-data-bucket/"
+const AdvancedCrawler = await AWS.Glue.Crawler("AdvancedCrawler", {
+  Role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
+  Targets: {
+    S3Targets: [{
+      Path: "s3://my-advanced-data-bucket/"
     }]
   },
-  databaseName: "my_database",
-  name: "advanced-crawler",
-  schemaChangePolicy: {
-    updateBehavior: "UPDATE_IN_DATABASE",
-    deleteBehavior: "LOG"
+  Classifiers: ["my-classifier"],
+  Schedule: {
+    ScheduleExpression: "cron(0 12 * * ? *)" // Runs every day at 12 PM UTC
   },
-  schedule: {
-    scheduleExpression: "cron(0 12 * * ? *)" // Daily at 12 PM UTC
-  }
+  SchemaChangePolicy: {
+    UpdateBehavior: "UPDATE_IN_DATABASE",
+    DeleteBehavior: "DELETE_FROM_DATABASE"
+  },
+  CrawlerSecurityConfiguration: "my-security-configuration"
 });
 ```
 
-## Using Classifiers
+## Recrawl Policy Example
 
-This example demonstrates how to include custom classifiers for the Crawler, which can help in identifying the schema of data files.
+Set up a crawler with a specific recrawl policy to manage data changes.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const classifierCrawler = await AWS.Glue.Crawler("classifierCrawler", {
-  role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
-  targets: {
-    s3Targets: [{
-      path: "s3://my-data-bucket/"
+const RecrawlPolicyCrawler = await AWS.Glue.Crawler("RecrawlPolicyCrawler", {
+  Role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
+  Targets: {
+    S3Targets: [{
+      Path: "s3://my-recrawl-data-bucket/"
     }]
   },
-  classifiers: ["my-json-classifier", "my-csv-classifier"],
-  databaseName: "my_database",
-  name: "classifier-crawler"
+  RecrawlPolicy: {
+    RecrawlBehavior: "CRAWL_NEW_FOLDERS_ONLY"
+  },
+  DatabaseName: "my_database_recrawl",
+  Description: "Crawler with specific recrawl policy."
 });
 ```
 
-## Recrawl Policy
+## Tagging Example
 
-This example illustrates the use of a recrawl policy to determine how the Crawler should handle data changes in the target location.
+Create a crawler with tags for better resource management.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const recrawlPolicyCrawler = await AWS.Glue.Crawler("recrawlPolicyCrawler", {
-  role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
-  targets: {
-    s3Targets: [{
-      path: "s3://my-data-bucket/"
+const TaggedCrawler = await AWS.Glue.Crawler("TaggedCrawler", {
+  Role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
+  Targets: {
+    S3Targets: [{
+      Path: "s3://my-tagged-data-bucket/"
     }]
   },
-  recrawlPolicy: {
-    recrawlBehavior: "CRAWL_NEW_DATA_ONLY"
-  },
-  databaseName: "my_database",
-  name: "recrawl-policy-crawler"
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
+  ],
+  DatabaseName: "my_database_tagged",
+  Description: "A crawler with tags for identification."
 });
 ```

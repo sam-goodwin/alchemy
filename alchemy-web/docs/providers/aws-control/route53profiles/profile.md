@@ -5,54 +5,59 @@ description: Learn how to create, update, and manage AWS Route53Profiles Profile
 
 # Profile
 
-The Profile resource lets you manage [AWS Route53Profiles Profiles](https://docs.aws.amazon.com/route53profiles/latest/userguide/) for configuring and managing DNS settings in AWS Route 53.
+The Profile resource lets you manage [AWS Route53Profiles Profiles](https://docs.aws.amazon.com/route53profiles/latest/userguide/) for controlling DNS settings and configurations in AWS Route 53.
 
 ## Minimal Example
 
-Create a basic profile with required properties and one optional tag.
+Create a basic Route53Profiles Profile with required properties and a couple of common optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const profile = await AWS.Route53Profiles.Profile("basicProfile", {
-  name: "BasicProfile",
-  tags: [
-    {
-      key: "Environment",
-      value: "Development"
-    }
+const BasicProfile = await AWS.Route53Profiles.Profile("BasicProfile", {
+  Name: "MyProfile",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Network" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a profile with additional properties such as the adoption of existing resources.
+Configure a Profile with additional settings, including the option to adopt an existing resource.
 
 ```ts
-const advancedProfile = await AWS.Route53Profiles.Profile("advancedProfile", {
-  name: "AdvancedProfile",
-  adopt: true,
-  tags: [
-    {
-      key: "Project",
-      value: "Route53Migration"
-    },
-    {
-      key: "Owner",
-      value: "DevTeam"
-    }
+const AdvancedProfile = await AWS.Route53Profiles.Profile("AdvancedProfile", {
+  Name: "AdvancedProfile",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "DevOps" }
+  ],
+  adopt: true
+});
+```
+
+## Profile with Custom Tags
+
+Create a Profile that includes custom tags for better resource management.
+
+```ts
+const TaggedProfile = await AWS.Route53Profiles.Profile("TaggedProfile", {
+  Name: "CustomTaggedProfile",
+  Tags: [
+    { Key: "Project", Value: "WebsiteMigration" },
+    { Key: "Owner", Value: "JohnDoe" }
   ]
 });
 ```
 
-## Resource Adoption
+## Profile with No Tags
 
-Create a profile while adopting an existing resource if it already exists.
+Create a Profile without any tags, focusing only on the essential properties.
 
 ```ts
-const adoptedProfile = await AWS.Route53Profiles.Profile("adoptedProfile", {
-  name: "AdoptedProfile",
-  adopt: true
+const UntaggedProfile = await AWS.Route53Profiles.Profile("UntaggedProfile", {
+  Name: "UntaggedProfile"
 });
 ```

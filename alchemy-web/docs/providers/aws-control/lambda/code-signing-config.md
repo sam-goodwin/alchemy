@@ -5,68 +5,70 @@ description: Learn how to create, update, and manage AWS Lambda CodeSigningConfi
 
 # CodeSigningConfig
 
-The CodeSigningConfig resource lets you manage [AWS Lambda CodeSigningConfigs](https://docs.aws.amazon.com/lambda/latest/userguide/) for validating the code integrity of your Lambda functions.
-
-## Resource Documentation
-
-The CodeSigningConfig allows you to define a configuration that specifies the allowed publishers of your Lambda code and the policies regarding the code signing. This is essential for maintaining the integrity and security of your serverless applications.
+The CodeSigningConfig resource lets you manage [AWS Lambda CodeSigningConfigs](https://docs.aws.amazon.com/lambda/latest/userguide/) for ensuring the integrity and authenticity of your Lambda function code. Code signing helps protect your Lambda functions from malicious code by verifying the identity of the publishers.
 
 ## Minimal Example
 
-Create a basic CodeSigningConfig with required properties and a description:
+Create a basic CodeSigningConfig with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const codeSigningConfig = await AWS.Lambda.CodeSigningConfig("basicCodeSigningConfig", {
-  Description: "Basic Code Signing Configuration for my Lambda functions",
+const BasicCodeSigningConfig = await AWS.Lambda.CodeSigningConfig("BasicCodeSigningConfig", {
+  Description: "Basic Code Signing Configuration",
   AllowedPublishers: {
     SigningProfileVersionArns: [
-      "arn:aws:signer:us-west-2:123456789012:signing-profiles/my-signing-profile"
+      "arn:aws:signer:us-east-1:123456789012:signing-profile/my-signing-profile"
     ]
-  }
+  },
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CodeSigningConfig with custom signing policies and tags for management:
+Define a CodeSigningConfig with additional code signing policies to enforce stricter security.
 
 ```ts
-const advancedCodeSigningConfig = await AWS.Lambda.CodeSigningConfig("advancedCodeSigningConfig", {
-  Description: "Advanced Code Signing Configuration with policies",
+const AdvancedCodeSigningConfig = await AWS.Lambda.CodeSigningConfig("AdvancedCodeSigningConfig", {
+  Description: "Advanced Code Signing Configuration with Policies",
   AllowedPublishers: {
     SigningProfileVersionArns: [
-      "arn:aws:signer:us-west-2:123456789012:signing-profiles/my-signing-profile"
+      "arn:aws:signer:us-east-1:123456789012:signing-profile/my-signing-profile"
     ]
   },
   CodeSigningPolicies: {
     UntrustedArtifactOnDeployment: "Enforce"
   },
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "LambdaSecurity" }
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Security" }
   ]
 });
 ```
 
-## Example with Custom Policies
+## Using Multiple Signing Profiles
 
-Define a CodeSigningConfig that includes specific code signing policies for untrusted artifacts:
+Create a CodeSigningConfig that allows multiple signing profiles for flexibility in code signing.
 
 ```ts
-const policyCodeSigningConfig = await AWS.Lambda.CodeSigningConfig("policyCodeSigningConfig", {
-  Description: "Code Signing Config with strict policies",
+const MultiProfileCodeSigningConfig = await AWS.Lambda.CodeSigningConfig("MultiProfileCodeSigningConfig", {
+  Description: "Code Signing Configuration with Multiple Signing Profiles",
   AllowedPublishers: {
     SigningProfileVersionArns: [
-      "arn:aws:signer:us-west-2:123456789012:signing-profiles/my-other-signing-profile"
+      "arn:aws:signer:us-east-1:123456789012:signing-profile/my-signing-profile-1",
+      "arn:aws:signer:us-east-1:123456789012:signing-profile/my-signing-profile-2"
     ]
   },
   CodeSigningPolicies: {
-    UntrustedArtifactOnDeployment: "Warn",
-    UntrustedArtifactOnUpdate: "Enforce"
-  }
+    UntrustedArtifactOnDeployment: "Warn"
+  },
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Engineering" }
+  ]
 });
 ```
-
-This example demonstrates how to set up a CodeSigningConfig that warns when untrusted artifacts are deployed but enforces policies on updates, providing a balance between security and flexibility.

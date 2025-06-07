@@ -5,44 +5,43 @@ description: Learn how to create, update, and manage AWS CloudFormation ModuleDe
 
 # ModuleDefaultVersion
 
-The ModuleDefaultVersion resource allows you to specify the default version of a CloudFormation module. This is useful for managing versions of reusable CloudFormation components. For more details, refer to the [AWS CloudFormation ModuleDefaultVersions documentation](https://docs.aws.amazon.com/cloudformation/latest/userguide/).
+The ModuleDefaultVersion resource lets you manage the default version of a CloudFormation module, enabling you to specify which version of the module should be used when creating stack instances. For more details, visit the [AWS CloudFormation ModuleDefaultVersions](https://docs.aws.amazon.com/cloudformation/latest/userguide/) documentation.
 
 ## Minimal Example
 
-Create a basic ModuleDefaultVersion with a specified version ID and module name.
+Create a basic ModuleDefaultVersion with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const defaultVersion = await AWS.CloudFormation.ModuleDefaultVersion("defaultModuleVersion", {
-  VersionId: "v1.0.0",
-  ModuleName: "MyAwesomeModule"
+const DefaultVersion = await AWS.CloudFormation.ModuleDefaultVersion("MyModuleDefaultVersion", {
+  ModuleName: "MyModule",
+  VersionId: "1.0.0"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ModuleDefaultVersion with additional properties such as adoption of existing resources.
+Configure a ModuleDefaultVersion with additional properties such as adopting an existing resource.
 
 ```ts
-const advancedVersion = await AWS.CloudFormation.ModuleDefaultVersion("advancedModuleVersion", {
-  VersionId: "v2.0.0",
-  ModuleName: "MyAwesomeModule",
-  adopt: true // This will adopt the existing resource instead of failing
+const AdvancedDefaultVersion = await AWS.CloudFormation.ModuleDefaultVersion("AdvancedModuleDefaultVersion", {
+  ModuleName: "MyAdvancedModule",
+  VersionId: "2.0.0",
+  adopt: true // Adopts the resource if it already exists
 });
 ```
 
-## Resource Information
+## Example with ARN
 
-When you create a ModuleDefaultVersion, you can also access the resource ARN and its creation/update timestamps.
+Create a ModuleDefaultVersion and access its ARN after creation.
 
 ```ts
-const moduleInfo = await AWS.CloudFormation.ModuleDefaultVersion("infoModuleVersion", {
-  VersionId: "v2.1.0",
-  ModuleName: "MyAwesomeModule"
+const ModuleWithArn = await AWS.CloudFormation.ModuleDefaultVersion("ModuleWithArn", {
+  ModuleName: "MyModuleWithArn",
+  VersionId: "1.2.3"
 });
 
-console.log(`Module ARN: ${moduleInfo.Arn}`);
-console.log(`Creation Time: ${moduleInfo.CreationTime}`);
-console.log(`Last Update Time: ${moduleInfo.LastUpdateTime}`);
+// Access the ARN property
+console.log(`The ARN of the module is: ${ModuleWithArn.Arn}`);
 ```

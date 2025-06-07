@@ -5,61 +5,51 @@ description: Learn how to create, update, and manage AWS ServiceCatalogAppRegist
 
 # Application
 
-The Application resource lets you manage [AWS ServiceCatalogAppRegistry Applications](https://docs.aws.amazon.com/servicecatalogappregistry/latest/userguide/) and their associated configurations.
+The Application resource allows you to manage [AWS ServiceCatalogAppRegistry Applications](https://docs.aws.amazon.com/servicecatalogappregistry/latest/userguide/) which are used to register and manage applications in AWS Service Catalog.
 
 ## Minimal Example
 
-Create a basic application with a name and description:
+Create a basic application with a name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicApplication = await AWS.ServiceCatalogAppRegistry.Application("basicApp", {
-  name: "BasicApplication",
-  description: "This is a basic application for demonstration purposes."
+const BasicApplication = await AWS.ServiceCatalogAppRegistry.Application("BasicApp", {
+  Name: "MyWebApplication",
+  Description: "A web application hosted on AWS.",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Owner", Value: "DevTeam" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an application with tags and enable resource adoption:
+Configure an application with additional properties, such as tags for better resource management.
 
 ```ts
-const advancedApplication = await AWS.ServiceCatalogAppRegistry.Application("advancedApp", {
-  name: "AdvancedApplication",
-  description: "An advanced application with tags.",
-  tags: {
-    Environment: "Development",
-    Team: "Engineering"
-  },
-  adopt: true // Allow adoption of existing resources
+const AdvancedApplication = await AWS.ServiceCatalogAppRegistry.Application("AdvancedApp", {
+  Name: "MyAdvancedWebApplication",
+  Description: "A more complex web application with additional configurations.",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Owner", Value: "DevOps" },
+    { Key: "Version", Value: "1.0.0" }
+  ],
+  adopt: true // Adopt the resource if it already exists
 });
 ```
 
-## Example with Additional Tags
+## Application with No Description
 
-Create an application that includes additional metadata through tags:
-
-```ts
-const taggedApplication = await AWS.ServiceCatalogAppRegistry.Application("taggedApp", {
-  name: "TaggedApplication",
-  description: "An application with multiple tags for tracking.",
-  tags: {
-    Owner: "DevOps",
-    Project: "Migration",
-    Version: "1.0"
-  }
-});
-```
-
-## Adoption of Existing Resources
-
-Create an application that adopts an existing resource without failing:
+Create an application without a description, showcasing the optional nature of the property.
 
 ```ts
-const adoptExistingApp = await AWS.ServiceCatalogAppRegistry.Application("adoptExistingApp", {
-  name: "AdoptExistingApplication",
-  description: "This application adopts an existing resource.",
-  adopt: true
+const NoDescriptionApplication = await AWS.ServiceCatalogAppRegistry.Application("NoDescApp", {
+  Name: "MySimpleApplication",
+  Tags: [
+    { Key: "Environment", Value: "Testing" }
+  ]
 });
 ```

@@ -9,70 +9,74 @@ The Agent resource lets you manage [AWS DataSync Agents](https://docs.aws.amazon
 
 ## Minimal Example
 
-Create a basic DataSync Agent with a specified subnet and security group:
+Create a basic DataSync Agent with essential properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dataSyncAgent = await AWS.DataSync.Agent("myDataSyncAgent", {
+const DataSyncAgent = await AWS.DataSync.Agent("MyDataSyncAgent", {
   SubnetArns: [
-    "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-0abcd1234efgh5678"
+    "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-12345678"
   ],
+  AgentName: "MyAgent",
   SecurityGroupArns: [
-    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-0abcd1234efgh5678"
+    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-12345678"
   ],
-  AgentName: "MyDataSyncAgent"
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataSync" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an Agent with a VPC endpoint and tags for better management and organization:
+Configure the DataSync Agent with additional optional properties such as VPC endpoint ID and activation key:
 
 ```ts
-const advancedDataSyncAgent = await AWS.DataSync.Agent("advancedDataSyncAgent", {
+const AdvancedDataSyncAgent = await AWS.DataSync.Agent("AdvancedDataSyncAgent", {
   SubnetArns: [
-    "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-0abcd1234efgh5678"
+    "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-87654321"
   ],
+  AgentName: "AdvancedAgent",
+  VpcEndpointId: "vpce-12345678",
+  ActivationKey: "example-activation-key",
   SecurityGroupArns: [
-    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-0abcd1234efgh5678"
+    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-87654321"
   ],
-  VpcEndpointId: "vpce-0abcd1234efgh5678",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DataSyncMigration" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataSync" },
+    { Key: "Project", Value: "Migration" }
   ]
 });
 ```
 
-## Adoption of Existing Resources
+## Adoption of Existing Resource
 
-If an existing DataSync Agent is present, you can adopt it instead of failing:
+If you want to adopt an existing DataSync Agent instead of creating a new one, you can set the `adopt` property to true:
 
 ```ts
-const adoptedDataSyncAgent = await AWS.DataSync.Agent("adoptedDataSyncAgent", {
-  SubnetArns: [
-    "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-0abcd1234efgh5678"
-  ],
-  SecurityGroupArns: [
-    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-0abcd1234efgh5678"
-  ],
-  adopt: true // Allow adoption of existing resources
+const AdoptExistingDataSyncAgent = await AWS.DataSync.Agent("ExistingDataSyncAgent", {
+  AgentName: "ExistingAgent",
+  adopt: true
 });
 ```
 
-## Using Activation Key
+## Network Configuration
 
-Create a DataSync Agent with an activation key for secure configuration:
+Here’s how to set up a DataSync Agent with specific network configurations:
 
 ```ts
-const activatedDataSyncAgent = await AWS.DataSync.Agent("activatedDataSyncAgent", {
+const NetworkConfiguredDataSyncAgent = await AWS.DataSync.Agent("NetworkConfiguredAgent", {
   SubnetArns: [
-    "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-0abcd1234efgh5678"
+    "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-abcdef12"
   ],
   SecurityGroupArns: [
-    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-0abcd1234efgh5678"
+    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-abcdef12"
   ],
-  ActivationKey: "my-activation-key-12345"
+  Tags: [
+    { Key: "Environment", Value: "development" }
+  ]
 });
 ```

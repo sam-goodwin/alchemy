@@ -5,61 +5,55 @@ description: Learn how to create, update, and manage AWS LakeFormation Tags usin
 
 # Tag
 
-The Tag resource lets you manage [AWS LakeFormation Tags](https://docs.aws.amazon.com/lakeformation/latest/userguide/) which are used to categorize data in AWS LakeFormation for better management and governance.
+The Tag resource allows you to manage [AWS LakeFormation Tags](https://docs.aws.amazon.com/lakeformation/latest/userguide/) for organizing and controlling access to your data lake resources.
 
 ## Minimal Example
 
-Create a basic LakeFormation Tag with required properties.
+Create a basic LakeFormation Tag with required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const lakeFormationTag = await AWS.LakeFormation.Tag("basicTag", {
-  TagKey: "Department",
-  TagValues: ["Finance", "HR"],
-  CatalogId: "123456789012" // Optional: Specify your AWS account ID
+const DataGovernanceTag = await AWS.LakeFormation.Tag("DataGovernanceTag", {
+  TagKey: "DataGovernance",
+  TagValues: ["PII", "Confidential"],
+  CatalogId: "123456789012" // Your AWS Account ID
 });
 ```
 
 ## Advanced Configuration
 
-Configure a LakeFormation Tag with additional properties like adopting an existing resource.
+Create a LakeFormation Tag while adopting an existing resource:
 
 ```ts
-const advancedTag = await AWS.LakeFormation.Tag("advancedTag", {
-  TagKey: "Project",
-  TagValues: ["ProjectA", "ProjectB"],
-  CatalogId: "123456789012", // Optional
-  adopt: true // Set to true to adopt existing resource if it exists
+const SecurityTag = await AWS.LakeFormation.Tag("SecurityTag", {
+  TagKey: "SecurityLevel",
+  TagValues: ["High", "Medium"],
+  CatalogId: "123456789012", // Your AWS Account ID
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Use Case: Managing Multiple Tags
+## Use Case: Tagging Data Assets
 
-Create multiple tags for organizing data assets effectively.
+Create a tag to classify data assets for regulatory compliance:
 
 ```ts
-const financeTag = await AWS.LakeFormation.Tag("financeTag", {
-  TagKey: "Category",
-  TagValues: ["Financial", "Audit"],
-  CatalogId: "123456789012"
-});
-
-const hrTag = await AWS.LakeFormation.Tag("hrTag", {
-  TagKey: "Category",
-  TagValues: ["EmployeeData", "Recruitment"],
-  CatalogId: "123456789012"
+const ComplianceTag = await AWS.LakeFormation.Tag("ComplianceTag", {
+  TagKey: "Compliance",
+  TagValues: ["GDPR", "HIPAA"],
+  CatalogId: "123456789012" // Your AWS Account ID
 });
 ```
 
-## Use Case: Tagging Data Catalog Items
+## Use Case: Tagging for Data Lifecycle Management
 
-Demonstrate how to tag an existing data catalog item by creating a tag.
+Create a tag for managing data lifecycle:
 
 ```ts
-const dataCatalogTag = await AWS.LakeFormation.Tag("dataCatalogTag", {
-  TagKey: "Confidentiality",
-  TagValues: ["Restricted"],
-  CatalogId: "123456789012"
+const LifecycleTag = await AWS.LakeFormation.Tag("LifecycleTag", {
+  TagKey: "DataLifecycle",
+  TagValues: ["Archive", "Active"],
+  CatalogId: "123456789012" // Your AWS Account ID
 });
 ```

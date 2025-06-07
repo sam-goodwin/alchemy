@@ -5,80 +5,86 @@ description: Learn how to create, update, and manage AWS MemoryDB Clusters using
 
 # Cluster
 
-The Cluster resource lets you manage [AWS MemoryDB Clusters](https://docs.aws.amazon.com/memorydb/latest/userguide/) and their configuration settings.
+The Cluster resource allows you to manage [AWS MemoryDB Clusters](https://docs.aws.amazon.com/memorydb/latest/userguide/) and their configuration settings.
 
 ## Minimal Example
 
-Create a basic MemoryDB cluster with required properties and a few common optional settings.
+Create a basic MemoryDB cluster with required properties and a few optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const memoryDBCluster = await AWS.MemoryDB.Cluster("myMemoryDBCluster", {
-  ACLName: "myACL",
-  ClusterName: "my-cluster",
-  NodeType: "db.t3.medium",
+const basicCluster = await AWS.MemoryDB.Cluster("BasicCluster", {
+  NodeType: "db.r5.large",
+  ACLName: "default",
+  ClusterName: "my-memorydb-cluster",
   NumShards: 2,
-  NumReplicasPerShard: 1,
-  Port: 6379,
-  TLSEnabled: true,
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MemoryDBDemo" }
-  ]
+  NumReplicasPerShard: 1
 });
 ```
 
 ## Advanced Configuration
 
-Configure a MemoryDB cluster with more advanced settings including parameter groups and snapshot options.
+Configure a MemoryDB cluster with additional settings like TLS, snapshots, and tags.
 
 ```ts
-const advancedMemoryDBCluster = await AWS.MemoryDB.Cluster("advancedMemoryDBCluster", {
-  ACLName: "myACL",
-  ClusterName: "advanced-cluster",
+const advancedCluster = await AWS.MemoryDB.Cluster("AdvancedCluster", {
   NodeType: "db.r5.large",
+  ACLName: "default",
+  ClusterName: "my-advanced-memorydb-cluster",
   NumShards: 3,
   NumReplicasPerShard: 2,
-  Port: 6379,
   TLSEnabled: true,
-  ParameterGroupName: "default.memorydb5.0",
-  FinalSnapshotName: "finalSnapshotBeforeDeletion",
   SnapshotRetentionLimit: 7,
-  MaintenanceWindow: "sun:23:00-sun:23:30"
+  SnapshotWindow: "05:00-06:00",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```
 
-## Cluster with Snapshot
+## Cluster with KMS Encryption
 
-Create a MemoryDB cluster that uses snapshots for backup.
-
-```ts
-const snapshotMemoryDBCluster = await AWS.MemoryDB.Cluster("snapshotMemoryDBCluster", {
-  ACLName: "myACL",
-  ClusterName: "snapshot-cluster",
-  NodeType: "db.t3.medium",
-  NumShards: 2,
-  Port: 6379,
-  SnapshotName: "initialSnapshot",
-  SnapshotWindow: "03:00-04:00",
-  SnapshotRetentionLimit: 5
-});
-```
-
-## Multi-Region Cluster
-
-Set up a multi-region MemoryDB cluster.
+Create a MemoryDB cluster with KMS encryption enabled for enhanced data security.
 
 ```ts
-const multiRegionMemoryDBCluster = await AWS.MemoryDB.Cluster("multiRegionMemoryDBCluster", {
-  ACLName: "myACL",
-  ClusterName: "multi-region-cluster",
+const secureCluster = await AWS.MemoryDB.Cluster("SecureCluster", {
   NodeType: "db.r5.large",
-  NumShards: 3,
-  NumReplicasPerShard: 1,
-  Port: 6379,
-  TLSEnabled: true,
-  MultiRegionClusterName: "myGlobalCluster"
+  ACLName: "default",
+  ClusterName: "my-secure-memorydb-cluster",
+  NumShards: 2,
+  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-ab12-ab12-ab12-abcd12345678",
+  AutoMinorVersionUpgrade: true
+});
+```
+
+## Cluster with Specific Maintenance Window
+
+Set up a MemoryDB cluster with a defined maintenance window for updates.
+
+```ts
+const maintenanceCluster = await AWS.MemoryDB.Cluster("MaintenanceCluster", {
+  NodeType: "db.r5.large",
+  ACLName: "default",
+  ClusterName: "my-maintenance-window-cluster",
+  NumShards: 2,
+  MaintenanceWindow: "sun:07:00-sun:08:00"
+});
+```
+
+## Cluster with Snapshot Configuration
+
+Create a MemoryDB cluster configured to take snapshots.
+
+```ts
+const snapshotCluster = await AWS.MemoryDB.Cluster("SnapshotCluster", {
+  NodeType: "db.r5.large",
+  ACLName: "default",
+  ClusterName: "my-snapshot-memorydb-cluster",
+  NumShards: 2,
+  SnapshotWindow: "06:00-07:00",
+  SnapshotRetentionLimit: 14,
+  FinalSnapshotName: "final-snapshot-my-cluster"
 });
 ```

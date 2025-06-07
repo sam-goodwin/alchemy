@@ -5,69 +5,68 @@ description: Learn how to create, update, and manage AWS Panorama ApplicationIns
 
 # ApplicationInstance
 
-The ApplicationInstance resource allows you to manage [AWS Panorama ApplicationInstances](https://docs.aws.amazon.com/panorama/latest/userguide/) which are used for deploying machine learning models to edge devices.
+The ApplicationInstance resource allows you to manage [AWS Panorama ApplicationInstances](https://docs.aws.amazon.com/panorama/latest/userguide/) for running machine learning applications on edge devices.
 
 ## Minimal Example
 
-Create a basic ApplicationInstance with required properties and one optional property.
+Create a basic ApplicationInstance with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicApplicationInstance = await AWS.Panorama.ApplicationInstance("basicInstance", {
-  DefaultRuntimeContextDevice: "device-arn-123",
+const BasicApplicationInstance = await AWS.Panorama.ApplicationInstance("BasicAppInstance", {
+  DefaultRuntimeContextDevice: "arn:aws:panorama:us-east-1:123456789012:device/my-device",
   ManifestPayload: {
-    "PayloadData": "manifest data here"
+    "PayloadData": "some-manifest-data"
   },
-  Description: "A basic application instance for testing"
+  Tags: [{ Key: "Environment", Value: "development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an ApplicationInstance with a runtime role and tags for better management and tracking.
+Configure an ApplicationInstance with additional properties such as a description and runtime role ARN.
 
 ```ts
-const advancedApplicationInstance = await AWS.Panorama.ApplicationInstance("advancedInstance", {
-  DefaultRuntimeContextDevice: "device-arn-456",
+const AdvancedApplicationInstance = await AWS.Panorama.ApplicationInstance("AdvancedAppInstance", {
+  DefaultRuntimeContextDevice: "arn:aws:panorama:us-east-1:123456789012:device/my-device",
   ManifestPayload: {
-    "PayloadData": "advanced manifest data here"
+    "PayloadData": "some-manifest-data"
   },
-  RuntimeRoleArn: "arn:aws:iam::123456789012:role/MyPanoramaRole",
-  Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "PanoramaML" }
-  ]
+  Description: "This is an advanced application instance.",
+  RuntimeRoleArn: "arn:aws:iam::123456789012:role/my-panorama-role",
+  Tags: [{ Key: "Environment", Value: "production" }, { Key: "Team", Value: "AI" }]
 });
 ```
 
-## Instance Replacement
+## Replace Existing ApplicationInstance
 
-Create an ApplicationInstance that replaces an existing one.
+If you need to replace an existing ApplicationInstance, you can specify the `ApplicationInstanceIdToReplace` property.
 
 ```ts
-const replaceApplicationInstance = await AWS.Panorama.ApplicationInstance("replaceInstance", {
-  DefaultRuntimeContextDevice: "device-arn-789",
+const ReplaceApplicationInstance = await AWS.Panorama.ApplicationInstance("ReplaceAppInstance", {
+  DefaultRuntimeContextDevice: "arn:aws:panorama:us-east-1:123456789012:device/my-device",
   ManifestPayload: {
-    "PayloadData": "replacement manifest data here"
+    "PayloadData": "new-manifest-data"
   },
-  ApplicationInstanceIdToReplace: "existing-instance-id-001"
+  ApplicationInstanceIdToReplace: "existing-instance-id",
+  Tags: [{ Key: "Environment", Value: "testing" }]
 });
 ```
 
-## With Manifest Overrides
+## Override Manifest Payload
 
-Deploy an ApplicationInstance with manifest overrides for specific runtime configurations.
+You can also provide overrides for the existing manifest with `ManifestOverridesPayload`.
 
 ```ts
-const overrideApplicationInstance = await AWS.Panorama.ApplicationInstance("overrideInstance", {
-  DefaultRuntimeContextDevice: "device-arn-101",
+const OverrideManifestApplicationInstance = await AWS.Panorama.ApplicationInstance("OverrideManifestAppInstance", {
+  DefaultRuntimeContextDevice: "arn:aws:panorama:us-east-1:123456789012:device/my-device",
   ManifestPayload: {
-    "PayloadData": "override manifest data here"
+    "PayloadData": "base-manifest-data"
   },
   ManifestOverridesPayload: {
-    "PayloadData": "overriden data for runtime"
+    "PayloadData": "overridden-manifest-data"
   },
-  Description: "Application instance with manifest overrides"
+  Tags: [{ Key: "Environment", Value: "staging" }]
 });
 ```

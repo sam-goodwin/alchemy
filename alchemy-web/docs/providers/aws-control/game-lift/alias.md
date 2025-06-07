@@ -5,69 +5,71 @@ description: Learn how to create, update, and manage AWS GameLift Aliases using 
 
 # Alias
 
-The Alias resource lets you manage [AWS GameLift Aliases](https://docs.aws.amazon.com/gamelift/latest/userguide/) to route player traffic to game server fleets.
+The Alias resource allows you to manage [AWS GameLift Aliases](https://docs.aws.amazon.com/gamelift/latest/userguide/) used for routing player sessions to different game servers. Aliases provide a way to simplify player connection requests and can be updated without changing the client.
 
 ## Minimal Example
 
-Create a basic GameLift alias with a routing strategy.
+Create a basic GameLift Alias with required properties and a common optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const gameLiftAlias = await AWS.GameLift.Alias("basicAlias", {
-  Name: "BasicGameAlias",
+const GameLiftAlias = await AWS.GameLift.Alias("basicAlias", {
+  Name: "MyGameAlias",
+  Description: "Alias for my game server",
   RoutingStrategy: {
     Type: "SIMPLE",
-    FleetId: "fleet-12345678"
+    FleetId: "fleet-12345678" // Replace with actual fleet ID
   }
 });
 ```
 
-## Enhanced Description and Tags
+## Advanced Configuration
 
-Configure an alias with a description and tags for better management.
+Configure an Alias with additional tags for better resource management:
 
 ```ts
-const taggedAlias = await AWS.GameLift.Alias("taggedAlias", {
-  Name: "TaggedGameAlias",
-  Description: "This alias routes traffic to the main game server fleet.",
+const AdvancedGameLiftAlias = await AWS.GameLift.Alias("advancedAlias", {
+  Name: "MyAdvancedGameAlias",
+  Description: "Alias for my advanced game server setup",
   RoutingStrategy: {
     Type: "SIMPLE",
-    FleetId: "fleet-87654321"
+    FleetId: "fleet-87654321" // Replace with actual fleet ID
   },
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Game", Value: "MyAwesomeGame" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "GameDev" }
   ]
 });
 ```
 
-## Advanced Routing Strategy
+## Using a Complex Routing Strategy
 
-Create an alias with a complex routing strategy that includes multiple fleet options.
+Set up an Alias with a complex routing strategy for more control over session placements:
 
 ```ts
-const advancedAlias = await AWS.GameLift.Alias("advancedAlias", {
-  Name: "AdvancedGameAlias",
-  Description: "Routes players based on player count.",
+const ComplexRoutingGameLiftAlias = await AWS.GameLift.Alias("complexAlias", {
+  Name: "MyComplexGameAlias",
+  Description: "Alias for my game server with complex routing",
   RoutingStrategy: {
-    Type: "TARGET_BASED",
-    FleetId: "fleet-11223344",
-    Message: "Directing traffic to the best available server based on load."
+    Type: "TERMINAL",
+    FleetId: "fleet-12345678", // Replace with actual fleet ID
+    Message: "No available game servers"
   }
 });
 ```
 
-## Adoption of Existing Resources
+## Adopting an Existing Alias
 
-Create an alias while adopting an existing resource if it already exists.
+Adopt an existing Alias instead of failing if it already exists:
 
 ```ts
-const existingAlias = await AWS.GameLift.Alias("existingAlias", {
-  Name: "ExistingGameAlias",
+const AdoptExistingAlias = await AWS.GameLift.Alias("existingAlias", {
+  Name: "MyExistingGameAlias",
+  Description: "Alias for the existing game server",
   RoutingStrategy: {
     Type: "SIMPLE",
-    FleetId: "fleet-55667788"
+    FleetId: "fleet-12345678" // Replace with actual fleet ID
   },
   adopt: true
 });

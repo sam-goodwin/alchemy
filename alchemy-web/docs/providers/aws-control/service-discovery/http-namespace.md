@@ -5,54 +5,46 @@ description: Learn how to create, update, and manage AWS ServiceDiscovery HttpNa
 
 # HttpNamespace
 
-The HttpNamespace resource lets you manage [AWS ServiceDiscovery HttpNamespaces](https://docs.aws.amazon.com/servicediscovery/latest/userguide/) and their configuration settings.
+The HttpNamespace resource allows you to create and manage HTTP namespaces in AWS Service Discovery, enabling service discovery for HTTP services. For more information, refer to the [AWS ServiceDiscovery HttpNamespaces documentation](https://docs.aws.amazon.com/servicediscovery/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic HttpNamespace with required properties and a description.
+Create a basic HTTP namespace with a name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const httpNamespace = await AWS.ServiceDiscovery.HttpNamespace("myHttpNamespace", {
-  name: "my-http-namespace",
-  description: "This namespace is used for HTTP service discovery."
+const basicHttpNamespace = await AWS.ServiceDiscovery.HttpNamespace("BasicHttpNamespace", {
+  Name: "example-http-namespace",
+  Description: "This namespace is used for HTTP services.",
+  Tags: [{ Key: "Environment", Value: "development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an HttpNamespace with tags for resource management.
+Configure an HTTP namespace with additional tags for better organization.
 
 ```ts
-const taggedHttpNamespace = await AWS.ServiceDiscovery.HttpNamespace("taggedHttpNamespace", {
-  name: "tagged-http-namespace",
-  description: "This namespace is used for HTTP service discovery with tags.",
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Department", value: "Engineering" }
-  ]
+const advancedHttpNamespace = await AWS.ServiceDiscovery.HttpNamespace("AdvancedHttpNamespace", {
+  Name: "advanced-http-namespace",
+  Description: "This namespace is used for advanced HTTP services.",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Project", Value: "ServiceDiscovery" }
+  ],
+  adopt: true // Adopt an existing resource if it exists
 });
 ```
 
-## Adoption of Existing Resources
+## Using Existing Resources
 
-Create an HttpNamespace and adopt an existing resource if it already exists.
-
-```ts
-const existingHttpNamespace = await AWS.ServiceDiscovery.HttpNamespace("existingHttpNamespace", {
-  name: "existing-http-namespace",
-  adopt: true // Adopt the existing namespace if it already exists
-});
-```
-
-## Updating an HttpNamespace
-
-Update an existing HttpNamespace by modifying its description.
+Set up an HTTP namespace that adopts an existing resource if one is found.
 
 ```ts
-const updatedHttpNamespace = await AWS.ServiceDiscovery.HttpNamespace("updatedHttpNamespace", {
-  name: "my-http-namespace",
-  description: "Updated description for the HTTP namespace."
+const existingHttpNamespace = await AWS.ServiceDiscovery.HttpNamespace("ExistingHttpNamespace", {
+  Name: "existing-http-namespace",
+  Description: "This namespace adopts an existing HTTP namespace.",
+  adopt: true
 });
 ```

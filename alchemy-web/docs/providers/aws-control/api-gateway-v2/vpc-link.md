@@ -5,81 +5,63 @@ description: Learn how to create, update, and manage AWS ApiGatewayV2 VpcLinks u
 
 # VpcLink
 
-The VpcLink resource allows you to create and manage [AWS ApiGatewayV2 VpcLinks](https://docs.aws.amazon.com/apigatewayv2/latest/userguide/) that enable your API Gateway to connect to resources in your Virtual Private Cloud (VPC).
+The VpcLink resource lets you manage [AWS ApiGatewayV2 VpcLinks](https://docs.aws.amazon.com/apigatewayv2/latest/userguide/) that enable API Gateway to connect to resources in your Amazon VPC.
 
 ## Minimal Example
 
-Create a basic VpcLink with required properties and one optional property:
+Create a basic VpcLink with required properties and a common optional tag:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicVpcLink = await AWS.ApiGatewayV2.VpcLink("myVpcLink", {
-  Name: "MyVpcLink",
-  SubnetIds: [
-    "subnet-0a1b2c3d4e5f6g7h8",
-    "subnet-1a2b3c4d5e6f7g8h9"
-  ],
-  SecurityGroupIds: [
-    "sg-0a1b2c3d4e5f6g7h8"
-  ]
+const basicVpcLink = await AWS.ApiGatewayV2.VpcLink("BasicVpcLink", {
+  Name: "BasicVpcLink",
+  SubnetIds: ["subnet-0abcd1234efgh5678", "subnet-0abcd1234ijkl9012"],
+  SecurityGroupIds: ["sg-0abcd1234mnop3456"],
+  Tags: [{ Key: "Environment", Value: "development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VpcLink with additional options such as tags:
+Configure a VpcLink with additional options such as multiple security groups and tags for better resource management:
 
 ```ts
-const advancedVpcLink = await AWS.ApiGatewayV2.VpcLink("advancedVpcLink", {
+const advancedVpcLink = await AWS.ApiGatewayV2.VpcLink("AdvancedVpcLink", {
   Name: "AdvancedVpcLink",
-  SubnetIds: [
-    "subnet-0a1b2c3d4e5f6g7h8",
-    "subnet-1a2b3c4d5e6f7g8h9"
-  ],
-  SecurityGroupIds: [
-    "sg-0a1b2c3d4e5f6g7h8"
-  ],
-  Tags: {
-    Environment: "Production",
-    Project: "ApiGatewayIntegration"
-  }
+  SubnetIds: ["subnet-0abcd1234efgh5678", "subnet-0abcd1234ijkl9012"],
+  SecurityGroupIds: ["sg-0abcd1234mnop3456", "sg-0abcd1234qrst7890"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "API Team" }
+  ]
 });
 ```
 
-## Adoption of Existing Resource
+## Custom VpcLink for Multiple Subnets
 
-Create a VpcLink that adopts an existing resource if it already exists:
-
-```ts
-const adoptVpcLink = await AWS.ApiGatewayV2.VpcLink("adoptVpcLink", {
-  Name: "AdoptedVpcLink",
-  SubnetIds: [
-    "subnet-0a1b2c3d4e5f6g7h8",
-    "subnet-1a2b3c4d5e6f7g8h9"
-  ],
-  SecurityGroupIds: [
-    "sg-0a1b2c3d4e5f6g7h8"
-  ],
-  adopt: true
-});
-```
-
-## Example with Multiple Subnet and Security Group IDs
-
-Create a VpcLink that connects to multiple subnets and security groups:
+Create a VpcLink that connects to multiple subnets for redundancy and availability:
 
 ```ts
-const multiVpcLink = await AWS.ApiGatewayV2.VpcLink("multiVpcLink", {
+const multiSubnetVpcLink = await AWS.ApiGatewayV2.VpcLink("MultiSubnetVpcLink", {
   Name: "MultiSubnetVpcLink",
   SubnetIds: [
-    "subnet-0a1b2c3d4e5f6g7h8",
-    "subnet-1a2b3c4d5e6f7g8h9",
-    "subnet-2a3b4c5d6e7f8g9h0"
+    "subnet-0abcd1234efgh5678",
+    "subnet-0abcd1234ijkl9012",
+    "subnet-0abcd1234mnop3456"
   ],
-  SecurityGroupIds: [
-    "sg-0a1b2c3d4e5f6g7h8",
-    "sg-1b2c3d4e5f6g7h8i"
-  ]
+  SecurityGroupIds: ["sg-0abcd1234qrst7890"],
+  Tags: [{ Key: "Environment", Value: "staging" }]
+});
+```
+
+## VpcLink with No Security Groups
+
+Create a VpcLink without specifying any security groups, which can be useful in certain configurations:
+
+```ts
+const noSecurityGroupVpcLink = await AWS.ApiGatewayV2.VpcLink("NoSecurityGroupVpcLink", {
+  Name: "NoSecurityGroupVpcLink",
+  SubnetIds: ["subnet-0abcd1234efgh5678"]
 });
 ```

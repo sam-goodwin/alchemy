@@ -5,91 +5,39 @@ description: Learn how to create, update, and manage AWS Connect TaskTemplates u
 
 # TaskTemplate
 
-The TaskTemplate resource allows you to manage [AWS Connect TaskTemplates](https://docs.aws.amazon.com/connect/latest/userguide/) for defining tasks within your Amazon Connect instance.
+The TaskTemplate resource lets you create and manage [AWS Connect TaskTemplates](https://docs.aws.amazon.com/connect/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-connect-tasktemplate.html
 
 ## Minimal Example
-
-Create a basic TaskTemplate with required properties and some optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicTaskTemplate = await AWS.Connect.TaskTemplate("basicTaskTemplate", {
-  instanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrst",
-  status: "ACTIVE",
-  name: "Basic Task Template",
-  description: "A simple task template for demonstration purposes."
+const tasktemplate = await AWS.Connect.TaskTemplate("tasktemplate-example", {
+  InstanceArn: "example-instancearn",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A tasktemplate resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TaskTemplate with additional fields and constraints for enhanced task management.
+Create a tasktemplate with additional configuration:
 
 ```ts
-const advancedTaskTemplate = await AWS.Connect.TaskTemplate("advancedTaskTemplate", {
-  instanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrst",
-  status: "ACTIVE",
-  name: "Advanced Task Template",
-  description: "An advanced task template with custom fields.",
-  fields: [
-    {
-      type: "STRING",
-      label: "Customer Feedback",
-      required: true,
-      placeholder: "Enter feedback here"
-    },
-    {
-      type: "NUMBER",
-      label: "Satisfaction Rating",
-      required: true,
-      placeholder: "Rate from 1 to 5"
-    }
-  ],
-  constraints: {
-    stringConstraints: {
-      minLength: 1,
-      maxLength: 500
-    },
-    numberConstraints: {
-      minValue: 1,
-      maxValue: 5
-    }
-  }
+import AWS from "alchemy/aws/control";
+
+const advancedTaskTemplate = await AWS.Connect.TaskTemplate("advanced-tasktemplate", {
+  InstanceArn: "example-instancearn",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A tasktemplate resource managed by Alchemy",
 });
 ```
 
-## Using Tags
-
-Demonstrate how to use tags with your TaskTemplate for better resource organization.
-
-```ts
-const taggedTaskTemplate = await AWS.Connect.TaskTemplate("taggedTaskTemplate", {
-  instanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrst",
-  status: "ACTIVE",
-  name: "Tagged Task Template",
-  tags: [
-    {
-      key: "Project",
-      value: "Customer Support"
-    },
-    {
-      key: "Environment",
-      value: "Production"
-    }
-  ]
-});
-```
-
-## Self-Assign Contact Flow
-
-Create a TaskTemplate that includes a self-assign contact flow for improved task handling.
-
-```ts
-const selfAssignContactFlowTemplate = await AWS.Connect.TaskTemplate("selfAssignContactFlowTemplate", {
-  instanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrst",
-  status: "ACTIVE",
-  name: "Self-Assign Contact Flow Template",
-  selfAssignContactFlowArn: "arn:aws:connect:us-west-2:123456789012:contact-flow/abcdef12-3456-7890-abcd-ef1234567890"
-});
-```

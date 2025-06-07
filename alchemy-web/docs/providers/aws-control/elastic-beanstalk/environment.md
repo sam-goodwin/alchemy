@@ -5,31 +5,97 @@ description: Learn how to create, update, and manage AWS ElasticBeanstalk Enviro
 
 # Environment
 
-The Environment resource lets you manage [AWS ElasticBeanstalk Environments](https://docs.aws.amazon.com/elasticbeanstalk/latest/userguide/) to deploy and scale web applications and services. 
+The Environment resource lets you manage [AWS ElasticBeanstalk Environments](https://docs.aws.amazon.com/elasticbeanstalk/latest/userguide/) for deploying and scaling web applications and services.
 
 ## Minimal Example
 
-Create a basic ElasticBeanstalk Environment with required properties and one optional description.
+Create a basic ElasticBeanstalk environment with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const elasticBeanstalkEnv = await AWS.ElasticBeanstalk.Environment("myAppEnvironment", {
-  ApplicationName: "MyWebApp",
-  PlatformArn: "arn:aws:elasticbeanstalk:us-west-2::platform/Java 8 running on 64bit Amazon Linux/2.9.0",
-  Description: "My Elastic Beanstalk environment for the web application"
+const myEnvironment = await AWS.ElasticBeanstalk.Environment("MyEnvironment", {
+  ApplicationName: "MyApp",
+  VersionLabel: "v1",
+  EnvironmentName: "MyEnvironment",
+  PlatformArn: "arn:aws:elasticbeanstalk:us-west-2::platform/MyPlatform",
+  OptionSettings: [
+    {
+      Namespace: "aws:autoscaling:launchconfiguration",
+      OptionName: "InstanceType",
+      Value: "t2.micro"
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an ElasticBeanstalk Environment with additional options such as custom CNAME prefix and environment tier.
+Configure an ElasticBeanstalk environment with detailed settings, including a custom operations role and additional option settings.
 
 ```ts
-const advancedElasticBeanstalkEnv = await AWS.ElasticBeanstalk.Environment("advancedEnv", {
+const advancedEnvironment = await AWS.ElasticBeanstalk.Environment("AdvancedEnvironment", {
+  ApplicationName: "MyApp",
+  VersionLabel: "v1",
+  EnvironmentName: "AdvancedEnvironment",
+  OperationsRole: "arn:aws:iam::123456789012:role/MyOperationsRole",
+  OptionSettings: [
+    {
+      Namespace: "aws:elasticbeanstalk:environment",
+      OptionName: "EnvironmentType",
+      Value: "LoadBalanced"
+    },
+    {
+      Namespace: "aws:autoscaling:launchconfiguration",
+      OptionName: "InstanceType",
+      Value: "t3.medium"
+    },
+    {
+      Namespace: "aws:elasticbeanstalk:application:environment",
+      OptionName: "MY_ENV_VARIABLE",
+      Value: "MyValue"
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Development" }
+  ]
+});
+```
+
+## Custom CNAME Configuration
+
+Set up an ElasticBeanstalk environment with a custom CNAME prefix for easier accessibility.
+
+```ts
+const cnameEnvironment = await AWS.ElasticBeanstalk.Environment("CnameEnvironment", {
+  ApplicationName: "MyApp",
+  VersionLabel: "v1",
+  CNAMEPrefix: "myapp-prod",
+  EnvironmentName: "CnameEnvironment",
+  OptionSettings: [
+    {
+      Namespace: "aws:elasticbeanstalk:environment",
+      OptionName: "CNAME",
+      Value: "myapp-prod.us-west-2.elasticbeanstalk.com"
+    }
+  ]
+});
+```
+
+## Environment Tier Configuration
+
+Create an ElasticBeanstalk environment with a specific tier configuration for web applications.
+
+```ts
+const tierEnvironment = await AWS.ElasticBeanstalk.Environment("TierEnvironment", {
   ApplicationName: "MyWebApp",
-  PlatformArn: "arn:aws:elasticbeanstalk:us-west-2::platform/Node.js 14 running on 64bit Amazon Linux/2.7.2",
-  CNAMEPrefix: "mywebapp",
+  VersionLabel: "v1",
+  EnvironmentName: "TierEnvironment",
   Tier: {
     Name: "WebServer",
     Type: "Standard",
@@ -37,58 +103,9 @@ const advancedElasticBeanstalkEnv = await AWS.ElasticBeanstalk.Environment("adva
   },
   OptionSettings: [
     {
-      Namespace: "aws:autoscaling:launchconfiguration",
-      OptionName: "InstanceType",
-      Value: "t2.micro"
-    },
-    {
       Namespace: "aws:elasticbeanstalk:environment",
       OptionName: "EnvironmentType",
       Value: "LoadBalanced"
-    }
-  ]
-});
-```
-
-## Using Tags for Organization
-
-Create an environment with tags for better resource organization and management.
-
-```ts
-const taggedElasticBeanstalkEnv = await AWS.ElasticBeanstalk.Environment("taggedEnv", {
-  ApplicationName: "MyWebApp",
-  PlatformArn: "arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.4 running on 64bit Amazon Linux/2.9.0",
-  Tags: [
-    {
-      Key: "Project",
-      Value: "WebApp2023"
-    },
-    {
-      Key: "Owner",
-      Value: "DevTeam"
-    }
-  ]
-});
-```
-
-## Environment with Custom Options
-
-Demonstrate an environment configured with custom option settings for monitoring and scaling.
-
-```ts
-const customOptionsEnv = await AWS.ElasticBeanstalk.Environment("customOptionsEnv", {
-  ApplicationName: "MyWebApp",
-  PlatformArn: "arn:aws:elasticbeanstalk:us-west-2::platform/DotNet Core 3.1 running on 64bit Amazon Linux/2.3.4",
-  OptionSettings: [
-    {
-      Namespace: "aws:elasticbeanstalk:application",
-      OptionName: "ApplicationHealthcheckURL",
-      Value: "/health"
-    },
-    {
-      Namespace: "aws:elasticbeanstalk:environment",
-      OptionName: "ServiceRole",
-      Value: "arn:aws:iam::123456789012:role/elasticbeanstalk-service-role"
     }
   ]
 });

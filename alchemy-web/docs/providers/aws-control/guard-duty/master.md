@@ -5,57 +5,42 @@ description: Learn how to create, update, and manage AWS GuardDuty Masters using
 
 # Master
 
-The Master resource allows you to manage [AWS GuardDuty Masters](https://docs.aws.amazon.com/guardduty/latest/userguide/) and their configurations for threat detection across multiple accounts.
+The Master resource allows you to manage [AWS GuardDuty Masters](https://docs.aws.amazon.com/guardduty/latest/userguide/) which are used to manage multiple GuardDuty detectors across accounts.
 
 ## Minimal Example
 
-Create a basic GuardDuty Master with required properties.
+Create a basic GuardDuty Master with required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const guardDutyMaster = await AWS.GuardDuty.Master("myGuardDutyMaster", {
-  DetectorId: "12abc34def567g8h9i0jklmnop",
-  MasterId: "123456789012",
-  InvitationId: "abcd1234-ef56-78gh-ijkl-9mnopqrs"
+const guardDutyMaster = await AWS.GuardDuty.Master("GuardDutyMaster", {
+  DetectorId: "abcd1234efgh5678ijkl9101mnopqrstu", // Your GuardDuty Detector ID
+  MasterId: "123456789012" // The AWS account ID of the master account
 });
 ```
 
 ## Advanced Configuration
 
-Configure a GuardDuty Master with the option to adopt an existing resource if it already exists.
+Configure the GuardDuty Master with an invitation ID and enable resource adoption:
 
 ```ts
-const advancedGuardDutyMaster = await AWS.GuardDuty.Master("advancedGuardDutyMaster", {
-  DetectorId: "21fedcba-9876-5432-10hg-fe54321dcba9",
-  MasterId: "098765432109",
-  InvitationId: "abcd5678-ef90-12gh-ijkl-3mnopqrs",
-  adopt: true // Adopts existing resource instead of failing
+const advancedGuardDutyMaster = await AWS.GuardDuty.Master("AdvancedGuardDutyMaster", {
+  DetectorId: "abcd1234efgh5678ijkl9101mnopqrstu",
+  MasterId: "123456789012",
+  InvitationId: "invitation-1234567890",
+  adopt: true // Adopt existing GuardDuty resource if it already exists
 });
 ```
 
-## Use Case: Inviting Member Accounts
+## Adoption of Existing Resources
 
-Demonstrate how to use the Master resource to invite member accounts for GuardDuty.
-
-```ts
-const inviteGuardDutyMaster = await AWS.GuardDuty.Master("inviteMemberAccounts", {
-  DetectorId: "3abcdef456gh789ijkl0123mnopqrs",
-  MasterId: "112233445566",
-  InvitationId: "ijklmnop-qrst-uvwx-yz12-345678901234",
-  adopt: false // This will fail if the resource already exists
-});
-```
-
-## Use Case: Updating Master Properties
-
-Show how to update existing properties of a GuardDuty Master resource.
+Use the adoption feature to handle existing resources without failure:
 
 ```ts
-const updateGuardDutyMaster = await AWS.GuardDuty.Master("updateMasterProperties", {
-  DetectorId: "4hijklmno567pqr890stu1234vwxyz",
-  MasterId: "223344556677",
-  InvitationId: "mnop5678-qrst-uvwx-yz12-345678901234",
-  adopt: true // Will adopt any existing resource
+const adoptGuardDutyMaster = await AWS.GuardDuty.Master("AdoptGuardDutyMaster", {
+  DetectorId: "abcd1234efgh5678ijkl9101mnopqrstu",
+  MasterId: "123456789012",
+  adopt: true // This will adopt the existing resource if it already exists
 });
 ```

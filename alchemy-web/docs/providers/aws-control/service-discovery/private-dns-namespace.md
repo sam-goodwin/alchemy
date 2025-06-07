@@ -5,54 +5,47 @@ description: Learn how to create, update, and manage AWS ServiceDiscovery Privat
 
 # PrivateDnsNamespace
 
-The PrivateDnsNamespace resource lets you manage [AWS ServiceDiscovery PrivateDnsNamespaces](https://docs.aws.amazon.com/servicediscovery/latest/userguide/) for defining private DNS namespaces within your VPC.
+The PrivateDnsNamespace resource lets you create and manage [AWS ServiceDiscovery PrivateDnsNamespaces](https://docs.aws.amazon.com/servicediscovery/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-servicediscovery-privatednsnamespace.html
 
 ## Minimal Example
-
-Create a basic PrivateDnsNamespace with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const privateDnsNamespace = await AWS.ServiceDiscovery.PrivateDnsNamespace("myPrivateDnsNamespace", {
-  name: "internal.example.com",
-  vpc: "vpc-12345678",
-  description: "This is my internal DNS namespace for service discovery.",
-  tags: [
-    { key: "Environment", value: "Development" },
-    { key: "Project", value: "ServiceDiscoveryDemo" }
-  ]
-});
+const privatednsnamespace = await AWS.ServiceDiscovery.PrivateDnsNamespace(
+  "privatednsnamespace-example",
+  {
+    Vpc: "example-vpc",
+    Name: "privatednsnamespace-",
+    Tags: { Environment: "production", ManagedBy: "Alchemy" },
+    Description: "A privatednsnamespace resource managed by Alchemy",
+  }
+);
 ```
 
 ## Advanced Configuration
 
-Configure a PrivateDnsNamespace with additional properties, such as tags and properties for enhanced functionality.
+Create a privatednsnamespace with additional configuration:
 
 ```ts
-const advancedPrivateDnsNamespace = await AWS.ServiceDiscovery.PrivateDnsNamespace("advancedPrivateDnsNamespace", {
-  name: "prod.internal.example.com",
-  vpc: "vpc-87654321",
-  description: "Production DNS namespace for internal services.",
-  properties: {
-    // Add any specific properties as necessary
-  },
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Project", value: "ServiceDiscovery" }
-  ]
-});
+import AWS from "alchemy/aws/control";
+
+const advancedPrivateDnsNamespace = await AWS.ServiceDiscovery.PrivateDnsNamespace(
+  "advanced-privatednsnamespace",
+  {
+    Vpc: "example-vpc",
+    Name: "privatednsnamespace-",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+    Description: "A privatednsnamespace resource managed by Alchemy",
+  }
+);
 ```
 
-## Adoption of Existing Resource
-
-Use the adopt option to create a PrivateDnsNamespace that adopts an existing resource if it already exists.
-
-```ts
-const adoptedPrivateDnsNamespace = await AWS.ServiceDiscovery.PrivateDnsNamespace("adoptedPrivateDnsNamespace", {
-  name: "existing.internal.example.com",
-  vpc: "vpc-12345678",
-  description: "Adopting an existing DNS namespace.",
-  adopt: true // This will adopt the existing resource if it exists
-});
-```

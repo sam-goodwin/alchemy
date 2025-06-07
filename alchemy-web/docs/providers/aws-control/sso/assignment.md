@@ -5,67 +5,74 @@ description: Learn how to create, update, and manage AWS SSO Assignments using A
 
 # Assignment
 
-The Assignment resource lets you manage [AWS SSO Assignments](https://docs.aws.amazon.com/sso/latest/userguide/) that link users or groups to permission sets for specific AWS accounts. This simplifies access management in AWS Single Sign-On.
+The Assignment resource allows you to manage [AWS SSO Assignments](https://docs.aws.amazon.com/sso/latest/userguide/) for users or groups to access AWS accounts and services. This resource facilitates the assignment of permission sets to principals within your AWS organization.
 
 ## Minimal Example
 
-Create a basic SSO assignment for a user linking them to a permission set in an AWS account.
+Create a basic SSO assignment for a user to access a specific AWS account with a permission set.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const ssoAssignment = await AWS.SSO.Assignment("user-assignment", {
-  PrincipalId: "user-123456",
-  InstanceArn: "arn:aws:sso:us-west-2:123456789012:instance/ssoins-12345678",
+const SsoAssignment = await AWS.SSO.Assignment("UserAssignment", {
+  PrincipalId: "user-1234567890abcdef",
+  InstanceArn: "arn:aws:sso:us-west-2:123456789012:instance/ssoins-1234567890abcdef",
   TargetType: "AWS_ACCOUNT",
-  PermissionSetArn: "arn:aws:sso:::permissionSet/ssoins-12345678/ps-12345678",
+  PermissionSetArn: "arn:aws:sso:::permissionset/ssops-abcdef1234567890",
   PrincipalType: "USER",
-  TargetId: "account-123456"
+  TargetId: "123456789012"
 });
 ```
 
 ## Advanced Configuration
 
-Assign a user with the option to adopt existing resources if they already exist.
+Assign a permission set to a group with options to adopt existing resources.
 
 ```ts
-const advancedAssignment = await AWS.SSO.Assignment("advanced-user-assignment", {
-  PrincipalId: "user-987654",
-  InstanceArn: "arn:aws:sso:us-west-2:123456789012:instance/ssoins-87654321",
+const GroupSsoAssignment = await AWS.SSO.Assignment("GroupAssignment", {
+  PrincipalId: "group-abcdef1234567890",
+  InstanceArn: "arn:aws:sso:us-west-2:123456789012:instance/ssoins-1234567890abcdef",
   TargetType: "AWS_ACCOUNT",
-  PermissionSetArn: "arn:aws:sso:::permissionSet/ssoins-87654321/ps-87654321",
-  PrincipalType: "USER",
-  TargetId: "account-987654",
-  adopt: true // Adopt existing resource if it already exists
-});
-```
-
-## Assigning a Group to a Permission Set
-
-Assign a group to a specific permission set, allowing multiple users to gain access through their group association.
-
-```ts
-const groupAssignment = await AWS.SSO.Assignment("group-assignment", {
-  PrincipalId: "group-123456",
-  InstanceArn: "arn:aws:sso:us-west-2:123456789012:instance/ssoins-12345678",
-  TargetType: "AWS_ACCOUNT",
-  PermissionSetArn: "arn:aws:sso:::permissionSet/ssoins-12345678/ps-12345678",
+  PermissionSetArn: "arn:aws:sso:::permissionset/ssops-abcdef1234567890",
   PrincipalType: "GROUP",
-  TargetId: "account-123456"
+  TargetId: "123456789012",
+  adopt: true
 });
 ```
 
-## Updating an Existing Assignment
+## Bulk Assignment
 
-You can also update an existing assignment by modifying its properties.
+Create multiple assignments for a group of users to access different AWS accounts.
 
 ```ts
-const updateAssignment = await AWS.SSO.Assignment("update-user-assignment", {
-  PrincipalId: "user-123456",
-  InstanceArn: "arn:aws:sso:us-west-2:123456789012:instance/ssoins-12345678",
+const UserAssignments = ["user-abc123", "user-def456", "user-ghi789"];
+const PermissionSetArn = "arn:aws:sso:::permissionset/ssops-abcdef1234567890";
+
+for (const UserId of UserAssignments) {
+  await AWS.SSO.Assignment(`AssignmentFor${UserId}`, {
+    PrincipalId: UserId,
+    InstanceArn: "arn:aws:sso:us-west-2:123456789012:instance/ssoins-1234567890abcdef",
+    TargetType: "AWS_ACCOUNT",
+    PermissionSetArn: PermissionSetArn,
+    PrincipalType: "USER",
+    TargetId: "123456789012"
+  });
+}
+```
+
+## Custom Permissions
+
+Assign a custom permission set to a user with specific access rights.
+
+```ts
+const CustomPermissionSetArn = "arn:aws:sso:::permissionset/ssops-custom1234567890";
+
+const CustomUserAssignment = await AWS.SSO.Assignment("CustomUserAssignment", {
+  PrincipalId: "user-custom123456",
+  InstanceArn: "arn:aws:sso:us-west-2:123456789012:instance/ssoins-1234567890abcdef",
   TargetType: "AWS_ACCOUNT",
-  PermissionSetArn: "arn:aws:sso:::permissionSet/ssoins-12345678/ps-87654321", // Updated permission set
+  PermissionSetArn: CustomPermissionSetArn,
   PrincipalType: "USER",
-  TargetId: "account-123456"
+  TargetId: "123456789012"
 });
 ```

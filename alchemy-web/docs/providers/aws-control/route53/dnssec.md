@@ -5,44 +5,59 @@ description: Learn how to create, update, and manage AWS Route53 DNSSECs using A
 
 # DNSSEC
 
-The DNSSEC resource allows you to manage [AWS Route53 DNSSEC](https://docs.aws.amazon.com/route53/latest/userguide/) configurations, enabling you to secure your domain name system against certain types of attacks.
+The DNSSEC resource lets you manage [AWS Route53 DNSSEC](https://docs.aws.amazon.com/route53/latest/userguide/) for your hosted zones, enabling DNS security extensions to protect against certain types of attacks.
 
 ## Minimal Example
 
-Create a basic DNSSEC configuration for a hosted zone.
+Create a basic DNSSEC configuration for a hosted zone with the required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dnssec = await AWS.Route53.DNSSEC("myDNSSEC", {
-  HostedZoneId: "Z3M3LM4B2R8A5F", // Replace with your actual Hosted Zone ID
-  adopt: true // Adopt existing DNSSEC configuration if it exists
+const DnsSecConfig = await AWS.Route53.DNSSEC("MyDnsSec", {
+  HostedZoneId: "Z3M3LMZ1L3B8XA",
+  adopt: false
 });
 ```
 
 ## Advanced Configuration
 
-Enhance your DNSSEC setup with additional properties if required.
+Configure DNSSEC with additional properties such as adopting existing resources.
 
 ```ts
-const advancedDNSSEC = await AWS.Route53.DNSSEC("advancedDNSSEC", {
-  HostedZoneId: "Z3M3LM4B2R8A5F", // Replace with your actual Hosted Zone ID
-  adopt: false // Do not adopt existing DNSSEC configuration
+const AdvancedDnsSecConfig = await AWS.Route53.DNSSEC("AdvancedDnsSec", {
+  HostedZoneId: "Z3M3LMZ1L3B8XA",
+  adopt: true
 });
 ```
 
-## Example with Resource Output
+## Handling Multiple Hosted Zones
 
-You can also capture output properties from the DNSSEC resource, such as the ARN and creation timestamps.
+Manage DNSSEC for multiple hosted zones by creating separate resources for each zone.
 
 ```ts
-const dnssecWithOutputs = await AWS.Route53.DNSSEC("dnssecWithOutputs", {
-  HostedZoneId: "Z3M3LM4B2R8A5F", // Replace with your actual Hosted Zone ID
-  adopt: true
+const PrimaryZoneDnsSec = await AWS.Route53.DNSSEC("PrimaryZoneDnsSec", {
+  HostedZoneId: "Z1A2B3C4D5E6F7",
+  adopt: false
 });
 
-// Accessing the ARN and timestamps
-console.log(`DNSSEC ARN: ${dnssecWithOutputs.Arn}`);
-console.log(`Creation Time: ${dnssecWithOutputs.CreationTime}`);
-console.log(`Last Update Time: ${dnssecWithOutputs.LastUpdateTime}`);
+const SecondaryZoneDnsSec = await AWS.Route53.DNSSEC("SecondaryZoneDnsSec", {
+  HostedZoneId: "Z7X8Y9Z0A1B2C3",
+  adopt: true
+});
+```
+
+## Logging and Monitoring DNSSEC Changes
+
+Monitor the creation time and last update time for auditing purposes.
+
+```ts
+const DnsSecMonitorConfig = await AWS.Route53.DNSSEC("MonitorDnsSec", {
+  HostedZoneId: "Z2M3LMZ1L3B8XA",
+  adopt: false
+});
+
+// Log the creation and last update time
+console.log(`DNSSEC Created At: ${DnsSecMonitorConfig.CreationTime}`);
+console.log(`DNSSEC Last Updated At: ${DnsSecMonitorConfig.LastUpdateTime}`);
 ```

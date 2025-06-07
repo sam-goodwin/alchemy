@@ -5,115 +5,87 @@ description: Learn how to create, update, and manage AWS SSM ResourcePolicys usi
 
 # ResourcePolicy
 
-The ResourcePolicy resource lets you manage [AWS SSM ResourcePolicys](https://docs.aws.amazon.com/ssm/latest/userguide/) to define access controls for your AWS Systems Manager resources.
+The ResourcePolicy resource lets you manage [AWS SSM ResourcePolicies](https://docs.aws.amazon.com/ssm/latest/userguide/) for Systems Manager, providing fine-grained access control to your resources.
 
 ## Minimal Example
 
-Create a basic SSM ResourcePolicy with required properties.
+Create a basic ResourcePolicy with required properties and a common optional property for adoption.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicResourcePolicy = await AWS.SSM.ResourcePolicy("basicPolicy", {
+const basicResourcePolicy = await AWS.SSM.ResourcePolicy("BasicResourcePolicy", {
   Policy: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Principal: {
-          Service: "ssm.amazonaws.com"
-        },
-        Action: "ssm:SendCommand",
-        Resource: "*"
+        Principal: "*",
+        Action: "ssm:PutParameter",
+        Resource: "arn:aws:ssm:us-east-1:123456789012:parameter/my-parameter"
       }
     ]
   },
-  ResourceArn: "arn:aws:ssm:us-east-1:123456789012:document/MyDocument",
-  adopt: true // Adopt existing resource if it exists
+  ResourceArn: "arn:aws:ssm:us-east-1:123456789012:parameter/my-parameter",
+  adopt: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ResourcePolicy with multiple statements for more complex access control.
+Configure a ResourcePolicy with a more complex policy allowing multiple actions and specifying conditions.
 
 ```ts
-const advancedResourcePolicy = await AWS.SSM.ResourcePolicy("advancedPolicy", {
+const advancedResourcePolicy = await AWS.SSM.ResourcePolicy("AdvancedResourcePolicy", {
   Policy: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
         Principal: {
-          Service: "ssm.amazonaws.com"
+          Service: "lambda.amazonaws.com"
         },
-        Action: "ssm:SendCommand",
-        Resource: "arn:aws:ssm:us-west-2:123456789012:document/MyDocument"
-      },
-      {
-        Effect: "Deny",
-        Principal: {
-          AWS: "arn:aws:iam::123456789012:user/SomeUser"
-        },
-        Action: "ssm:SendCommand",
-        Resource: "*"
-      }
-    ]
-  },
-  ResourceArn: "arn:aws:ssm:us-west-2:123456789012:document/MyDocument"
-});
-```
-
-## Restricting Access by IP Address
-
-Create a ResourcePolicy that restricts access based on specific IP addresses.
-
-```ts
-const ipRestrictedPolicy = await AWS.SSM.ResourcePolicy("ipRestrictedPolicy", {
-  Policy: {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Principal: {
-          Service: "ssm.amazonaws.com"
-        },
-        Action: "ssm:SendCommand",
-        Resource: "arn:aws:ssm:us-east-1:123456789012:document/MyDocument",
+        Action: [
+          "ssm:GetParameter",
+          "ssm:PutParameter"
+        ],
+        Resource: "arn:aws:ssm:us-east-1:123456789012:parameter/my-parameter",
         Condition: {
-          IpAddress: {
-            "aws:SourceIp": "203.0.113.0/24" // Allow access only from this CIDR block
+          StringEquals: {
+            "ssm:ResourceTag/Environment": "production"
           }
         }
       }
     ]
   },
-  ResourceArn: "arn:aws:ssm:us-east-1:123456789012:document/MyDocument"
+  ResourceArn: "arn:aws:ssm:us-east-1:123456789012:parameter/my-parameter"
 });
 ```
 
-## Configuring Multiple Actions
+## Custom Conditions
 
-Demonstrate a ResourcePolicy that allows multiple actions for a single resource.
+Create a ResourcePolicy that specifies conditions based on tags for fine-grained access control.
 
 ```ts
-const multiActionPolicy = await AWS.SSM.ResourcePolicy("multiActionPolicy", {
+const taggedResourcePolicy = await AWS.SSM.ResourcePolicy("TaggedResourcePolicy", {
   Policy: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
         Principal: {
-          Service: "ssm.amazonaws.com"
+          AWS: "arn:aws:iam::123456789012:role/MyRole"
         },
-        Action: [
-          "ssm:SendCommand",
-          "ssm:ListCommands"
-        ],
-        Resource: "arn:aws:ssm:us-east-1:123456789012:document/MyDocument"
+        Action: "ssm:DeleteParameter",
+        Resource: "arn:aws:ssm:us-east-1:123456789012:parameter/my-sensitive-parameter",
+        Condition: {
+          StringEquals: {
+            "ssm:ResourceTag/Confidential": "true"
+          }
+        }
       }
     ]
   },
-  ResourceArn: "arn:aws:ssm:us-east-1:123456789012:document/MyDocument"
+  ResourceArn: "arn:aws:ssm:us-east-1:123456789012:parameter/my-sensitive-parameter"
 });
 ```

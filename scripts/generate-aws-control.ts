@@ -1,10 +1,9 @@
 #!/usr/bin/env bun
-import { randomUUID } from "node:crypto";
 import { access, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import OpenAI from "openai";
 import prettier from "prettier";
-import * as ts from "typescript";
+import { typeCheckMarkdown } from "./check-doc-types.js";
 import { generateAwsControlTypes } from "./generate-aws-control-types.js";
 
 // Parse CLI arguments
@@ -64,6 +63,7 @@ function generatePropsInterface(
   lines.push(`interface ${resourceName}Props {`);
 
   // Add properties (simplified for documentation generation)
+  // Add properties (simplified for documentation generation)
   for (const [propName, prop] of Object.entries(resourceType.Properties)) {
     // Add documentation comment if available
     if (prop.Documentation) {
@@ -71,6 +71,7 @@ function generatePropsInterface(
     }
 
     const required = prop.Required ? "" : "?";
+    lines.push(`  ${propName}${required}: any;`);
     lines.push(`  ${propName}${required}: any;`);
   }
 
@@ -331,105 +332,6 @@ function createSemaphore(maxConcurrent: number) {
 }
 
 /**
- * Type-check a TypeScript code snippet
- */
-function typeCheckCode(code: string): { success: boolean; errors: string[] } {
-  const errors: string[] = [];
-
-  // Generate unique ID for the example file
-  const exampleId = randomUUID();
-
-  // Create virtual file just for the example code, using internal path for type checking
-  const virtualFiles = new Map<string, string>([
-    [
-      exampleId,
-      `import AWS from "../alchemy/src/aws/control/index.js";\n\n${code}`,
-    ],
-  ]);
-
-  // Define compiler options
-  const compilerOptions: ts.CompilerOptions = {
-    // Base settings from tsconfig.base.json
-    types: ["@cloudflare/workers-types", "@types/node"],
-    lib: ["ESNext", "DOM"],
-    target: ts.ScriptTarget.ESNext,
-    moduleDetection: ts.ModuleDetectionKind.Force,
-    jsx: ts.JsxEmit.ReactJSX,
-    allowJs: true,
-    esModuleInterop: true,
-    noEmit: true,
-    module: ts.ModuleKind.Preserve,
-    moduleResolution: ts.ModuleResolutionKind.Bundler,
-    verbatimModuleSyntax: true,
-    strict: true,
-    skipLibCheck: true,
-    noFallthroughCasesInSwitch: true,
-    noUnusedLocals: false,
-    noUnusedParameters: false,
-    noPropertyAccessFromIndexSignature: false,
-    noImplicitThis: true,
-    forceConsistentCasingInFileNames: true,
-    resolveJsonModule: true,
-    isolatedModules: true,
-    baseUrl: ".",
-    paths: {
-      "alchemy/*": ["../alchemy/src/*"],
-    },
-  };
-
-  // Create a program with virtual files
-  const program = ts.createProgram({
-    rootNames: [exampleId],
-    options: compilerOptions,
-    host: {
-      ...ts.createCompilerHost(compilerOptions),
-      getSourceFile: (fileName) => {
-        const content = virtualFiles.get(fileName);
-        if (content) {
-          return ts.createSourceFile(
-            fileName,
-            content,
-            ts.ScriptTarget.ESNext,
-            true,
-          );
-        }
-        return undefined;
-      },
-      writeFile: () => {},
-      getCurrentDirectory: () => ".",
-      getDirectories: () => [],
-      fileExists: (fileName) => virtualFiles.has(fileName),
-      readFile: (fileName) => virtualFiles.get(fileName),
-      getCanonicalFileName: (fileName) => fileName,
-      getNewLine: () => "\n",
-      useCaseSensitiveFileNames: () => true,
-    },
-  });
-
-  // Get diagnostics
-  const diagnostics = ts.getPreEmitDiagnostics(program);
-
-  // Convert diagnostics to error messages
-  for (const diagnostic of diagnostics) {
-    if (diagnostic.file) {
-      const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(
-        diagnostic.start!,
-      );
-      const message = ts.flattenDiagnosticMessageText(
-        diagnostic.messageText,
-        "\n",
-      );
-      errors.push(`${line + 1},${character + 1}: ${message}`);
-    }
-  }
-
-  return {
-    success: errors.length === 0,
-    errors,
-  };
-}
-
-/**
  * Generate complete markdown documentation using OpenAI GPT-4o mini
  */
 async function generateDocumentationWithAI(
@@ -501,7 +403,7 @@ Requirements:
 - Use the exact import: \`import AWS from "alchemy/aws/control";\`
 - Create resources with: \`AWS.${service}.${resource}(id, props)\`
 - Use meaningful, realistic values (not generic "example-*" values)
-- Variable names should be descriptive and follow camelCase
+- Variable names should be descriptive and follow PascalCase
 - Include 1-sentence explanations before each code example explaining what it demonstrates
 - For policy properties, use proper IAM policy JSON structures
 - For network properties, use realistic CIDR blocks, ports, etc.
@@ -509,6 +411,7 @@ Requirements:
 - Make examples practical and educational
 - Follow the exact same structure and tone as the Cloudflare examples provided
 - IMPORTANT: Use proper casing for resource names (e.g., \`AWS.${service}.${resource}\` not \`AWS.${service.toLowerCase()}.${resource.toLowerCase()}\`)
+- If tags are used, they should be a list of objects with \`Key\` and \`Value\` properties (e.g. \`[{ Key: "Environment", Value: "production" }, { Key: "Team", Value: "DevOps" }]\`)
 
 Frontmatter should be:
 ---
@@ -551,36 +454,21 @@ Wrap your entire response in \`\`\`md fences.`;
         return null;
       }
 
-      // Extract code blocks and type-check them
-      const codeBlocks =
-        extracted.content.match(/```ts\n([\s\S]*?)\n```/g) || [];
+      // Type-check the extracted markdown content using imported utilities
+      console.log(`Type checking code: ${service}.${resource}`);
+      const result = typeCheckMarkdown(extracted.content);
 
-      let hasTypeErrors = false;
-      lastErrors = [];
-
-      for (const block of codeBlocks) {
-        const code = block.replace(/```ts\n/, "").replace(/\n```/, "");
-        // Add the internal import header to the code being type checked
-        const codeWithHeader = `import AWS from "../alchemy/src/aws/control/index.js";\n\n${code}`;
-        console.log(`Type checking code: ${service}.${resource}`);
-        const result = typeCheckCode(codeWithHeader);
-
-        if (!result.success) {
-          hasTypeErrors = true;
-          lastErrors.push(...result.errors);
-        }
+      if (!result.success) {
+        lastErrors = result.errors;
+        console.log(
+          `Type errors in example for ${service}.${resource} (attempt ${retryCount + 1}/${MAX_RETRIES}):`,
+        );
+        console.log(lastErrors.join("\n"));
+        retryCount++;
+        continue;
       }
 
-      if (!hasTypeErrors) {
-        return extracted.content;
-      }
-
-      console.log(
-        `Type errors in example for ${service}.${resource} (attempt ${retryCount + 1}/${MAX_RETRIES}):`,
-      );
-      console.log(lastErrors.join("\n"));
-
-      retryCount++;
+      return extracted.content;
     } catch (error) {
       console.error(
         `Error generating documentation for ${service}.${resource}:`,

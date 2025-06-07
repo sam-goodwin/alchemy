@@ -5,64 +5,50 @@ description: Learn how to create, update, and manage AWS NeptuneGraph PrivateGra
 
 # PrivateGraphEndpoint
 
-The PrivateGraphEndpoint resource allows you to manage private endpoints for AWS NeptuneGraph, enabling secure access to your graph databases. For more information, refer to the [AWS NeptuneGraph PrivateGraphEndpoints](https://docs.aws.amazon.com/neptunegraph/latest/userguide/) documentation.
+The PrivateGraphEndpoint resource allows you to create and manage private endpoints for your AWS NeptuneGraph databases, enabling secure connections within your VPC. For more details, refer to the [AWS NeptuneGraph PrivateGraphEndpoints documentation](https://docs.aws.amazon.com/neptunegraph/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic private graph endpoint with the required properties and one optional security group.
+This example demonstrates how to create a minimal private graph endpoint with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const privateGraphEndpoint = await AWS.NeptuneGraph.PrivateGraphEndpoint("myPrivateGraphEndpoint", {
-  VpcId: "vpc-0123456789abcdef0",
-  GraphIdentifier: "myGraph",
-  SecurityGroupIds: ["sg-0123456789abcdef0"]
+const MinimalPrivateGraphEndpoint = await AWS.NeptuneGraph.PrivateGraphEndpoint("MyPrivateGraphEndpoint", {
+  VpcId: "vpc-123abc456def", // The ID of the VPC where the endpoint will be created
+  GraphIdentifier: "my-neptune-graph", // The identifier for the Neptune graph
+  SecurityGroupIds: ["sg-abc12345"], // Optional: Security group IDs to associate with the endpoint
+  SubnetIds: ["subnet-abc12345", "subnet-def67890"] // Optional: Subnet IDs for the endpoint's network interface
 });
 ```
 
 ## Advanced Configuration
 
-Configure a private graph endpoint with additional optional settings like multiple security groups and subnet IDs.
+In this example, we demonstrate how to configure a private graph endpoint with additional properties for enhanced security and network configuration.
 
 ```ts
-const advancedPrivateGraphEndpoint = await AWS.NeptuneGraph.PrivateGraphEndpoint("advancedPrivateGraphEndpoint", {
-  VpcId: "vpc-0123456789abcdef0",
-  GraphIdentifier: "myGraph",
-  SecurityGroupIds: [
-    "sg-0123456789abcdef0",
-    "sg-abcdef0123456789"
-  ],
-  SubnetIds: [
-    "subnet-0123456789abcdef0",
-    "subnet-abcdef0123456789"
-  ]
+const AdvancedPrivateGraphEndpoint = await AWS.NeptuneGraph.PrivateGraphEndpoint("AdvancedPrivateGraphEndpoint", {
+  VpcId: "vpc-678xyz123uvw", // The ID of the VPC
+  GraphIdentifier: "secure-neptune-graph", // The identifier for the Neptune graph
+  SecurityGroupIds: ["sg-xyz98765"], // Security group IDs
+  SubnetIds: ["subnet-xyz98765", "subnet-uvw12345"], // Subnet IDs
+  adopt: true // Optional: Adopt existing resource instead of failing when resource already exists
 });
 ```
 
-## Resource Adoption
+## Use Case: Connecting to a Neptune Graph from an EC2 Instance
 
-Create a private graph endpoint while adopting an existing resource if it already exists.
-
-```ts
-const adoptExistingPrivateGraphEndpoint = await AWS.NeptuneGraph.PrivateGraphEndpoint("adoptPrivateGraphEndpoint", {
-  VpcId: "vpc-0123456789abcdef0",
-  GraphIdentifier: "myGraph",
-  adopt: true
-});
-```
-
-## Using with Multiple Subnets
-
-Set up a private graph endpoint using multiple subnets for high availability.
+This example illustrates how to set up a private graph endpoint that allows an EC2 instance to connect securely to the Neptune graph.
 
 ```ts
-const multiSubnetPrivateGraphEndpoint = await AWS.NeptuneGraph.PrivateGraphEndpoint("multiSubnetPrivateGraphEndpoint", {
-  VpcId: "vpc-0123456789abcdef0",
-  GraphIdentifier: "myGraph",
-  SubnetIds: [
-    "subnet-0123456789abcdef0",
-    "subnet-1234567890abcdef1"
-  ]
+import AWS from "alchemy/aws/control";
+
+const MyGraphEndpoint = await AWS.NeptuneGraph.PrivateGraphEndpoint("GraphConnectionEndpoint", {
+  VpcId: "vpc-abc123xyz456", // The VPC ID
+  GraphIdentifier: "connected-neptune-graph", // The Neptune graph identifier
+  SecurityGroupIds: ["sg-12345abcde"], // Security group for access control
+  SubnetIds: ["subnet-123abc456def"] // Subnet for network interface
 });
+
+// Here, you would typically follow up by configuring the EC2 instance to use this endpoint.
 ```

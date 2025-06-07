@@ -5,47 +5,45 @@ description: Learn how to create, update, and manage AWS Bedrock ApplicationInfe
 
 # ApplicationInferenceProfile
 
-The ApplicationInferenceProfile resource allows you to manage [AWS Bedrock Application Inference Profiles](https://docs.aws.amazon.com/bedrock/latest/userguide/) that define how models are used for inference in your applications.
+The ApplicationInferenceProfile resource lets you create and manage [AWS Bedrock ApplicationInferenceProfiles](https://docs.aws.amazon.com/bedrock/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-bedrock-applicationinferenceprofile.html
 
 ## Minimal Example
-
-Create a basic ApplicationInferenceProfile with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicInferenceProfile = await AWS.Bedrock.ApplicationInferenceProfile("basicInferenceProfile", {
-  InferenceProfileName: "BasicInferenceProfile",
-  Description: "A simple inference profile for basic model usage"
-});
+const applicationinferenceprofile = await AWS.Bedrock.ApplicationInferenceProfile(
+  "applicationinferenceprofile-example",
+  {
+    InferenceProfileName: "applicationinferenceprofile-inferenceprofile",
+    Tags: { Environment: "production", ManagedBy: "Alchemy" },
+    Description: "A applicationinferenceprofile resource managed by Alchemy",
+  }
+);
 ```
 
 ## Advanced Configuration
 
-Configure an ApplicationInferenceProfile with a model source and tags for better organization.
+Create a applicationinferenceprofile with additional configuration:
 
 ```ts
-const advancedInferenceProfile = await AWS.Bedrock.ApplicationInferenceProfile("advancedInferenceProfile", {
-  InferenceProfileName: "AdvancedInferenceProfile",
-  Description: "An advanced inference profile with model source",
-  ModelSource: {
-    ModelId: "model-12345",
-    ModelType: "text"
-  },
-  Tags: [
-    { Key: "Project", Value: "AIResearch" },
-    { Key: "Environment", Value: "Production" }
-  ]
-});
+import AWS from "alchemy/aws/control";
+
+const advancedApplicationInferenceProfile = await AWS.Bedrock.ApplicationInferenceProfile(
+  "advanced-applicationinferenceprofile",
+  {
+    InferenceProfileName: "applicationinferenceprofile-inferenceprofile",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+    Description: "A applicationinferenceprofile resource managed by Alchemy",
+  }
+);
 ```
 
-## Adoption of Existing Resource
-
-If you want to adopt an existing ApplicationInferenceProfile instead of failing when it already exists, you can set the `adopt` property to true.
-
-```ts
-const adoptExistingProfile = await AWS.Bedrock.ApplicationInferenceProfile("adoptExistingProfile", {
-  InferenceProfileName: "ExistingInferenceProfile",
-  adopt: true
-});
-```

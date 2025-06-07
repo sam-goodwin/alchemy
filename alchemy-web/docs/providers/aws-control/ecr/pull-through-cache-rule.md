@@ -5,45 +5,54 @@ description: Learn how to create, update, and manage AWS ECR PullThroughCacheRul
 
 # PullThroughCacheRule
 
-The PullThroughCacheRule resource allows you to manage [AWS ECR PullThroughCacheRules](https://docs.aws.amazon.com/ecr/latest/userguide/) which enable you to cache images from an upstream registry in your Amazon Elastic Container Registry (ECR).
+The PullThroughCacheRule resource lets you manage [AWS ECR PullThroughCacheRules](https://docs.aws.amazon.com/ecr/latest/userguide/) for caching images from an upstream registry. This feature helps optimize the retrieval of container images, reducing latency and improving performance.
 
 ## Minimal Example
 
-Create a basic PullThroughCacheRule with required properties to cache images from an upstream registry.
+Create a basic PullThroughCacheRule with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const pullThroughCacheRule = await AWS.ECR.PullThroughCacheRule("myPullThroughCacheRule", {
-  UpstreamRegistryUrl: "https://registry-1.example.com",
-  UpstreamRepositoryPrefix: "myapp",
-  EcrRepositoryPrefix: "myapp-cache"
+const BasicPullThroughCacheRule = await AWS.ECR.PullThroughCacheRule("BasicPullThroughCacheRule", {
+  UpstreamRegistryUrl: "https://registry.example.com",
+  EcrRepositoryPrefix: "my-app/"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a PullThroughCacheRule with a custom role ARN and credentials for accessing the upstream registry.
+Configure a PullThroughCacheRule with additional options, including a custom role and upstream repository prefix.
 
 ```ts
-const advancedPullThroughCacheRule = await AWS.ECR.PullThroughCacheRule("advancedPullThroughCacheRule", {
-  UpstreamRegistryUrl: "https://registry-2.example.com",
-  UpstreamRepositoryPrefix: "myapp",
-  EcrRepositoryPrefix: "myapp-cache",
-  CustomRoleArn: "arn:aws:iam::123456789012:role/MyCustomRole",
-  CredentialArn: "arn:aws:iam::123456789012:role/MyCredentials"
+const AdvancedPullThroughCacheRule = await AWS.ECR.PullThroughCacheRule("AdvancedPullThroughCacheRule", {
+  UpstreamRegistryUrl: "https://registry.example.com",
+  EcrRepositoryPrefix: "my-app/",
+  UpstreamRegistry: "my-upstream-registry",
+  CustomRoleArn: "arn:aws:iam::123456789012:role/MyECRPullRole"
 });
 ```
 
-## Adoption of Existing Resources
+## Using Credentials for Upstream Access
 
-Use the adopt feature to avoid failure if a PullThroughCacheRule already exists.
+Demonstrate how to configure a PullThroughCacheRule with credentials for accessing the upstream registry.
 
 ```ts
-const adoptedPullThroughCacheRule = await AWS.ECR.PullThroughCacheRule("adoptedPullThroughCacheRule", {
-  UpstreamRegistryUrl: "https://registry-3.example.com",
-  UpstreamRepositoryPrefix: "myapp",
-  EcrRepositoryPrefix: "myapp-cache",
+const SecurePullThroughCacheRule = await AWS.ECR.PullThroughCacheRule("SecurePullThroughCacheRule", {
+  UpstreamRegistryUrl: "https://secure-registry.example.com",
+  EcrRepositoryPrefix: "my-secure-app/",
+  CredentialArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:my-credentials"
+});
+```
+
+## Adoption of Existing Rules
+
+Show how to adopt an existing PullThroughCacheRule by setting the adopt property to true.
+
+```ts
+const AdoptExistingPullThroughCacheRule = await AWS.ECR.PullThroughCacheRule("AdoptExistingPullThroughCacheRule", {
+  UpstreamRegistryUrl: "https://registry.example.com",
+  EcrRepositoryPrefix: "my-app/",
   adopt: true
 });
 ```

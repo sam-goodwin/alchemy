@@ -5,61 +5,50 @@ description: Learn how to create, update, and manage AWS Connect Prompts using A
 
 # Prompt
 
-The Prompt resource allows you to manage [AWS Connect Prompts](https://docs.aws.amazon.com/connect/latest/userguide/) used in contact flows for customer interactions. Prompts can include audio files that are stored in Amazon S3, enabling customized audio responses during customer interactions.
+The Prompt resource allows you to manage [AWS Connect Prompts](https://docs.aws.amazon.com/connect/latest/userguide/) for your contact center solutions. Prompts are audio files that provide information to customers during their interactions with the connect service.
 
 ## Minimal Example
 
-Create a basic prompt with required properties and one optional description.
+Create a basic AWS Connect Prompt with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPrompt = await AWS.Connect.Prompt("basic-prompt", {
-  instanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrst",
-  name: "CustomerGreeting",
-  s3Uri: "s3://my-bucket/prompts/greeting.mp3",
-  description: "Greeting prompt for customer interactions"
+const BasicPrompt = await AWS.Connect.Prompt("basic-prompt", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd-efgh-ijkl-mnop",
+  Name: "WelcomePrompt",
+  S3Uri: "s3://my-bucket/prompts/welcome.mp3",
+  Description: "This prompt greets the caller."
 });
 ```
 
 ## Advanced Configuration
 
-Configure a prompt with tags for better resource management.
+Configure an AWS Connect Prompt with tags for organization and management.
 
 ```ts
-const taggedPrompt = await AWS.Connect.Prompt("tagged-prompt", {
-  instanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrst",
-  name: "OrderStatusUpdate",
-  s3Uri: "s3://my-bucket/prompts/order-status.mp3",
-  tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "CustomerSupport" }
+const AdvancedPrompt = await AWS.Connect.Prompt("advanced-prompt", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd-efgh-ijkl-mnop",
+  Name: "SupportPrompt",
+  S3Uri: "s3://my-bucket/prompts/support.mp3",
+  Description: "This prompt informs the caller about support options.",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "CustomerSupport" }
   ]
 });
 ```
 
-## Adoption of Existing Resource
+## Adopt Existing Resource
 
-Adopt an existing prompt instead of failing if the resource already exists.
+Use the `adopt` option to adopt an existing prompt instead of failing if it already exists.
 
 ```ts
-const adoptedPrompt = await AWS.Connect.Prompt("adopted-prompt", {
-  instanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrst",
-  name: "FeedbackPrompt",
-  s3Uri: "s3://my-bucket/prompts/feedback.mp3",
+const AdoptedPrompt = await AWS.Connect.Prompt("adopted-prompt", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd-efgh-ijkl-mnop",
+  Name: "AdoptedPrompt",
+  S3Uri: "s3://my-bucket/prompts/adopted.mp3",
+  Description: "This prompt is adopted from an existing resource.",
   adopt: true
-});
-```
-
-## Updating an Existing Prompt
-
-Update the description of an existing prompt for clarity.
-
-```ts
-const updatedPrompt = await AWS.Connect.Prompt("existing-prompt", {
-  instanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrst",
-  name: "CustomerFeedback",
-  s3Uri: "s3://my-bucket/prompts/feedback-updated.mp3",
-  description: "Updated feedback prompt for improved clarity"
 });
 ```

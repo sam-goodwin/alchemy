@@ -5,72 +5,35 @@ description: Learn how to create, update, and manage AWS Route53RecoveryReadines
 
 # Cell
 
-The Cell resource allows you to manage [AWS Route53RecoveryReadiness Cells](https://docs.aws.amazon.com/route53recoveryreadiness/latest/userguide/) that help ensure recovery readiness for your applications across multiple AWS Regions.
+The Cell resource lets you create and manage [AWS Route53RecoveryReadiness Cells](https://docs.aws.amazon.com/route53recoveryreadiness/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-route53recoveryreadiness-cell.html
 
 ## Minimal Example
-
-Create a basic Cell with a name and optional tags:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicCell = await AWS.Route53RecoveryReadiness.Cell("myBasicCell", {
-  cellName: "PrimaryCell",
-  tags: [
-    {
-      key: "Environment",
-      value: "Production"
-    }
-  ]
+const cell = await AWS.Route53RecoveryReadiness.Cell("cell-example", {
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Cell with nested Cells and additional properties:
+Create a cell with additional configuration:
 
 ```ts
-const advancedCell = await AWS.Route53RecoveryReadiness.Cell("myAdvancedCell", {
-  cellName: "AdvancedCell",
-  cells: ["SecondaryCell1", "SecondaryCell2"],
-  adopt: true,
-  tags: [
-    {
-      key: "Project",
-      value: "DisasterRecovery"
-    },
-    {
-      key: "Owner",
-      value: "TeamA"
-    }
-  ]
+import AWS from "alchemy/aws/control";
+
+const advancedCell = await AWS.Route53RecoveryReadiness.Cell("advanced-cell", {
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
 
-## Nested Cells Example
-
-Create a Cell that contains multiple nested Cells for a multi-region setup:
-
-```ts
-const multiRegionCell = await AWS.Route53RecoveryReadiness.Cell("myMultiRegionCell", {
-  cellName: "MultiRegionCell",
-  cells: ["RegionA", "RegionB", "RegionC"],
-  tags: [
-    {
-      key: "UseCase",
-      value: "HighAvailability"
-    }
-  ]
-});
-```
-
-## Adoption of Existing Resources
-
-Adopt an existing Cell without failing if it already exists:
-
-```ts
-const adoptExistingCell = await AWS.Route53RecoveryReadiness.Cell("myAdoptedCell", {
-  cellName: "ExistingCell",
-  adopt: true
-});
-```

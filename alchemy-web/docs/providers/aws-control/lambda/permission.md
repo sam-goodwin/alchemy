@@ -5,59 +5,63 @@ description: Learn how to create, update, and manage AWS Lambda Permissions usin
 
 # Permission
 
-The Permission resource allows you to manage [AWS Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/userguide/) that control which services or accounts can invoke your Lambda functions.
+The Permission resource allows you to manage [AWS Lambda Permissions](https://docs.aws.amazon.com/lambda/latest/userguide/) that grant specific AWS services or accounts the ability to invoke your Lambda functions.
 
 ## Minimal Example
 
-Create a basic permission for a Lambda function to allow invocation from an AWS service (e.g., API Gateway):
+Create a basic permission that allows an AWS service (e.g., S3) to invoke a Lambda function.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const lambdaPermission = await AWS.Lambda.Permission("apiGatewayInvokePermission", {
-  FunctionName: "myLambdaFunction",
+const LambdaPermission = await AWS.Lambda.Permission("S3InvokePermission", {
+  FunctionName: "MyLambdaFunction",
   Action: "lambda:InvokeFunction",
-  Principal: "apigateway.amazonaws.com",
-  SourceArn: "arn:aws:execute-api:us-east-1:123456789012:myApiId/*"
+  Principal: "s3.amazonaws.com",
+  SourceArn: "arn:aws:s3:::my-bucket",
+  SourceAccount: "123456789012"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a permission with an event source token for more secure invocation:
+Configure a permission with an event source token for added security, which restricts the invocation to a specific event source.
 
 ```ts
-const secureLambdaPermission = await AWS.Lambda.Permission("secureInvokePermission", {
-  FunctionName: "mySecureLambdaFunction",
+const SecureLambdaPermission = await AWS.Lambda.Permission("SecureS3InvokePermission", {
+  FunctionName: "MyLambdaFunction",
+  Action: "lambda:InvokeFunction",
+  Principal: "s3.amazonaws.com",
+  SourceArn: "arn:aws:s3:::my-bucket",
+  SourceAccount: "123456789012",
+  EventSourceToken: "token-value-123"
+});
+```
+
+## Conditional Access
+
+Grant access based on specific conditions using the `PrincipalOrgID` property to limit invocation to a specific AWS Organization.
+
+```ts
+const OrgRestrictedLambdaPermission = await AWS.Lambda.Permission("OrgRestrictedPermission", {
+  FunctionName: "MyLambdaFunction",
   Action: "lambda:InvokeFunction",
   Principal: "events.amazonaws.com",
-  SourceArn: "arn:aws:events:us-east-1:123456789012:rule/myEventRule",
-  EventSourceToken: "myEventSourceToken"
+  PrincipalOrgID: "o-1234567890",
+  SourceArn: "arn:aws:events:us-west-2:123456789012:rule/MyRule"
 });
 ```
 
-## Allow Invocation from a Specific Account
+## Using Function URL Authentication
 
-Create a permission that allows a specific AWS account to invoke the Lambda function:
-
-```ts
-const accountInvokePermission = await AWS.Lambda.Permission("accountInvokePermission", {
-  FunctionName: "myAccountLambdaFunction",
-  Action: "lambda:InvokeFunction",
-  Principal: "123456789012", // The AWS Account ID
-  SourceAccount: "123456789012"
-});
-```
-
-## Using Function URL with Auth Type
-
-Set up a permission for a Lambda function URL with a specific authentication type:
+Create a permission that uses Function URL Authentication to allow authenticated access.
 
 ```ts
-const functionUrlPermission = await AWS.Lambda.Permission("functionUrlPermission", {
-  FunctionName: "myFunctionUrlLambda",
+const AuthenticatedLambdaPermission = await AWS.Lambda.Permission("AuthenticatedInvokePermission", {
+  FunctionName: "MyLambdaFunction",
   Action: "lambda:InvokeFunction",
-  Principal: "*",
-  FunctionUrlAuthType: "AWS_IAM"
+  Principal: "lambda.amazonaws.com",
+  FunctionUrlAuthType: "AWS_IAM",
+  SourceArn: "arn:aws:lambda:us-west-2:123456789012:function:MyLambdaFunction"
 });
 ```

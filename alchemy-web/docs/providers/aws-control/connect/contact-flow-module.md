@@ -5,102 +5,115 @@ description: Learn how to create, update, and manage AWS Connect ContactFlowModu
 
 # ContactFlowModule
 
-The ContactFlowModule resource allows you to create and manage [AWS Connect ContactFlowModules](https://docs.aws.amazon.com/connect/latest/userguide/) for defining interactive workflows in your contact center.
+The ContactFlowModule resource allows you to create and manage [AWS Connect ContactFlowModules](https://docs.aws.amazon.com/connect/latest/userguide/) for defining and controlling the flow of customer interactions in your contact center.
 
 ## Minimal Example
 
-Create a basic ContactFlowModule with required properties and a common optional description.
+Create a basic contact flow module with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const contactFlowModule = await AWS.Connect.ContactFlowModule("basicContactFlowModule", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-56ef-78gh-90ij-klmnopqrst",
+const BasicContactFlowModule = await AWS.Connect.ContactFlowModule("BasicContactFlowModule", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-efgh-5678-ijkl-9101mnopqrst",
+  Name: "Basic Flow Module",
+  Description: "A basic contact flow module for handling customer inquiries.",
   Content: JSON.stringify({
-    "Version": "2019-10-30",
-    "StartAction": "1",
-    "Actions": [
+    Version: "1.0",
+    StartAction: "InitialGreeting",
+    Actions: [
       {
-        "Identifier": "1",
-        "Type": "PlayPrompt",
-        "Parameters": {
-          "Text": "Welcome to our service."
+        Identifier: "InitialGreeting",
+        Type: "PlayPrompt",
+        Transitions: {
+          NextAction: "HandleUserResponse"
         }
+      },
+      {
+        Identifier: "HandleUserResponse",
+        Type: "GetUserInput"
       }
     ]
   }),
-  Name: "Basic Contact Flow Module",
-  Description: "A simple contact flow module for greeting customers."
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Support" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ContactFlowModule with additional properties like tags and state.
+Configure a contact flow module with additional actions and state settings.
 
 ```ts
-const advancedContactFlowModule = await AWS.Connect.ContactFlowModule("advancedContactFlowModule", {
-  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/wxyz5678-90ab-cdef-ghij-klmnopqrst",
+const AdvancedContactFlowModule = await AWS.Connect.ContactFlowModule("AdvancedContactFlowModule", {
+  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234-efgh-5678-ijkl-9101mnopqrst",
+  Name: "Advanced Flow Module",
+  Description: "An advanced contact flow module for handling complex interactions.",
   Content: JSON.stringify({
-    "Version": "2019-10-30",
-    "StartAction": "2",
-    "Actions": [
+    Version: "1.0",
+    StartAction: "WelcomeMessage",
+    Actions: [
       {
-        "Identifier": "2",
-        "Type": "PlayPrompt",
-        "Parameters": {
-          "Text": "Thank you for calling. Please hold while we connect you."
+        Identifier: "WelcomeMessage",
+        Type: "PlayPrompt",
+        Transitions: {
+          NextAction: "CaptureFeedback"
         }
+      },
+      {
+        Identifier: "CaptureFeedback",
+        Type: "GetUserInput",
+        InputType: "Dtmf",
+        Transitions: {
+          NextAction: "ThankYouMessage"
+        }
+      },
+      {
+        Identifier: "ThankYouMessage",
+        Type: "PlayPrompt"
       }
     ]
   }),
-  Name: "Advanced Contact Flow Module",
+  State: "ACTIVE",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Support" }
-  ],
-  State: "ACTIVE"
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "CustomerSupport" }
+  ]
 });
 ```
 
-## Using with Additional Features
+## Use Case: Handling Customer Support Requests
 
-Create a ContactFlowModule that incorporates error handling and custom actions.
+Create a contact flow module specifically designed for handling support requests efficiently.
 
 ```ts
-const errorHandlingContactFlowModule = await AWS.Connect.ContactFlowModule("errorHandlingContactFlowModule", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/ijkl9012-34mn-opqr-stuv-wxyzabcdefg",
+const SupportRequestFlowModule = await AWS.Connect.ContactFlowModule("SupportRequestFlowModule", {
+  InstanceArn: "arn:aws:connect:eu-central-1:123456789012:instance/abcd1234-efgh-5678-ijkl-9101mnopqrst",
+  Name: "Support Request Flow Module",
+  Description: "A contact flow module for processing customer support requests.",
   Content: JSON.stringify({
-    "Version": "2019-10-30",
-    "StartAction": "3",
-    "Actions": [
+    Version: "1.0",
+    StartAction: "GatherSupportReason",
+    Actions: [
       {
-        "Identifier": "3",
-        "Type": "CheckContactAttributes",
-        "Parameters": {
-          "Attribute": "IsCustomerVIP"
+        Identifier: "GatherSupportReason",
+        Type: "GetUserInput",
+        InputType: "Dtmf",
+        Transitions: {
+          NextAction: "RouteToAgent"
         }
       },
       {
-        "Identifier": "4",
-        "Type": "PlayPrompt",
-        "Parameters": {
-          "Text": "Connecting you to a VIP representative."
-        }
-      },
-      {
-        "Identifier": "5",
-        "Type": "Error",
-        "Parameters": {
-          "ErrorMessage": "An error occurred while processing your request."
-        }
+        Identifier: "RouteToAgent",
+        Type: "ConnectParticipant"
       }
     ]
   }),
-  Name: "Error Handling Contact Flow Module",
-  Description: "A contact flow module that handles customer VIP status and errors.",
   Tags: [
-    { Key: "UseCase", Value: "VIPSupport" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "TechSupport" }
   ]
 });
 ```

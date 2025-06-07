@@ -1,85 +1,22 @@
 ---
-title: Managing AWS LakeFormation Permissions with Alchemy
-description: Learn how to create, update, and manage AWS LakeFormation Permissions using Alchemy Cloud Control.
+title: Managing AWS LakeFormation Permissionss with Alchemy
+description: Learn how to create, update, and manage AWS LakeFormation Permissionss using Alchemy Cloud Control.
 ---
 
 # Permissions
 
-The Permissions resource allows you to manage [AWS LakeFormation Permissions](https://docs.aws.amazon.com/lakeformation/latest/userguide/) for data lake principals, enabling fine-grained access control to your data resources.
+The Permissions resource lets you create and manage [AWS LakeFormation Permissionss](https://docs.aws.amazon.com/lakeformation/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lakeformation-permissions.html
 
 ## Minimal Example
-
-Create a basic permissions setup for a data lake principal with default permissions.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const lakeFormationPermissions = await AWS.LakeFormation.Permissions("basicPermissions", {
-  DataLakePrincipal: {
-    DataLakePrincipalIdentifier: "user@example.com"
-  },
-  Resource: {
-    Table: {
-      DatabaseName: "myDatabase",
-      Name: "myTable"
-    }
-  },
-  Permissions: ["SELECT", "INSERT"],
-  PermissionsWithGrantOption: ["SELECT"]
+const permissions = await AWS.LakeFormation.Permissions("permissions-example", {
+  DataLakePrincipal: "example-datalakeprincipal",
+  Resource: "example-resource",
 });
 ```
 
-## Advanced Configuration
-
-Configure advanced permissions with multiple resources and grant options.
-
-```ts
-const advancedLakeFormationPermissions = await AWS.LakeFormation.Permissions("advancedPermissions", {
-  DataLakePrincipal: {
-    DataLakePrincipalIdentifier: "role/MyDataLakeRole"
-  },
-  Resource: {
-    Database: {
-      Name: "myDatabase"
-    }
-  },
-  Permissions: ["ALL"],
-  PermissionsWithGrantOption: ["SELECT", "INSERT"],
-  adopt: true // Adopt existing resource if it already exists
-});
-```
-
-## Granting Permissions to Multiple Resources
-
-Demonstrate granting permissions to multiple tables within a database.
-
-```ts
-const multiResourcePermissions = await AWS.LakeFormation.Permissions("multiResourcePermissions", {
-  DataLakePrincipal: {
-    DataLakePrincipalIdentifier: "group/DataAnalysts"
-  },
-  Resource: {
-    Table: {
-      DatabaseName: "myDatabase",
-      Name: "salesData"
-    }
-  },
-  Permissions: ["SELECT"],
-  PermissionsWithGrantOption: ["SELECT"]
-});
-
-// Granting permissions to another table
-const anotherTablePermissions = await AWS.LakeFormation.Permissions("anotherTablePermissions", {
-  DataLakePrincipal: {
-    DataLakePrincipalIdentifier: "group/DataAnalysts"
-  },
-  Resource: {
-    Table: {
-      DatabaseName: "myDatabase",
-      Name: "customerData"
-    }
-  },
-  Permissions: ["SELECT"],
-  PermissionsWithGrantOption: ["SELECT"]
-});
-```

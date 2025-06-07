@@ -5,60 +5,58 @@ description: Learn how to create, update, and manage AWS Deadline Farms using Al
 
 # Farm
 
-The Farm resource allows you to manage your [AWS Deadline Farms](https://docs.aws.amazon.com/deadline/latest/userguide/) effectively. Deadline Farms are essential for managing render jobs in a cloud environment, providing the necessary infrastructure for handling rendering tasks and workflows.
+The Farm resource lets you manage [AWS Deadline Farms](https://docs.aws.amazon.com/deadline/latest/userguide/) for rendering workloads in a cloud environment.
 
 ## Minimal Example
 
-Create a basic Deadline Farm with required properties and a common optional property.
+Create a basic Deadline Farm with a display name and an optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicFarm = await AWS.Deadline.Farm("myBasicFarm", {
-  DisplayName: "My Basic Deadline Farm",
+const BasicFarm = await AWS.Deadline.Farm("BasicFarm", {
+  DisplayName: "MyBasicFarm",
   Description: "This is a basic Deadline Farm for rendering tasks."
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Deadline Farm with additional settings such as KMS Key ARN for encryption and tags for resource management.
+Configure a Deadline Farm with a KMS key for encryption and tags for resource management.
 
 ```ts
-const advancedFarm = await AWS.Deadline.Farm("myAdvancedFarm", {
-  DisplayName: "My Advanced Deadline Farm",
-  Description: "This farm uses KMS for encryption and has specific tags.",
+const EncryptedFarm = await AWS.Deadline.Farm("EncryptedFarm", {
+  DisplayName: "MyEncryptedFarm",
   KmsKeyArn: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "VisualEffects" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Render" }
   ]
 });
 ```
 
-## Adoption of Existing Resources
+## Adoption of Existing Resource
 
-If you want to adopt an existing Deadline Farm instead of failing when it is already present, you can specify the adopt option.
+Create a Deadline Farm that adopts an existing resource if it already exists.
 
 ```ts
-const adoptFarm = await AWS.Deadline.Farm("myAdoptedFarm", {
-  DisplayName: "My Adopted Deadline Farm",
-  Description: "This farm will adopt existing resources if they exist.",
-  adopt: true
+const AdoptedFarm = await AWS.Deadline.Farm("AdoptedFarm", {
+  DisplayName: "MyAdoptedFarm",
+  adopt: true // This will adopt the existing resource instead of failing
 });
 ```
 
-## Resource Management with Tags
+## Farm with Detailed Tags
 
-Use the Tags property to manage your Deadline Farms effectively, allowing for easy identification and categorization.
+Set up a Deadline Farm with detailed tagging for better resource management.
 
 ```ts
-const taggedFarm = await AWS.Deadline.Farm("myTaggedFarm", {
-  DisplayName: "My Tagged Deadline Farm",
-  Description: "This farm is tagged for better resource management.",
+const TaggedFarm = await AWS.Deadline.Farm("TaggedFarm", {
+  DisplayName: "MyTaggedFarm",
   Tags: [
-    { Key: "Project", Value: "RenderFarm2023" },
-    { Key: "Owner", Value: "ArtDepartment" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Owner", Value: "DevOps" },
+    { Key: "Project", Value: "Rendering" }
   ]
 });
 ```

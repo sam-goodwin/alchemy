@@ -5,48 +5,63 @@ description: Learn how to create, update, and manage AWS StepFunctions StateMach
 
 # StateMachineVersion
 
-The StateMachineVersion resource allows you to manage [AWS StepFunctions StateMachineVersions](https://docs.aws.amazon.com/stepfunctions/latest/userguide/) and their configurations, enabling you to create and manage specific versions of state machines effectively.
+The StateMachineVersion resource lets you manage [AWS StepFunctions StateMachineVersions](https://docs.aws.amazon.com/stepfunctions/latest/userguide/) and their configurations, allowing you to define the behavior of your state machine versions effectively.
 
 ## Minimal Example
 
-Create a basic StateMachineVersion with required properties and a description.
+Create a basic state machine version with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const stateMachineVersion = await AWS.StepFunctions.StateMachineVersion("basicStateMachineVersion", {
-  StateMachineArn: "arn:aws:states:us-east-1:123456789012:stateMachine:myStateMachine",
-  Description: "Initial version of the state machine"
+const BasicStateMachineVersion = await AWS.StepFunctions.StateMachineVersion("BasicVersion", {
+  StateMachineArn: "arn:aws:states:us-east-1:123456789012:stateMachine:MyStateMachine",
+  StateMachineRevisionId: "1",
+  Description: "Basic version of the state machine"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a StateMachineVersion with an existing resource adoption.
+Configure a state machine version with additional options, including a detailed description.
 
 ```ts
-const advancedStateMachineVersion = await AWS.StepFunctions.StateMachineVersion("advancedStateMachineVersion", {
-  StateMachineArn: "arn:aws:states:us-east-1:123456789012:stateMachine:myStateMachine",
-  StateMachineRevisionId: "12345678-1234-1234-1234-123456789012",
-  Description: "Adopting an existing version",
+import AWS from "alchemy/aws/control";
+
+const AdvancedStateMachineVersion = await AWS.StepFunctions.StateMachineVersion("AdvancedVersion", {
+  StateMachineArn: "arn:aws:states:us-east-1:123456789012:stateMachine:MyStateMachine",
+  StateMachineRevisionId: "2",
+  Description: "Advanced version of the state machine with additional features",
+  adopt: true // Adopt existing resource instead of failing
+});
+```
+
+## Version Adoption
+
+Create a version of a state machine while adopting any existing versions.
+
+```ts
+import AWS from "alchemy/aws/control";
+
+const AdoptedStateMachineVersion = await AWS.StepFunctions.StateMachineVersion("AdoptedVersion", {
+  StateMachineArn: "arn:aws:states:us-east-1:123456789012:stateMachine:MyStateMachine",
+  StateMachineRevisionId: "3",
+  Description: "Adopting an existing state machine version",
   adopt: true
 });
 ```
 
-## Creating Multiple Versions
+## Full Resource Example
 
-You can create multiple versions of a state machine to manage different workflows.
+A more comprehensive example that demonstrates how to manage a state machine version with all properties.
 
 ```ts
-const versionOne = await AWS.StepFunctions.StateMachineVersion("versionOne", {
-  StateMachineArn: "arn:aws:states:us-east-1:123456789012:stateMachine:myStateMachine",
-  Description: "Version 1 of the state machine"
-});
+import AWS from "alchemy/aws/control";
 
-const versionTwo = await AWS.StepFunctions.StateMachineVersion("versionTwo", {
-  StateMachineArn: "arn:aws:states:us-east-1:123456789012:stateMachine:myStateMachine",
-  StateMachineRevisionId: "87654321-4321-4321-4321-210987654321",
-  Description: "Version 2 of the state machine",
-  adopt: true
+const FullStateMachineVersion = await AWS.StepFunctions.StateMachineVersion("FullVersion", {
+  StateMachineArn: "arn:aws:states:us-east-1:123456789012:stateMachine:MyStateMachine",
+  StateMachineRevisionId: "4",
+  Description: "Full version of the state machine with detailed settings",
+  adopt: false // Not adopting existing resources
 });
 ```

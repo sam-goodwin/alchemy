@@ -5,112 +5,39 @@ description: Learn how to create, update, and manage AWS VerifiedPermissions Pol
 
 # PolicyStore
 
-The PolicyStore resource lets you manage [AWS VerifiedPermissions PolicyStores](https://docs.aws.amazon.com/verifiedpermissions/latest/userguide/) for handling and validating permissions for your applications.
+The PolicyStore resource lets you create and manage [AWS VerifiedPermissions PolicyStores](https://docs.aws.amazon.com/verifiedpermissions/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-verifiedpermissions-policystore.html
 
 ## Minimal Example
-
-Create a basic PolicyStore with a description and validation settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPolicyStore = await AWS.VerifiedPermissions.PolicyStore("basicPolicyStore", {
-  Description: "A basic policy store for managing permissions.",
-  ValidationSettings: {
-    // Example validation settings
-    PolicySyntax: "JSON"
-  }
+const policystore = await AWS.VerifiedPermissions.PolicyStore("policystore-example", {
+  ValidationSettings: "example-validationsettings",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A policystore resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a PolicyStore with a custom schema and validation settings.
+Create a policystore with additional configuration:
 
 ```ts
-const advancedPolicyStore = await AWS.VerifiedPermissions.PolicyStore("advancedPolicyStore", {
-  Description: "An advanced policy store with custom schema.",
-  ValidationSettings: {
-    PolicySyntax: "JSON",
-    EnableValidation: true
+import AWS from "alchemy/aws/control";
+
+const advancedPolicyStore = await AWS.VerifiedPermissions.PolicyStore("advanced-policystore", {
+  ValidationSettings: "example-validationsettings",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Schema: {
-    // Example schema definition
-    Type: "object",
-    Properties: {
-      Resource: {
-        Type: "string"
-      },
-      Action: {
-        Type: "string"
-      },
-      Effect: {
-        Type: "string",
-        Enum: ["Allow", "Deny"]
-      }
-    },
-    Required: ["Resource", "Action", "Effect"]
-  }
+  Description: "A policystore resource managed by Alchemy",
 });
 ```
 
-## Adoption of Existing Resource
-
-Create a PolicyStore and adopt an existing resource if it already exists.
-
-```ts
-const adoptedPolicyStore = await AWS.VerifiedPermissions.PolicyStore("adoptedPolicyStore", {
-  Description: "An adopted policy store that will take over an existing one if found.",
-  ValidationSettings: {
-    PolicySyntax: "JSON"
-  },
-  adopt: true // Will adopt existing resource if it exists
-});
-``` 
-
-## Policy Validation Example
-
-Define a PolicyStore with specific policy validation settings.
-
-```ts
-const policyValidationStore = await AWS.VerifiedPermissions.PolicyStore("policyValidationStore", {
-  Description: "A policy store for validating specific policies.",
-  ValidationSettings: {
-    PolicySyntax: "JSON",
-    EnableValidation: true,
-    MaxPolicySize: 2048 // Example size limit for the policy
-  }
-});
-``` 
-
-## Schema Definition Example
-
-Create a PolicyStore with a detailed schema definition for policies.
-
-```ts
-const schemaPolicyStore = await AWS.VerifiedPermissions.PolicyStore("schemaPolicyStore", {
-  Description: "A policy store with a detailed schema for permissions.",
-  ValidationSettings: {
-    PolicySyntax: "JSON"
-  },
-  Schema: {
-    Type: "object",
-    Properties: {
-      UserId: {
-        Type: "string"
-      },
-      Resource: {
-        Type: "string"
-      },
-      Action: {
-        Type: "string"
-      },
-      Effect: {
-        Type: "string",
-        Enum: ["Allow", "Deny"]
-      }
-    },
-    Required: ["UserId", "Resource", "Action", "Effect"]
-  }
-});
-```

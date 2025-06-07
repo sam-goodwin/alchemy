@@ -5,78 +5,44 @@ description: Learn how to create, update, and manage AWS ResilienceHub Resilienc
 
 # ResiliencyPolicy
 
-The ResiliencyPolicy resource enables you to define and manage [AWS ResilienceHub ResiliencyPolicys](https://docs.aws.amazon.com/resiliencehub/latest/userguide/) that govern the resiliency and recovery strategies for your applications.
+The ResiliencyPolicy resource lets you create and manage [AWS ResilienceHub ResiliencyPolicys](https://docs.aws.amazon.com/resiliencehub/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-resiliencehub-resiliencypolicy.html
 
 ## Minimal Example
-
-Create a basic resiliency policy with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicResiliencyPolicy = await AWS.ResilienceHub.ResiliencyPolicy("basicResiliencyPolicy", {
-  Policy: {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Action": "resiliencehub:CreateResiliencyPolicy",
-        "Resource": "*"
-      }
-    ]
-  },
-  PolicyDescription: "Basic resiliency policy for critical applications.",
-  Tier: "MissionCritical",
-  PolicyName: "BasicPolicy"
+const resiliencypolicy = await AWS.ResilienceHub.ResiliencyPolicy("resiliencypolicy-example", {
+  Policy: "example-policy",
+  Tier: "example-tier",
+  PolicyName: "resiliencypolicy-policy",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a resiliency policy with additional options, including data location constraints and tags:
+Create a resiliencypolicy with additional configuration:
 
 ```ts
-const advancedResiliencyPolicy = await AWS.ResilienceHub.ResiliencyPolicy("advancedResiliencyPolicy", {
-  Policy: {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Action": "resiliencehub:UpdateResiliencyPolicy",
-        "Resource": "*"
-      }
-    ]
-  },
-  PolicyDescription: "Advanced resiliency policy for multi-region applications.",
-  Tier: "Critical",
-  PolicyName: "AdvancedPolicy",
-  DataLocationConstraint: "us-west-2",
-  Tags: {
-    Project: "ResilienceProject",
-    Environment: "Production"
+import AWS from "alchemy/aws/control";
+
+const advancedResiliencyPolicy = await AWS.ResilienceHub.ResiliencyPolicy(
+  "advanced-resiliencypolicy",
+  {
+    Policy: "example-policy",
+    Tier: "example-tier",
+    PolicyName: "resiliencypolicy-policy",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
   }
-});
+);
 ```
 
-## Example with Adoption of Existing Resources
-
-Create a resiliency policy while adopting existing resources instead of failing if they already exist:
-
-```ts
-const adoptResiliencyPolicy = await AWS.ResilienceHub.ResiliencyPolicy("adoptResiliencyPolicy", {
-  Policy: {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Action": "resiliencehub:DeleteResiliencyPolicy",
-        "Resource": "*"
-      }
-    ]
-  },
-  PolicyDescription: "Policy that adopts existing resources.",
-  Tier: "HighAvailability",
-  PolicyName: "AdoptExistingPolicy",
-  adopt: true
-});
-```

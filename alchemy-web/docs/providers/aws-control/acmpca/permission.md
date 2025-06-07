@@ -5,63 +5,52 @@ description: Learn how to create, update, and manage AWS ACMPCA Permissions usin
 
 # Permission
 
-The Permission resource allows you to manage [AWS ACMPCA Permissions](https://docs.aws.amazon.com/acmpca/latest/userguide/) for certificate authorities, enabling you to specify actions that can be performed by specific principals.
+The Permission resource allows you to manage permissions for AWS Certificate Manager Private Certificate Authority (ACM PCA). This resource is vital for defining who can perform actions on a certificate authority. For more information, refer to the AWS documentation on [AWS ACMPCA Permissions](https://docs.aws.amazon.com/acmpca/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic permission for a certificate authority allowing a specific action for a principal:
+Create a basic permission for a certificate authority that allows a specific action.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const acmPermission = await AWS.ACMPCA.Permission("basicPermission", {
-  CertificateAuthorityArn: "arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/abcd1234-efgh-5678-ijkl-90mnopqrst",
-  Actions: ["acm-pca:IssueCertificate"],
+const BasicPermission = await AWS.ACMPCA.Permission("BasicPermission", {
+  CertificateAuthorityArn: "arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/abcd1234-56ef-78gh-90ij-klmnopqrstuv",
+  Actions: [
+    "acm-pca:IssueCertificate",
+    "acm-pca:ListCertificateAuthorities"
+  ],
   Principal: "arn:aws:iam::123456789012:role/MyRole"
 });
 ```
 
 ## Advanced Configuration
 
-Specify additional permissions including the optional `SourceAccount` to restrict the actions to a specific AWS account:
+Configure a permission that includes a source account in addition to the basic properties.
 
 ```ts
-const advancedPermission = await AWS.ACMPCA.Permission("advancedPermission", {
-  CertificateAuthorityArn: "arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/abcd1234-efgh-5678-ijkl-90mnopqrst",
+const AdvancedPermission = await AWS.ACMPCA.Permission("AdvancedPermission", {
+  CertificateAuthorityArn: "arn:aws:acm-pca:us-west-2:123456789012:certificate-authority/wxyz1234-56ef-78gh-90ij-klmnopqrstuv",
   Actions: [
-    "acm-pca:IssueCertificate",
-    "acm-pca:GetCertificate"
-  ],
-  Principal: "arn:aws:iam::123456789012:role/MyRole",
-  SourceAccount: "123456789012"
-});
-```
-
-## Granting Multiple Actions
-
-Demonstrate granting multiple actions to a principal for a certificate authority:
-
-```ts
-const multipleActionsPermission = await AWS.ACMPCA.Permission("multipleActionsPermission", {
-  CertificateAuthorityArn: "arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/abcd1234-efgh-5678-ijkl-90mnopqrst",
-  Actions: [
-    "acm-pca:IssueCertificate",
     "acm-pca:RevokeCertificate",
     "acm-pca:GetCertificate"
   ],
-  Principal: "arn:aws:iam::123456789012:role/MyRole"
+  SourceAccount: "123456789012",
+  Principal: "arn:aws:iam::123456789012:role/MyOtherRole"
 });
 ```
 
-## Adopting Existing Permissions
+## Permission with Adoption
 
-Show how to adopt an existing permission instead of failing when the permission already exists:
+Create a permission that adopts an existing resource if it already exists.
 
 ```ts
-const adoptExistingPermission = await AWS.ACMPCA.Permission("adoptExistingPermission", {
-  CertificateAuthorityArn: "arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/abcd1234-efgh-5678-ijkl-90mnopqrst",
-  Actions: ["acm-pca:IssueCertificate"],
-  Principal: "arn:aws:iam::123456789012:role/MyRole",
+const AdoptPermission = await AWS.ACMPCA.Permission("AdoptPermission", {
+  CertificateAuthorityArn: "arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/qwer1234-56ef-78gh-90ij-klmnopqrstuv",
+  Actions: [
+    "acm-pca:UpdateCertificateAuthority"
+  ],
+  Principal: "arn:aws:iam::123456789012:role/MyThirdRole",
   adopt: true
 });
 ```

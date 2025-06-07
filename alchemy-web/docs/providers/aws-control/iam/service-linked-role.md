@@ -5,41 +5,40 @@ description: Learn how to create, update, and manage AWS IAM ServiceLinkedRoles 
 
 # ServiceLinkedRole
 
-The ServiceLinkedRole resource lets you create and manage [AWS IAM ServiceLinkedRoles](https://docs.aws.amazon.com/iam/latest/userguide/) that allow AWS services to perform actions on your behalf.
+The ServiceLinkedRole resource allows you to create and manage [AWS IAM ServiceLinkedRoles](https://docs.aws.amazon.com/iam/latest/userguide/) which are specific types of IAM roles that are linked to AWS services. These roles are pre-defined by AWS services and contain permissions that allow those services to perform actions on your behalf.
 
 ## Minimal Example
 
-Create a basic ServiceLinkedRole with required properties and a custom description.
+This example demonstrates how to create a basic ServiceLinkedRole with the required properties and a custom suffix.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const myServiceLinkedRole = await AWS.IAM.ServiceLinkedRole("myServiceLinkedRole", {
-  AWSServiceName: "elasticloadbalancing.amazonaws.com",
-  Description: "Role for ELB to manage resources on behalf of the user"
+const BasicServiceLinkedRole = await AWS.IAM.ServiceLinkedRole("BasicServiceLinkedRole", {
+  AWSServiceName: "elasticbeanstalk.amazonaws.com",
+  CustomSuffix: "MyCustomSuffix"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ServiceLinkedRole with an optional custom suffix for the role name.
+In this example, we configure a ServiceLinkedRole with additional properties such as a description.
 
 ```ts
-const advancedServiceLinkedRole = await AWS.IAM.ServiceLinkedRole("advancedServiceLinkedRole", {
-  AWSServiceName: "ec2.amazonaws.com",
-  CustomSuffix: "customsuffix",
-  Description: "Role for EC2 service to manage resources"
+const AdvancedServiceLinkedRole = await AWS.IAM.ServiceLinkedRole("AdvancedServiceLinkedRole", {
+  AWSServiceName: "cloudwatch.amazonaws.com",
+  CustomSuffix: "Monitoring",
+  Description: "Role for CloudWatch service linked role."
 });
 ```
 
-## Adopting Existing Roles
+## Adoption of Existing Resource
 
-Use the adopt option to adopt an existing service-linked role instead of failing if it already exists.
+This example shows how to adopt an existing ServiceLinkedRole if it already exists, rather than failing the operation.
 
 ```ts
-const adoptedServiceLinkedRole = await AWS.IAM.ServiceLinkedRole("adoptedServiceLinkedRole", {
-  AWSServiceName: "s3.amazonaws.com",
-  adopt: true,
-  Description: "Adopting existing role for S3 service"
+const AdoptExistingServiceLinkedRole = await AWS.IAM.ServiceLinkedRole("AdoptExistingServiceLinkedRole", {
+  AWSServiceName: "ec2.amazonaws.com",
+  adopt: true
 });
 ```

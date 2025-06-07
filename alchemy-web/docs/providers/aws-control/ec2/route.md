@@ -5,66 +5,66 @@ description: Learn how to create, update, and manage AWS EC2 Routes using Alchem
 
 # Route
 
-The Route resource allows you to manage [AWS EC2 Routes](https://docs.aws.amazon.com/ec2/latest/userguide/) for directing network traffic within your Amazon Virtual Private Cloud (VPC).
+The Route resource lets you manage [AWS EC2 Routes](https://docs.aws.amazon.com/ec2/latest/userguide/) for directing traffic within your VPC network.
 
 ## Minimal Example
 
-Create a basic route that directs traffic for a specific CIDR block to a virtual private gateway.
+Create a basic route directing traffic to an internet gateway.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicRoute = await AWS.EC2.Route("basicRoute", {
-  RouteTableId: "rtb-0a1b2c3d4e5f6g7h",
-  DestinationCidrBlock: "10.0.0.0/16",
-  GatewayId: "vgw-0a1b2c3d4e5f6g7h"
+const basicRoute = await AWS.EC2.Route("BasicRoute", {
+  RouteTableId: "rtb-0abcde1234567890",
+  DestinationCidrBlock: "0.0.0.0/0",
+  GatewayId: "igw-0abcde1234567890"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a route that directs IPv6 traffic to a local gateway.
+Configure a route with an egress-only internet gateway for IPv6 traffic.
 
 ```ts
-const ipv6Route = await AWS.EC2.Route("ipv6Route", {
-  RouteTableId: "rtb-0a1b2c3d4e5f6g7h",
-  DestinationIpv6CidrBlock: "2001:0db8:1234:5678::/64",
-  LocalGatewayId: "lgw-0a1b2c3d4e5f6g7h"
+const advancedRoute = await AWS.EC2.Route("AdvancedRoute", {
+  RouteTableId: "rtb-0abcde1234567890",
+  DestinationIpv6CidrBlock: "::/0",
+  EgressOnlyInternetGatewayId: "eigw-0abcde1234567890"
 });
 ```
 
-## Route to NAT Gateway
+## Route to a NAT Gateway
 
-Create a route that directs traffic through a NAT gateway for internet access from private subnets.
+Set up a route directing traffic to a NAT gateway for private subnet access.
 
 ```ts
-const natRoute = await AWS.EC2.Route("natRoute", {
-  RouteTableId: "rtb-0a1b2c3d4e5f6g7h",
-  DestinationCidrBlock: "0.0.0.0/0",
-  NatGatewayId: "nat-0a1b2c3d4e5f6g7h"
+const natRoute = await AWS.EC2.Route("NATRoute", {
+  RouteTableId: "rtb-0abcde1234567890",
+  DestinationCidrBlock: "10.0.1.0/24",
+  NatGatewayId: "nat-0abcde1234567890"
 });
 ```
 
-## Route to Transit Gateway
+## Route with VPC Peering Connection
 
-Set up a route that directs traffic through a transit gateway.
+Create a route that directs traffic to a VPC peering connection.
 
 ```ts
-const transitGatewayRoute = await AWS.EC2.Route("transitGatewayRoute", {
-  RouteTableId: "rtb-0a1b2c3d4e5f6g7h",
+const vpcPeeringRoute = await AWS.EC2.Route("VpcPeeringRoute", {
+  RouteTableId: "rtb-0abcde1234567890",
   DestinationCidrBlock: "10.1.0.0/16",
-  TransitGatewayId: "tgw-0a1b2c3d4e5f6g7h"
+  VpcPeeringConnectionId: "pcx-0abcde1234567890"
 });
 ```
 
-## Route to VPC Peering Connection
+## Route with Transit Gateway
 
-Create a route that sends traffic through a VPC peering connection.
+Set up a route that directs traffic to a transit gateway for centralized routing.
 
 ```ts
-const vpcPeeringRoute = await AWS.EC2.Route("vpcPeeringRoute", {
-  RouteTableId: "rtb-0a1b2c3d4e5f6g7h",
+const transitGatewayRoute = await AWS.EC2.Route("TransitGatewayRoute", {
+  RouteTableId: "rtb-0abcde1234567890",
   DestinationCidrBlock: "10.2.0.0/16",
-  VpcPeeringConnectionId: "pcx-0a1b2c3d4e5f6g7h"
+  TransitGatewayId: "tgw-0abcde1234567890"
 });
 ```

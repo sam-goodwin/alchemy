@@ -5,58 +5,57 @@ description: Learn how to create, update, and manage AWS ECS PrimaryTaskSets usi
 
 # PrimaryTaskSet
 
-The PrimaryTaskSet resource allows you to manage [AWS ECS PrimaryTaskSets](https://docs.aws.amazon.com/ecs/latest/userguide/) for your containerized applications. This resource is essential for managing the task sets that are running under an Amazon ECS service.
+The PrimaryTaskSet resource lets you manage [AWS ECS PrimaryTaskSets](https://docs.aws.amazon.com/ecs/latest/userguide/) within your Elastic Container Service. This resource helps in handling task sets that are part of a service in ECS, allowing you to manage deployments effectively.
 
 ## Minimal Example
 
-Create a basic PrimaryTaskSet with required properties.
+This example demonstrates the creation of a basic PrimaryTaskSet with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const primaryTaskSet = await AWS.ECS.PrimaryTaskSet("myPrimaryTaskSet", {
-  TaskSetId: "my-task-set-id",
-  Cluster: "my-cluster-name",
-  Service: "my-service-name",
-  adopt: true // Allows adoption of existing resource
+const basicPrimaryTaskSet = await AWS.ECS.PrimaryTaskSet("BasicTaskSet", {
+  TaskSetId: "example-task-set-id",
+  Cluster: "example-cluster",
+  Service: "example-service"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a PrimaryTaskSet with additional optional properties.
+In this example, we show how to create a PrimaryTaskSet with additional properties such as adoption of existing resources.
 
 ```ts
-const advancedTaskSet = await AWS.ECS.PrimaryTaskSet("advancedTaskSet", {
+const advancedPrimaryTaskSet = await AWS.ECS.PrimaryTaskSet("AdvancedTaskSet", {
   TaskSetId: "advanced-task-set-id",
-  Cluster: "production-cluster",
-  Service: "production-service",
-  adopt: true // Adopt existing resource
+  Cluster: "advanced-cluster",
+  Service: "advanced-service",
+  adopt: true // Adopts existing PrimaryTaskSet if it already exists
 });
 ```
 
-## Updating a PrimaryTaskSet
+## Specific Use Case: Deployment Updates
 
-Demonstrate updating an existing PrimaryTaskSet with new properties.
+This example demonstrates how to update a PrimaryTaskSet during a deployment process.
 
 ```ts
-const updatedTaskSet = await AWS.ECS.PrimaryTaskSet("updatedTaskSet", {
-  TaskSetId: "my-task-set-id",
-  Cluster: "my-cluster-name",
-  Service: "my-service-name",
-  adopt: false // Do not adopt existing resource
+const deploymentPrimaryTaskSet = await AWS.ECS.PrimaryTaskSet("DeploymentTaskSet", {
+  TaskSetId: "deployment-task-set-id",
+  Cluster: "deployment-cluster",
+  Service: "deployment-service",
+  adopt: false // This will fail if the task set already exists
 });
 ```
 
-## Complete TaskSet Management
+## Additional Properties
 
-Show how to create and manage a PrimaryTaskSet with realistic values and configurations.
+Here’s how to create a PrimaryTaskSet with monitoring properties, although the example does not include specific monitoring settings as they are not part of this resource.
 
 ```ts
-const completeTaskSet = await AWS.ECS.PrimaryTaskSet("completeTaskSet", {
-  TaskSetId: "complete-task-set-id",
-  Cluster: "production-cluster",
-  Service: "web-service",
-  adopt: true // Allows adoption of existing resource
+const monitoredPrimaryTaskSet = await AWS.ECS.PrimaryTaskSet("MonitoredTaskSet", {
+  TaskSetId: "monitored-task-set-id",
+  Cluster: "monitored-cluster",
+  Service: "monitored-service"
+  // Additional monitoring properties can be added here if needed
 });
 ```

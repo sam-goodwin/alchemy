@@ -5,90 +5,94 @@ description: Learn how to create, update, and manage AWS Events Rules using Alch
 
 # Rule
 
-The Rule resource allows you to manage [AWS Events Rules](https://docs.aws.amazon.com/events/latest/userguide/) that enable you to respond to events across AWS services. You can set up rules to trigger actions based on events, schedules, or specific patterns.
+The Rule resource lets you manage [AWS Events Rules](https://docs.aws.amazon.com/events/latest/userguide/) for controlling event-driven architecture in your applications.
 
 ## Minimal Example
 
-Create a basic events rule that triggers on a schedule.
+Create a basic event rule that triggers on a specific event pattern.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dailyRule = await AWS.Events.Rule("dailyRule", {
-  name: "DailyEventTrigger",
-  scheduleExpression: "rate(1 day)",
-  description: "This rule triggers once a day."
+const BasicEventRule = await AWS.Events.Rule("BasicEventRule", {
+  Name: "MyBasicEventRule",
+  EventPattern: {
+    source: ["aws.ec2"],
+    detailType: ["EC2 Instance State-change Notification"],
+    detail: {
+      state: ["running"]
+    }
+  },
+  Description: "Triggers when an EC2 instance enters the running state",
+  State: "ENABLED",
+  Targets: [{
+    Arn: "arn:aws:lambda:us-west-2:123456789012:function:MyLambdaFunction",
+    Id: "TargetFunctionV1"
+  }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an events rule with an event pattern and multiple targets.
+Configure an event rule with a schedule expression for periodic events.
 
 ```ts
-const patternRule = await AWS.Events.Rule("patternRule", {
-  name: "PatternMatchEventTrigger",
-  eventPattern: {
-    source: ["aws.ec2"],
-    detailType: ["AWS API Call via CloudTrail"],
-    detail: {
-      eventSource: ["ec2.amazonaws.com"],
-      eventName: ["RunInstances"]
-    }
-  },
-  targets: [{
-    id: "invokeLambda",
-    arn: "arn:aws:lambda:us-east-1:123456789012:function:myFunction"
-  }],
-  description: "Triggers on EC2 instance creation events."
-});
-```
-
-## Schedule-Based Rule
-
-Create a rule that runs based on a cron schedule.
-
-```ts
-const cronRule = await AWS.Events.Rule("cronRule", {
-  name: "WeeklyReportTrigger",
-  scheduleExpression: "cron(0 12 ? * MON *)", // Every Monday at 12:00 PM UTC
-  description: "Triggers every week for generating reports.",
-  targets: [{
-    id: "generateReportFunction",
-    arn: "arn:aws:lambda:us-east-1:123456789012:function:generateReport"
+const ScheduledEventRule = await AWS.Events.Rule("ScheduledEventRule", {
+  Name: "MyScheduledEventRule",
+  ScheduleExpression: "rate(5 minutes)",
+  Description: "Triggers every 5 minutes",
+  State: "ENABLED",
+  Targets: [{
+    Arn: "arn:aws:lambda:us-west-2:123456789012:function:MyScheduledLambdaFunction",
+    Id: "ScheduledTargetV1"
   }]
 });
 ```
 
 ## Event Bus Integration
 
-Create a rule that listens to a specific event bus.
+Create an event rule that listens to a specific event bus.
 
 ```ts
-const eventBusRule = await AWS.Events.Rule("eventBusRule", {
-  name: "CustomEventBusRule",
-  eventBusName: "my-custom-bus",
-  eventPattern: {
-    source: ["my.application"],
-    detailType: ["applicationUpdate"]
+const EventBusRule = await AWS.Events.Rule("EventBusRule", {
+  Name: "MyEventBusRule",
+  EventBusName: "MyCustomEventBus",
+  EventPattern: {
+    source: ["my.custom.source"],
+    detail: {
+      eventType: ["eventA", "eventB"]
+    }
   },
-  targets: [{
-    id: "notifySns",
-    arn: "arn:aws:sns:us-east-1:123456789012:myTopic"
-  }],
-  description: "Triggers notifications on application updates."
+  Description: "Triggers on specific events from a custom event bus",
+  State: "ENABLED",
+  Targets: [{
+    Arn: "arn:aws:sqs:us-west-2:123456789012:MyQueue",
+    Id: "MySqsTarget"
+  }]
 });
-``` 
+```
 
-## Enabling and Disabling Rules
+## Using IAM Role for Permissions
 
-Create a rule and set its initial state.
+Set up an event rule with an IAM role ARN that grants permissions to invoke targets.
 
 ```ts
-const stateRule = await AWS.Events.Rule("stateRule", {
-  name: "StateControlRule",
-  scheduleExpression: "rate(1 hour)",
-  state: "ENABLED", // Can be "ENABLED" or "DISABLED"
-  description: "This rule is enabled and triggers every hour."
+const RoleEventRule = await AWS.Events.Rule("RoleEventRule", {
+  Name: "MyRoleEventRule",
+  EventPattern: {
+    source: ["aws.s3"],
+    detailType: ["AWS API Call via CloudTrail"],
+    detail: {
+      eventSource: ["s3.amazonaws.com"],
+      eventName: ["PutObject"]
+    }
+  },
+  Description: "Triggers when an object is put into S3",
+  State: "ENABLED",
+  RoleArn: "arn:aws:iam::123456789012:role/MyEventRuleRole",
+  Targets: [{
+    Arn: "arn:aws:lambda:us-west-2:123456789012:function:ProcessS3Event",
+    Id: "S3EventProcessor"
+  }]
 });
 ```

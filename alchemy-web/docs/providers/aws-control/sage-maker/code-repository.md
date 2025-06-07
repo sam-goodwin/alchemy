@@ -5,78 +5,80 @@ description: Learn how to create, update, and manage AWS SageMaker CodeRepositor
 
 # CodeRepository
 
-The CodeRepository resource allows you to manage [AWS SageMaker CodeRepositorys](https://docs.aws.amazon.com/sagemaker/latest/userguide/) for version control of your machine learning code.
+The CodeRepository resource lets you manage [AWS SageMaker CodeRepositorys](https://docs.aws.amazon.com/sagemaker/latest/userguide/) for collaborating on code and version control in machine learning projects.
 
 ## Minimal Example
 
-Create a basic CodeRepository with essential properties:
+Create a basic CodeRepository with essential properties and a tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const simpleCodeRepository = await AWS.SageMaker.CodeRepository("simpleCodeRepo", {
-  CodeRepositoryName: "MyCodeRepo",
+const basicCodeRepo = await AWS.SageMaker.CodeRepository("BasicCodeRepo", {
+  CodeRepositoryName: "MyMLCodeRepo",
   GitConfig: {
-    RepositoryUrl: "https://github.com/my-user/my-repo.git",
+    RepositoryUrl: "https://github.com/my-org/my-ml-project.git",
     Branch: "main",
-    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:MySecret"
+    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecret"
   },
   Tags: [
-    { Key: "Environment", Value: "Development" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DataScience" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CodeRepository with additional tags and settings:
+Configure a CodeRepository with additional options, including specific Git settings.
 
 ```ts
-const advancedCodeRepository = await AWS.SageMaker.CodeRepository("advancedCodeRepo", {
-  CodeRepositoryName: "AdvancedRepo",
+const advancedCodeRepo = await AWS.SageMaker.CodeRepository("AdvancedCodeRepo", {
+  CodeRepositoryName: "AdvancedMLRepo",
   GitConfig: {
-    RepositoryUrl: "https://github.com/my-user/advanced-repo.git",
-    Branch: "dev",
-    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:MyAdvancedSecret"
+    RepositoryUrl: "https://github.com/my-org/advanced-ml-project.git",
+    Branch: "develop",
+    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecret"
   },
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MLResearch" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "ML" }
   ],
-  adopt: true
+  adopt: true // Adopt existing resource instead of failing if it already exists
 });
 ```
 
-## Version Control Integration
+## Using Existing Code Repositories
 
-Create a CodeRepository that integrates with version control systems effectively:
+This example demonstrates how to adopt an existing CodeRepository without creating a new one.
 
 ```ts
-const versionControlledRepo = await AWS.SageMaker.CodeRepository("versionedRepo", {
-  CodeRepositoryName: "VersionControlledRepo",
+const existingCodeRepo = await AWS.SageMaker.CodeRepository("ExistingCodeRepo", {
+  CodeRepositoryName: "ExistingMLRepo",
   GitConfig: {
-    RepositoryUrl: "https://github.com/my-user/versioned-repo.git",
-    Branch: "release",
-    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:MyVersionedSecret"
+    RepositoryUrl: "https://github.com/my-org/existing-ml-project.git",
+    Branch: "master",
+    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecret"
+  },
+  adopt: true // Use the existing resource
+});
+```
+
+## Tagging for Resource Management
+
+Demonstrating how to tag a CodeRepository for better organization and resource management.
+
+```ts
+const taggedCodeRepo = await AWS.SageMaker.CodeRepository("TaggedCodeRepo", {
+  CodeRepositoryName: "TaggedMLRepo",
+  GitConfig: {
+    RepositoryUrl: "https://github.com/my-org/tagged-ml-project.git",
+    Branch: "feature-branch",
+    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecret"
   },
   Tags: [
-    { Key: "Purpose", Value: "Training" }
+    { Key: "Project", Value: "MLResearch" },
+    { Key: "Status", Value: "active" }
   ]
-});
-```
-
-## Using Existing Resources
-
-Adopt an existing CodeRepository instead of failing if it already exists:
-
-```ts
-const adoptExistingRepo = await AWS.SageMaker.CodeRepository("existingRepo", {
-  CodeRepositoryName: "ExistingRepo",
-  GitConfig: {
-    RepositoryUrl: "https://github.com/my-user/existing-repo.git",
-    Branch: "stable",
-    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:MyExistingSecret"
-  },
-  adopt: true
 });
 ```

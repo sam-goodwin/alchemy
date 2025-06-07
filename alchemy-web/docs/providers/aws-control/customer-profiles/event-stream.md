@@ -5,79 +5,71 @@ description: Learn how to create, update, and manage AWS CustomerProfiles EventS
 
 # EventStream
 
-The EventStream resource allows you to manage [AWS CustomerProfiles EventStreams](https://docs.aws.amazon.com/customerprofiles/latest/userguide/) for capturing real-time events related to customer profiles.
+The EventStream resource allows you to manage [AWS CustomerProfiles EventStreams](https://docs.aws.amazon.com/customerprofiles/latest/userguide/) for capturing and processing customer events seamlessly.
 
 ## Minimal Example
 
-Create a basic EventStream with required properties and a common tag.
+This example demonstrates creating a basic EventStream with required properties and a couple of optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicEventStream = await AWS.CustomerProfiles.EventStream("basicEventStream", {
-  DomainName: "customerDomain",
-  EventStreamName: "customerUpdates",
+const BasicEventStream = await AWS.CustomerProfiles.EventStream("BasicEventStream", {
+  DomainName: "example-domain",
+  EventStreamName: "CustomerEvents",
   Uri: "https://example.com/event-stream",
   Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Analytics" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EventStream with additional optional properties like adopting an existing resource.
+This example shows how to create an EventStream with additional configurations, including the adoption of an existing resource.
 
 ```ts
-const advancedEventStream = await AWS.CustomerProfiles.EventStream("advancedEventStream", {
-  DomainName: "customerDomain",
-  EventStreamName: "customerActivity",
-  Uri: "https://example.com/activity-stream",
+const AdvancedEventStream = await AWS.CustomerProfiles.EventStream("AdvancedEventStream", {
+  DomainName: "example-domain",
+  EventStreamName: "AdvancedCustomerEvents",
+  Uri: "https://example.com/advanced-event-stream",
   Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Department", Value: "Marketing" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Marketing" }
   ],
-  adopt: true // Adopt an existing EventStream if it already exists
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Custom EventStream with Tags
+## Specific Use Case: Event Stream for User Signups
 
-Create an EventStream with multiple tags for better categorization and management.
+This example illustrates how to create an EventStream specifically for capturing user sign-up events.
 
 ```ts
-const taggedEventStream = await AWS.CustomerProfiles.EventStream("taggedEventStream", {
-  DomainName: "customerDomain",
-  EventStreamName: "customerFeedback",
-  Uri: "https://example.com/feedback-stream",
+const UserSignupEventStream = await AWS.CustomerProfiles.EventStream("UserSignupEventStream", {
+  DomainName: "example-domain",
+  EventStreamName: "UserSignups",
+  Uri: "https://example.com/user-signup-stream",
   Tags: [
-    { Key: "Project", Value: "CustomerInsights" },
-    { Key: "Owner", Value: "Alice" },
-    { Key: "Priority", Value: "High" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "User Engagement" }
   ]
 });
 ```
 
-## EventStream for Multiple Environments
+## Specific Use Case: Event Stream for Purchase Transactions
 
-Manage EventStreams for different environments, ensuring each stream is uniquely identified.
+This example demonstrates creating an EventStream for tracking purchase transactions.
 
 ```ts
-const devEventStream = await AWS.CustomerProfiles.EventStream("devEventStream", {
-  DomainName: "customerDomain",
-  EventStreamName: "devCustomerUpdates",
-  Uri: "https://dev.example.com/event-stream",
+const PurchaseTransactionEventStream = await AWS.CustomerProfiles.EventStream("PurchaseTransactionEventStream", {
+  DomainName: "example-domain",
+  EventStreamName: "PurchaseTransactions",
+  Uri: "https://example.com/purchase-transaction-stream",
   Tags: [
-    { Key: "Environment", Value: "Development" }
-  ]
-});
-
-const prodEventStream = await AWS.CustomerProfiles.EventStream("prodEventStream", {
-  DomainName: "customerDomain",
-  EventStreamName: "prodCustomerUpdates",
-  Uri: "https://prod.example.com/event-stream",
-  Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Sales" }
   ]
 });
 ```

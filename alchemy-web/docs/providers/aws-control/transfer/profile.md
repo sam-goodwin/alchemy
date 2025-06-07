@@ -5,63 +5,67 @@ description: Learn how to create, update, and manage AWS Transfer Profiles using
 
 # Profile
 
-The Profile resource lets you manage [AWS Transfer Profiles](https://docs.aws.amazon.com/transfer/latest/userguide/) to facilitate secure file transfers using AWS Transfer Family.
+The Profile resource allows you to manage [AWS Transfer Profiles](https://docs.aws.amazon.com/transfer/latest/userguide/) which are used for configuring your AWS Transfer Family service integrations.
 
 ## Minimal Example
 
-Create a basic AWS Transfer Profile with required properties and one optional property:
+Create a basic transfer profile with required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const transferProfile = await AWS.Transfer.Profile("basicProfile", {
-  As2Id: "my-as2-id",
+const BasicTransferProfile = await AWS.Transfer.Profile("BasicTransferProfile", {
+  As2Id: "AS2-123456789",
   ProfileType: "AS2",
-  CertificateIds: ["cert-1234abcd"]
+  CertificateIds: ["cert-abcdefg"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Transfer" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a transfer profile with additional optional settings such as tags:
+Configure a transfer profile with additional options for certificates and tags:
 
 ```ts
-const advancedProfile = await AWS.Transfer.Profile("advancedProfile", {
-  As2Id: "my-advanced-as2-id",
+const AdvancedTransferProfile = await AWS.Transfer.Profile("AdvancedTransferProfile", {
+  As2Id: "AS2-987654321",
   ProfileType: "AS2",
-  CertificateIds: ["cert-5678efgh"],
+  CertificateIds: ["cert-hijklmnop", "cert-qrstuvwxyz"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Finance" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Transfer" },
+    { Key: "Project", Value: "DataExchange" }
   ]
 });
 ```
 
 ## Adoption of Existing Resource
 
-Create a transfer profile that adopts an existing resource instead of failing if it already exists:
+If you want to adopt an existing AWS Transfer Profile instead of creating a new one, you can set the `adopt` property to true:
 
 ```ts
-const adoptedProfile = await AWS.Transfer.Profile("adoptedProfile", {
-  As2Id: "existing-as2-id",
+const AdoptedTransferProfile = await AWS.Transfer.Profile("AdoptedTransferProfile", {
+  As2Id: "AS2-543216789",
   ProfileType: "AS2",
   adopt: true
 });
 ```
 
-## Profile with Additional Metadata
+## Profile with Multiple Certificates
 
-Create a transfer profile while also capturing its ARN and timestamps for auditing:
+Create a transfer profile that utilizes multiple certificates for enhanced security:
 
 ```ts
-const metadataProfile = await AWS.Transfer.Profile("metadataProfile", {
-  As2Id: "my-metadata-as2-id",
+const MultiCertTransferProfile = await AWS.Transfer.Profile("MultiCertTransferProfile", {
+  As2Id: "AS2-321654987",
   ProfileType: "AS2",
-  CertificateIds: ["cert-9101ijkl"]
+  CertificateIds: ["cert-abc123", "cert-def456"],
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Transfer" }
+  ]
 });
-
-// Accessing additional metadata
-console.log(`Profile ARN: ${metadataProfile.Arn}`);
-console.log(`Creation Time: ${metadataProfile.CreationTime}`);
-console.log(`Last Update Time: ${metadataProfile.LastUpdateTime}`);
 ```

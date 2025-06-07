@@ -5,89 +5,75 @@ description: Learn how to create, update, and manage AWS IoTTwinMaker ComponentT
 
 # ComponentType
 
-The ComponentType resource allows you to define and manage [AWS IoTTwinMaker ComponentTypes](https://docs.aws.amazon.com/iottwinmaker/latest/userguide/), which are essential for creating digital twins of physical assets.
+The ComponentType resource allows you to define and manage [AWS IoTTwinMaker ComponentTypes](https://docs.aws.amazon.com/iottwinmaker/latest/userguide/) for your digital twin applications, enabling you to create reusable models for your entities.
 
 ## Minimal Example
 
-Create a basic ComponentType with required properties and one optional property for description.
+Create a basic ComponentType with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicComponentType = await AWS.IoTTwinMaker.ComponentType("basicComponentType", {
-  WorkspaceId: "workspace-123",
-  ComponentTypeId: "basicComponent",
-  Description: "A basic component type for demonstration purposes",
-  IsSingleton: false
+const BasicComponentType = await AWS.IoTTwinMaker.ComponentType("BasicComponentType", {
+  WorkspaceId: "myWorkspaceId",
+  ComponentTypeId: "TemperatureSensor",
+  Description: "A component type for temperature sensors."
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ComponentType with detailed property definitions and a composite component type.
+Define a ComponentType with advanced options such as property definitions and tags.
 
 ```ts
-const advancedComponentType = await AWS.IoTTwinMaker.ComponentType("advancedComponentType", {
-  WorkspaceId: "workspace-123",
-  ComponentTypeId: "advancedComponent",
-  Description: "An advanced component type with specific property definitions",
+const AdvancedComponentType = await AWS.IoTTwinMaker.ComponentType("AdvancedComponentType", {
+  WorkspaceId: "myWorkspaceId",
+  ComponentTypeId: "PressureSensor",
+  Description: "A component type for pressure sensors.",
   PropertyDefinitions: {
-    Temperature: {
-      Type: "Number",
-      Unit: "Celsius",
-      DefaultValue: 20
+    Pressure: {
+      Type: "double",
+      Unit: "Pa",
+      Required: true,
+      DefaultValue: 101325
     },
     Status: {
-      Type: "String",
-      DefaultValue: "Operational"
+      Type: "string",
+      Required: false
     }
   },
-  CompositeComponentTypes: {
-    SubComponent: {
-      Type: "SubComponentType"
-    }
-  },
-  Tags: {
-    Environment: "Production"
-  }
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "IoT" }
+  ]
 });
 ```
 
 ## Singleton ComponentType
 
-Define a singleton ComponentType that ensures only one instance can exist.
+Demonstrate the creation of a singleton ComponentType, ensuring that only one instance exists.
 
 ```ts
-const singletonComponentType = await AWS.IoTTwinMaker.ComponentType("singletonComponentType", {
-  WorkspaceId: "workspace-123",
-  ComponentTypeId: "singletonComponent",
+const SingletonComponentType = await AWS.IoTTwinMaker.ComponentType("SingletonComponentType", {
+  WorkspaceId: "myWorkspaceId",
+  ComponentTypeId: "UniqueDevice",
   IsSingleton: true,
-  Description: "A singleton component type ensuring a single instance",
-  PropertyDefinitions: {
-    Version: {
-      Type: "String",
-      DefaultValue: "1.0"
-    }
-  }
+  Description: "A singleton component type for unique devices."
 });
 ```
 
-## ComponentType Extending Another
+## Composite ComponentTypes
 
-Create a ComponentType that extends from another existing ComponentType.
+Create a ComponentType that serves as a composite of other ComponentTypes.
 
 ```ts
-const extendedComponentType = await AWS.IoTTwinMaker.ComponentType("extendedComponentType", {
-  WorkspaceId: "workspace-123",
-  ComponentTypeId: "extendedComponent",
-  ExtendsFrom: ["baseComponent"],
-  Description: "An extended component type from baseComponent",
-  PropertyDefinitions: {
-    Pressure: {
-      Type: "Number",
-      Unit: "Pascal",
-      DefaultValue: 101325
-    }
-  }
+const CompositeComponentType = await AWS.IoTTwinMaker.ComponentType("CompositeComponentType", {
+  WorkspaceId: "myWorkspaceId",
+  ComponentTypeId: "SmartHomeDevice",
+  Description: "A composite component type for smart home devices.",
+  CompositeComponentTypes: [
+    { ComponentTypeId: "TemperatureSensor" },
+    { ComponentTypeId: "HumiditySensor" }
+  ]
 });
 ```

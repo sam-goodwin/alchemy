@@ -5,104 +5,43 @@ description: Learn how to create, update, and manage AWS DataBrew Rulesets using
 
 # Ruleset
 
-The Ruleset resource allows you to manage [AWS DataBrew Rulesets](https://docs.aws.amazon.com/databrew/latest/userguide/) for data quality checks and validation. With this resource, you can define rules that help ensure your data meets specific criteria before processing or analysis.
+The Ruleset resource lets you create and manage [AWS DataBrew Rulesets](https://docs.aws.amazon.com/databrew/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-databrew-ruleset.html
 
 ## Minimal Example
-
-Create a simple Ruleset with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicRuleset = await AWS.DataBrew.Ruleset("basic-ruleset", {
-  Name: "BasicDataQualityRules",
-  TargetArn: "arn:aws:databrew:us-east-1:123456789012:dataset/sample-dataset",
-  Rules: [
-    {
-      Name: "CheckForNulls",
-      Condition: {
-        Field: "customer_id",
-        Operator: "is_null"
-      },
-      Action: {
-        ActionType: "FAIL",
-        Severity: "HIGH"
-      }
-    }
-  ],
-  Description: "A basic ruleset to check for null values in the customer ID."
+const ruleset = await AWS.DataBrew.Ruleset("ruleset-example", {
+  TargetArn: "example-targetarn",
+  Rules: [],
+  Name: "ruleset-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A ruleset resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Ruleset with multiple rules and tags for better management.
+Create a ruleset with additional configuration:
 
 ```ts
+import AWS from "alchemy/aws/control";
+
 const advancedRuleset = await AWS.DataBrew.Ruleset("advanced-ruleset", {
-  Name: "AdvancedDataQualityRules",
-  TargetArn: "arn:aws:databrew:us-east-1:123456789012:dataset/advanced-dataset",
-  Rules: [
-    {
-      Name: "CheckForNulls",
-      Condition: {
-        Field: "customer_id",
-        Operator: "is_null"
-      },
-      Action: {
-        ActionType: "FAIL",
-        Severity: "HIGH"
-      }
-    },
-    {
-      Name: "CheckForDuplicates",
-      Condition: {
-        Field: "email",
-        Operator: "is_duplicate"
-      },
-      Action: {
-        ActionType: "WARN",
-        Severity: "MEDIUM"
-      }
-    }
-  ],
-  Tags: [
-    {
-      Key: "Project",
-      Value: "DataQuality"
-    },
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
-  ],
-  Description: "An advanced ruleset for comprehensive data quality checks."
+  TargetArn: "example-targetarn",
+  Rules: [],
+  Name: "ruleset-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A ruleset resource managed by Alchemy",
 });
 ```
 
-## Using Adoption Feature
-
-Create a Ruleset that adopts an existing resource instead of failing.
-
-```ts
-const adoptableRuleset = await AWS.DataBrew.Ruleset("adoptable-ruleset", {
-  Name: "AdoptableDataQualityRules",
-  TargetArn: "arn:aws:databrew:us-east-1:123456789012:dataset/adoptable-dataset",
-  Rules: [
-    {
-      Name: "CheckValueRange",
-      Condition: {
-        Field: "age",
-        Operator: "is_in_range",
-        Values: ["18", "65"]
-      },
-      Action: {
-        ActionType: "WARN",
-        Severity: "LOW"
-      }
-    }
-  ],
-  Description: "A ruleset that adopts existing resources.",
-  adopt: true
-});
-```

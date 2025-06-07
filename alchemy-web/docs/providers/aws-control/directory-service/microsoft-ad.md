@@ -5,17 +5,17 @@ description: Learn how to create, update, and manage AWS DirectoryService Micros
 
 # MicrosoftAD
 
-The MicrosoftAD resource lets you create and manage [AWS DirectoryService MicrosoftADs](https://docs.aws.amazon.com/directoryservice/latest/userguide/) for your applications. This resource enables you to set up a fully managed, cloud-based Microsoft Active Directory.
+The MicrosoftAD resource lets you manage [AWS DirectoryService MicrosoftADs](https://docs.aws.amazon.com/directoryservice/latest/userguide/) for Active Directory functionality in the cloud.
 
 ## Minimal Example
 
-Create a basic MicrosoftAD with the required properties and one optional property.
+Create a basic Microsoft AD directory with required properties and common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicMicrosoftAd = await AWS.DirectoryService.MicrosoftAD("basicMicrosoftAd", {
-  Name: "mycompany.com",
+const SimpleMicrosoftAD = await AWS.DirectoryService.MicrosoftAD("SimpleDirectory", {
+  Name: "examplecorp.com",
   Password: "StrongPassword123!",
   VpcSettings: {
     VpcId: "vpc-0abcd1234efgh5678",
@@ -24,17 +24,18 @@ const basicMicrosoftAd = await AWS.DirectoryService.MicrosoftAD("basicMicrosoftA
       "subnet-1abcd1234efgh5678"
     ]
   },
+  CreateAlias: true,
   EnableSso: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure a MicrosoftAD with additional settings such as alias creation and a specific edition.
+Configure an advanced Microsoft AD directory with additional options for edition and short name.
 
 ```ts
-const advancedMicrosoftAd = await AWS.DirectoryService.MicrosoftAD("advancedMicrosoftAd", {
-  Name: "mycompany.com",
+const AdvancedMicrosoftAD = await AWS.DirectoryService.MicrosoftAD("AdvancedDirectory", {
+  Name: "examplecorp.com",
   Password: "AnotherStrongPassword456!",
   VpcSettings: {
     VpcId: "vpc-0abcd1234efgh5678",
@@ -43,19 +44,21 @@ const advancedMicrosoftAd = await AWS.DirectoryService.MicrosoftAD("advancedMicr
       "subnet-1abcd1234efgh5678"
     ]
   },
+  Edition: "Enterprise", // Options: Standard or Enterprise
+  ShortName: "ExampleCorp",
   CreateAlias: true,
-  Edition: "Enterprise" // Options: "Standard", "Enterprise"
+  EnableSso: false
 });
 ```
 
-## Adoption of Existing Directory
+## Adoption of Existing Resource
 
-If you have an existing directory that you want to adopt, you can use the `adopt` property.
+Adopt an already existing Microsoft AD directory into your management using the 'adopt' property.
 
 ```ts
-const adoptedMicrosoftAd = await AWS.DirectoryService.MicrosoftAD("adoptedMicrosoftAd", {
-  Name: "existingcompany.com",
-  Password: "SecurePassword789!",
+const AdoptExistingMicrosoftAD = await AWS.DirectoryService.MicrosoftAD("AdoptedDirectory", {
+  Name: "existingcorp.com",
+  Password: "AdoptionPassword789!",
   VpcSettings: {
     VpcId: "vpc-0abcd1234efgh5678",
     SubnetIds: [

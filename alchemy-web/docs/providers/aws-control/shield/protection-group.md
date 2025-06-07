@@ -5,52 +5,50 @@ description: Learn how to create, update, and manage AWS Shield ProtectionGroups
 
 # ProtectionGroup
 
-The ProtectionGroup resource lets you manage [AWS Shield ProtectionGroups](https://docs.aws.amazon.com/shield/latest/userguide/) for your AWS resources, providing an additional layer of protection against DDoS attacks.
+The ProtectionGroup resource allows you to manage [AWS Shield ProtectionGroups](https://docs.aws.amazon.com/shield/latest/userguide/) for protecting your resources from DDoS attacks.
 
 ## Minimal Example
 
-Create a basic ProtectionGroup with required properties and one optional property.
+Create a basic ProtectionGroup with required properties and a tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicProtectionGroup = await AWS.Shield.ProtectionGroup("basicProtectionGroup", {
-  Aggregation: "Sum",
+const BasicProtectionGroup = await AWS.Shield.ProtectionGroup("BasicProtectionGroup", {
+  Aggregation: "SUM",
   Pattern: "ALL",
-  ProtectionGroupId: "my-protection-group",
-  ResourceType: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+  ProtectionGroupId: "MyProtectionGroup",
+  Tags: [{ Key: "Environment", Value: "Production" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ProtectionGroup with multiple members for enhanced DDoS protection.
+Configure a ProtectionGroup with additional members and specify the resource type.
 
 ```ts
-const advancedProtectionGroup = await AWS.Shield.ProtectionGroup("advancedProtectionGroup", {
-  Aggregation: "Average",
-  Pattern: "APPLICATION_LOAD_BALANCER",
-  ProtectionGroupId: "my-advanced-protection-group",
+const AdvancedProtectionGroup = await AWS.Shield.ProtectionGroup("AdvancedProtectionGroup", {
+  Aggregation: "AVG",
+  Pattern: "BY_RESOURCE_TYPE",
+  ProtectionGroupId: "AdvancedProtectionGroup",
+  ResourceType: "AWS::ElasticLoadBalancingV2::LoadBalancer",
   Members: [
-    "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188",
-    "arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0"
+    "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188",
+    "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/net/my-network-load-balancer/1234567890abcdef"
   ],
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "Security" }
-  ]
+  Tags: [{ Key: "Team", Value: "Security" }]
 });
 ```
 
-## Using Existing Resources
+## Adoption of Existing Resources
 
-Create a ProtectionGroup that adopts existing resources instead of failing if they already exist.
+Adopt an existing ProtectionGroup if it already exists by setting the adoption flag.
 
 ```ts
-const adoptedProtectionGroup = await AWS.Shield.ProtectionGroup("adoptedProtectionGroup", {
-  Aggregation: "Sum",
-  Pattern: "CLOUDFRONT",
-  ProtectionGroupId: "my-adopted-protection-group",
-  adopt: true
+const AdoptExistingProtectionGroup = await AWS.Shield.ProtectionGroup("AdoptExistingProtectionGroup", {
+  Aggregation: "MAX",
+  Pattern: "ALL",
+  ProtectionGroupId: "ExistingProtectionGroupId",
+  adopt: true // This will adopt the existing resource instead of failing
 });
 ```

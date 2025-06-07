@@ -5,30 +5,34 @@ description: Learn how to create, update, and manage AWS CodeStarConnections Con
 
 # Connection
 
-The Connection resource lets you manage [AWS CodeStarConnections Connections](https://docs.aws.amazon.com/codestarconnections/latest/userguide/) for integrating third-party source control providers with AWS CodeStar.
+The Connection resource lets you manage [AWS CodeStarConnections Connections](https://docs.aws.amazon.com/codestarconnections/latest/userguide/) for integrating with third-party source control systems such as GitHub or Bitbucket.
 
 ## Minimal Example
 
-Create a basic connection with a name and provider type.
+Create a basic connection with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicConnection = await AWS.CodeStarConnections.Connection("basic-connection", {
+const BasicConnection = await AWS.CodeStarConnections.Connection("BasicConnection", {
   ConnectionName: "MyGitHubConnection",
-  ProviderType: "GitHub"
+  HostArn: "arn:aws:codestar-connections:us-east-1:123456789012:host/1a2b3c4d-5678-90ab-cdef-EXAMPLE11111",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Project", Value: "MyProject" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a connection with additional properties such as a host ARN and tags.
+Configure a connection with additional properties for provider type and tags.
 
 ```ts
-const advancedConnection = await AWS.CodeStarConnections.Connection("advanced-connection", {
-  ConnectionName: "MyGitLabConnection",
-  HostArn: "arn:aws:codestar-connections:us-east-1:123456789012:host/host-id",
-  ProviderType: "GitLab",
+const AdvancedConnection = await AWS.CodeStarConnections.Connection("AdvancedConnection", {
+  ConnectionName: "MyBitbucketConnection",
+  HostArn: "arn:aws:codestar-connections:us-east-1:123456789012:host/1a2b3c4d-5678-90ab-cdef-EXAMPLE22222",
+  ProviderType: "Bitbucket",
   Tags: [
     { Key: "Environment", Value: "Production" },
     { Key: "Team", Value: "DevOps" }
@@ -36,25 +40,14 @@ const advancedConnection = await AWS.CodeStarConnections.Connection("advanced-co
 });
 ```
 
-## Connection with Existing Resource Adoption
+## Adoption of Existing Resource
 
-Create a connection while adopting an existing resource if it already exists.
+Create a connection that adopts an existing resource instead of failing if it already exists.
 
 ```ts
-const adoptedConnection = await AWS.CodeStarConnections.Connection("adopted-connection", {
-  ConnectionName: "MyExistingConnection",
+const AdoptConnection = await AWS.CodeStarConnections.Connection("AdoptConnection", {
+  ConnectionName: "ExistingGitHubConnection",
+  HostArn: "arn:aws:codestar-connections:us-east-1:123456789012:host/1a2b3c4d-5678-90ab-cdef-EXAMPLE33333",
   adopt: true
-});
-```
-
-## Connection with Host ARN
-
-Demonstrate creating a connection with a specified host ARN for integration with a self-hosted provider.
-
-```ts
-const hostedConnection = await AWS.CodeStarConnections.Connection("hosted-connection", {
-  ConnectionName: "MySelfHostedConnection",
-  HostArn: "arn:aws:codestar-connections:us-west-2:123456789012:host/host-id",
-  ProviderType: "GitHub"
 });
 ```

@@ -5,51 +5,53 @@ description: Learn how to create, update, and manage AWS EC2 LocalGatewayRouteTa
 
 # LocalGatewayRouteTableVPCAssociation
 
-The LocalGatewayRouteTableVPCAssociation resource allows you to associate a VPC with a local gateway route table in AWS EC2. This association enables routing of traffic from the VPC to the local gateway. For more detailed information, refer to the [AWS EC2 LocalGatewayRouteTableVPCAssociations documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The `LocalGatewayRouteTableVPCAssociation` resource allows you to associate a VPC with a local gateway route table in AWS EC2. This enables the routing of traffic from the VPC to the local gateway. For more information, visit the [AWS EC2 LocalGatewayRouteTableVPCAssociations documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic LocalGatewayRouteTableVPCAssociation with required properties.
+Create a basic association between a local gateway route table and a VPC.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const localGatewayAssociation = await AWS.EC2.LocalGatewayRouteTableVPCAssociation("basicAssociation", {
-  VpcId: "vpc-12345678", // Replace with your actual VPC ID
-  LocalGatewayRouteTableId: "lgw-rtb-87654321", // Replace with your actual local gateway route table ID
+const LocalGatewayAssociation = await AWS.EC2.LocalGatewayRouteTableVPCAssociation("BasicAssociation", {
+  VpcId: "vpc-1234abcd",
+  LocalGatewayRouteTableId: "lt-5678efgh",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyProject" }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Project", Value: "NetworkSetup" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we demonstrate how to adopt an existing resource instead of failing if the resource already exists.
+This example shows how to adopt an existing resource instead of failing when it already exists.
 
 ```ts
-const existingAssociation = await AWS.EC2.LocalGatewayRouteTableVPCAssociation("existingAssociation", {
-  VpcId: "vpc-12345678", // Replace with your actual VPC ID
-  LocalGatewayRouteTableId: "lgw-rtb-87654321", // Replace with your actual local gateway route table ID
-  adopt: true, // Adopt existing resource
+const AdoptedLocalGatewayAssociation = await AWS.EC2.LocalGatewayRouteTableVPCAssociation("AdoptedAssociation", {
+  VpcId: "vpc-1234abcd",
+  LocalGatewayRouteTableId: "lt-5678efgh",
+  adopt: true,
   Tags: [
-    { Key: "Environment", Value: "Staging" }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Project", Value: "NetworkOptimization" }
   ]
 });
 ```
 
-## Use Case Example: Routing from a VPC to Local Gateway
+## Specific Use Case: Multiple Tags
 
-This example shows how to set up a LocalGatewayRouteTableVPCAssociation for routing traffic from a specific VPC to a local gateway route table.
+In this example, we create an association while applying multiple tags for better resource management.
 
 ```ts
-const routingAssociation = await AWS.EC2.LocalGatewayRouteTableVPCAssociation("routingAssociation", {
-  VpcId: "vpc-abcdef12", // Replace with your actual VPC ID
-  LocalGatewayRouteTableId: "lgw-rtb-fedcba21", // Replace with your actual local gateway route table ID
+const TaggedLocalGatewayAssociation = await AWS.EC2.LocalGatewayRouteTableVPCAssociation("TaggedAssociation", {
+  VpcId: "vpc-9012ijkl",
+  LocalGatewayRouteTableId: "lt-3456mnop",
   Tags: [
-    { Key: "Purpose", Value: "Data Transfer" },
-    { Key: "Owner", Value: "TeamA" }
+    { Key: "Owner", Value: "NetworkTeam" },
+    { Key: "CostCenter", Value: "CC12345" },
+    { Key: "Project", Value: "Infrastructure" }
   ]
 });
 ```

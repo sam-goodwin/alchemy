@@ -5,54 +5,68 @@ description: Learn how to create, update, and manage AWS Logs DeliverySources us
 
 # DeliverySource
 
-The DeliverySource resource lets you manage [AWS Logs DeliverySources](https://docs.aws.amazon.com/logs/latest/userguide/) for delivering log data to specified destinations, simplifying the management and configuration of log delivery in your AWS environment.
+The DeliverySource resource allows you to manage [AWS Logs DeliverySources](https://docs.aws.amazon.com/logs/latest/userguide/) which facilitate the delivery of log data to various destinations.
 
 ## Minimal Example
 
-Create a basic log delivery source with required properties and one optional tag.
+Create a basic delivery source with required properties and a few optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDeliverySource = await AWS.Logs.DeliverySource("basicDeliverySource", {
-  Name: "BasicDeliverySource",
-  ResourceArn: "arn:aws:logs:us-east-1:123456789012:log-group:my-log-group",
+const BasicDeliverySource = await AWS.Logs.DeliverySource("BasicDeliverySource", {
+  Name: "MyDeliverySource",
+  ResourceArn: "arn:aws:logs:us-west-2:123456789012:destination:MyDestination",
+  LogType: "S3",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Logging" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a delivery source with a specific log type and additional properties.
+Configure a delivery source with additional properties to handle existing resources and specific log types.
 
 ```ts
-const advancedDeliverySource = await AWS.Logs.DeliverySource("advancedDeliverySource", {
+const AdvancedDeliverySource = await AWS.Logs.DeliverySource("AdvancedDeliverySource", {
   Name: "AdvancedDeliverySource",
-  ResourceArn: "arn:aws:logs:us-east-1:123456789012:log-group:my-log-group",
-  LogType: "AWS::CloudTrail::Log",
+  ResourceArn: "arn:aws:logs:us-west-2:123456789012:destination:MyAdvancedDestination",
+  LogType: "Kinesis",
+  adopt: true,
   Tags: [
-    {
-      Key: "Project",
-      Value: "LoggingProject"
-    }
-  ],
-  adopt: true // Adopt existing resource if it already exists
+    { Key: "Environment", Value: "Production" },
+    { Key: "Project", Value: "LoggingSystem" }
+  ]
 });
 ```
 
-## Adoption of Existing Resources
+## Example with Adoption of Existing Resource
 
-Demonstrate how to adopt an existing log delivery source instead of creating a new one.
+This example demonstrates how to adopt an existing delivery source instead of failing if it already exists.
 
 ```ts
-const adoptedDeliverySource = await AWS.Logs.DeliverySource("adoptedDeliverySource", {
-  Name: "AdoptedDeliverySource",
-  ResourceArn: "arn:aws:logs:us-east-1:123456789012:log-group:existing-log-group",
-  adopt: true // This will allow the resource to be adopted if it already exists
+const AdoptExistingDeliverySource = await AWS.Logs.DeliverySource("AdoptExistingDeliverySource", {
+  Name: "ExistingDeliverySource",
+  ResourceArn: "arn:aws:logs:us-west-2:123456789012:destination:ExistingDestination",
+  LogType: "CloudWatch",
+  adopt: true
+});
+```
+
+## Example with Custom Tags
+
+Create a delivery source while specifying custom tags for better resource management.
+
+```ts
+const TaggedDeliverySource = await AWS.Logs.DeliverySource("TaggedDeliverySource", {
+  Name: "TaggedDeliverySource",
+  ResourceArn: "arn:aws:logs:us-west-2:123456789012:destination:TaggedDestination",
+  LogType: "Firehose",
+  Tags: [
+    { Key: "Department", Value: "IT" },
+    { Key: "CostCenter", Value: "12345" }
+  ]
 });
 ```

@@ -5,34 +5,27 @@ description: Learn how to create, update, and manage AWS S3 Buckets using Alchem
 
 # Bucket
 
-The Bucket resource lets you manage [AWS S3 Buckets](https://docs.aws.amazon.com/s3/latest/userguide/) and their configuration settings.
+The Bucket resource allows you to manage [AWS S3 Buckets](https://docs.aws.amazon.com/s3/latest/userguide/) and their configuration settings, including encryption, versioning, and lifecycle management.
 
 ## Minimal Example
 
-Create a basic S3 bucket with a specified name and versioning enabled.
+Create a basic S3 bucket with a specified name and default settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const myBucket = await AWS.S3.Bucket("myUniqueBucketId", {
-  BucketName: "my-unique-bucket-name",
-  VersioningConfiguration: {
-    Status: "Enabled"
-  },
-  Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "Alchemy" }
-  ]
+const MyBucket = await AWS.S3.Bucket("MyUniqueBucketId", {
+  BucketName: "my-unique-bucket-name"
 });
 ```
 
-## Advanced Configuration
+## Enhanced Security with Bucket Encryption
 
-Configure an S3 bucket with encryption, lifecycle policies, and notification settings.
+Configure a bucket with server-side encryption for enhanced security.
 
 ```ts
-const advancedBucket = await AWS.S3.Bucket("advancedBucketId", {
-  BucketName: "advanced-bucket-name",
+const SecureBucket = await AWS.S3.Bucket("SecureBucketId", {
+  BucketName: "my-secure-bucket",
   BucketEncryption: {
     ServerSideEncryptionConfiguration: [
       {
@@ -41,49 +34,36 @@ const advancedBucket = await AWS.S3.Bucket("advancedBucketId", {
         }
       }
     ]
-  },
+  }
+});
+```
+
+## Lifecycle Management
+
+Set up a bucket with a lifecycle configuration to automatically transition objects to different storage classes.
+
+```ts
+const LifecycleBucket = await AWS.S3.Bucket("LifecycleBucketId", {
+  BucketName: "my-lifecycle-bucket",
   LifecycleConfiguration: {
     Rules: [
       {
         Status: "Enabled",
-        ExpirationInDays: 365,
+        ExpirationInDays: 30,
         Prefix: "logs/",
-        Transitions: [
-          {
-            TransitionInDays: 30,
-            StorageClass: "GLACIER"
-          }
-        ]
-      }
-    ]
-  },
-  NotificationConfiguration: {
-    LambdaConfigurations: [
-      {
-        Events: ["s3:ObjectCreated:*"],
-        Function: "arn:aws:lambda:us-east-1:123456789012:function:myLambdaFunction",
-        Filter: {
-          Key: {
-            FilterRules: [
-              {
-                Name: "prefix",
-                Value: "uploads/"
-              }
-            ]
-          }
-        }
+        NoncurrentVersionExpirationInDays: 7
       }
     ]
   }
 });
 ```
 
-## Static Website Hosting
+## Website Hosting Configuration
 
-Set up an S3 bucket for static website hosting with custom error and index documents.
+Create a bucket configured to host a static website.
 
 ```ts
-const websiteBucket = await AWS.S3.Bucket("websiteBucketId", {
+const WebsiteBucket = await AWS.S3.Bucket("WebsiteBucketId", {
   BucketName: "my-website-bucket",
   WebsiteConfiguration: {
     IndexDocument: "index.html",
@@ -92,22 +72,16 @@ const websiteBucket = await AWS.S3.Bucket("websiteBucketId", {
 });
 ```
 
-## Cross-Origin Resource Sharing (CORS)
+## Tags for Resource Management
 
-Configure CORS settings for an S3 bucket to allow specific origins.
+Add tags to categorize and manage your S3 bucket.
 
 ```ts
-const corsBucket = await AWS.S3.Bucket("corsBucketId", {
-  BucketName: "my-cors-bucket",
-  CorsConfiguration: {
-    CorsRules: [
-      {
-        AllowedOrigins: ["https://example.com"],
-        AllowedMethods: ["GET", "POST"],
-        AllowedHeaders: ["*"],
-        MaxAgeSeconds: 3000
-      }
-    ]
-  }
+const TaggedBucket = await AWS.S3.Bucket("TaggedBucketId", {
+  BucketName: "my-tagged-bucket",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Owner", Value: "DevTeam" }
+  ]
 });
 ```

@@ -5,62 +5,37 @@ description: Learn how to create, update, and manage AWS NeptuneGraph Graphs usi
 
 # Graph
 
-The Graph resource lets you manage [AWS NeptuneGraph Graphs](https://docs.aws.amazon.com/neptunegraph/latest/userguide/) and their configuration settings.
+The Graph resource lets you create and manage [AWS NeptuneGraph Graphs](https://docs.aws.amazon.com/neptunegraph/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-neptunegraph-graph.html
 
 ## Minimal Example
-
-Create a basic NeptuneGraph graph with required properties and some common optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicGraph = await AWS.NeptuneGraph.Graph("myBasicGraph", {
-  ProvisionedMemory: 16,
-  GraphName: "MyFirstGraph",
-  PublicConnectivity: true
+const graph = await AWS.NeptuneGraph.Graph("graph-example", {
+  ProvisionedMemory: 1,
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Create a graph with additional configuration options such as replication count and deletion protection.
+Create a graph with additional configuration:
 
 ```ts
-const advancedGraph = await AWS.NeptuneGraph.Graph("myAdvancedGraph", {
-  ProvisionedMemory: 32,
-  GraphName: "AdvancedGraph",
-  ReplicaCount: 2,
-  DeletionProtection: true,
-  VectorSearchConfiguration: {
-    vectorSearchType: "ANN",
-    distanceMetric: "cosine"
-  }
+import AWS from "alchemy/aws/control";
+
+const advancedGraph = await AWS.NeptuneGraph.Graph("advanced-graph", {
+  ProvisionedMemory: 1,
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
 
-## Tagging for Management
-
-Add tags to your graph for better resource management and cost allocation.
-
-```ts
-const taggedGraph = await AWS.NeptuneGraph.Graph("myTaggedGraph", {
-  ProvisionedMemory: 64,
-  GraphName: "TaggedGraph",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "GraphAnalytics" }
-  ]
-});
-```
-
-## Adoption of Existing Resource
-
-Configure the graph to adopt an existing resource instead of failing if it already exists.
-
-```ts
-const existingGraph = await AWS.NeptuneGraph.Graph("existingGraph", {
-  ProvisionedMemory: 16,
-  GraphName: "ExistingGraph",
-  adopt: true
-});
-```

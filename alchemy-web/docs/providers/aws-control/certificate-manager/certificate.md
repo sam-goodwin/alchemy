@@ -5,85 +5,65 @@ description: Learn how to create, update, and manage AWS CertificateManager Cert
 
 # Certificate
 
-The Certificate resource allows you to manage [AWS CertificateManager Certificates](https://docs.aws.amazon.com/certificatemanager/latest/userguide/) for simplifying the process of obtaining, deploying, and managing SSL/TLS certificates.
+The Certificate resource allows you to manage [AWS CertificateManager Certificates](https://docs.aws.amazon.com/certificatemanager/latest/userguide/) for provisioning SSL/TLS certificates. 
 
 ## Minimal Example
 
-Create a basic SSL certificate for a specified domain:
+Create a basic SSL certificate with the required domain name and a tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const sslCertificate = await AWS.CertificateManager.Certificate("mySSLCertificate", {
-  DomainName: "mywebsite.com",
-  ValidationMethod: "DNS",
-  SubjectAlternativeNames: ["www.mywebsite.com"], // Additional domains
+const BasicCertificate = await AWS.CertificateManager.Certificate("BasicCertificate", {
+  DomainName: "example.com",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
-  ]
+    { Key: "Environment", Value: "production" }
+  ],
+  ValidationMethod: "DNS"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a certificate with additional options such as key algorithm and domain validation options:
+Configure a certificate with domain validation options and subject alternative names.
 
 ```ts
-const advancedCertificate = await AWS.CertificateManager.Certificate("advancedSSLCertificate", {
-  DomainName: "secure.mywebsite.com",
-  ValidationMethod: "EMAIL",
-  KeyAlgorithm: "RSA-2048",
+const AdvancedCertificate = await AWS.CertificateManager.Certificate("AdvancedCertificate", {
+  DomainName: "example.com",
+  SubjectAlternativeNames: ["www.example.com", "api.example.com"],
   DomainValidationOptions: [
     {
-      DomainName: "secure.mywebsite.com",
-      ValidationDomain: "mywebsite.com"
+      DomainName: "example.com",
+      ValidationDomain: "example.com"
     }
   ],
-  CertificateTransparencyLoggingPreference: "ENABLED",
-  Tags: [
-    {
-      Key: "Project",
-      Value: "WebsiteSecurity"
-    }
-  ]
+  ValidationMethod: "DNS",
+  CertificateTransparencyLoggingPreference: "ENABLED"
 });
 ```
 
-## Custom Certificate Authority
+## Enhanced Security Settings
 
-Create a certificate using a custom certificate authority:
+Create a certificate with a specific key algorithm for enhanced security.
 
 ```ts
-const customCaCertificate = await AWS.CertificateManager.Certificate("customCACertificate", {
-  DomainName: "custom-ca.mywebsite.com",
-  CertificateAuthorityArn: "arn:aws:acm:us-east-1:123456789012:certificate-authority/abcdefg-1234-5678-90ab-cdef12345678",
-  ValidationMethod: "DNS",
+const SecureCertificate = await AWS.CertificateManager.Certificate("SecureCertificate", {
+  DomainName: "secure.example.com",
+  KeyAlgorithm: "RSA_2048",
   Tags: [
-    {
-      Key: "Type",
-      Value: "CustomCA"
-    }
-  ]
+    { Key: "Team", Value: "Security" }
+  ],
+  ValidationMethod: "EMAIL"
 });
 ```
 
-## Logging Preferences
+## Adoption of Existing Certificates
 
-Create a certificate with specific logging preferences to enhance security auditing:
+If you need to adopt an existing certificate instead of creating a new one.
 
 ```ts
-const loggingPreferenceCertificate = await AWS.CertificateManager.Certificate("loggingPreferenceCertificate", {
-  DomainName: "logs.mywebsite.com",
-  ValidationMethod: "DNS",
-  CertificateTransparencyLoggingPreference: "DISABLED", // Disable logging for this certificate
-  Tags: [
-    {
-      Key: "Compliance",
-      Value: "GDPR"
-    }
-  ]
+const AdoptedCertificate = await AWS.CertificateManager.Certificate("AdoptedCertificate", {
+  DomainName: "existing.example.com",
+  adopt: true
 });
 ```

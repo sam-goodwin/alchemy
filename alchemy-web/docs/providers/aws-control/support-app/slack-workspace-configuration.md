@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS SupportApp SlackWorkspa
 
 # SlackWorkspaceConfiguration
 
-The SlackWorkspaceConfiguration resource lets you manage the integration of AWS Support with Slack, allowing notifications and updates to be sent to your Slack channels. For more detailed information, visit the [AWS SupportApp SlackWorkspaceConfigurations](https://docs.aws.amazon.com/supportapp/latest/userguide/) documentation.
+The SlackWorkspaceConfiguration resource allows you to manage the integration of Slack with AWS SupportApp. This integration facilitates the collaboration between AWS Support and your team's Slack workspace, enhancing the ability to handle support issues effectively. For more information, refer to the [AWS SupportApp SlackWorkspaceConfigurations documentation](https://docs.aws.amazon.com/supportapp/latest/userguide/).
 
 ## Minimal Example
 
@@ -14,42 +14,37 @@ Create a basic Slack workspace configuration with required properties.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const slackWorkspaceConfig = await AWS.SupportApp.SlackWorkspaceConfiguration("mySlackWorkspaceConfig", {
-  TeamId: "T1234567890", // Slack Team ID
-  VersionId: "v1" // Optional: Specify a version ID
+const SlackConfig = await AWS.SupportApp.SlackWorkspaceConfiguration("SlackConfig", {
+  TeamId: "T12345678", // Slack Team ID
+  VersionId: "v1.0" // Optional version ID
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Slack workspace with additional properties such as a specific version ID.
+Configure the Slack workspace with additional settings for better integration.
 
 ```ts
-const advancedSlackWorkspaceConfig = await AWS.SupportApp.SlackWorkspaceConfiguration("advancedSlackWorkspaceConfig", {
-  TeamId: "T0987654321", // Slack Team ID
-  VersionId: "v2", // Specify a different version ID
-  adopt: true // Optional: Adopt existing resource if it already exists
+const AdvancedSlackConfig = await AWS.SupportApp.SlackWorkspaceConfiguration("AdvancedSlackConfig", {
+  TeamId: "T87654321", // Slack Team ID
+  VersionId: "v1.1", // Optional version ID
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Updating Existing Configuration
+## Example with Resource Properties
 
-Update an existing Slack workspace configuration by specifying the new version ID.
-
-```ts
-const updateSlackWorkspaceConfig = await AWS.SupportApp.SlackWorkspaceConfiguration("updateSlackWorkspaceConfig", {
-  TeamId: "T1234567890", // Slack Team ID to update
-  VersionId: "v3" // Update to a new version ID
-});
-```
-
-## Adopting an Existing Resource
-
-Adopt an existing Slack workspace configuration without causing an error if it already exists.
+Create a Slack configuration and utilize additional resource properties like ARN and timestamps.
 
 ```ts
-const adoptSlackWorkspaceConfig = await AWS.SupportApp.SlackWorkspaceConfiguration("adoptSlackWorkspaceConfig", {
-  TeamId: "T1122334455", // Slack Team ID
-  adopt: true // Set to true to adopt the existing resource
+const DetailedSlackConfig = await AWS.SupportApp.SlackWorkspaceConfiguration("DetailedSlackConfig", {
+  TeamId: "T12345678", // Slack Team ID
+  VersionId: "v1.2", // Optional version ID
+  adopt: true // Adopt existing resource if it already exists
 });
+
+// Example of accessing additional properties
+console.log(`Resource ARN: ${DetailedSlackConfig.Arn}`);
+console.log(`Creation Time: ${DetailedSlackConfig.CreationTime}`);
+console.log(`Last Update Time: ${DetailedSlackConfig.LastUpdateTime}`);
 ```

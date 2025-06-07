@@ -5,65 +5,69 @@ description: Learn how to create, update, and manage AWS MemoryDB MultiRegionClu
 
 # MultiRegionCluster
 
-The MultiRegionCluster resource allows you to create and manage [AWS MemoryDB MultiRegionClusters](https://docs.aws.amazon.com/memorydb/latest/userguide/) which provide a fully managed, Redis-compatible in-memory database service across multiple AWS regions.
+The MultiRegionCluster resource allows you to create and manage [AWS MemoryDB MultiRegionClusters](https://docs.aws.amazon.com/memorydb/latest/userguide/) which provide a highly available in-memory database service with multi-region capabilities.
 
 ## Minimal Example
 
-Create a basic MultiRegionCluster with required properties and a couple of common optional settings.
+Create a basic MultiRegionCluster with required properties and a couple of optional ones:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const multiRegionCluster = await AWS.MemoryDB.MultiRegionCluster("myMultiRegionCluster", {
+const BasicCluster = await AWS.MemoryDB.MultiRegionCluster("BasicCluster", {
   NodeType: "db.t4g.small",
-  MultiRegionParameterGroupName: "myParameterGroup",
-  Description: "A simple MultiRegionCluster for demo purposes",
-  TLSEnabled: true
+  MultiRegionParameterGroupName: "Default",
+  Description: "Basic MemoryDB MultiRegionCluster for testing"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a MultiRegionCluster with additional advanced settings such as engine version and tags.
+Configure a MultiRegionCluster with additional settings for enhanced performance and security:
 
 ```ts
-const advancedMultiRegionCluster = await AWS.MemoryDB.MultiRegionCluster("advancedCluster", {
-  NodeType: "db.r5.large",
-  MultiRegionParameterGroupName: "advancedParameterGroup",
+const AdvancedCluster = await AWS.MemoryDB.MultiRegionCluster("AdvancedCluster", {
+  NodeType: "db.t4g.medium",
+  MultiRegionParameterGroupName: "AdvancedParameterGroup",
   EngineVersion: "7.0",
-  MultiRegionClusterNameSuffix: "prod",
   TLSEnabled: true,
+  MultiRegionClusterNameSuffix: "-prod",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "DataEngineering" }
-  ],
-  NumShards: 5
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
+  ]
 });
 ```
 
-## Utilize Update Strategy
+## Cluster with Shards
 
-Create a MultiRegionCluster that specifies an update strategy for managing changes in the cluster.
+Create a MultiRegionCluster configured with multiple shards for improved scalability:
 
 ```ts
-const updateStrategyCluster = await AWS.MemoryDB.MultiRegionCluster("updateStrategyCluster", {
-  NodeType: "db.m5.large",
-  MultiRegionParameterGroupName: "updateStrategyGroup",
-  UpdateStrategy: "rollback",
-  Description: "Cluster with a rollback update strategy",
-  TLSEnabled: true
+const ShardedCluster = await AWS.MemoryDB.MultiRegionCluster("ShardedCluster", {
+  NodeType: "db.r6g.large",
+  MultiRegionParameterGroupName: "ShardedParameterGroup",
+  NumShards: 3,
+  UpdateStrategy: "IMMEDIATE",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Project", Value: "MemoryDBMigration" }
+  ]
 });
 ```
 
-## Adopt Existing Resource
+## Cluster with Custom Engine Version
 
-Create a MultiRegionCluster that adopts an existing resource instead of failing if it already exists.
+Create a MultiRegionCluster that specifies a custom engine version and additional tags:
 
 ```ts
-const adoptExistingCluster = await AWS.MemoryDB.MultiRegionCluster("existingCluster", {
-  NodeType: "db.t3.medium",
-  MultiRegionParameterGroupName: "adoptedParameterGroup",
-  adopt: true,
-  Description: "Adopting an existing MultiRegionCluster"
+const CustomEngineCluster = await AWS.MemoryDB.MultiRegionCluster("CustomEngineCluster", {
+  NodeType: "db.r5.large",
+  EngineVersion: "6.x",
+  Description: "MemoryDB MultiRegionCluster with custom engine version",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "DataTeam" }
+  ]
 });
 ```

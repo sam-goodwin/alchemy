@@ -5,55 +5,53 @@ description: Learn how to create, update, and manage AWS Personalize DatasetGrou
 
 # DatasetGroup
 
-The DatasetGroup resource lets you manage [AWS Personalize DatasetGroups](https://docs.aws.amazon.com/personalize/latest/userguide/) for organizing datasets and models tailored for personalized recommendations.
+The DatasetGroup resource lets you manage [AWS Personalize DatasetGroups](https://docs.aws.amazon.com/personalize/latest/userguide/) which serve as a container for datasets and the machine learning models built from them.
 
 ## Minimal Example
 
-Create a basic DatasetGroup with the required properties.
+Create a basic DatasetGroup with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDatasetGroup = await AWS.Personalize.DatasetGroup("basicDatasetGroup", {
-  name: "MusicRecommendations",
-  roleArn: "arn:aws:iam::123456789012:role/service-role/AmazonPersonalize-Role",
-  domain: "PERSONALIZATION"
+const basicDatasetGroup = await AWS.Personalize.DatasetGroup("BasicDatasetGroup", {
+  Name: "MyDatasetGroup",
+  RoleArn: "arn:aws:iam::123456789012:role/MyPersonalizeRole"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DatasetGroup with a KMS key for encryption and additional options.
+Configure a DatasetGroup with additional options such as a KMS Key for encryption.
 
 ```ts
-const secureDatasetGroup = await AWS.Personalize.DatasetGroup("secureDatasetGroup", {
-  name: "MovieRecommendations",
-  roleArn: "arn:aws:iam::123456789012:role/service-role/AmazonPersonalize-Role",
-  domain: "PERSONALIZATION",
-  kmsKeyArn: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-12ab-34cd-56ef-1234567890ab"
+const advancedDatasetGroup = await AWS.Personalize.DatasetGroup("AdvancedDatasetGroup", {
+  Name: "MyAdvancedDatasetGroup",
+  RoleArn: "arn:aws:iam::123456789012:role/MyPersonalizeRole",
+  KmsKeyArn: "arn:aws:kms:us-west-2:123456789012:key/example-key-id"
 });
 ```
 
 ## Adopting Existing Resources
 
-Create a DatasetGroup that adopts an existing resource if one is found.
+If you want to adopt an existing DatasetGroup instead of creating a new one, you can set the `adopt` property to true.
 
 ```ts
-const adoptedDatasetGroup = await AWS.Personalize.DatasetGroup("adoptedDatasetGroup", {
-  name: "UserBehaviorTracking",
-  roleArn: "arn:aws:iam::123456789012:role/service-role/AmazonPersonalize-Role",
-  domain: "PERSONALIZATION",
-  adopt: true // Will adopt if the resource already exists
+const adoptedDatasetGroup = await AWS.Personalize.DatasetGroup("AdoptedDatasetGroup", {
+  Name: "MyExistingDatasetGroup",
+  RoleArn: "arn:aws:iam::123456789012:role/MyPersonalizeRole",
+  adopt: true
 });
 ```
 
-## Updating an Existing DatasetGroup
+## Using a Specific Domain
 
-Update an existing DatasetGroup to change its name and role.
+When creating a DatasetGroup for a specific domain, you can specify the `Domain` property.
 
 ```ts
-const updatedDatasetGroup = await AWS.Personalize.DatasetGroup("updatedDatasetGroup", {
-  name: "UpdatedMusicRecommendations",
-  roleArn: "arn:aws:iam::123456789012:role/service-role/AmazonPersonalize-Role"
+const domainDatasetGroup = await AWS.Personalize.DatasetGroup("DomainDatasetGroup", {
+  Name: "MyDomainDatasetGroup",
+  RoleArn: "arn:aws:iam::123456789012:role/MyPersonalizeRole",
+  Domain: "ECOMMERCE"
 });
 ```

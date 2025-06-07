@@ -5,72 +5,79 @@ description: Learn how to create, update, and manage AWS SageMaker Projects usin
 
 # Project
 
-The Project resource allows you to manage [AWS SageMaker Projects](https://docs.aws.amazon.com/sagemaker/latest/userguide/) that help organize your machine learning workflows, including associated resources and configurations.
+The Project resource lets you manage [AWS SageMaker Projects](https://docs.aws.amazon.com/sagemaker/latest/userguide/) which serve as a way to organize and manage machine learning workflows and resources.
 
 ## Minimal Example
 
-Create a basic SageMaker Project with required properties.
+Create a basic SageMaker Project with required properties and a common optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicProject = await AWS.SageMaker.Project("basicProject", {
-  ProjectName: "MachineLearningProject",
+const BasicSageMakerProject = await AWS.SageMaker.Project("BasicProject", {
+  ProjectName: "BasicMachineLearningProject",
   ServiceCatalogProvisioningDetails: {
-    // Add relevant provisioning details here
-  }
-});
-```
-
-## Enhanced Project Description
-
-Configure a SageMaker Project with a description and tags.
-
-```ts
-const detailedProject = await AWS.SageMaker.Project("detailedProject", {
-  ProjectName: "AdvancedMachineLearningProject",
-  ProjectDescription: "This project focuses on advanced machine learning techniques.",
-  ServiceCatalogProvisioningDetails: {
-    // Add relevant provisioning details here
+    // Details for the service catalog provisioning
+    ProductId: "prod-12345",
+    ProvisioningArtifactId: "artifact-abcde",
+    PathId: "path-67890"
   },
-  Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Team", Value: "DataScience" }
-  ]
+  ProjectDescription: "A project to demonstrate basic SageMaker functionality."
 });
 ```
 
 ## Advanced Configuration
 
-Create a project that includes service catalog provisioned product details.
+Configure a SageMaker Project with tags for better resource management.
 
 ```ts
-const advancedProject = await AWS.SageMaker.Project("advancedProject", {
-  ProjectName: "FullMachineLearningProject",
-  ProjectDescription: "Project for full machine learning lifecycle.",
-  ServiceCatalogProvisionedProductDetails: {
-    // Specify the provisioned product details here
-  },
+const AdvancedSageMakerProject = await AWS.SageMaker.Project("AdvancedProject", {
+  ProjectName: "AdvancedMachineLearningProject",
   ServiceCatalogProvisioningDetails: {
-    // Add relevant provisioning details here
+    ProductId: "prod-67890",
+    ProvisioningArtifactId: "artifact-fghij",
+    PathId: "path-12345"
   },
+  ProjectDescription: "An advanced project to showcase SageMaker capabilities.",
   Tags: [
-    { Key: "ProjectType", Value: "Research" },
-    { Key: "Priority", Value: "High" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DataScience" }
   ]
 });
 ```
 
-## Adoption of Existing Resource
+## Using Existing Resources
 
-Demonstrate how to adopt an existing SageMaker Project if one already exists.
+Adopt an existing SageMaker Project instead of failing if it already exists.
 
 ```ts
-const adoptExistingProject = await AWS.SageMaker.Project("adoptExistingProject", {
+const AdoptedSageMakerProject = await AWS.SageMaker.Project("AdoptedProject", {
   ProjectName: "ExistingMachineLearningProject",
   ServiceCatalogProvisioningDetails: {
-    // Add relevant provisioning details here
+    ProductId: "prod-13579",
+    ProvisioningArtifactId: "artifact-klmno",
+    PathId: "path-24680"
   },
-  adopt: true // Adopts the existing resource
+  adopt: true
+});
+```
+
+## Complex Use Case Example
+
+Create a SageMaker Project with specific provisioning details that utilize IAM roles.
+
+```ts
+const ComplexSageMakerProject = await AWS.SageMaker.Project("ComplexProject", {
+  ProjectName: "ComplexMachineLearningProject",
+  ServiceCatalogProvisioningDetails: {
+    ProductId: "prod-24680",
+    ProvisioningArtifactId: "artifact-pqrst",
+    PathId: "path-13579"
+  },
+  ProjectDescription: "A complex project demonstrating SageMaker's robust capabilities with IAM roles.",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "MachineLearning" }
+  ]
 });
 ```

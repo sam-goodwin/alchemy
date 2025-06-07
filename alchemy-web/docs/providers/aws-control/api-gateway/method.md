@@ -5,92 +5,88 @@ description: Learn how to create, update, and manage AWS ApiGateway Methods usin
 
 # Method
 
-The Method resource lets you create and manage [AWS ApiGateway Methods](https://docs.aws.amazon.com/apigateway/latest/userguide/) for your REST APIs, enabling you to define HTTP methods and their integrations.
+The Method resource lets you manage [AWS ApiGateway Methods](https://docs.aws.amazon.com/apigateway/latest/userguide/) and their configurations, enabling you to define how API requests are handled.
 
 ## Minimal Example
 
-Create a basic ApiGateway Method for a GET request with default settings.
+Create a basic ApiGateway Method with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const apiGatewayMethod = await AWS.ApiGateway.Method("getUserMethod", {
-  RestApiId: "myApiId",
-  ResourceId: "myResourceId",
-  HttpMethod: "GET",
-  AuthorizationType: "NONE",
-  ApiKeyRequired: false
+const ApiMethod = await AWS.ApiGateway.Method("GetUserMethod", {
+  RestApiId: "abcd1234", // The ID of the Rest API
+  ResourceId: "xyz5678", // The ID of the resource
+  HttpMethod: "GET", // The HTTP method supported by this method
+  AuthorizationType: "NONE", // No authorization required
+  ApiKeyRequired: false // API Key is not required
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Method with request models and integration settings.
+Configure an ApiGateway Method with integration settings and method responses for more complex use cases.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const postUserMethod = await AWS.ApiGateway.Method("postUserMethod", {
-  RestApiId: "myApiId",
-  ResourceId: "myResourceId",
+const AdvancedApiMethod = await AWS.ApiGateway.Method("PostUserMethod", {
+  RestApiId: "abcd1234",
+  ResourceId: "xyz5678",
   HttpMethod: "POST",
-  AuthorizationType: "AWS_IAM",
-  RequestModels: {
-    "application/json": "UserModel"
-  },
   Integration: {
-    Type: "AWS_PROXY",
-    Uri: "arn:aws:lambda:us-west-2:123456789012:function:myLambdaFunction",
-    HttpMethod: "POST"
+    IntegrationHttpMethod: "POST",
+    Type: "AWS_PROXY", // Using AWS Proxy integration
+    Uri: "arn:aws:lambda:us-west-2:123456789012:function:CreateUserFunction" // Lambda function URI
   },
   MethodResponses: [
     {
       StatusCode: "200",
       ResponseModels: {
-        "application/json": "UserResponseModel"
+        "application/json": "Empty" // Specify the response model
+      }
+    },
+    {
+      StatusCode: "400",
+      ResponseModels: {
+        "application/json": "Error" // Specify the error model
       }
     }
   ]
 });
 ```
 
-## Securing with Authorization Scopes
+## Secured Method with Authorization
 
-Create a Method with specific authorization scopes for enhanced security.
+Create a secured ApiGateway Method that requires authorization scopes.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const secureGetUserMethod = await AWS.ApiGateway.Method("secureGetUserMethod", {
-  RestApiId: "myApiId",
-  ResourceId: "myResourceId",
+const SecuredApiMethod = await AWS.ApiGateway.Method("SecureGetUserMethod", {
+  RestApiId: "abcd1234",
+  ResourceId: "xyz5678",
   HttpMethod: "GET",
-  AuthorizationType: "AWS_IAM",
-  AuthorizationScopes: ["scope1", "scope2"],
-  ApiKeyRequired: true
+  AuthorizationType: "COGNITO_USER_POOLS", // Using Cognito for authorization
+  AuthorizerId: "auth1234", // Id of the authorizer
+  AuthorizationScopes: ["read:user"] // Define scopes for the method
 });
 ```
 
-## Request Validation
+## Method with Request Validation
 
-Configure a Method with request validation using a validator ID.
+Define an ApiGateway Method that uses request validation with parameters.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const validatedPostUserMethod = await AWS.ApiGateway.Method("validatedPostUserMethod", {
-  RestApiId: "myApiId",
-  ResourceId: "myResourceId",
-  HttpMethod: "POST",
-  RequestValidatorId: "myRequestValidatorId",
+const ValidatedApiMethod = await AWS.ApiGateway.Method("ValidateUserMethod", {
+  RestApiId: "abcd1234",
+  ResourceId: "xyz5678",
+  HttpMethod: "PUT",
   RequestParameters: {
-    "method.request.querystring.userId": true
+    "method.request.querystring.userId": true // Require userId as a query parameter
   },
+  RequestValidatorId: "validator1234", // Specify the request validator
   MethodResponses: [
     {
-      StatusCode: "201",
+      StatusCode: "200",
       ResponseModels: {
-        "application/json": "UserResponseModel"
+        "application/json": "UserResponse" // Specify the response model
       }
     }
   ]

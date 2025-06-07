@@ -5,98 +5,80 @@ description: Learn how to create, update, and manage AWS EKS Nodegroups using Al
 
 # Nodegroup
 
-The Nodegroup resource lets you manage [AWS EKS Nodegroups](https://docs.aws.amazon.com/eks/latest/userguide/) for your Kubernetes cluster, enabling you to configure the EC2 instances that run your containerized applications.
+The Nodegroup resource allows you to manage [AWS EKS Nodegroups](https://docs.aws.amazon.com/eks/latest/userguide/) and their configuration settings for running containerized applications in Kubernetes.
 
 ## Minimal Example
 
-Create a basic Nodegroup with required properties and a few common optional settings.
+Create a basic EKS Nodegroup with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicNodegroup = await AWS.EKS.Nodegroup("basicNodegroup", {
-  clusterName: "myEKSCluster",
-  nodeRole: "arn:aws:iam::123456789012:role/myEKSNodeRole",
-  subnets: ["10.0.0.0/24", "10.0.1.0/24"],
-  scalingConfig: {
-    desiredSize: 2,
-    minSize: 1,
-    maxSize: 3
+const basicNodegroup = await AWS.EKS.Nodegroup("BasicNodegroup", {
+  ClusterName: "MyEKSCluster",
+  NodeRole: "arn:aws:iam::123456789012:role/EKSNodeRole",
+  Subnets: ["10.0.0.0/24", "10.0.1.0/24"],
+  ScalingConfig: {
+    MinSize: 1,
+    MaxSize: 3,
+    DesiredSize: 2
   },
-  labels: {
-    environment: "production"
-  }
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Nodegroup with advanced settings like launch templates, remote access, and disk size.
+Configure an EKS Nodegroup with advanced settings such as custom AMI type and Node Repair Configuration.
 
 ```ts
-const advancedNodegroup = await AWS.EKS.Nodegroup("advancedNodegroup", {
-  clusterName: "myEKSCluster",
-  nodeRole: "arn:aws:iam::123456789012:role/myEKSNodeRole",
-  subnets: ["10.0.0.0/24", "10.0.1.0/24"],
-  launchTemplate: {
-    id: "lt-12345678",
-    version: "$Latest"
+const advancedNodegroup = await AWS.EKS.Nodegroup("AdvancedNodegroup", {
+  ClusterName: "MyEKSCluster",
+  NodeRole: "arn:aws:iam::123456789012:role/EKSNodeRole",
+  Subnets: ["10.0.0.0/24", "10.0.1.0/24"],
+  AmiType: "AL2_x86_64",
+  NodeRepairConfig: {
+    // Specify how to handle node repair
+    // Note: Ensure to configure properties that exist in NodeRepairConfig
   },
-  remoteAccess: {
-    ec2SshKey: "my-key-pair",
-    sourceSecurityGroups: ["sg-12345678"]
-  },
-  diskSize: 20,
-  scalingConfig: {
-    desiredSize: 3,
-    minSize: 2,
-    maxSize: 5
-  }
+  Taints: [
+    { Key: "dedicated", Value: "spot", Effect: "NO_SCHEDULE" }
+  ]
 });
 ```
 
-## Custom Node Role and Labels
+## Custom Launch Template
 
-This example demonstrates creating a Nodegroup with a specific IAM role and custom labels for better organization.
+Create a Nodegroup using a custom launch template to define instance types and additional configurations.
 
 ```ts
-const customNodegroup = await AWS.EKS.Nodegroup("customNodegroup", {
-  clusterName: "myEKSCluster",
-  nodeRole: "arn:aws:iam::123456789012:role/customNodeRole",
-  subnets: ["10.0.0.0/24", "10.0.1.0/24"],
-  labels: {
-    app: "myApp",
-    tier: "frontend"
+const customLaunchTemplateNodegroup = await AWS.EKS.Nodegroup("CustomLaunchTemplateNodegroup", {
+  ClusterName: "MyEKSCluster",
+  NodeRole: "arn:aws:iam::123456789012:role/EKSNodeRole",
+  Subnets: ["10.0.0.0/24", "10.0.1.0/24"],
+  LaunchTemplate: {
+    Id: "lt-0123456789abcdef0",
+    Version: "$Latest"
   },
-  instanceTypes: ["t3.medium", "t3.large"],
-  scalingConfig: {
-    desiredSize: 2,
-    minSize: 1,
-    maxSize: 4
-  }
+  InstanceTypes: ["t3.medium", "t3.large"]
 });
 ```
 
-## Nodegroup with Taints
+## Remote Access Configuration
 
-Configure a Nodegroup that uses taints to control pod scheduling on specific nodes.
+Set up a Nodegroup with remote access configuration for SSH connectivity.
 
 ```ts
-const taintedNodegroup = await AWS.EKS.Nodegroup("taintedNodegroup", {
-  clusterName: "myEKSCluster",
-  nodeRole: "arn:aws:iam::123456789012:role/myEKSNodeRole",
-  subnets: ["10.0.0.0/24", "10.0.1.0/24"],
-  taints: [
-    {
-      key: "dedicated",
-      value: "gpu",
-      effect: "NO_SCHEDULE"
-    }
-  ],
-  scalingConfig: {
-    desiredSize: 3,
-    minSize: 2,
-    maxSize: 6
+const remoteAccessNodegroup = await AWS.EKS.Nodegroup("RemoteAccessNodegroup", {
+  ClusterName: "MyEKSCluster",
+  NodeRole: "arn:aws:iam::123456789012:role/EKSNodeRole",
+  Subnets: ["10.0.0.0/24", "10.0.1.0/24"],
+  RemoteAccess: {
+    Ec2SshKey: "my-ssh-key",
+    SourceSecurityGroups: ["sg-0abcdef1234567890"]
   }
 });
 ```

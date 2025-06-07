@@ -5,69 +5,41 @@ description: Learn how to create, update, and manage AWS ControlTower EnabledBas
 
 # EnabledBaseline
 
-The EnabledBaseline resource allows you to manage [AWS ControlTower EnabledBaselines](https://docs.aws.amazon.com/controltower/latest/userguide/) which are essential for enforcing governance and compliance across your AWS accounts.
+The EnabledBaseline resource lets you create and manage [AWS ControlTower EnabledBaselines](https://docs.aws.amazon.com/controltower/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-controltower-enabledbaseline.html
 
 ## Minimal Example
-
-Create a basic EnabledBaseline with required properties and one optional parameter.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const baseline = await AWS.ControlTower.EnabledBaseline("defaultBaseline", {
-  BaselineVersion: "1.0.0",
-  Parameters: [
-    {
-      key: "encryptionEnabled",
-      value: "true"
-    }
-  ],
-  BaselineIdentifier: "myBaselineIdentifier",
-  TargetIdentifier: "myTargetIdentifier"
+const enabledbaseline = await AWS.ControlTower.EnabledBaseline("enabledbaseline-example", {
+  BaselineVersion: "example-baselineversion",
+  BaselineIdentifier: "example-baselineidentifier",
+  TargetIdentifier: "example-targetidentifier",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EnabledBaseline with additional parameters and tags to enhance its functionality.
+Create a enabledbaseline with additional configuration:
 
 ```ts
-const advancedBaseline = await AWS.ControlTower.EnabledBaseline("advancedBaseline", {
-  BaselineVersion: "1.1.0",
-  Parameters: [
-    {
-      key: "encryptionEnabled",
-      value: "true"
-    },
-    {
-      key: "loggingLevel",
-      value: "verbose"
-    }
-  ],
-  BaselineIdentifier: "myAdvancedBaselineIdentifier",
-  TargetIdentifier: "myAdvancedTargetIdentifier",
-  Tags: [
-    {
-      key: "Environment",
-      value: "Production"
-    },
-    {
-      key: "Owner",
-      value: "DevTeam"
-    }
-  ]
+import AWS from "alchemy/aws/control";
+
+const advancedEnabledBaseline = await AWS.ControlTower.EnabledBaseline("advanced-enabledbaseline", {
+  BaselineVersion: "example-baselineversion",
+  BaselineIdentifier: "example-baselineidentifier",
+  TargetIdentifier: "example-targetidentifier",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
 
-## Adoption of Existing Resources
-
-If you want to adopt existing resources instead of failing when the resource already exists, you can set the adopt property to true.
-
-```ts
-const adoptExistingBaseline = await AWS.ControlTower.EnabledBaseline("adoptExistingBaseline", {
-  BaselineVersion: "1.0.0",
-  BaselineIdentifier: "existingBaselineIdentifier",
-  TargetIdentifier: "existingTargetIdentifier",
-  adopt: true
-});
-```

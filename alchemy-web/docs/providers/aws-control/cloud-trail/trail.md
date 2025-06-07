@@ -5,31 +5,35 @@ description: Learn how to create, update, and manage AWS CloudTrail Trails using
 
 # Trail
 
-The Trail resource allows you to manage [AWS CloudTrail Trails](https://docs.aws.amazon.com/cloudtrail/latest/userguide/) for logging and monitoring account activity across your AWS infrastructure.
+The Trail resource lets you manage [AWS CloudTrail Trails](https://docs.aws.amazon.com/cloudtrail/latest/userguide/) for logging and monitoring account activity across your AWS infrastructure.
 
 ## Minimal Example
 
-Create a basic CloudTrail trail with required properties and a couple of common optional settings.
+Create a basic CloudTrail trail with essential properties for S3 bucket logging and enable logging.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicTrail = await AWS.CloudTrail.Trail("basicTrail", {
+const BasicTrail = await AWS.CloudTrail.Trail("BasicTrail", {
   S3BucketName: "my-cloudtrail-logs-bucket",
   IsLogging: true,
-  IncludeGlobalServiceEvents: true
+  IncludeGlobalServiceEvents: true,
+  TrailName: "BasicTrail"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CloudTrail trail with advanced settings including event selectors and KMS key for encryption.
+Configure a CloudTrail trail with advanced options including KMS encryption and CloudWatch logging.
 
 ```ts
-const advancedTrail = await AWS.CloudTrail.Trail("advancedTrail", {
-  S3BucketName: "my-cloudtrail-logs-bucket",
+const AdvancedTrail = await AWS.CloudTrail.Trail("AdvancedTrail", {
+  S3BucketName: "my-secure-cloudtrail-logs-bucket",
   IsLogging: true,
-  KMSKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-abcd-1234-abcd-1234abcd1234",
+  KMSKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-key-id",
+  CloudWatchLogsRoleArn: "arn:aws:iam::123456789012:role/CloudTrail_CloudWatchLogs",
+  CloudWatchLogsLogGroupArn: "arn:aws:logs:us-west-2:123456789012:log-group:CloudTrailLogGroup",
+  SnsTopicName: "my-cloudtrail-sns-topic",
   EventSelectors: [
     {
       ReadWriteType: "All",
@@ -37,38 +41,57 @@ const advancedTrail = await AWS.CloudTrail.Trail("advancedTrail", {
       DataResources: [
         {
           Type: "AWS::S3::Object",
-          Values: ["arn:aws:s3:::my-sensitive-bucket/"]
+          Values: ["arn:aws:s3:::my-secure-cloudtrail-logs-bucket/"]
         }
       ]
     }
   ],
-  SnsTopicName: "myCloudTrailSnsTopic",
-  CloudWatchLogsRoleArn: "arn:aws:iam::123456789012:role/CloudWatchLogsRole"
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
+  ]
 });
 ```
 
 ## Multi-Region Trail
 
-Create a CloudTrail trail that logs events across multiple regions.
+Create a multi-region trail that logs events across all AWS regions.
 
 ```ts
-const multiRegionTrail = await AWS.CloudTrail.Trail("multiRegionTrail", {
+const MultiRegionTrail = await AWS.CloudTrail.Trail("MultiRegionTrail", {
   S3BucketName: "my-multi-region-cloudtrail-logs-bucket",
   IsLogging: true,
   IsMultiRegionTrail: true,
-  EnableLogFileValidation: true
+  TrailName: "MultiRegionTrail"
 });
 ```
 
 ## Organization Trail
 
-Set up an organization trail to log API calls across all accounts in an AWS Organization.
+Set up an organization trail to monitor all accounts in an AWS Organization.
 
 ```ts
-const organizationTrail = await AWS.CloudTrail.Trail("organizationTrail", {
+const OrganizationTrail = await AWS.CloudTrail.Trail("OrganizationTrail", {
   S3BucketName: "my-org-cloudtrail-logs-bucket",
   IsLogging: true,
   IsOrganizationTrail: true,
-  SnsTopicName: "orgCloudTrailSnsTopic"
+  TrailName: "OrganizationTrail"
+});
+``` 
+
+## Insight Selectors
+
+Enable insight selectors to capture unusual activity patterns.
+
+```ts
+const InsightTrail = await AWS.CloudTrail.Trail("InsightTrail", {
+  S3BucketName: "my-insight-cloudtrail-logs-bucket",
+  IsLogging: true,
+  InsightSelectors: [
+    {
+      InsightType: "ApiCallRateInsight"
+    }
+  ],
+  TrailName: "InsightTrail"
 });
 ```

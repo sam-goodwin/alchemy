@@ -5,50 +5,67 @@ description: Learn how to create, update, and manage AWS ResourceExplorer2 Index
 
 # Index
 
-The Index resource lets you manage [AWS ResourceExplorer2 Indexs](https://docs.aws.amazon.com/resourceexplorer2/latest/userguide/) for indexing your AWS resources for easier discovery and management.
+The Index resource allows you to manage [AWS ResourceExplorer2 Indexes](https://docs.aws.amazon.com/resourceexplorer2/latest/userguide/) which are used to index resources in AWS accounts for easier searching and management.
 
 ## Minimal Example
 
-Create a basic ResourceExplorer2 Index with required properties and a few optional tags.
+Create a basic Index with required properties and some common optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const resourceExplorerIndex = await AWS.ResourceExplorer2.Index("myResourceExplorerIndex", {
+const basicIndex = await AWS.ResourceExplorer2.Index("BasicIndex", {
   Type: "AWS::ResourceExplorer2::Index",
-  Tags: {
-    Environment: "Production",
-    Project: "ResourceManagement"
-  }
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Project", Value: "ResourceManagement" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure the Index with the adoption feature to allow resource adoption if it already exists.
+Configure an Index with the adoption feature enabled, allowing you to adopt an existing resource instead of failing if it already exists.
 
 ```ts
-const adoptResourceExplorerIndex = await AWS.ResourceExplorer2.Index("myAdoptedResourceExplorerIndex", {
+const advancedIndex = await AWS.ResourceExplorer2.Index("AdvancedIndex", {
   Type: "AWS::ResourceExplorer2::Index",
-  Tags: {
-    Environment: "Development",
-    Project: "Experimentation"
-  },
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Operations" }
+  ],
   adopt: true
 });
 ```
 
-## Custom Index Settings
+## Custom Index with Detailed Tags
 
-Create an Index with specific settings to enhance resource indexing capabilities.
+Create a custom Index with detailed tagging for better resource organization.
 
 ```ts
-const customResourceExplorerIndex = await AWS.ResourceExplorer2.Index("myCustomResourceExplorerIndex", {
+const customTaggedIndex = await AWS.ResourceExplorer2.Index("CustomTaggedIndex", {
   Type: "AWS::ResourceExplorer2::Index",
-  Tags: {
-    Environment: "Testing",
-    Project: "CustomIndexing"
-  },
-  adopt: false
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Owner", Value: "DevTeam" },
+    { Key: "Application", Value: "WebApp" }
+  ]
 });
+```
+
+## Using the Index Resource
+
+This example demonstrates how to utilize the created Index in conjunction with other resources.
+
+```ts
+const myResourceIndex = await AWS.ResourceExplorer2.Index("MyResourceIndex", {
+  Type: "AWS::ResourceExplorer2::Index",
+  Tags: [
+    { Key: "Environment", Value: "Test" },
+    { Key: "Service", Value: "API" }
+  ]
+});
+
+// Further usage of the resource index can be done here
+console.log(`Created Index ARN: ${myResourceIndex.Arn}`);
 ```

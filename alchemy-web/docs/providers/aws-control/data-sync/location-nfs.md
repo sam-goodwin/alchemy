@@ -5,71 +5,37 @@ description: Learn how to create, update, and manage AWS DataSync LocationNFSs u
 
 # LocationNFS
 
-The LocationNFS resource lets you manage [AWS DataSync LocationNFSs](https://docs.aws.amazon.com/datasync/latest/userguide/) for transferring data between your on-premises NFS servers and AWS storage services.
+The LocationNFS resource lets you create and manage [AWS DataSync LocationNFSs](https://docs.aws.amazon.com/datasync/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-datasync-locationnfs.html
 
 ## Minimal Example
-
-Create a basic NFS location with required properties and a common optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const nfsLocation = await AWS.DataSync.LocationNFS("myNFSLocation", {
-  ServerHostname: "nfs.example.com",
-  Subdirectory: "/data",
-  OnPremConfig: {
-    AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/agent-1"]
-  }
+const locationnfs = await AWS.DataSync.LocationNFS("locationnfs-example", {
+  OnPremConfig: "example-onpremconfig",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an NFS location with mount options for better performance:
+Create a locationnfs with additional configuration:
 
 ```ts
-const advancedNfsLocation = await AWS.DataSync.LocationNFS("advancedNFSLocation", {
-  ServerHostname: "nfs.example.com",
-  Subdirectory: "/data",
-  OnPremConfig: {
-    AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/agent-1"]
+import AWS from "alchemy/aws/control";
+
+const advancedLocationNFS = await AWS.DataSync.LocationNFS("advanced-locationnfs", {
+  OnPremConfig: "example-onpremconfig",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  MountOptions: {
-    Version: "nfs3",
-    Tls: "off"
-  }
 });
 ```
 
-## Adding Tags
-
-Create an NFS location with tags for better resource management:
-
-```ts
-const taggedNfsLocation = await AWS.DataSync.LocationNFS("taggedNFSLocation", {
-  ServerHostname: "nfs.example.com",
-  Subdirectory: "/data",
-  OnPremConfig: {
-    AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/agent-1"]
-  },
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DataMigration" }
-  ]
-});
-```
-
-## Adopting Existing Resources
-
-If you want to adopt an existing NFS resource rather than creating a new one, set the `adopt` property to true:
-
-```ts
-const adoptedNfsLocation = await AWS.DataSync.LocationNFS("adoptedNFSLocation", {
-  ServerHostname: "nfs.example.com",
-  Subdirectory: "/data",
-  OnPremConfig: {
-    AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/agent-1"]
-  },
-  adopt: true
-});
-```

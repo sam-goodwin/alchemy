@@ -5,53 +5,47 @@ description: Learn how to create, update, and manage AWS ServiceCatalog LaunchNo
 
 # LaunchNotificationConstraint
 
-The LaunchNotificationConstraint resource lets you manage [AWS ServiceCatalog Launch Notification Constraints](https://docs.aws.amazon.com/servicecatalog/latest/userguide/). This resource is used to specify notification settings for when a product is launched from a portfolio.
+The LaunchNotificationConstraint resource lets you manage AWS ServiceCatalog Launch Notification Constraints, which allow you to specify notification settings for portfolio and product launches. For more information, refer to the [AWS ServiceCatalog LaunchNotificationConstraints documentation](https://docs.aws.amazon.com/servicecatalog/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic Launch Notification Constraint with required properties and one optional description.
+Create a basic LaunchNotificationConstraint with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const launchNotificationConstraint = await AWS.ServiceCatalog.LaunchNotificationConstraint("launchNotificationConstraint1", {
-  PortfolioId: "portfolio-12345678",
-  ProductId: "product-12345678",
-  NotificationArns: [
-    "arn:aws:sns:us-east-1:123456789012:my-sns-topic"
-  ],
-  Description: "This constraint sends notifications to specified SNS topics."
+const BasicLaunchNotificationConstraint = await AWS.ServiceCatalog.LaunchNotificationConstraint("BasicLaunchNotification", {
+  NotificationArns: ["arn:aws:sns:us-east-1:123456789012:MyLaunchNotifications"],
+  PortfolioId: "portfolio-1234abcd",
+  ProductId: "product-5678efgh",
+  Description: "This constraint notifies stakeholders upon product launch."
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Launch Notification Constraint with additional optional properties like Accept Language.
+Configure a LaunchNotificationConstraint with additional options such as accept language.
 
 ```ts
-const advancedLaunchNotificationConstraint = await AWS.ServiceCatalog.LaunchNotificationConstraint("advancedLaunchNotificationConstraint", {
-  PortfolioId: "portfolio-12345678",
-  ProductId: "product-12345678",
-  NotificationArns: [
-    "arn:aws:sns:us-east-1:123456789012:my-sns-topic",
-    "arn:aws:sns:us-east-1:123456789012:another-topic"
-  ],
-  Description: "This constraint sends notifications in English.",
-  AcceptLanguage: "en"
+const AdvancedLaunchNotificationConstraint = await AWS.ServiceCatalog.LaunchNotificationConstraint("AdvancedLaunchNotification", {
+  NotificationArns: ["arn:aws:sns:us-east-1:123456789012:MyLaunchNotifications"],
+  PortfolioId: "portfolio-1234abcd",
+  ProductId: "product-5678efgh",
+  AcceptLanguage: "en",
+  Description: "This constraint notifies stakeholders in English upon product launch."
 });
 ```
 
-## Adoption of Existing Resources
+## Adoption of Existing Resource
 
-Adopt an existing Launch Notification Constraint instead of failing if it already exists.
+If you want to adopt an existing LaunchNotificationConstraint without failing, set the adopt property to true.
 
 ```ts
-const adoptLaunchNotificationConstraint = await AWS.ServiceCatalog.LaunchNotificationConstraint("adoptLaunchNotificationConstraint", {
-  PortfolioId: "portfolio-12345678",
-  ProductId: "product-12345678",
-  NotificationArns: [
-    "arn:aws:sns:us-east-1:123456789012:my-sns-topic"
-  ],
-  adopt: true
+const AdoptExistingLaunchNotificationConstraint = await AWS.ServiceCatalog.LaunchNotificationConstraint("AdoptExistingNotification", {
+  NotificationArns: ["arn:aws:sns:us-east-1:123456789012:MyLaunchNotifications"],
+  PortfolioId: "portfolio-1234abcd",
+  ProductId: "product-5678efgh",
+  adopt: true,
+  Description: "Adopting an existing Launch Notification Constraint."
 });
 ```

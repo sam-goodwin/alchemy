@@ -5,73 +5,83 @@ description: Learn how to create, update, and manage AWS AutoScaling LaunchConfi
 
 # LaunchConfiguration
 
-The LaunchConfiguration resource lets you define an EC2 instance configuration used by Auto Scaling groups to launch instances. For more details, refer to the [AWS AutoScaling LaunchConfigurations documentation](https://docs.aws.amazon.com/autoscaling/latest/userguide/).
+The LaunchConfiguration resource lets you create and manage [AWS AutoScaling LaunchConfigurations](https://docs.aws.amazon.com/autoscaling/latest/userguide/) which define the settings for EC2 instances launched by an Auto Scaling group.
 
 ## Minimal Example
 
-Create a basic LaunchConfiguration with required properties and commonly used optional settings.
+Create a basic LaunchConfiguration with required properties and a few common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const launchConfig = await AWS.AutoScaling.LaunchConfiguration("myLaunchConfig", {
-  imageId: "ami-0abcdef1234567890", // Replace with a valid AMI ID
-  instanceType: "t2.micro", // Select a suitable instance type
-  keyName: "myKeyPair", // Provide your key pair name for SSH access
-  securityGroups: ["sg-0123456789abcdef0"], // Use a valid security group ID
-  associatePublicIpAddress: true // Enable public IP assignment
+const BasicLaunchConfiguration = await AWS.AutoScaling.LaunchConfiguration("BasicLaunchConfig", {
+  ImageId: "ami-0abcdef1234567890",
+  InstanceType: "t2.micro",
+  SecurityGroups: ["sg-0123456789abcdef0"],
+  KeyName: "my-key-pair"
 });
 ```
 
 ## Advanced Configuration
 
-Customize the LaunchConfiguration with additional options such as monitoring and EBS optimization.
+Configure a LaunchConfiguration with enhanced settings including IAM instance profile and EBS optimization.
 
 ```ts
-const advancedLaunchConfig = await AWS.AutoScaling.LaunchConfiguration("advancedLaunchConfig", {
-  imageId: "ami-0abcdef1234567890",
-  instanceType: "t2.micro",
-  keyName: "myKeyPair",
-  securityGroups: ["sg-0123456789abcdef0"],
-  ebsOptimized: true, // Optimize EBS for better performance
-  instanceMonitoring: true, // Enable detailed monitoring
-  blockDeviceMappings: [{
-    deviceName: "/dev/sda1",
-    ebs: {
-      volumeSize: 20, // Set volume size in GB
-      deleteOnTermination: true // Delete the volume on instance termination
-    }
-  }]
+const AdvancedLaunchConfiguration = await AWS.AutoScaling.LaunchConfiguration("AdvancedLaunchConfig", {
+  ImageId: "ami-0abcdef1234567890",
+  InstanceType: "t2.micro",
+  SecurityGroups: ["sg-0123456789abcdef0"],
+  KeyName: "my-key-pair",
+  IamInstanceProfile: "myIamRole",
+  EbsOptimized: true,
+  MetadataOptions: {
+    HttpTokens: "required",
+    HttpPutResponseHopLimit: 2
+  }
 });
 ```
 
 ## Spot Instance Configuration
 
-Configure a LaunchConfiguration to launch Spot Instances with a specified maximum price.
+Create a LaunchConfiguration for launching Spot Instances with a specified maximum price.
 
 ```ts
-const spotLaunchConfig = await AWS.AutoScaling.LaunchConfiguration("spotLaunchConfig", {
-  imageId: "ami-0abcdef1234567890",
-  instanceType: "t2.micro",
-  keyName: "myKeyPair",
-  securityGroups: ["sg-0123456789abcdef0"],
-  spotPrice: "0.03", // Set maximum price for the Spot Instance
-  instanceMonitoring: false // Disable detailed monitoring for cost saving
+const SpotLaunchConfiguration = await AWS.AutoScaling.LaunchConfiguration("SpotLaunchConfig", {
+  ImageId: "ami-0abcdef1234567890",
+  InstanceType: "t2.micro",
+  SpotPrice: "0.05", // Maximum price per hour
+  SecurityGroups: ["sg-0123456789abcdef0"],
+  KeyName: "my-key-pair"
 });
 ```
 
-## Custom User Data
+## Multiple Block Device Mappings
 
-Provide a user data script to initialize the instance upon launch.
+Define a LaunchConfiguration that includes multiple block device mappings for EBS volumes.
 
 ```ts
-const userDataLaunchConfig = await AWS.AutoScaling.LaunchConfiguration("userDataLaunchConfig", {
-  imageId: "ami-0abcdef1234567890",
-  instanceType: "t2.micro",
-  keyName: "myKeyPair",
-  securityGroups: ["sg-0123456789abcdef0"],
-  userData: `#!/bin/bash
-              echo "Hello World" > /var/www/html/index.html
-              systemctl start httpd`
+const MultiBlockDeviceLaunchConfiguration = await AWS.AutoScaling.LaunchConfiguration("MultiBlockDeviceLaunchConfig", {
+  ImageId: "ami-0abcdef1234567890",
+  InstanceType: "t2.micro",
+  BlockDeviceMappings: [
+    {
+      DeviceName: "/dev/sda1",
+      Ebs: {
+        VolumeSize: 30,
+        VolumeType: "gp2",
+        DeleteOnTermination: true
+      }
+    },
+    {
+      DeviceName: "/dev/sdb",
+      Ebs: {
+        VolumeSize: 50,
+        VolumeType: "gp2",
+        DeleteOnTermination: true
+      }
+    }
+  ],
+  SecurityGroups: ["sg-0123456789abcdef0"],
+  KeyName: "my-key-pair"
 });
 ```

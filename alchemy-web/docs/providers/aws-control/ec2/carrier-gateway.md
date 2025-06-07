@@ -5,88 +5,45 @@ description: Learn how to create, update, and manage AWS EC2 CarrierGateways usi
 
 # CarrierGateway
 
-The CarrierGateway resource allows you to manage [AWS EC2 CarrierGateways](https://docs.aws.amazon.com/ec2/latest/userguide/) that connect a VPC to carrier networks, enabling the transport of data between the AWS cloud and on-premises locations.
+The CarrierGateway resource lets you manage [AWS EC2 CarrierGateways](https://docs.aws.amazon.com/ec2/latest/userguide/) for enabling carrier-grade NAT in your Amazon VPC.
 
 ## Minimal Example
 
-Create a basic CarrierGateway associated with a specified VPC.
+Create a basic CarrierGateway with required properties and an optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const carrierGateway = await AWS.EC2.CarrierGateway("myCarrierGateway", {
-  VpcId: "vpc-12345678", // Replace with your VPC ID
-  Tags: [
-    {
-      Key: "Name",
-      Value: "MyCarrierGateway"
-    }
-  ]
+const carrierGateway = await AWS.EC2.CarrierGateway("MyCarrierGateway", {
+  VpcId: "vpc-0abcdef1234567890",
+  Tags: [{ Key: "Environment", Value: "production" }]
 });
 ```
 
 ## Advanced Configuration
 
-Create a CarrierGateway with additional tags for better resource organization.
+Configure a CarrierGateway with additional properties and multiple tags.
 
 ```ts
-const advancedCarrierGateway = await AWS.EC2.CarrierGateway("advancedCarrierGateway", {
-  VpcId: "vpc-87654321", // Replace with your VPC ID
+const advancedCarrierGateway = await AWS.EC2.CarrierGateway("AdvancedCarrierGateway", {
+  VpcId: "vpc-0abcdef1234567890",
   Tags: [
-    {
-      Key: "Name",
-      Value: "AdvancedCarrierGateway"
-    },
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Project",
-      Value: "NetworkIntegration"
-    }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Networking" },
+    { Key: "Project", Value: "CarrierIntegration" }
   ],
   adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Using CarrierGateway in a Network Configuration
+## Example with Adoption
 
-Here’s how you might utilize a CarrierGateway in a more complex networking setup, such as when integrating with on-premises infrastructure.
-
-```ts
-const networkCarrierGateway = await AWS.EC2.CarrierGateway("networkCarrierGateway", {
-  VpcId: "vpc-abcdef12", // Replace with your VPC ID
-  Tags: [
-    {
-      Key: "Name",
-      Value: "NetworkCarrierGateway"
-    },
-    {
-      Key: "Type",
-      Value: "Hybrid"
-    }
-  ]
-});
-
-// Further networking logic can be added here to establish connections
-```
-
-## Example with Conditional Resource Adoption
-
-This example illustrates creating a CarrierGateway while ensuring existing resources are adopted if they already exist, which is useful for maintaining continuity in configurations.
+Create a CarrierGateway while allowing for the adoption of an existing resource.
 
 ```ts
-const conditionalCarrierGateway = await AWS.EC2.CarrierGateway("conditionalCarrierGateway", {
-  VpcId: "vpc-fedcba98", // Replace with your VPC ID
-  Tags: [
-    {
-      Key: "Name",
-      Value: "ConditionalCarrierGateway"
-    }
-  ],
-  adopt: true // This will enable the adoption of an existing gateway if it exists
+const adoptedCarrierGateway = await AWS.EC2.CarrierGateway("AdoptedCarrierGateway", {
+  VpcId: "vpc-0abcdef1234567890",
+  Tags: [{ Key: "Environment", Value: "development" }],
+  adopt: true // This will enable adopting an existing resource
 });
 ```
-
-These examples demonstrate how to effectively create and manage CarrierGateways using Alchemy, allowing for integration with VPCs and on-premises networks. With proper tagging and configurations, you can ensure your network resources are organized and easily identifiable.

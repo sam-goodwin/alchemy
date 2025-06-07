@@ -5,44 +5,58 @@ description: Learn how to create, update, and manage AWS ServiceCatalogAppRegist
 
 # AttributeGroupAssociation
 
-The AttributeGroupAssociation resource allows you to associate an attribute group with an application in AWS Service Catalog App Registry. This association helps in organizing and managing application metadata effectively. For more information, refer to the [AWS ServiceCatalogAppRegistry AttributeGroupAssociations documentation](https://docs.aws.amazon.com/servicecatalogappregistry/latest/userguide/).
+The AttributeGroupAssociation resource allows you to associate a specified attribute group with an application in AWS Service Catalog App Registry. This resource is crucial for organizing and managing application attributes effectively. For more information, refer to the [AWS ServiceCatalogAppRegistry AttributeGroupAssociations](https://docs.aws.amazon.com/servicecatalogappregistry/latest/userguide/) documentation.
 
 ## Minimal Example
 
-Create a basic Attribute Group Association between an attribute group and an application with required properties.
+Create a basic Attribute Group Association with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const attributeGroupAssociation = await AWS.ServiceCatalogAppRegistry.AttributeGroupAssociation("myAttributeGroupAssociation", {
-  AttributeGroup: "arn:aws:servicecatalog:us-west-2:123456789012:attribute-group/myAttributeGroup",
-  Application: "arn:aws:servicecatalog:us-west-2:123456789012:application/myApplication",
-  adopt: true // Optional: Adopt existing resource if it already exists
+const BasicAttributeGroupAssociation = await AWS.ServiceCatalogAppRegistry.AttributeGroupAssociation("BasicAssociation", {
+  AttributeGroup: "my-attribute-group",
+  Application: "my-application",
+  adopt: true // Optionally adopt existing resource
 });
 ```
 
 ## Advanced Configuration
 
-This example demonstrates how to create an association while ensuring that the existing resource is adopted if it already exists.
+Configure an Attribute Group Association with additional properties for adoption scenarios.
 
 ```ts
-const advancedAttributeGroupAssociation = await AWS.ServiceCatalogAppRegistry.AttributeGroupAssociation("advancedAttributeGroupAssociation", {
-  AttributeGroup: "arn:aws:servicecatalog:us-west-2:123456789012:attribute-group/advancedAttributeGroup",
-  Application: "arn:aws:servicecatalog:us-west-2:123456789012:application/advancedApplication",
-  adopt: true // Adopts existing resource instead of failing
+const AdvancedAttributeGroupAssociation = await AWS.ServiceCatalogAppRegistry.AttributeGroupAssociation("AdvancedAssociation", {
+  AttributeGroup: "my-advanced-attribute-group",
+  Application: "my-advanced-application",
+  adopt: false // Set to false to fail if resource exists
 });
 ```
 
-## Use Case: Updating an Existing Association
+## Attributes Management
 
-If you need to ensure that an association is updated when an application or attribute group changes, you can use the following configuration:
+Use the Attribute Group Association to manage multiple attributes for an application.
 
 ```ts
-const updateAttributeGroupAssociation = await AWS.ServiceCatalogAppRegistry.AttributeGroupAssociation("updateAttributeGroupAssociation", {
-  AttributeGroup: "arn:aws:servicecatalog:us-west-2:123456789012:attribute-group/updateAttributeGroup",
-  Application: "arn:aws:servicecatalog:us-west-2:123456789012:application/updateApplication",
-  adopt: false // Do not adopt; fail if the resource exists
+const MultiAttributeGroupAssociation = await AWS.ServiceCatalogAppRegistry.AttributeGroupAssociation("MultiAssociation", {
+  AttributeGroup: "my-multi-attribute-group",
+  Application: "my-multi-application",
+  adopt: true // Adopt existing resource if applicable
 });
 ```
 
-This allows you to manage changes effectively while keeping your application metadata organized.
+## Error Handling Example
+
+Demonstrate error handling when creating an association that already exists.
+
+```ts
+try {
+  const ErrorHandlingAssociation = await AWS.ServiceCatalogAppRegistry.AttributeGroupAssociation("ErrorHandlingAssociation", {
+    AttributeGroup: "my-existing-attribute-group",
+    Application: "my-existing-application",
+    adopt: false // This will throw an error if the resource already exists
+  });
+} catch (error) {
+  console.error("Error creating association:", error);
+}
+```

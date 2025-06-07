@@ -5,108 +5,81 @@ description: Learn how to create, update, and manage AWS Synthetics Canarys usin
 
 # Canary
 
-The Canary resource allows you to create and manage [AWS Synthetics Canarys](https://docs.aws.amazon.com/synthetics/latest/userguide/) that enable you to monitor your applications by running scripts that simulate user interactions.
+The Canary resource allows you to create and manage [AWS Synthetics Canarys](https://docs.aws.amazon.com/synthetics/latest/userguide/) which help you monitor your endpoints and APIs by running scripts that simulate user interactions.
 
 ## Minimal Example
 
-Create a basic Canary with required properties and a few common optional settings.
+Create a basic Canary with the required properties and a common optional property for scheduling.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicCanary = await AWS.Synthetics.Canary("basicCanary", {
-  name: "MyBasicCanary",
-  runtimeVersion: "syn-nodejs-2.0",
-  code: {
-    handler: "index.handler",
-    s3Bucket: "my-synthetics-bucket",
-    s3Key: "canary-script.zip"
+const BasicCanary = await AWS.Synthetics.Canary("BasicCanary", {
+  Name: "MyFirstCanary",
+  RuntimeVersion: "syn-nodejs-2.0",
+  Code: {
+    Handler: "index.handler",
+    Script: "exports.handler = async (event) => { return 'Hello from MyFirstCanary!'; };"
   },
-  schedule: {
-    expression: "rate(5 minutes)"
+  Schedule: {
+    Expression: "rate(5 minutes)"
   },
-  successRetentionPeriod: 30,
-  failureRetentionPeriod: 30
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/myCanaryExecutionRole",
+  ArtifactS3Location: "s3://my-canary-artifacts/",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Canary with advanced options like VPC settings and detailed run configurations.
+Configure a Canary with VPC settings, success and failure retention periods, and artifact configuration.
 
 ```ts
-const advancedCanary = await AWS.Synthetics.Canary("advancedCanary", {
-  name: "MyAdvancedCanary",
-  runtimeVersion: "syn-nodejs-2.0",
-  code: {
-    handler: "index.handler",
-    s3Bucket: "my-synthetics-bucket",
-    s3Key: "advanced-canary-script.zip"
+const VPCConfiguredCanary = await AWS.Synthetics.Canary("VPCConfiguredCanary", {
+  Name: "MyVPCCanary",
+  RuntimeVersion: "syn-nodejs-2.0",
+  Code: {
+    Handler: "index.handler",
+    Script: "exports.handler = async (event) => { return 'Hello from MyVPCCanary!'; };"
   },
-  schedule: {
-    expression: "rate(10 minutes)"
+  Schedule: {
+    Expression: "rate(10 minutes)"
   },
-  vpcConfig: {
-    vpcId: "vpc-12345678",
-    subnetIds: ["subnet-12345678"],
-    securityGroupIds: ["sg-12345678"]
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/myCanaryExecutionRole",
+  ArtifactS3Location: "s3://my-vpc-canary-artifacts/",
+  VPCConfig: {
+    VpcId: "vpc-abcdef123",
+    SubnetIds: ["subnet-abc123", "subnet-def456"],
+    SecurityGroupIds: ["sg-abc123"]
   },
-  runConfig: {
-    timeoutInSeconds: 60,
-    memoryInMB: 128
-  },
-  successRetentionPeriod: 60,
-  failureRetentionPeriod: 60
+  SuccessRetentionPeriod: 30,
+  FailureRetentionPeriod: 14,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Synthetics" }
+  ]
 });
 ```
 
-## Using Visual References
+## Run Configuration Example
 
-Create a Canary that includes visual references for monitoring changes in UI.
+Set up a Canary with custom run settings to control its execution behavior.
 
 ```ts
-const visualCanary = await AWS.Synthetics.Canary("visualCanary", {
-  name: "MyVisualCanary",
-  runtimeVersion: "syn-nodejs-2.0",
-  code: {
-    handler: "index.handler",
-    s3Bucket: "my-synthetics-bucket",
-    s3Key: "visual-canary-script.zip"
+const CustomRunConfigCanary = await AWS.Synthetics.Canary("CustomRunConfigCanary", {
+  Name: "MyCustomRunConfigCanary",
+  RuntimeVersion: "syn-nodejs-2.0",
+  Code: {
+    Handler: "index.handler",
+    Script: "exports.handler = async (event) => { return 'Hello from MyCustomRunConfigCanary!'; };"
   },
-  schedule: {
-    expression: "rate(15 minutes)"
+  Schedule: {
+    Expression: "rate(15 minutes)"
   },
-  visualReference: {
-    baseScreenshot: {
-      s3Bucket: "my-synthetics-screenshots",
-      s3Key: "reference-screenshot.png"
-    }
-  },
-  successRetentionPeriod: 7,
-  failureRetentionPeriod: 7
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/myCanaryExecutionRole",
+  ArtifactS3Location: "s3://my-custom-canary-artifacts/",
+  RunConfig: {
+    TimeoutInSeconds: 60,
+    MemoryInMB: 128
+  }
 });
 ```
-
-## Cleanup of Provisioned Resources
-
-Configure a Canary to automatically clean up provisioned resources after execution.
-
-```ts
-const cleanupCanary = await AWS.Synthetics.Canary("cleanupCanary", {
-  name: "MyCleanupCanary",
-  runtimeVersion: "syn-nodejs-2.0",
-  code: {
-    handler: "index.handler",
-    s3Bucket: "my-synthetics-bucket",
-    s3Key: "cleanup-canary-script.zip"
-  },
-  schedule: {
-    expression: "rate(30 minutes)"
-  },
-  provisionedResourceCleanup: "true",
-  successRetentionPeriod: 14,
-  failureRetentionPeriod: 14
-});
-``` 
-
-This documentation provides a comprehensive guide on how to effectively use AWS Synthetics Canarys in your projects with Alchemy.

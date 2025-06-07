@@ -5,98 +5,83 @@ description: Learn how to create, update, and manage AWS LaunchWizard Deployment
 
 # Deployment
 
-The Deployment resource allows you to manage [AWS LaunchWizard Deployments](https://docs.aws.amazon.com/launchwizard/latest/userguide/) for deploying applications with minimal effort. It simplifies the process by automating the deployment of resources based on predefined specifications.
+The Deployment resource allows you to manage [AWS LaunchWizard Deployments](https://docs.aws.amazon.com/launchwizard/latest/userguide/) for simplifying the deployment of applications on AWS. 
 
 ## Minimal Example
 
-Create a basic LaunchWizard Deployment with required properties and a few optional ones.
+Create a basic LaunchWizard Deployment with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDeployment = await AWS.LaunchWizard.Deployment("basicDeployment", {
-  WorkloadName: "MyWebApp",
-  DeploymentPatternName: "Single-AZ",
+const LaunchWizardDeployment = await AWS.LaunchWizard.Deployment("MyWebAppDeployment", {
+  WorkloadName: "MyWebApplication",
+  DeploymentPatternName: "Standard",
   Name: "MyWebAppDeployment",
-  Specifications: {
-    InstanceType: "t3.medium",
-    Database: {
-      Engine: "mysql",
-      Version: "8.0",
-      Storage: 20
-    }
-  },
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "DevOps" }
+    { Key: "Environment", Value: "Production" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a more advanced LaunchWizard Deployment with an additional optional property to adopt existing resources.
+Configure a LaunchWizard Deployment with specifications and multiple tags for better management.
 
 ```ts
-const advancedDeployment = await AWS.LaunchWizard.Deployment("advancedDeployment", {
-  WorkloadName: "MyDatabaseApp",
-  DeploymentPatternName: "Multi-AZ",
-  Name: "MyDatabaseAppDeployment",
+const AdvancedLaunchWizardDeployment = await AWS.LaunchWizard.Deployment("AdvancedWebAppDeployment", {
+  WorkloadName: "AdvancedWebApplication",
+  DeploymentPatternName: "HighAvailability",
+  Name: "AdvancedWebAppDeployment",
   Specifications: {
-    InstanceType: "m5.large",
-    Database: {
-      Engine: "postgres",
-      Version: "13",
-      Storage: 50
-    },
-    LoadBalancers: [
-      {
-        Type: "Application",
-        Name: "MyAppLoadBalancer"
-      }
-    ]
+    InstanceType: "t2.micro",
+    NetworkConfiguration: {
+      SubnetId: "subnet-0abcd1234efgh5678",
+      SecurityGroups: ["sg-0abcd1234efgh5678"]
+    }
   },
   Tags: [
     { Key: "Environment", Value: "Staging" },
-    { Key: "Owner", Value: "DevelopmentTeam" }
-  ],
-  adopt: true
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
-## Deploying with Custom Specifications
+## Custom Deployment Pattern
 
-Demonstrate how to create a deployment with custom specifications for specific workloads.
+Deploy an application using a custom deployment pattern and specify additional workload settings.
 
 ```ts
-const customDeployment = await AWS.LaunchWizard.Deployment("customDeployment", {
-  WorkloadName: "MyCustomApp",
-  DeploymentPatternName: "Canary",
-  Name: "MyCustomAppDeployment",
+const CustomPatternDeployment = await AWS.LaunchWizard.Deployment("CustomPatternDeployment", {
+  WorkloadName: "CustomWebApplication",
+  DeploymentPatternName: "CustomPattern",
+  Name: "CustomWebAppDeployment",
   Specifications: {
-    InstanceType: "c5.xlarge",
-    Database: {
-      Engine: "oracle",
-      Version: "19c",
-      Storage: 100
-    },
-    SecurityGroups: [
-      {
-        GroupId: "sg-0123456789abcdef0",
-        Ingress: [
-          {
-            IpProtocol: "tcp",
-            FromPort: 80,
-            ToPort: 80,
-            CidrIp: "0.0.0.0/0"
-          }
-        ]
-      }
-    ]
+    InstanceType: "t3.medium",
+    LoadBalancer: {
+      Type: "ApplicationLoadBalancer",
+      HealthCheckPath: "/health"
+    }
   },
   Tags: [
     { Key: "Environment", Value: "Testing" },
-    { Key: "Project", Value: "MyCustomProject" }
+    { Key: "Project", Value: "NewFeature" }
+  ]
+});
+``` 
+
+## Adoption of Existing Resources
+
+Create a deployment that adopts existing resources if they already exist.
+
+```ts
+const AdoptExistingDeployment = await AWS.LaunchWizard.Deployment("AdoptExistingResources", {
+  WorkloadName: "ExistingWebApplication",
+  DeploymentPatternName: "Standard",
+  Name: "AdoptExistingWebAppDeployment",
+  adopt: true,
+  Tags: [
+    { Key: "Environment", Value: "Production" }
   ]
 });
 ```

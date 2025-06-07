@@ -1,22 +1,22 @@
 ---
-title: Managing AWS SecretsManager ResourcePolicys with Alchemy
-description: Learn how to create, update, and manage AWS SecretsManager ResourcePolicys using Alchemy Cloud Control.
+title: Managing AWS SecretsManager ResourcePolicies with Alchemy
+description: Learn how to create, update, and manage AWS SecretsManager ResourcePolicies using Alchemy Cloud Control.
 ---
 
 # ResourcePolicy
 
-The ResourcePolicy resource allows you to manage access policies for AWS Secrets Manager secrets, enabling fine-grained control over who can access specific secrets. For more detailed information, refer to the [AWS SecretsManager ResourcePolicys](https://docs.aws.amazon.com/secretsmanager/latest/userguide/).
+The ResourcePolicy resource allows you to manage resource policies for AWS SecretsManager, enabling you to control access to your secrets. For more information, you can refer to the [AWS SecretsManager ResourcePolicies](https://docs.aws.amazon.com/secretsmanager/latest/userguide/) documentation.
 
 ## Minimal Example
 
-Create a basic resource policy for a secret, specifying the secret ID and a simple resource policy.
+This example demonstrates how to create a basic ResourcePolicy for a secret with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const minimalResourcePolicy = await AWS.SecretsManager.ResourcePolicy("myResourcePolicy", {
-  SecretId: "mySecretId",
-  ResourcePolicy: {
+const BasicResourcePolicy = await AWS.SecretsManager.ResourcePolicy("BasicResourcePolicy", {
+  SecretId: "my-secret-id",
+  ResourcePolicy: JSON.stringify({
     Version: "2012-10-17",
     Statement: [
       {
@@ -25,22 +25,22 @@ const minimalResourcePolicy = await AWS.SecretsManager.ResourcePolicy("myResourc
           AWS: "arn:aws:iam::123456789012:user/MyUser"
         },
         Action: "secretsmanager:GetSecretValue",
-        Resource: "arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecretId-123456"
+        Resource: "*"
       }
     ]
-  }
+  }),
+  BlockPublicPolicy: false // Optional: Specify if public access should be blocked
 });
 ```
 
 ## Advanced Configuration
 
-Configure a resource policy with additional options, including blocking public access.
+This example shows how to configure a ResourcePolicy with a more complex policy that restricts access based on specific conditions.
 
 ```ts
-const advancedResourcePolicy = await AWS.SecretsManager.ResourcePolicy("advancedResourcePolicy", {
-  SecretId: "myAdvancedSecretId",
-  BlockPublicPolicy: true,
-  ResourcePolicy: {
+const AdvancedResourcePolicy = await AWS.SecretsManager.ResourcePolicy("AdvancedResourcePolicy", {
+  SecretId: "my-advanced-secret-id",
+  ResourcePolicy: JSON.stringify({
     Version: "2012-10-17",
     Statement: [
       {
@@ -48,37 +48,40 @@ const advancedResourcePolicy = await AWS.SecretsManager.ResourcePolicy("advanced
         Principal: {
           AWS: "arn:aws:iam::123456789012:role/MyRole"
         },
-        Action: [
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
-        ],
-        Resource: "arn:aws:secretsmanager:us-west-2:123456789012:secret:myAdvancedSecretId-abcdef"
+        Action: "secretsmanager:GetSecretValue",
+        Resource: "*",
+        Condition: {
+          StringEquals: {
+            "aws:SourceArn": "arn:aws:lambda:us-east-1:123456789012:function:MyFunction"
+          }
+        }
       }
     ]
-  }
+  }),
+  BlockPublicPolicy: true // Optional: Enable to block public access
 });
 ```
 
-## Example with Adoption of Existing Resource
+## Adoption of Existing Resource
 
-This example demonstrates how to adopt an existing resource policy without failing if the resource already exists.
+This example illustrates how to adopt an existing resource instead of failing if the resource already exists.
 
 ```ts
-const adoptedResourcePolicy = await AWS.SecretsManager.ResourcePolicy("adoptedPolicy", {
-  SecretId: "myExistingSecretId",
-  adopt: true,
-  ResourcePolicy: {
+const AdoptExistingResourcePolicy = await AWS.SecretsManager.ResourcePolicy("AdoptExistingResourcePolicy", {
+  SecretId: "existing-secret-id",
+  ResourcePolicy: JSON.stringify({
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
         Principal: {
-          AWS: "arn:aws:iam::123456789012:service-role/MyServiceRole"
+          AWS: "arn:aws:iam::123456789012:role/AnotherRole"
         },
-        Action: "secretsmanager:PutSecretValue",
-        Resource: "arn:aws:secretsmanager:us-west-2:123456789012:secret:myExistingSecretId-ghijkl"
+        Action: "secretsmanager:DescribeSecret",
+        Resource: "*"
       }
     ]
-  }
+  }),
+  adopt: true // Optional: Set to true to adopt existing resource
 });
 ```

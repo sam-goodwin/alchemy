@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS Lambda LayerVersions us
 
 # LayerVersion
 
-The LayerVersion resource allows you to manage [AWS Lambda LayerVersions](https://docs.aws.amazon.com/lambda/latest/userguide/) which provide a way to package and share libraries, custom runtimes, and other dependencies across multiple Lambda functions.
+The LayerVersion resource allows you to manage [AWS Lambda LayerVersions](https://docs.aws.amazon.com/lambda/latest/userguide/) that enable you to package and share libraries, custom runtimes, and other dependencies across multiple Lambda functions.
 
 ## Minimal Example
 
@@ -14,64 +14,64 @@ Create a basic Lambda LayerVersion with required properties and common optional 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const lambdaLayer = await AWS.Lambda.LayerVersion("myLayerVersion", {
+const BasicLayerVersion = await AWS.Lambda.LayerVersion("BasicLayerVersion", {
   Content: {
-    S3Bucket: "my-lambda-layers",
-    S3Key: "mylayer.zip"
+    S3Bucket: "my-bucket",
+    S3Key: "layer-content.zip"
   },
-  LayerName: "my-custom-layer",
-  CompatibleRuntimes: ["nodejs14.x", "nodejs16.x"],
-  LicenseInfo: "MIT"
+  LayerName: "MyLambdaLayer",
+  Description: "A layer for common libraries",
+  CompatibleRuntimes: ["nodejs14.x", "nodejs16.x"]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Lambda LayerVersion with specific architecture compatibility and a description.
+Configure a Lambda LayerVersion with additional options such as licensing information and architecture compatibility.
 
 ```ts
-const advancedLayer = await AWS.Lambda.LayerVersion("advancedLayerVersion", {
+const AdvancedLayerVersion = await AWS.Lambda.LayerVersion("AdvancedLayerVersion", {
   Content: {
-    S3Bucket: "my-lambda-layers",
-    S3Key: "advancedlayer.zip"
+    S3Bucket: "my-bucket",
+    S3Key: "advanced-layer-content.zip"
   },
-  LayerName: "my-advanced-layer",
-  CompatibleArchitectures: ["x86_64"],
-  Description: "An advanced layer with custom dependencies"
-});
-```
-
-## Versioning and Updating Layers
-
-Create a new version of an existing Lambda LayerVersion to update its content.
-
-```ts
-const updatedLayer = await AWS.Lambda.LayerVersion("updatedLayerVersion", {
-  Content: {
-    S3Bucket: "my-lambda-layers",
-    S3Key: "updatedlayer.zip"
-  },
-  LayerName: "my-custom-layer",
+  LayerName: "AdvancedLambdaLayer",
+  Description: "An advanced layer for specialized libraries",
   CompatibleRuntimes: ["python3.8", "python3.9"],
-  LicenseInfo: "Apache-2.0"
+  CompatibleArchitectures: ["x86_64"],
+  LicenseInfo: "MIT"
 });
 ```
 
-## Using LayerVersion with Lambda Functions
+## Using with Multiple Runtimes
 
-Bind the Lambda LayerVersion to a Lambda function.
+Create a Lambda LayerVersion that supports multiple runtimes and architectures.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const myFunction = await AWS.Lambda.Function("myLambdaFunction", {
-  FunctionName: "myLambdaFunction",
-  Runtime: "nodejs14.x",
-  Handler: "index.handler",
-  Code: {
-    S3Bucket: "my-lambda-functions",
-    S3Key: "myfunction.zip"
+const MultiRuntimeLayerVersion = await AWS.Lambda.LayerVersion("MultiRuntimeLayerVersion", {
+  Content: {
+    S3Bucket: "my-bucket",
+    S3Key: "multi-runtime-layer.zip"
   },
-  Layers: [lambdaLayer.arn]
+  LayerName: "MultiRuntimeLambdaLayer",
+  Description: "Layer for multiple runtimes",
+  CompatibleRuntimes: ["nodejs14.x", "nodejs16.x", "python3.8"],
+  CompatibleArchitectures: ["x86_64", "arm64"]
+});
+```
+
+## Update LayerVersion
+
+Update an existing Lambda LayerVersion with new content and description.
+
+```ts
+const UpdatedLayerVersion = await AWS.Lambda.LayerVersion("UpdatedLayerVersion", {
+  Content: {
+    S3Bucket: "my-bucket",
+    S3Key: "updated-layer-content.zip"
+  },
+  LayerName: "MyLambdaLayer",
+  Description: "Updated layer for common libraries",
+  CompatibleRuntimes: ["nodejs14.x", "nodejs16.x"]
 });
 ```

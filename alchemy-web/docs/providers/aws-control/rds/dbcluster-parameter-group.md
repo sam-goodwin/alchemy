@@ -5,64 +5,64 @@ description: Learn how to create, update, and manage AWS RDS DBClusterParameterG
 
 # DBClusterParameterGroup
 
-The DBClusterParameterGroup resource lets you manage [AWS RDS DBClusterParameterGroups](https://docs.aws.amazon.com/rds/latest/userguide/) which define the parameters for a DB cluster. These groups allow you to configure database engine settings that apply to all the DB instances in the cluster.
+The DBClusterParameterGroup resource allows you to manage [AWS RDS DBClusterParameterGroups](https://docs.aws.amazon.com/rds/latest/userguide/) for Amazon RDS clusters, enabling you to customize database settings and configurations easily.
 
 ## Minimal Example
 
-Create a basic DBClusterParameterGroup with required properties and one optional property:
+Create a basic DBClusterParameterGroup with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbClusterParameterGroup = await AWS.RDS.DBClusterParameterGroup("myDbClusterParamGroup", {
-  Description: "Parameter group for my RDS DB cluster",
+const BasicDBClusterParameterGroup = await AWS.RDS.DBClusterParameterGroup("BasicDBClusterParameterGroup", {
+  Description: "Basic parameter group for my database cluster",
   Parameters: {
     "max_connections": "100",
     "query_cache_size": "0"
   },
   Family: "aurora-mysql5.7",
-  DBClusterParameterGroupName: "my-db-cluster-param-group"
+  DBClusterParameterGroupName: "my-basic-dbclusterparametergroup",
+  Tags: [
+    { Key: "Environment", Value: "development" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DBClusterParameterGroup with additional parameters for advanced database settings:
+Configure a DBClusterParameterGroup with advanced settings for performance tuning and additional parameters.
 
 ```ts
-const advancedDbClusterParameterGroup = await AWS.RDS.DBClusterParameterGroup("advancedDbClusterParamGroup", {
-  Description: "Advanced parameter group for my RDS DB cluster",
+const AdvancedDBClusterParameterGroup = await AWS.RDS.DBClusterParameterGroup("AdvancedDBClusterParameterGroup", {
+  Description: "Advanced settings for performance tuning",
   Parameters: {
-    "max_connections": "200",
+    "max_connections": "300",
     "innodb_buffer_pool_size": "1G",
-    "query_cache_size": "512M"
+    "innodb_log_file_size": "256M",
+    "query_cache_type": "ON"
   },
-  Family: "aurora-postgresql11",
+  Family: "aurora-mysql5.7",
+  DBClusterParameterGroupName: "my-advanced-dbclusterparametergroup",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Project",
-      Value: "ECommerce"
-    }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DatabaseOps" }
   ]
 });
 ```
 
-## Parameter Group for Read Replica
+## Custom Parameters Example
 
-Create a DBClusterParameterGroup specifically for a read replica with custom settings:
+Create a DBClusterParameterGroup with custom parameters specific to your database engine.
 
 ```ts
-const readReplicaDbClusterParameterGroup = await AWS.RDS.DBClusterParameterGroup("readReplicaParamGroup", {
-  Description: "Parameter group for the read replica of my RDS DB cluster",
+const CustomParametersDBClusterParameterGroup = await AWS.RDS.DBClusterParameterGroup("CustomParametersDBClusterParameterGroup", {
+  Description: "Custom parameters for PostgreSQL cluster",
   Parameters: {
-    "max_connections": "150",
-    "innodb_flush_log_at_trx_commit": "2"
+    "work_mem": "64MB",
+    "maintenance_work_mem": "256MB",
+    "shared_buffers": "1GB"
   },
-  Family: "aurora-mysql5.7",
-  DBClusterParameterGroupName: "my-read-replica-param-group"
+  Family: "aurora-postgresql11",
+  DBClusterParameterGroupName: "my-custom-params-dbclusterparametergroup"
 });
 ```

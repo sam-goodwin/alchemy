@@ -5,54 +5,62 @@ description: Learn how to create, update, and manage AWS AppConfig DeploymentStr
 
 # DeploymentStrategy
 
-The DeploymentStrategy resource lets you manage [AWS AppConfig DeploymentStrategies](https://docs.aws.amazon.com/appconfig/latest/userguide/) for deploying application configurations in a controlled manner. 
+The DeploymentStrategy resource lets you manage AWS AppConfig Deployment Strategys, which define how to deploy application configurations across different environments. For more information, refer to the [AWS AppConfig DeploymentStrategys](https://docs.aws.amazon.com/appconfig/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic deployment strategy with required properties and some common optional configurations.
+Create a basic deployment strategy with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDeploymentStrategy = await AWS.AppConfig.DeploymentStrategy("basicDeploymentStrategy", {
+const BasicDeploymentStrategy = await AWS.AppConfig.DeploymentStrategy("BasicDeploymentStrategy", {
   Name: "BasicDeployment",
-  ReplicateTo: "NONE", // This indicates that the deployment will not be replicated
   DeploymentDurationInMinutes: 30,
+  GrowthType: "Linear",
   GrowthFactor: 10,
-  Description: "A basic deployment strategy for testing purposes."
+  ReplicateTo: "SSM_DOCUMENT",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Development" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a deployment strategy with advanced settings including growth type and final bake time.
+Configure a deployment strategy with additional optional parameters for a more controlled rollout.
 
 ```ts
-const advancedDeploymentStrategy = await AWS.AppConfig.DeploymentStrategy("advancedDeploymentStrategy", {
+const AdvancedDeploymentStrategy = await AWS.AppConfig.DeploymentStrategy("AdvancedDeploymentStrategy", {
   Name: "AdvancedDeployment",
-  ReplicateTo: "SSM_DOCUMENT", // This indicates that deployment will be replicated to SSM Document
   DeploymentDurationInMinutes: 60,
+  GrowthType: "Linear",
   GrowthFactor: 20,
-  GrowthType: "LINEAR", // Use linear growth for deployment
   FinalBakeTimeInMinutes: 15,
-  Description: "An advanced deployment strategy for gradual rollout."
+  ReplicateTo: "SSM_DOCUMENT",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "ReleaseManagement" }
+  ]
 });
 ```
 
-## Custom Tags
+## Custom Deployment with Final Bake Time
 
-Create a deployment strategy with custom tags for better resource management.
+Create a deployment strategy that uses a final bake time for added safety during deployments.
 
 ```ts
-const taggedDeploymentStrategy = await AWS.AppConfig.DeploymentStrategy("taggedDeploymentStrategy", {
-  Name: "TaggedDeployment",
-  ReplicateTo: "APPLICATION", // Indicates deployment will be replicated to the application
+const SafeDeploymentStrategy = await AWS.AppConfig.DeploymentStrategy("SafeDeploymentStrategy", {
+  Name: "SafeDeployment",
   DeploymentDurationInMinutes: 45,
-  GrowthFactor: 15,
+  GrowthType: "Exponential",
+  GrowthFactor: 30,
+  FinalBakeTimeInMinutes: 30,
+  ReplicateTo: "SSM_DOCUMENT",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "DevOps" }
-  ],
-  Description: "A deployment strategy with tags for better tracking."
+    { Key: "Environment", Value: "Testing" },
+    { Key: "Team", Value: "QualityAssurance" }
+  ]
 });
 ```

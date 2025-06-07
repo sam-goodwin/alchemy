@@ -5,59 +5,55 @@ description: Learn how to create, update, and manage AWS IVS StreamKeys using Al
 
 # StreamKey
 
-The StreamKey resource allows you to manage [AWS IVS StreamKeys](https://docs.aws.amazon.com/ivs/latest/userguide/) which are used to authenticate streaming sessions for your channels.
+The StreamKey resource allows you to manage [AWS IVS StreamKeys](https://docs.aws.amazon.com/ivs/latest/userguide/) for live streaming on the Amazon Interactive Video Service (IVS). StreamKeys are necessary for initiating a stream on an IVS channel.
 
 ## Minimal Example
 
-Create a basic StreamKey associated with a specific channel.
+This example demonstrates how to create a basic StreamKey associated with a specific IVS channel.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const streamKey = await AWS.IVS.StreamKey("myStreamKey", {
-  ChannelArn: "arn:aws:ivs:us-west-2:123456789012:channel/abcd1234",
+const BasicStreamKey = await AWS.IVS.StreamKey("BasicStreamKey", {
+  ChannelArn: "arn:aws:ivs:us-west-2:123456789012:channel/abcdefg1234",
   Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Project", Value: "LiveStreaming" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Create a StreamKey with additional configurations to adopt an existing resource.
+In this example, we create an advanced StreamKey with additional tags for better resource management.
 
 ```ts
-const existingStreamKey = await AWS.IVS.StreamKey("existingStreamKey", {
-  ChannelArn: "arn:aws:ivs:us-west-2:123456789012:channel/efgh5678",
+const AdvancedStreamKey = await AWS.IVS.StreamKey("AdvancedStreamKey", {
+  ChannelArn: "arn:aws:ivs:us-west-2:123456789012:channel/hijklmnop5678",
   Tags: [
-    { Key: "Project", Value: "LiveStream" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Project", Value: "LiveStreaming" },
+    { Key: "Owner", Value: "TeamA" }
   ],
-  adopt: true // Adopt the existing resource if it already exists
+  adopt: true // Allows adopting an existing StreamKey if it already exists.
 });
 ```
 
-## StreamKey with No Tags
+## Creating Multiple StreamKeys
 
-Create a StreamKey without any tags for a simpler configuration.
-
-```ts
-const simpleStreamKey = await AWS.IVS.StreamKey("simpleStreamKey", {
-  ChannelArn: "arn:aws:ivs:us-west-2:123456789012:channel/ijkl91011"
-});
-```
-
-## StreamKey Retrieval
-
-Retrieve information about a StreamKey, including its ARN and timestamps.
+This example shows how to create multiple StreamKeys for different channels, which can be useful for managing multiple live streams simultaneously.
 
 ```ts
-const streamKeyDetails = await AWS.IVS.StreamKey("retrieveStreamKey", {
-  ChannelArn: "arn:aws:ivs:us-west-2:123456789012:channel/mnop121314",
-  Tags: [],
+const ChannelArn1 = "arn:aws:ivs:us-west-2:123456789012:channel/abcdefg1234";
+const ChannelArn2 = "arn:aws:ivs:us-west-2:123456789012:channel/hijklmnop5678";
+
+const StreamKey1 = await AWS.IVS.StreamKey("StreamKeyForChannel1", {
+  ChannelArn: ChannelArn1,
+  Tags: [{ Key: "Environment", Value: "development" }]
 });
 
-// Access specific details
-console.log("StreamKey ARN:", streamKeyDetails.Arn);
-console.log("Creation Time:", streamKeyDetails.CreationTime);
-console.log("Last Update Time:", streamKeyDetails.LastUpdateTime);
+const StreamKey2 = await AWS.IVS.StreamKey("StreamKeyForChannel2", {
+  ChannelArn: ChannelArn2,
+  Tags: [{ Key: "Environment", Value: "production" }]
+});
 ```

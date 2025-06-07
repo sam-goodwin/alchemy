@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS WAFv2 RegexPatternSets 
 
 # RegexPatternSet
 
-The RegexPatternSet resource allows you to manage [AWS WAFv2 RegexPatternSets](https://docs.aws.amazon.com/wafv2/latest/userguide/) that contain regular expressions for filtering web requests.
+The RegexPatternSet resource lets you manage [AWS WAFv2 RegexPatternSets](https://docs.aws.amazon.com/wafv2/latest/userguide/) for defining regular expressions to match against web requests.
 
 ## Minimal Example
 
@@ -14,44 +14,48 @@ Create a basic RegexPatternSet with required properties and a description.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const regexPatternSet = await AWS.WAFv2.RegexPatternSet("myRegexPatternSet", {
+const BasicRegexPatternSet = await AWS.WAFv2.RegexPatternSet("basicRegexPatternSet", {
+  Name: "BasicRegexPatternSet",
   Scope: "REGIONAL",
   RegularExpressionList: [
-    "^(example\\.)?mywebsite\\.com$"
+    "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$" // Pattern for matching email addresses
   ],
-  Description: "A set of regex patterns for my website"
+  Description: "A basic regex pattern set for validating email formats"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a RegexPatternSet with tags and an optional name.
+Configure a RegexPatternSet with multiple regular expressions and tags for better resource management.
 
 ```ts
-const advancedRegexPatternSet = await AWS.WAFv2.RegexPatternSet("advancedRegexPatternSet", {
-  Scope: "CLOUDFRONT",
+const AdvancedRegexPatternSet = await AWS.WAFv2.RegexPatternSet("advancedRegexPatternSet", {
+  Name: "AdvancedRegexPatternSet",
+  Scope: "REGIONAL",
   RegularExpressionList: [
-    "^.*\\.example\\.com$",
-    "^.*mywebsite\\.com$"
+    "^.*(script|src|href).*$", // Pattern to match any request containing 'script', 'src', or 'href'
+    ".*<[^>]+>.*" // Pattern to match any HTML tags
   ],
-  Name: "MyAdvancedRegexPatternSet",
+  Description: "An advanced regex pattern set for filtering malicious requests",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "WebSecurity" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
   ]
 });
 ```
 
-## Adoption of Existing Resource
+## Use Case: Blocking SQL Injection Attempts
 
-Adopt an existing RegexPatternSet instead of failing if it already exists.
+This example demonstrates how to create a RegexPatternSet specifically designed to identify and block SQL injection attempts.
 
 ```ts
-const adoptedRegexPatternSet = await AWS.WAFv2.RegexPatternSet("adoptedRegexPatternSet", {
+const SqlInjectionRegexPatternSet = await AWS.WAFv2.RegexPatternSet("sqlInjectionPatternSet", {
+  Name: "SQLInjectionPatternSet",
   Scope: "REGIONAL",
   RegularExpressionList: [
-    "^secure\\.mywebsite\\.com$"
+    ".*(SELECT|INSERT|DELETE|UPDATE|DROP|UNION).*", // Pattern to identify common SQL commands
+    ".*(['\";]+).*" // Pattern to match quotes and semicolons, often used in injections
   ],
-  adopt: true // Adopts the existing resource if it already exists
+  Description: "A regex pattern set to detect SQL injection attempts"
 });
 ```

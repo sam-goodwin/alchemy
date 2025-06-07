@@ -5,63 +5,41 @@ description: Learn how to create, update, and manage AWS EC2 RouteServerPeers us
 
 # RouteServerPeer
 
-The RouteServerPeer resource lets you manage [AWS EC2 RouteServerPeers](https://docs.aws.amazon.com/ec2/latest/userguide/) for establishing BGP peering connections with Route Servers.
+The RouteServerPeer resource lets you create and manage [AWS EC2 RouteServerPeers](https://docs.aws.amazon.com/ec2/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-routeserverpeer.html
 
 ## Minimal Example
-
-Create a basic RouteServerPeer with required properties and an optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPeer = await AWS.EC2.RouteServerPeer("basicPeer", {
-  PeerAddress: "203.0.113.1",
-  BgpOptions: {
-    Asn: 65000,
-    AuthKey: "myBgpAuthKey",
-    HoldTime: 30
-  },
-  RouteServerEndpointId: "rs-12345678",
-  Tags: [
-    { Key: "Environment", Value: "Production" }
-  ]
+const routeserverpeer = await AWS.EC2.RouteServerPeer("routeserverpeer-example", {
+  PeerAddress: "example-peeraddress",
+  BgpOptions: "example-bgpoptions",
+  RouteServerEndpointId: "example-routeserverendpointid",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a RouteServerPeer with additional BGP options for secure connections.
+Create a routeserverpeer with additional configuration:
 
 ```ts
-const securePeer = await AWS.EC2.RouteServerPeer("securePeer", {
-  PeerAddress: "203.0.113.2",
-  BgpOptions: {
-    Asn: 65100,
-    AuthKey: "secureAuthKey",
-    HoldTime: 60,
-    Md5AuthKey: "md5Key123"
+import AWS from "alchemy/aws/control";
+
+const advancedRouteServerPeer = await AWS.EC2.RouteServerPeer("advanced-routeserverpeer", {
+  PeerAddress: "example-peeraddress",
+  BgpOptions: "example-bgpoptions",
+  RouteServerEndpointId: "example-routeserverendpointid",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  RouteServerEndpointId: "rs-87654321",
-  Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Team", Value: "Networking" }
-  ]
 });
 ```
 
-## Creating with Resource Adoption
-
-Create a RouteServerPeer while adopting an existing resource instead of failing if it already exists.
-
-```ts
-const adoptedPeer = await AWS.EC2.RouteServerPeer("adoptedPeer", {
-  PeerAddress: "203.0.113.3",
-  BgpOptions: {
-    Asn: 65001,
-    AuthKey: "adoptedAuthKey",
-    HoldTime: 40
-  },
-  RouteServerEndpointId: "rs-12345678",
-  adopt: true // Adopt existing resource if it exists
-});
-```

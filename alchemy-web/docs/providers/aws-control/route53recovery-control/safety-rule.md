@@ -5,67 +5,41 @@ description: Learn how to create, update, and manage AWS Route53RecoveryControl 
 
 # SafetyRule
 
-The SafetyRule resource lets you manage [AWS Route53RecoveryControl SafetyRules](https://docs.aws.amazon.com/route53recoverycontrol/latest/userguide/) that define the conditions under which traffic is allowed to flow to your resources.
+The SafetyRule resource lets you create and manage [AWS Route53RecoveryControl SafetyRules](https://docs.aws.amazon.com/route53recoverycontrol/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-route53recoverycontrol-safetyrule.html
 
 ## Minimal Example
-
-Create a basic safety rule with required properties and an optional assertion rule.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const safetyRule = await AWS.Route53RecoveryControl.SafetyRule("basicSafetyRule", {
-  ControlPanelArn: "arn:aws:route53-recovery-control::123456789012:controlpanel:example-control-panel",
-  RuleConfig: {
-    Type: "ALL_REQUIRED", // Example rule config type
-    Threshold: 2 // Minimum number of assertions for the rule to be satisfied
-  },
-  AssertionRule: {
-    AssertedControls: [
-      "arn:aws:route53-recovery-control::123456789012:control:example-control-1",
-      "arn:aws:route53-recovery-control::123456789012:control:example-control-2"
-    ]
-  },
-  Name: "BasicSafetyRule"
+const safetyrule = await AWS.Route53RecoveryControl.SafetyRule("safetyrule-example", {
+  ControlPanelArn: "example-controlpanelarn",
+  RuleConfig: "example-ruleconfig",
+  Name: "safetyrule-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a safety rule with a gating rule to control traffic flow under specific conditions.
+Create a safetyrule with additional configuration:
 
 ```ts
-const advancedSafetyRule = await AWS.Route53RecoveryControl.SafetyRule("advancedSafetyRule", {
-  ControlPanelArn: "arn:aws:route53-recovery-control::123456789012:controlpanel:example-control-panel",
-  RuleConfig: {
-    Type: "ANY_REQUIRED",
-    Threshold: 1
+import AWS from "alchemy/aws/control";
+
+const advancedSafetyRule = await AWS.Route53RecoveryControl.SafetyRule("advanced-safetyrule", {
+  ControlPanelArn: "example-controlpanelarn",
+  RuleConfig: "example-ruleconfig",
+  Name: "safetyrule-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  GatingRule: {
-    GatingControls: [
-      "arn:aws:route53-recovery-control::123456789012:control:example-control-3"
-    ],
-    WaitPeriodMs: 30000 // Wait period of 30 seconds for gating check
-  },
-  Name: "AdvancedSafetyRule"
 });
 ```
 
-## Tagging for Resource Management
-
-Create a safety rule with tags for better resource management and identification.
-
-```ts
-const taggedSafetyRule = await AWS.Route53RecoveryControl.SafetyRule("taggedSafetyRule", {
-  ControlPanelArn: "arn:aws:route53-recovery-control::123456789012:controlpanel:example-control-panel",
-  RuleConfig: {
-    Type: "ALL_REQUIRED",
-    Threshold: 2
-  },
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "DevOps" }
-  ],
-  Name: "TaggedSafetyRule"
-});
-```

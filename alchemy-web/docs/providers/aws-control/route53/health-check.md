@@ -5,83 +5,74 @@ description: Learn how to create, update, and manage AWS Route53 HealthChecks us
 
 # HealthCheck
 
-The HealthCheck resource lets you manage [AWS Route53 HealthChecks](https://docs.aws.amazon.com/route53/latest/userguide/) which monitor the health of your resources and ensure high availability by performing periodic checks.
+The HealthCheck resource allows you to manage [AWS Route53 HealthChecks](https://docs.aws.amazon.com/route53/latest/userguide/) to monitor the health of your application endpoints.
 
 ## Minimal Example
 
-Create a basic health check that monitors the availability of a website.
+Create a basic health check for an HTTP endpoint with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicHealthCheck = await AWS.Route53.HealthCheck("basicHealthCheck", {
+const BasicHealthCheck = await AWS.Route53.HealthCheck("BasicHealthCheck", {
   HealthCheckConfig: {
     Type: "HTTP",
-    ResourcePath: "/",
-    FullyQualifiedDomainName: "www.example.com",
+    ResourcePath: "/health",
+    FullyQualifiedDomainName: "api.yourdomain.com",
     Port: 80,
     RequestInterval: 30,
-    FailureThreshold: 3,
-    HealthThreshold: 2,
-    AlarmIdentifier: {
-      Name: "example-health-check"
-    }
+    FailureThreshold: 3
   },
-  HealthCheckTags: [{ Key: "Environment", Value: "Production" }]
+  HealthCheckTags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Service", Value: "API" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a health check with advanced settings for enhanced monitoring, including custom thresholds and HTTP authentication.
+Configure a health check with advanced settings including HTTPS and custom health check parameters.
 
 ```ts
-const advancedHealthCheck = await AWS.Route53.HealthCheck("advancedHealthCheck", {
+const AdvancedHealthCheck = await AWS.Route53.HealthCheck("AdvancedHealthCheck", {
   HealthCheckConfig: {
     Type: "HTTPS",
-    ResourcePath: "/health",
-    FullyQualifiedDomainName: "api.example.com",
+    ResourcePath: "/status",
+    FullyQualifiedDomainName: "secure.yourdomain.com",
     Port: 443,
     RequestInterval: 60,
-    FailureThreshold: 5,
-    HealthThreshold: 3,
-    InvertHealthCheck: true,
-    HealthCheckCustomConfig: {
-      EnableSNI: true,
-      TlsRecordType: "A"
-    },
-    RequestHeaders: {
-      "Authorization": "Bearer token"
-    },
-    AlarmIdentifier: {
-      Name: "api-health-check"
-    }
+    FailureThreshold: 2,
+    HealthThreshold: 2,
+    SearchString: "Healthy",
+    Inverted: false
   },
-  HealthCheckTags: [{ Key: "Service", Value: "API" }]
+  HealthCheckTags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Service", Value: "WebApp" }
+  ]
 });
 ```
 
-## Monitoring with CloudWatch Alarms
+## Using Custom Health Check Settings
 
-Set up a health check with a CloudWatch alarm to notify when the health check fails.
+Create a health check with DNS resolution and custom health check settings.
 
 ```ts
-const monitoredHealthCheck = await AWS.Route53.HealthCheck("monitoredHealthCheck", {
+const DnsHealthCheck = await AWS.Route53.HealthCheck("DnsHealthCheck", {
   HealthCheckConfig: {
-    Type: "HTTP",
-    ResourcePath: "/status",
-    FullyQualifiedDomainName: "monitor.example.com",
-    Port: 80,
-    RequestInterval: 30,
-    FailureThreshold: 3,
+    Type: "TCP",
+    FullyQualifiedDomainName: "db.yourdomain.com",
+    Port: 5432,
+    RequestInterval: 20,
+    FailureThreshold: 2,
     HealthThreshold: 1,
-    AlarmIdentifier: {
-      Name: "monitor-health-check"
-    }
+    MeasureLatency: true,
+    EnableSNI: true
   },
   HealthCheckTags: [
-    { Key: "Service", Value: "Monitoring" },
-    { Key: "Team", Value: "DevOps" }
+    { Key: "Environment", Value: "testing" },
+    { Key: "Service", Value: "Database" }
   ]
 });
 ```

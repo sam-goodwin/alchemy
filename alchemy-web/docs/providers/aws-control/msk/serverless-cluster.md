@@ -5,96 +5,41 @@ description: Learn how to create, update, and manage AWS MSK ServerlessClusters 
 
 # ServerlessCluster
 
-The ServerlessCluster resource lets you manage [AWS MSK ServerlessClusters](https://docs.aws.amazon.com/msk/latest/userguide/) for running Apache Kafka without needing to provision or manage servers.
+The ServerlessCluster resource lets you create and manage [AWS MSK ServerlessClusters](https://docs.aws.amazon.com/msk/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-msk-serverlesscluster.html
 
 ## Minimal Example
-
-Create a basic ServerlessCluster with required properties and a tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicCluster = await AWS.MSK.ServerlessCluster("basic-cluster", {
-  ClusterName: "MyKafkaCluster",
-  VpcConfigs: [{
-    SubnetId: "subnet-0bb1c79de3EXAMPLE",
-    SecurityGroupId: "sg-0c1e2e3d4f5e6g7h8"
-  }],
-  ClientAuthentication: {
-    Sasl: {
-      Scram: {
-        Enabled: true
-      }
-    },
-    Tls: {
-      Enabled: true
-    }
-  },
-  Tags: {
-    Environment: "Development",
-    Project: "KafkaProject"
-  }
+const serverlesscluster = await AWS.MSK.ServerlessCluster("serverlesscluster-example", {
+  VpcConfigs: [],
+  ClusterName: "serverlesscluster-cluster",
+  ClientAuthentication: "example-clientauthentication",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ServerlessCluster with additional authentication and multiple VPC configurations.
+Create a serverlesscluster with additional configuration:
 
 ```ts
-const advancedCluster = await AWS.MSK.ServerlessCluster("advanced-cluster", {
-  ClusterName: "AdvancedKafkaCluster",
-  VpcConfigs: [
-    {
-      SubnetId: "subnet-0123456789abcdef0",
-      SecurityGroupId: "sg-0abcdef1234567890"
-    },
-    {
-      SubnetId: "subnet-0abcdef1234567891",
-      SecurityGroupId: "sg-0abcdef1234567891"
-    }
-  ],
-  ClientAuthentication: {
-    Sasl: {
-      Scram: {
-        Enabled: true
-      },
-      Iam: {
-        Enabled: true
-      }
-    },
-    Tls: {
-      Enabled: true
-    }
-  },
+import AWS from "alchemy/aws/control";
+
+const advancedServerlessCluster = await AWS.MSK.ServerlessCluster("advanced-serverlesscluster", {
+  VpcConfigs: [],
+  ClusterName: "serverlesscluster-cluster",
+  ClientAuthentication: "example-clientauthentication",
   Tags: {
-    Environment: "Production",
-    Project: "KafkaProject"
-  }
-});
-```
-
-## Using Existing Resources
-
-Create a ServerlessCluster while adopting existing resources, preventing failure if they already exist.
-
-```ts
-const existingCluster = await AWS.MSK.ServerlessCluster("existing-cluster", {
-  ClusterName: "ExistingKafkaCluster",
-  VpcConfigs: [{
-    SubnetId: "subnet-0abcdef1234567892",
-    SecurityGroupId: "sg-0abcdef1234567892"
-  }],
-  ClientAuthentication: {
-    Sasl: {
-      Scram: {
-        Enabled: false
-      }
-    },
-    Tls: {
-      Enabled: false
-    }
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  adopt: true // Adopt existing resource if it already exists
 });
 ```
+

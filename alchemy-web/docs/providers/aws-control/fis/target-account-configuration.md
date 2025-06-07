@@ -5,75 +5,64 @@ description: Learn how to create, update, and manage AWS FIS TargetAccountConfig
 
 # TargetAccountConfiguration
 
-The `TargetAccountConfiguration` resource allows you to define and manage target accounts for AWS Fault Injection Simulator (FIS) experiments. You can specify various parameters, such as the account ID and IAM role required for executing the experiments. For more details, refer to the [AWS FIS TargetAccountConfigurations documentation](https://docs.aws.amazon.com/fis/latest/userguide/).
+The TargetAccountConfiguration resource allows you to manage AWS Fault Injection Simulator (FIS) target account configurations. This resource is essential for defining the accounts that FIS can target during experiments. For more information, refer to the [AWS FIS TargetAccountConfigurations](https://docs.aws.amazon.com/fis/latest/userguide/).
 
 ## Minimal Example
 
-This example demonstrates how to create a basic `TargetAccountConfiguration` with required properties and a common optional property.
+Create a basic target account configuration with the required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const targetAccountConfig = await AWS.FIS.TargetAccountConfiguration("myTargetAccountConfig", {
+const TargetAccountConfig = await AWS.FIS.TargetAccountConfiguration("BasicTargetAccountConfig", {
   AccountId: "123456789012",
-  Description: "Configuration for target account in FIS experiments",
-  ExperimentTemplateId: "myExperimentTemplateId",
-  RoleArn: "arn:aws:iam::123456789012:role/myFISRole",
-  adopt: true // Adopt existing resource if it already exists
+  ExperimentTemplateId: "MyExperimentTemplate",
+  RoleArn: "arn:aws:iam::123456789012:role/FISRole"
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we show how to create a `TargetAccountConfiguration` with enhanced settings, including a detailed description and a specified role ARN.
+Configure a target account with an optional description and enable resource adoption.
 
 ```ts
-const advancedTargetAccountConfig = await AWS.FIS.TargetAccountConfiguration("advancedTargetAccountConfig", {
-  AccountId: "987654321098",
-  Description: "Advanced configuration for target account in FIS experiments with specific IAM role.",
-  ExperimentTemplateId: "advancedExperimentTemplateId",
-  RoleArn: "arn:aws:iam::987654321098:role/advancedFISRole",
-  adopt: false // Fail if resource already exists
-});
-```
-
-## Using in FIS Experiments
-
-This example demonstrates how to use the `TargetAccountConfiguration` in conjunction with an FIS experiment template.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const experimentTemplate = await AWS.FIS.ExperimentTemplate("myExperimentTemplate", {
-  Name: "myExperiment",
-  TargetAccountConfigurations: [
-    {
-      AccountId: "123456789012",
-      RoleArn: "arn:aws:iam::123456789012:role/myFISRole"
-    }
-  ],
-  Actions: {
-    myAction: {
-      ActionId: "aws:ec2:stop-instances",
-      Parameters: {
-        InstanceIds: ["i-0abcd1234efgh5678"]
-      },
-      Target: "myTargetAccountConfig"
-    }
-  }
-});
-```
-
-## Updating TargetAccountConfiguration
-
-This example shows how to update an existing `TargetAccountConfiguration` resource.
-
-```ts
-const updatedTargetAccountConfig = await AWS.FIS.TargetAccountConfiguration("myTargetAccountConfig", {
+const AdvancedTargetAccountConfig = await AWS.FIS.TargetAccountConfiguration("AdvancedTargetAccountConfig", {
   AccountId: "123456789012",
-  Description: "Updated configuration for target account in FIS experiments",
-  ExperimentTemplateId: "myUpdatedExperimentTemplateId",
-  RoleArn: "arn:aws:iam::123456789012:role/myUpdatedFISRole",
-  adopt: true // Adopt existing resource if it already exists
+  Description: "This configuration is for my production environment.",
+  ExperimentTemplateId: "MyAdvancedExperimentTemplate",
+  RoleArn: "arn:aws:iam::123456789012:role/FISAdvancedRole",
+  adopt: true
+});
+```
+
+## Use Case: Experiment with Multiple Accounts
+
+Demonstrate how to set up multiple target accounts for experiments.
+
+```ts
+const TargetAccountConfig1 = await AWS.FIS.TargetAccountConfiguration("TargetAccount1", {
+  AccountId: "123456789012",
+  ExperimentTemplateId: "ExperimentTemplateA",
+  RoleArn: "arn:aws:iam::123456789012:role/FISRoleA"
+});
+
+const TargetAccountConfig2 = await AWS.FIS.TargetAccountConfiguration("TargetAccount2", {
+  AccountId: "098765432109",
+  ExperimentTemplateId: "ExperimentTemplateB",
+  RoleArn: "arn:aws:iam::098765432109:role/FISRoleB",
+  Description: "Secondary account for FIS experiments."
+});
+```
+
+## Use Case: Detailed Role Configuration
+
+Illustrate the use of a specific IAM role for the target account configuration.
+
+```ts
+const DetailedRoleTargetAccountConfig = await AWS.FIS.TargetAccountConfiguration("DetailedRoleTargetAccountConfig", {
+  AccountId: "123456789012",
+  ExperimentTemplateId: "DetailedRoleExperimentTemplate",
+  RoleArn: "arn:aws:iam::123456789012:role/FISDetailedRole",
+  Description: "Using a detailed IAM role for specific permissions."
 });
 ```

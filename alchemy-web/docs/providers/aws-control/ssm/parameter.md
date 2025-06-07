@@ -5,89 +5,80 @@ description: Learn how to create, update, and manage AWS SSM Parameters using Al
 
 # Parameter
 
-The Parameter resource allows you to manage [AWS SSM Parameters](https://docs.aws.amazon.com/ssm/latest/userguide/) for storing configuration data and secrets. This includes creating, updating, and deleting parameters within the AWS Systems Manager Parameter Store.
+The Parameter resource lets you manage [AWS SSM Parameters](https://docs.aws.amazon.com/ssm/latest/userguide/) for storing configuration data and secrets.
 
 ## Minimal Example
 
-This example demonstrates how to create a basic SSM Parameter with required properties and one optional property.
+Create a basic SSM Parameter with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicParameter = await AWS.SSM.Parameter("basicParameter", {
+const BasicParameter = await AWS.SSM.Parameter("BasicParameter", {
   Type: "String",
-  Value: "my-secret-value",
-  Description: "This is a basic SSM parameter for storing a secret value."
+  Value: "MySuperSecretValue",
+  Description: "This parameter stores a super secret value."
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we create a parameter with additional configurations such as policies and tags for better management.
+Configure a parameter with advanced settings, including policies and tags.
 
 ```ts
-const advancedParameter = await AWS.SSM.Parameter("advancedParameter", {
+const AdvancedParameter = await AWS.SSM.Parameter("AdvancedParameter", {
   Type: "SecureString",
-  Value: "my-secure-secret-value",
-  Description: "This parameter stores a secure string value.",
-  Policies: JSON.stringify([
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Sid": "AllowReadAccess",
-          "Effect": "Allow",
-          "Principal": {
-            "AWS": "arn:aws:iam::123456789012:role/MyRole"
-          },
-          "Action": "ssm:GetParameter",
-          "Resource": "*"
-        }
-      ]
-    }
-  ]),
-  Tags: {
-    Environment: "Production",
-    Application: "MyApp"
-  }
+  Value: "EncryptedValue123",
+  Policies: JSON.stringify([{
+    Version: "2012-10-17",
+    Statement: [{
+      Effect: "Allow",
+      Action: "ssm:GetParameter",
+      Resource: "*"
+    }]
+  }]),
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "DevOps" }
+  ],
+  Tier: "Standard"
 });
 ```
 
-## Using Allowed Pattern
+## Using Allowed Patterns
 
-Here, we create a parameter that enforces a specific pattern for the parameter value.
+Create a parameter with an allowed pattern to enforce value formatting.
 
 ```ts
-const patternedParameter = await AWS.SSM.Parameter("patternedParameter", {
+const PatternParameter = await AWS.SSM.Parameter("PatternParameter", {
   Type: "String",
-  Value: "valid-value-123",
-  AllowedPattern: "valid-value-\\d+",
-  Description: "This parameter only allows values matching the specified pattern."
+  Value: "ValidValue-123",
+  AllowedPattern: "^[A-Za-z0-9_-]+$",
+  Description: "This parameter value must match the allowed pattern."
 });
 ```
 
-## Using DataType
+## Storing Sensitive Data
 
-In this example, we define a parameter with a specific data type, making it easier to manage different types of configuration data.
+Store sensitive data securely as a SecureString.
 
 ```ts
-const typedParameter = await AWS.SSM.Parameter("typedParameter", {
-  Type: "StringList",
-  Value: "value1,value2,value3",
-  DataType: "text",
-  Description: "This parameter holds a list of string values."
+const SecretParameter = await AWS.SSM.Parameter("SecretParameter", {
+  Type: "SecureString",
+  Value: "SensitiveDatabasePassword",
+  Description: "This parameter stores the database password securely.",
+  DataType: "text"
 });
-```
+``` 
 
-## Adoption of Existing Resource
+## Updating an Existing Parameter
 
-This example shows how to adopt an existing SSM Parameter instead of failing if it already exists.
+Demonstrate how to update an existing SSM Parameter.
 
 ```ts
-const adoptedParameter = await AWS.SSM.Parameter("adoptedParameter", {
+const UpdatedParameter = await AWS.SSM.Parameter("UpdatedParameter", {
   Type: "String",
-  Value: "existing-value",
-  adopt: true,
-  Description: "This parameter will adopt an existing parameter if it is already present."
+  Value: "UpdatedValue",
+  Description: "This parameter has been updated."
 });
 ```

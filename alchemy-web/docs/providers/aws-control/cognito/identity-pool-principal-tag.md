@@ -5,52 +5,48 @@ description: Learn how to create, update, and manage AWS Cognito IdentityPoolPri
 
 # IdentityPoolPrincipalTag
 
-The IdentityPoolPrincipalTag resource allows you to manage principal tags for AWS Cognito Identity Pools. These tags are used to control access to resources in AWS based on user attributes. For more information, refer to the [AWS Cognito IdentityPoolPrincipalTags documentation](https://docs.aws.amazon.com/cognito/latest/userguide/).
+The IdentityPoolPrincipalTag resource allows you to manage principal tags for AWS Cognito Identity Pools. This resource helps in assigning tags to users based on their identity provider attributes, aiding in user management and access control. For more information, refer to the [AWS Cognito IdentityPoolPrincipalTags documentation](https://docs.aws.amazon.com/cognito/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic IdentityPoolPrincipalTag with required properties.
+This example demonstrates how to create an IdentityPoolPrincipalTag with the required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const identityPoolPrincipalTag = await AWS.Cognito.IdentityPoolPrincipalTag("exampleIdentityPoolTag", {
-  PrincipalTags: {
-    "Role": "User",
-    "Department": "Engineering"
-  },
+const IdentityPoolTag = await AWS.Cognito.IdentityPoolPrincipalTag("UserPrincipalTag", {
+  IdentityPoolId: "us-east-1:12345678-1234-1234-1234-123456789012",
   IdentityProviderName: "Cognito",
-  IdentityPoolId: "us-east-1:example-pool-id"
+  PrincipalTags: [{ Key: "Role", Value: "Admin" }],
+  UseDefaults: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IdentityPoolPrincipalTag using defaults and additional principal tags.
+In this example, we configure an IdentityPoolPrincipalTag with multiple principal tags to manage different roles effectively.
 
 ```ts
-const advancedIdentityPoolPrincipalTag = await AWS.Cognito.IdentityPoolPrincipalTag("advancedIdentityPoolTag", {
-  PrincipalTags: {
-    "Role": "Admin",
-    "Project": "Alpha"
-  },
-  UseDefaults: true, // Use default tags
+const AdvancedIdentityPoolTag = await AWS.Cognito.IdentityPoolPrincipalTag("AdvancedUserPrincipalTag", {
+  IdentityPoolId: "us-east-1:12345678-1234-1234-1234-123456789012",
   IdentityProviderName: "Cognito",
-  IdentityPoolId: "us-east-1:example-pool-id"
+  PrincipalTags: [
+    { Key: "Role", Value: "User" },
+    { Key: "Department", Value: "Engineering" }
+  ],
+  UseDefaults: false
 });
 ```
 
-## Adopting Existing Resources
+## Using Existing Resources
 
-If you want to adopt an existing IdentityPoolPrincipalTag without failing when it already exists, you can set the adopt property to true.
+This example shows how to adopt an existing IdentityPoolPrincipalTag resource instead of creating a new one, which is useful for managing existing configurations.
 
 ```ts
-const adoptExistingIdentityPoolPrincipalTag = await AWS.Cognito.IdentityPoolPrincipalTag("existingIdentityPoolTag", {
-  PrincipalTags: {
-    "Role": "Viewer"
-  },
+const ExistingIdentityPoolTag = await AWS.Cognito.IdentityPoolPrincipalTag("AdoptedPrincipalTag", {
+  IdentityPoolId: "us-east-1:12345678-1234-1234-1234-123456789012",
   IdentityProviderName: "Cognito",
-  IdentityPoolId: "us-east-1:example-pool-id",
-  adopt: true // Adopt existing resource
+  PrincipalTags: [{ Key: "Project", Value: "Alchemy" }],
+  adopt: true
 });
 ```

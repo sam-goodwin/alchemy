@@ -5,79 +5,83 @@ description: Learn how to create, update, and manage AWS OpsWorks Stacks using A
 
 # Stack
 
-The Stack resource lets you manage [AWS OpsWorks Stacks](https://docs.aws.amazon.com/opsworks/latest/userguide/) for deploying and managing applications in a flexible and scalable way.
+The Stack resource allows you to create and manage [AWS OpsWorks Stacks](https://docs.aws.amazon.com/opsworks/latest/userguide/) for deploying and managing applications in a scalable manner.
 
 ## Minimal Example
 
-Create a basic OpsWorks stack with required properties and a few common optional configurations.
+Create a basic OpsWorks Stack with required properties and common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicOpsWorksStack = await AWS.OpsWorks.Stack("myBasicStack", {
-  name: "MyFirstOpsWorksStack",
-  serviceRoleArn: "arn:aws:iam::123456789012:role/MyOpsWorksServiceRole",
-  defaultInstanceProfileArn: "arn:aws:iam::123456789012:instance-profile/MyOpsWorksInstanceProfile",
-  defaultOs: "Amazon Linux 2",
-  useCustomCookbooks: false
+const opsWorksStack = await AWS.OpsWorks.Stack("MyOpsWorksStack", {
+  Name: "MyWebAppStack",
+  DefaultInstanceProfileArn: "arn:aws:iam::123456789012:instance-profile/MyInstanceProfile",
+  ServiceRoleArn: "arn:aws:iam::123456789012:role/MyServiceRole",
+  DefaultOs: "Amazon Linux 2",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "DevOps" }
+  ],
+  EcsClusterArn: "arn:aws:ecs:us-east-1:123456789012:cluster/MyEcsCluster"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an OpsWorks stack with a custom VPC and enhanced settings.
+Configure an OpsWorks Stack with additional advanced settings like custom cookbooks and JSON configuration.
 
 ```ts
-const advancedOpsWorksStack = await AWS.OpsWorks.Stack("myAdvancedStack", {
-  name: "MyAdvancedOpsWorksStack",
-  serviceRoleArn: "arn:aws:iam::123456789012:role/MyOpsWorksServiceRole",
-  defaultInstanceProfileArn: "arn:aws:iam::123456789012:instance-profile/MyOpsWorksInstanceProfile",
-  defaultOs: "Ubuntu 20.04",
-  vpcId: "vpc-0abcd1234efgh5678",
-  defaultAvailabilityZone: "us-west-2a",
-  useOpsworksSecurityGroups: true,
-  elasticIps: [{
-    ip: "203.0.113.0"
-  }],
-  tags: [{
-    key: "Environment",
-    value: "Production"
-  }]
+const advancedOpsWorksStack = await AWS.OpsWorks.Stack("AdvancedOpsWorksStack", {
+  Name: "AdvancedWebAppStack",
+  DefaultInstanceProfileArn: "arn:aws:iam::123456789012:instance-profile/MyInstanceProfile",
+  ServiceRoleArn: "arn:aws:iam::123456789012:role/MyServiceRole",
+  CustomCookbooksSource: {
+    Type: "git",
+    Url: "https://github.com/myorg/mycookbooks.git",
+    Revision: "main"
+  },
+  CustomJson: JSON.stringify({
+    "custom": {
+      "key": "value"
+    }
+  }),
+  HostnameTheme: "my-app-theme"
 });
 ```
 
-## Custom Chef Configuration
+## Using Custom JSON Configuration
 
-Set up a stack with custom Chef configuration for better control over deployment.
+Create a stack with a custom JSON configuration to customize the Chef client.
 
 ```ts
-const chefConfiguredStack = await AWS.OpsWorks.Stack("myChefConfiguredStack", {
-  name: "MyChefConfiguredStack",
-  serviceRoleArn: "arn:aws:iam::123456789012:role/MyOpsWorksServiceRole",
-  defaultInstanceProfileArn: "arn:aws:iam::123456789012:instance-profile/MyOpsWorksInstanceProfile",
-  chefConfiguration: {
-    berkshelfVersion: "3.2.3",
-    manageBerkshelf: true
-  },
-  customCookbooksSource: {
-    type: "git",
-    url: "https://github.com/my-org/my-cookbooks.git",
-    revision: "main"
-  }
+const customJsonOpsWorksStack = await AWS.OpsWorks.Stack("CustomJsonOpsWorksStack", {
+  Name: "CustomJsonAppStack",
+  DefaultInstanceProfileArn: "arn:aws:iam::123456789012:instance-profile/MyInstanceProfile",
+  ServiceRoleArn: "arn:aws:iam::123456789012:role/MyServiceRole",
+  CustomJson: JSON.stringify({
+    "deploy": {
+      "my_app": {
+        "scaling": {
+          "instances": 2
+        }
+      }
+    }
+  })
 });
 ```
 
 ## Cloning an Existing Stack
 
-Clone an existing OpsWorks stack with specific attributes and permissions.
+Clone an existing OpsWorks stack to create a new one with the same settings.
 
 ```ts
-const clonedOpsWorksStack = await AWS.OpsWorks.Stack("myClonedStack", {
-  name: "MyClonedOpsWorksStack",
-  serviceRoleArn: "arn:aws:iam::123456789012:role/MyOpsWorksServiceRole",
-  defaultInstanceProfileArn: "arn:aws:iam::123456789012:instance-profile/MyOpsWorksInstanceProfile",
-  cloneAppIds: ["myExistingAppId"],
-  clonePermissions: true,
-  sourceStackId: "mySourceStackId"
+const clonedOpsWorksStack = await AWS.OpsWorks.Stack("ClonedOpsWorksStack", {
+  Name: "ClonedWebAppStack",
+  DefaultInstanceProfileArn: "arn:aws:iam::123456789012:instance-profile/MyInstanceProfile",
+  ServiceRoleArn: "arn:aws:iam::123456789012:role/MyServiceRole",
+  CloneAppIds: ["app-id-1", "app-id-2"],
+  ClonePermissions: true,
+  SourceStackId: "source-stack-id"
 });
 ```

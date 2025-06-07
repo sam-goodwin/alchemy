@@ -5,48 +5,60 @@ description: Learn how to create, update, and manage AWS Location RouteCalculato
 
 # RouteCalculator
 
-The RouteCalculator resource lets you manage [AWS Location RouteCalculators](https://docs.aws.amazon.com/location/latest/userguide/) for routing and navigation services.
+The RouteCalculator resource allows you to manage [AWS Location RouteCalculators](https://docs.aws.amazon.com/location/latest/userguide/) for calculating routes between locations based on specified data sources.
 
 ## Minimal Example
 
-Create a basic RouteCalculator with required properties and a common optional description.
+Create a basic RouteCalculator with required properties and a tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicRouteCalculator = await AWS.Location.RouteCalculator("basicRouteCalculator", {
+const BasicRouteCalculator = await AWS.Location.RouteCalculator("BasicRouteCalculator", {
   CalculatorName: "MyRouteCalculator",
-  Description: "An example RouteCalculator for basic routing",
   DataSource: "Here",
-  PricingPlan: "RequestBasedUsage"
+  Tags: [{ Key: "Environment", Value: "Development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a RouteCalculator with additional tags for resource organization.
+Configure a RouteCalculator with an optional description and pricing plan.
 
 ```ts
-const advancedRouteCalculator = await AWS.Location.RouteCalculator("advancedRouteCalculator", {
+const AdvancedRouteCalculator = await AWS.Location.RouteCalculator("AdvancedRouteCalculator", {
   CalculatorName: "AdvancedRouteCalculator",
-  Description: "A RouteCalculator with advanced options",
+  Description: "This calculator uses HERE data to compute optimal routes.",
   DataSource: "Here",
-  PricingPlan: "RequestBasedUsage",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "Navigation" }
-  ]
+  PricingPlan: "RequestBased",
+  Tags: [{ Key: "Environment", Value: "Production" }]
 });
 ```
 
-## Adopting Existing Resources
+## Adoption of Existing Resource
 
-If you want to adopt an existing RouteCalculator instead of failing when it already exists, you can specify the adopt property.
+Adopt an existing RouteCalculator resource instead of failing if it already exists.
 
 ```ts
-const adoptedRouteCalculator = await AWS.Location.RouteCalculator("adoptedRouteCalculator", {
+const AdoptedRouteCalculator = await AWS.Location.RouteCalculator("AdoptedRouteCalculator", {
   CalculatorName: "ExistingRouteCalculator",
   DataSource: "Here",
-  adopt: true // Adopt the existing resource
+  adopt: true
+});
+```
+
+## Route Calculator with Multiple Tags
+
+Create a RouteCalculator with multiple tags for better resource management.
+
+```ts
+const MultiTagRouteCalculator = await AWS.Location.RouteCalculator("MultiTagRouteCalculator", {
+  CalculatorName: "MultiTagCalculator",
+  DataSource: "Here",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Owner", Value: "TeamA" },
+    { Key: "Project", Value: "RouteOptimization" }
+  ]
 });
 ```

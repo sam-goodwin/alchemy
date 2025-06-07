@@ -5,123 +5,105 @@ description: Learn how to create, update, and manage AWS MediaConvert JobTemplat
 
 # JobTemplate
 
-The JobTemplate resource allows you to manage [AWS MediaConvert JobTemplates](https://docs.aws.amazon.com/mediaconvert/latest/userguide/) for video transcoding workflows. JobTemplates define the settings used for transcoding video files, enabling consistent processing and output.
+The JobTemplate resource allows you to define and manage [AWS MediaConvert JobTemplates](https://docs.aws.amazon.com/mediaconvert/latest/userguide/) which can be used to automate the transcoding of media files.
 
 ## Minimal Example
 
-Create a basic JobTemplate with required properties and one optional property for category.
+Create a basic JobTemplate with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicJobTemplate = await AWS.MediaConvert.JobTemplate("basicJobTemplate", {
-  settingsJson: {
-    // Example settings for video transcoding
-    Version: "2019-06-01",
-    JobTemplate: "Basic",
-    Outputs: [{
-      ContainerSettings: {
-        Container: "MP4"
-      },
-      VideoDescription: {
-        CodecSettings: {
-          Codec: "H.264"
+const basicJobTemplate = await AWS.MediaConvert.JobTemplate("BasicJobTemplate", {
+  SettingsJson: JSON.stringify({
+    Version: "1.0",
+    OutputGroups: [{
+      Name: "File Group",
+      Outputs: [{
+        Preset: "System-Avc_16x9_1080p_30fps_16x9",
+        ContainerSettings: {
+          Container: "MP4"
         }
-      }
+      }]
     }]
-  },
-  Category: "Standard Transcoding"
+  }),
+  Name: "BasicJobTemplate",
+  Category: "Default",
+  Priority: 1
 });
 ```
 
 ## Advanced Configuration
 
-Configure a JobTemplate with acceleration settings and multiple output specifications for enhanced performance.
+Configure a JobTemplate with advanced settings including acceleration and tags.
 
 ```ts
-const advancedJobTemplate = await AWS.MediaConvert.JobTemplate("advancedJobTemplate", {
-  settingsJson: {
-    // Example settings for video transcoding with multiple outputs
-    Version: "2019-06-01",
-    JobTemplate: "Advanced",
-    Outputs: [{
-      ContainerSettings: {
-        Container: "MP4"
-      },
-      VideoDescription: {
-        CodecSettings: {
-          Codec: "H.264"
+const advancedJobTemplate = await AWS.MediaConvert.JobTemplate("AdvancedJobTemplate", {
+  SettingsJson: JSON.stringify({
+    Version: "1.0",
+    OutputGroups: [{
+      Name: "File Group",
+      Outputs: [{
+        Preset: "System-Avc_16x9_1080p_30fps_16x9",
+        ContainerSettings: {
+          Container: "MP4"
         }
-      }
-    },
-    {
-      ContainerSettings: {
-        Container: "MKV"
-      },
-      VideoDescription: {
-        CodecSettings: {
-          Codec: "H.265"
-        }
-      }
+      }]
     }]
-  },
+  }),
+  Name: "AdvancedJobTemplate",
   AccelerationSettings: {
-    Mode: "TRANSCODE"
+    Mode: "TRANSCODE_ON_DEMAND"
   },
-  Priority: 1
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Owner", Value: "media-team" }
+  ]
 });
 ```
 
-## Custom Settings with Tags
+## Custom Queue Example
 
-Create a JobTemplate that includes custom settings and tags for better organization.
+Create a JobTemplate that specifies a custom queue for processing jobs.
 
 ```ts
-const taggedJobTemplate = await AWS.MediaConvert.JobTemplate("taggedJobTemplate", {
-  settingsJson: {
-    // Example settings for video transcoding with specific configurations
-    Version: "2019-06-01",
-    JobTemplate: "Tagged",
-    Outputs: [{
-      ContainerSettings: {
-        Container: "MP4"
-      },
-      VideoDescription: {
-        CodecSettings: {
-          Codec: "H.264"
+const queueJobTemplate = await AWS.MediaConvert.JobTemplate("QueueJobTemplate", {
+  SettingsJson: JSON.stringify({
+    Version: "1.0",
+    OutputGroups: [{
+      Name: "File Group",
+      Outputs: [{
+        Preset: "System-Avc_16x9_1080p_30fps_16x9",
+        ContainerSettings: {
+          Container: "MP4"
         }
-      }
+      }]
     }]
-  },
-  Tags: {
-    Project: "Video Production",
-    Environment: "Production"
-  }
+  }),
+  Name: "QueueJobTemplate",
+  Queue: "arn:aws:mediaconvert:us-west-2:123456789012:queues/CustomQueue"
 });
 ```
 
-## JobTemplate with Queue and Status Update Interval
+## JobTemplate with Status Updates
 
-Define a JobTemplate that specifies a queue for job processing and a status update interval for monitoring.
+Configure a JobTemplate that enables status updates at specific intervals.
 
 ```ts
-const queuedJobTemplate = await AWS.MediaConvert.JobTemplate("queuedJobTemplate", {
-  settingsJson: {
-    // Example settings for video transcoding with specified queue
-    Version: "2019-06-01",
-    JobTemplate: "Queued",
-    Outputs: [{
-      ContainerSettings: {
-        Container: "MP4"
-      },
-      VideoDescription: {
-        CodecSettings: {
-          Codec: "H.264"
+const statusUpdateJobTemplate = await AWS.MediaConvert.JobTemplate("StatusUpdateJobTemplate", {
+  SettingsJson: JSON.stringify({
+    Version: "1.0",
+    OutputGroups: [{
+      Name: "File Group",
+      Outputs: [{
+        Preset: "System-Avc_16x9_1080p_30fps_16x9",
+        ContainerSettings: {
+          Container: "MP4"
         }
-      }
+      }]
     }]
-  },
-  Queue: "arn:aws:mediaconvert:us-east-1:123456789012:queues/Default",
-  StatusUpdateInterval: "SECONDS_15"
+  }),
+  Name: "StatusUpdateJobTemplate",
+  StatusUpdateInterval: "SECONDS_30"
 });
 ```

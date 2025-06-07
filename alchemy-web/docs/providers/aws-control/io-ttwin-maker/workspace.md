@@ -5,55 +5,43 @@ description: Learn how to create, update, and manage AWS IoTTwinMaker Workspaces
 
 # Workspace
 
-The Workspace resource allows you to manage [AWS IoTTwinMaker Workspaces](https://docs.aws.amazon.com/iottwinmaker/latest/userguide/) that serve as environments for modeling and managing digital twins of physical systems.
+The Workspace resource lets you create and manage [AWS IoTTwinMaker Workspaces](https://docs.aws.amazon.com/iottwinmaker/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iottwinmaker-workspace.html
 
 ## Minimal Example
-
-Create a basic IoTTwinMaker workspace with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const workspace = await AWS.IoTTwinMaker.Workspace("myWorkspace", {
-  Role: "arn:aws:iam::123456789012:role/MyIoTTwinMakerRole",
-  WorkspaceId: "myWorkspaceId",
-  S3Location: "s3://my-bucket/my-workspace/",
-  Description: "A workspace for managing my IoT models",
-  Tags: {
-    project: "IoTProject",
-    environment: "development"
-  }
+const workspace = await AWS.IoTTwinMaker.Workspace("workspace-example", {
+  Role: "example-role",
+  WorkspaceId: "example-workspaceid",
+  S3Location: "example-s3location",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A workspace resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a workspace with an IAM role and custom tags for better resource management.
+Create a workspace with additional configuration:
 
 ```ts
-const advancedWorkspace = await AWS.IoTTwinMaker.Workspace("advancedWorkspace", {
-  Role: "arn:aws:iam::123456789012:role/AdvancedIoTTwinMakerRole",
-  WorkspaceId: "advancedWorkspaceId",
-  S3Location: "s3://my-bucket/advanced-workspace/",
-  Description: "An advanced workspace for IoT project",
+import AWS from "alchemy/aws/control";
+
+const advancedWorkspace = await AWS.IoTTwinMaker.Workspace("advanced-workspace", {
+  Role: "example-role",
+  WorkspaceId: "example-workspaceid",
+  S3Location: "example-s3location",
   Tags: {
-    project: "AdvancedIoTProject",
-    environment: "production",
-    owner: "team-lead"
-  }
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A workspace resource managed by Alchemy",
 });
 ```
 
-## Adopting Existing Resources
-
-Specify the adoption of an existing workspace instead of failing if it already exists.
-
-```ts
-const adoptWorkspace = await AWS.IoTTwinMaker.Workspace("adoptWorkspace", {
-  Role: "arn:aws:iam::123456789012:role/AdoptIoTTwinMakerRole",
-  WorkspaceId: "existingWorkspaceId",
-  S3Location: "s3://my-bucket/adopted-workspace/",
-  Description: "Adopting an existing workspace",
-  adopt: true // Set to true to adopt an existing resource
-});
-```

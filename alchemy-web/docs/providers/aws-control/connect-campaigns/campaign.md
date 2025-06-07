@@ -5,78 +5,43 @@ description: Learn how to create, update, and manage AWS ConnectCampaigns Campai
 
 # Campaign
 
-The Campaign resource lets you manage [AWS ConnectCampaigns Campaigns](https://docs.aws.amazon.com/connectcampaigns/latest/userguide/) for outbound calling and communication with customers.
+The Campaign resource lets you create and manage [AWS ConnectCampaigns Campaigns](https://docs.aws.amazon.com/connectcampaigns/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-connectcampaigns-campaign.html
 
 ## Minimal Example
-
-Create a basic campaign with required properties and a couple of optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const campaign = await AWS.ConnectCampaigns.Campaign("basicCampaign", {
-  Name: "Customer Outreach Campaign",
-  ConnectInstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcdefg-1234-abcd-ef00-0123456789ab",
-  OutboundCallConfig: {
-    // Define outbound call configuration
-    ConnectContactFlowId: "abcdefg-1234-abcd-ef00-0123456789ab",
-    // ... other outbound call config properties
-  },
-  DialerConfig: {
-    // Define dialer configuration
-    DialerType: "PREDICTIVE",
-    // ... other dialer config properties
-  },
-  Tags: [
-    { Key: "Department", Value: "Sales" },
-    { Key: "CampaignType", Value: "Outbound" }
-  ]
+const campaign = await AWS.ConnectCampaigns.Campaign("campaign-example", {
+  OutboundCallConfig: "example-outboundcallconfig",
+  ConnectInstanceArn: "example-connectinstancearn",
+  DialerConfig: "example-dialerconfig",
+  Name: "campaign-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a campaign with advanced settings for better outreach management.
+Create a campaign with additional configuration:
 
 ```ts
-const advancedCampaign = await AWS.ConnectCampaigns.Campaign("advancedCampaign", {
-  Name: "Holiday Promotion Campaign",
-  ConnectInstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcdefg-1234-abcd-ef00-0123456789ab",
-  OutboundCallConfig: {
-    ConnectContactFlowId: "abcdefg-1234-abcd-ef00-0123456789ab",
-    // Sample configuration for Outbound Call
-    OutboundQueueId: "queue-id-123",
-    // ... other outbound call config properties
+import AWS from "alchemy/aws/control";
+
+const advancedCampaign = await AWS.ConnectCampaigns.Campaign("advanced-campaign", {
+  OutboundCallConfig: "example-outboundcallconfig",
+  ConnectInstanceArn: "example-connectinstancearn",
+  DialerConfig: "example-dialerconfig",
+  Name: "campaign-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  DialerConfig: {
-    DialerType: "POWER_DIALER",
-    // Additional dialer settings
-    MaxAttempts: 5
-  },
-  Tags: [
-    { Key: "Season", Value: "Winter" },
-    { Key: "CampaignFocus", Value: "Promotions" }
-  ],
-  adopt: true
 });
 ```
 
-## Using Existing Resources
-
-Adopt an existing campaign resource instead of creating a new one.
-
-```ts
-const existingCampaign = await AWS.ConnectCampaigns.Campaign("existingCampaign", {
-  Name: "Existing Campaign",
-  ConnectInstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcdefg-1234-abcd-ef00-0123456789ab",
-  OutboundCallConfig: {
-    ConnectContactFlowId: "abcdefg-1234-abcd-ef00-0123456789ab",
-    // ... other outbound call config properties
-  },
-  DialerConfig: {
-    DialerType: "PREDICTIVE",
-    // ... other dialer config properties
-  },
-  adopt: true // This allows adopting an existing resource
-});
-```

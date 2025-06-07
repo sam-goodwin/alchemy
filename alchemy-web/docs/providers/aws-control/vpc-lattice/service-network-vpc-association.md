@@ -5,62 +5,59 @@ description: Learn how to create, update, and manage AWS VpcLattice ServiceNetwo
 
 # ServiceNetworkVpcAssociation
 
-The ServiceNetworkVpcAssociation resource lets you manage associations between Amazon VPCs and service networks in AWS VpcLattice. This resource allows you to enable communication between your VPCs and services defined in a service network. For more details, refer to the [AWS VpcLattice ServiceNetworkVpcAssociations documentation](https://docs.aws.amazon.com/vpclattice/latest/userguide/).
+The ServiceNetworkVpcAssociation resource allows you to associate a VPC with a service network in AWS VpcLattice, enabling seamless connectivity between your services across different VPCs. For more detailed information, refer to the [AWS VpcLattice ServiceNetworkVpcAssociations documentation](https://docs.aws.amazon.com/vpclattice/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic ServiceNetworkVpcAssociation with the required properties:
+Create a basic ServiceNetworkVpcAssociation with required properties and one optional tag:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const serviceNetworkVpcAssociation = await AWS.VpcLattice.ServiceNetworkVpcAssociation("myVpcAssociation", {
-  ServiceNetworkIdentifier: "sn-1234567890abcdef0",
-  VpcIdentifier: "vpc-0ab12345cdef67890",
-  SecurityGroupIds: ["sg-0123456789abcdef0"]
+const minimalAssociation = await AWS.VpcLattice.ServiceNetworkVpcAssociation("MinimalAssociation", {
+  ServiceNetworkIdentifier: "sn-12345678",
+  VpcIdentifier: "vpc-12345678",
+  Tags: [{ Key: "Environment", Value: "staging" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ServiceNetworkVpcAssociation with additional tags for better resource management:
+Configure a ServiceNetworkVpcAssociation with security group IDs and multiple tags for better organization:
 
 ```ts
-const advancedVpcAssociation = await AWS.VpcLattice.ServiceNetworkVpcAssociation("advancedVpcAssociation", {
-  ServiceNetworkIdentifier: "sn-0987654321fedcba0",
-  VpcIdentifier: "vpc-0ab12345cdef67890",
-  SecurityGroupIds: ["sg-0123456789abcdef0"],
+const advancedAssociation = await AWS.VpcLattice.ServiceNetworkVpcAssociation("AdvancedAssociation", {
+  ServiceNetworkIdentifier: "sn-87654321",
+  VpcIdentifier: "vpc-87654321",
+  SecurityGroupIds: ["sg-12345678", "sg-87654321"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "ProjectX" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Network" }
   ]
 });
 ```
 
-## Adopting an Existing Association
+## Adopt Existing Resource
 
-Use the adopt option to manage an existing service network VPC association without failing if it already exists:
+If you want to adopt an existing resource instead of creating a new one, you can set the `adopt` property to true:
 
 ```ts
-const adoptVpcAssociation = await AWS.VpcLattice.ServiceNetworkVpcAssociation("adoptExistingVpcAssociation", {
-  ServiceNetworkIdentifier: "sn-11223344556677889",
-  VpcIdentifier: "vpc-0ab12345cdef67890",
-  SecurityGroupIds: ["sg-0123456789abcdef0"],
+const adoptedAssociation = await AWS.VpcLattice.ServiceNetworkVpcAssociation("AdoptedAssociation", {
+  ServiceNetworkIdentifier: "sn-existing",
+  VpcIdentifier: "vpc-existing",
   adopt: true
 });
 ```
 
-## Including Multiple Security Groups
+## Associating Multiple Security Groups
 
-Create a ServiceNetworkVpcAssociation with multiple security groups for enhanced security:
+You can associate multiple security groups with the ServiceNetworkVpcAssociation:
 
 ```ts
-const multiSecurityGroupVpcAssociation = await AWS.VpcLattice.ServiceNetworkVpcAssociation("multiSecurityGroupVpcAssociation", {
-  ServiceNetworkIdentifier: "sn-22334455667788990",
-  VpcIdentifier: "vpc-0ab12345cdef67890",
-  SecurityGroupIds: [
-    "sg-0123456789abcdef0",
-    "sg-abcdef01234567890"
-  ]
+const multiSecurityGroupAssociation = await AWS.VpcLattice.ServiceNetworkVpcAssociation("MultiSecurityGroupAssociation", {
+  ServiceNetworkIdentifier: "sn-multi-sg",
+  VpcIdentifier: "vpc-multi-sg",
+  SecurityGroupIds: ["sg-abcdef12", "sg-ghijkl34", "sg-mnopqr56"],
+  Tags: [{ Key: "Environment", Value: "testing" }]
 });
 ```

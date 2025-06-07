@@ -5,62 +5,68 @@ description: Learn how to create, update, and manage AWS Route53RecoveryControl 
 
 # ControlPanel
 
-The ControlPanel resource allows you to create and manage [AWS Route53RecoveryControl ControlPanels](https://docs.aws.amazon.com/route53recoverycontrol/latest/userguide/) for controlling the failover and recovery of your applications across multiple AWS accounts and regions.
+The ControlPanel resource lets you manage [AWS Route53RecoveryControl ControlPanels](https://docs.aws.amazon.com/route53recoverycontrol/latest/userguide/) for controlling the routing of traffic in a multi-region setup.
 
 ## Minimal Example
 
-Create a basic ControlPanel with required properties and an optional tag.
+Create a basic ControlPanel with required properties and some optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicControlPanel = await AWS.Route53RecoveryControl.ControlPanel("basicControlPanel", {
+const BasicControlPanel = await AWS.Route53RecoveryControl.ControlPanel("BasicControlPanel", {
   Name: "PrimaryControlPanel",
-  ClusterArn: "arn:aws:route53-recovery-control::123456789012:cluster:example-cluster",
-  Tags: [{ Key: "Environment", Value: "Production" }]
+  ClusterArn: "arn:aws:route53-recovery-control::123456789012:cluster/my-cluster-id",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ControlPanel with a name and tags, while adopting an existing resource if it already exists.
+Configure a ControlPanel with an adoption strategy in case the resource already exists.
 
 ```ts
-const advancedControlPanel = await AWS.Route53RecoveryControl.ControlPanel("advancedControlPanel", {
-  Name: "SecondaryControlPanel",
-  ClusterArn: "arn:aws:route53-recovery-control::123456789012:cluster:example-cluster",
-  Tags: [{ Key: "Environment", Value: "Staging" }],
-  adopt: true
+const AdvancedControlPanel = await AWS.Route53RecoveryControl.ControlPanel("AdvancedControlPanel", {
+  Name: "FallbackControlPanel",
+  ClusterArn: "arn:aws:route53-recovery-control::123456789012:cluster/my-cluster-id",
+  adopt: true,
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```
 
-## ControlPanel without Cluster
+## Monitoring and Management
 
-Create a ControlPanel without specifying a ClusterArn, indicating it will not be associated with any existing cluster.
+Retrieve the ARN and creation time of the ControlPanel for monitoring purposes.
 
 ```ts
-const standaloneControlPanel = await AWS.Route53RecoveryControl.ControlPanel("standaloneControlPanel", {
-  Name: "StandaloneControlPanel"
+const ControlPanelDetails = await AWS.Route53RecoveryControl.ControlPanel("ControlPanelDetails", {
+  Name: "MonitoringControlPanel",
+  ClusterArn: "arn:aws:route53-recovery-control::123456789012:cluster/my-cluster-id"
 });
+
+// Log the details for monitoring
+console.log(`Control Panel ARN: ${ControlPanelDetails.Arn}`);
+console.log(`Created At: ${ControlPanelDetails.CreationTime}`);
 ```
 
-## Updating a ControlPanel
+## Tagging for Resource Organization
 
-An example of how to update the name of an existing ControlPanel.
-
-```ts
-const updatedControlPanel = await AWS.Route53RecoveryControl.ControlPanel("updatedControlPanel", {
-  Name: "UpdatedControlPanelName"
-});
-```
-
-## Deleting a ControlPanel
-
-Illustrate how to delete a ControlPanel when it is no longer needed.
+Create a ControlPanel with specific tags to help organize resources within your AWS account.
 
 ```ts
-const deleteControlPanel = await AWS.Route53RecoveryControl.ControlPanel("deleteControlPanel", {
-  Name: "ToBeDeletedControlPanel",
-  delete: true // Indicates that the ControlPanel should be deleted on --destroy
+const TaggedControlPanel = await AWS.Route53RecoveryControl.ControlPanel("TaggedControlPanel", {
+  Name: "TaggedControlPanel",
+  ClusterArn: "arn:aws:route53-recovery-control::123456789012:cluster/my-cluster-id",
+  Tags: [
+    { Key: "Project", Value: "DisasterRecovery" },
+    { Key: "Owner", Value: "JohnDoe" },
+    { Key: "CostCenter", Value: "CC1001" }
+  ]
 });
 ```

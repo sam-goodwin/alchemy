@@ -5,50 +5,35 @@ description: Learn how to create, update, and manage AWS IVSChat Rooms using Alc
 
 # Room
 
-The Room resource allows you to manage [AWS IVSChat Rooms](https://docs.aws.amazon.com/ivschat/latest/userguide/) for real-time chat applications. This resource provides configuration options for message handling and logging.
+The Room resource lets you create and manage [AWS IVSChat Rooms](https://docs.aws.amazon.com/ivschat/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ivschat-room.html
 
 ## Minimal Example
-
-Create a basic IVSChat Room with a maximum message length and rate:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const chatRoom = await AWS.IVSChat.Room("basicChatRoom", {
-  Name: "GeneralChatRoom",
-  MaximumMessageLength: 200,
-  MaximumMessageRatePerSecond: 5
+const room = await AWS.IVSChat.Room("room-example", {
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IVSChat Room with message review handling and logging identifiers:
+Create a room with additional configuration:
 
 ```ts
-const advancedChatRoom = await AWS.IVSChat.Room("advancedChatRoom", {
-  Name: "AdvancedChatRoom",
-  MaximumMessageLength: 500,
-  MaximumMessageRatePerSecond: 10,
-  MessageReviewHandler: {
-    LambdaFunctionArn: "arn:aws:lambda:us-east-1:123456789012:function:MessageReviewFunction",
-    InvocationType: "Event"
+import AWS from "alchemy/aws/control";
+
+const advancedRoom = await AWS.IVSChat.Room("advanced-room", {
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  LoggingConfigurationIdentifiers: ["logConfig123"],
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Application", Value: "ChatApp" }
-  ]
 });
 ```
 
-## Resource Adoption
-
-If you want to adopt an existing IVSChat Room instead of failing when it already exists, you can set the `adopt` property:
-
-```ts
-const adoptedChatRoom = await AWS.IVSChat.Room("existingChatRoom", {
-  Name: "ExistingChatRoom",
-  adopt: true // Adopts the existing resource
-});
-```

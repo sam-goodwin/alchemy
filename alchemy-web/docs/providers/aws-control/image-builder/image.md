@@ -5,74 +5,35 @@ description: Learn how to create, update, and manage AWS ImageBuilder Images usi
 
 # Image
 
-The Image resource allows you to create and manage [AWS ImageBuilder Images](https://docs.aws.amazon.com/imagebuilder/latest/userguide/) for automating the creation, management, and deployment of virtual machine images.
+The Image resource lets you create and manage [AWS ImageBuilder Images](https://docs.aws.amazon.com/imagebuilder/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-imagebuilder-image.html
 
 ## Minimal Example
-
-Create a basic Image using the required properties along with a few common optional configurations.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicImage = await AWS.ImageBuilder.Image("basicImage", {
-  InfrastructureConfigurationArn: "arn:aws:imagebuilder:us-west-2:123456789012:infrastructure-configuration/my-infrastructure-configuration",
-  ImageRecipeArn: "arn:aws:imagebuilder:us-west-2:123456789012:image-recipe/my-image-recipe",
-  DistributionConfigurationArn: "arn:aws:imagebuilder:us-west-2:123456789012:distribution-configuration/my-distribution-configuration",
-  ImageScanningConfiguration: {
-    imageScanningConfiguration: {
-      imageScanOnCreate: true
-    }
-  }
+const image = await AWS.ImageBuilder.Image("image-example", {
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an Image with advanced settings such as workflows and enhanced image metadata.
+Create a image with additional configuration:
 
 ```ts
-const advancedImage = await AWS.ImageBuilder.Image("advancedImage", {
-  InfrastructureConfigurationArn: "arn:aws:imagebuilder:us-west-2:123456789012:infrastructure-configuration/my-infrastructure-configuration",
-  ImageRecipeArn: "arn:aws:imagebuilder:us-west-2:123456789012:image-recipe/my-image-recipe",
-  DistributionConfigurationArn: "arn:aws:imagebuilder:us-west-2:123456789012:distribution-configuration/my-distribution-configuration",
-  Workflows: [{
-    name: "buildWorkflow",
-    steps: [{
-      name: "build",
-      action: "build",
-      parameters: {}
-    }]
-  }],
-  EnhancedImageMetadataEnabled: true
-});
-```
+import AWS from "alchemy/aws/control";
 
-## Image Tests Configuration
-
-Create an Image with image tests configuration to validate the image during the build process.
-
-```ts
-const imageWithTests = await AWS.ImageBuilder.Image("imageWithTests", {
-  InfrastructureConfigurationArn: "arn:aws:imagebuilder:us-west-2:123456789012:infrastructure-configuration/my-infrastructure-configuration",
-  ImageRecipeArn: "arn:aws:imagebuilder:us-west-2:123456789012:image-recipe/my-image-recipe",
-  ImageTestsConfiguration: {
-    imageTestsEnabled: true,
-    timeoutMinutes: 30
-  }
-});
-```
-
-## Tagging Images
-
-Create an Image with custom tags for better resource management.
-
-```ts
-const taggedImage = await AWS.ImageBuilder.Image("taggedImage", {
-  InfrastructureConfigurationArn: "arn:aws:imagebuilder:us-west-2:123456789012:infrastructure-configuration/my-infrastructure-configuration",
-  ImageRecipeArn: "arn:aws:imagebuilder:us-west-2:123456789012:image-recipe/my-image-recipe",
+const advancedImage = await AWS.ImageBuilder.Image("advanced-image", {
   Tags: {
-    Project: "WebApp",
-    Environment: "Production"
-  }
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
+

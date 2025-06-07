@@ -5,57 +5,66 @@ description: Learn how to create, update, and manage AWS CodeStar GitHubReposito
 
 # GitHubRepository
 
-The GitHubRepository resource lets you manage [AWS CodeStar GitHubRepositorys](https://docs.aws.amazon.com/codestar/latest/userguide/) for integration with GitHub repositories, facilitating project management and development workflows.
+The GitHubRepository resource allows you to create and manage [AWS CodeStar GitHub repositories](https://docs.aws.amazon.com/codestar/latest/userguide/) within your AWS environment.
 
 ## Minimal Example
 
-Create a basic GitHub repository with required properties and one optional property.
+Create a basic GitHub repository with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicGitHubRepository = await AWS.CodeStar.GitHubRepository("basicRepo", {
-  RepositoryName: "my-awesome-repo",
+const basicGitHubRepo = await AWS.CodeStar.GitHubRepository("MyGitHubRepo", {
+  RepositoryName: "MyProjectRepo",
   RepositoryOwner: "my-github-username",
-  EnableIssues: true // Optional: Enable issues for the repository
+  IsPrivate: true,
+  EnableIssues: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure a GitHub repository with additional options such as privacy settings and a description.
+Configure a GitHub repository with additional options including a description and access token.
 
 ```ts
-const advancedGitHubRepository = await AWS.CodeStar.GitHubRepository("advancedRepo", {
-  RepositoryName: "my-private-repo",
+const advancedGitHubRepo = await AWS.CodeStar.GitHubRepository("AdvancedGitHubRepo", {
+  RepositoryName: "AdvancedProjectRepo",
   RepositoryOwner: "my-github-username",
-  IsPrivate: true, // Optional: Make the repository private
-  RepositoryDescription: "This is a private repository for my project."
+  IsPrivate: false,
+  RepositoryDescription: "This repository is for advanced project management.",
+  RepositoryAccessToken: "my-secret-token",
+  EnableIssues: true,
+  ConnectionArn: "arn:aws:codestar-connections:us-west-2:123456789012:connection/abcd1234-efgh-5678-ijkl-90mnopqrst"
 });
 ```
 
-## Repository Access Token
+## Adoption of Existing Repository
 
-Create a GitHub repository that includes a repository access token for authentication purposes.
+Adopt an existing GitHub repository rather than creating a new one if it already exists.
 
 ```ts
-const secureGitHubRepository = await AWS.CodeStar.GitHubRepository("secureRepo", {
-  RepositoryName: "my-secure-repo",
+const adoptExistingRepo = await AWS.CodeStar.GitHubRepository("AdoptedGitHubRepo", {
+  RepositoryName: "ExistingRepoName",
   RepositoryOwner: "my-github-username",
-  RepositoryAccessToken: alchemy.secret(process.env.GITHUB_ACCESS_TOKEN!), // Secure access token
-  EnableIssues: false // Optional: Disable issues for the repository
+  adopt: true
 });
 ```
 
-## Using Connection ARN
+## Repository with Custom Code Configuration
 
-Create a GitHub repository linked with a specific connection ARN for integration.
+Create a repository with a custom code configuration for initial setup.
 
 ```ts
-const connectedGitHubRepository = await AWS.CodeStar.GitHubRepository("connectedRepo", {
-  RepositoryName: "my-connected-repo",
+const customCodeRepo = await AWS.CodeStar.GitHubRepository("CustomCodeGitHubRepo", {
+  RepositoryName: "CustomCodeRepo",
   RepositoryOwner: "my-github-username",
-  ConnectionArn: "arn:aws:codestar-connections:us-east-1:123456789012:connection/abc12345-6789-0abc-def0-123456789abc", // Example connection ARN
-  IsPrivate: true // Optional: Make the repository private
+  Code: {
+    S3: {
+      Bucket: "my-code-bucket",
+      Key: "path/to/my/code.zip"
+    }
+  }
 });
-```
+``` 
+
+This example demonstrates how to set up a GitHub repository with an initial code configuration from an S3 bucket, facilitating an automated deployment process.

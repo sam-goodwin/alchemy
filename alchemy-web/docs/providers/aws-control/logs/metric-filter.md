@@ -5,79 +5,66 @@ description: Learn how to create, update, and manage AWS Logs MetricFilters usin
 
 # MetricFilter
 
-The MetricFilter resource lets you create and manage [AWS Logs MetricFilters](https://docs.aws.amazon.com/logs/latest/userguide/) for monitoring and analyzing log data. Metric filters allow you to extract metric data from logs for use in CloudWatch.
+The MetricFilter resource allows you to define filters for AWS CloudWatch Logs, enabling you to create metrics based on specific patterns in your log data. For more information, refer to the [AWS Logs MetricFilters documentation](https://docs.aws.amazon.com/logs/latest/userguide/).
 
 ## Minimal Example
 
-Create a simple metric filter that counts the number of error messages in a log group.
+Create a basic MetricFilter with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const errorMetricFilter = await AWS.Logs.MetricFilter("ErrorMetricFilter", {
+const basicMetricFilter = await AWS.Logs.MetricFilter("BasicMetricFilter", {
   MetricTransformations: [{
-    MetricValue: "1",
+    MetricName: "ErrorCount",
     MetricNamespace: "MyApp",
-    MetricName: "ErrorCount"
+    MetricValue: "1",
+    DefaultValue: 0
   }],
   FilterPattern: "{ $.level = \"ERROR\" }",
   LogGroupName: "MyAppLogGroup",
-  ApplyOnTransformedLogs: true,
   FilterName: "ErrorFilter"
 });
 ```
 
 ## Advanced Configuration
 
-This example shows how to configure a metric filter with multiple transformations and a custom filter name.
+Configure a MetricFilter with multiple metric transformations for a more complex setup.
 
 ```ts
-const detailedMetricFilter = await AWS.Logs.MetricFilter("DetailedMetricFilter", {
-  MetricTransformations: [{
-    MetricValue: "1",
-    MetricNamespace: "MyApp",
-    MetricName: "ErrorCount"
-  }, {
-    MetricValue: "1",
-    MetricNamespace: "MyApp",
-    MetricName: "WarningCount"
-  }],
+const advancedMetricFilter = await AWS.Logs.MetricFilter("AdvancedMetricFilter", {
+  MetricTransformations: [
+    {
+      MetricName: "ErrorCount",
+      MetricNamespace: "MyApp",
+      MetricValue: "1"
+    },
+    {
+      MetricName: "WarningCount",
+      MetricNamespace: "MyApp",
+      MetricValue: "1"
+    }
+  ],
   FilterPattern: "{ $.level = \"ERROR\" || $.level = \"WARNING\" }",
   LogGroupName: "MyAppLogGroup",
-  FilterName: "DetailedFilter"
+  FilterName: "ErrorAndWarningFilter"
 });
 ```
 
-## Using Existing Log Groups
+## Using Transformed Logs
 
-This example demonstrates how to create a metric filter for an existing log group without failing if it already exists.
-
-```ts
-const existingLogGroupMetricFilter = await AWS.Logs.MetricFilter("ExistingLogGroupMetricFilter", {
-  MetricTransformations: [{
-    MetricValue: "1",
-    MetricNamespace: "MyApp",
-    MetricName: "CriticalErrors"
-  }],
-  FilterPattern: "{ $.level = \"CRITICAL\" }",
-  LogGroupName: "ExistingLogGroup",
-  adopt: true // This will adopt the existing resource if it already exists
-});
-```
-
-## Applying on Transformed Logs
-
-In this example, we create a metric filter that applies to transformed logs, allowing you to get metrics from processed data.
+Create a MetricFilter that applies on transformed logs to track specific events.
 
 ```ts
-const transformedLogsMetricFilter = await AWS.Logs.MetricFilter("TransformedLogsMetricFilter", {
+const transformedLogMetricFilter = await AWS.Logs.MetricFilter("TransformedLogMetricFilter", {
   MetricTransformations: [{
-    MetricValue: "1",
+    MetricName: "UserLoginCount",
     MetricNamespace: "MyApp",
-    MetricName: "TransformedLogCount"
+    MetricValue: "1"
   }],
-  FilterPattern: "{ $.statusCode = 200 }",
-  LogGroupName: "TransformedLogsGroup",
-  ApplyOnTransformedLogs: true
+  FilterPattern: "{ $.eventType = \"UserLogin\" }",
+  LogGroupName: "TransformedLogGroup",
+  ApplyOnTransformedLogs: true,
+  FilterName: "UserLoginFilter"
 });
 ```

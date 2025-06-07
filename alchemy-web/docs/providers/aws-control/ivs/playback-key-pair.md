@@ -5,49 +5,51 @@ description: Learn how to create, update, and manage AWS IVS PlaybackKeyPairs us
 
 # PlaybackKeyPair
 
-The PlaybackKeyPair resource lets you manage AWS IVS Playback Key Pairs, which are used for securely delivering video playback keys. For more information, refer to the [AWS IVS PlaybackKeyPairs documentation](https://docs.aws.amazon.com/ivs/latest/userguide/).
+The PlaybackKeyPair resource allows you to manage AWS IVS (Interactive Video Service) playback key pairs that are used for authenticating video playback. For more information, refer to the [AWS IVS PlaybackKeyPairs documentation](https://docs.aws.amazon.com/ivs/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic PlaybackKeyPair with a public key material and a name.
+Create a basic PlaybackKeyPair with a public key material and tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const playbackKeyPair = await AWS.IVS.PlaybackKeyPair("myPlaybackKeyPair", {
-  Name: "MyPlaybackKeyPair",
-  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEArG...your_public_key_here",
+const BasicPlaybackKeyPair = await AWS.IVS.PlaybackKeyPair("BasicPlaybackKeyPair", {
+  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...",
   Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Owner", Value: "MediaTeam" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Create a PlaybackKeyPair with additional properties, including tags and adopting an existing resource.
+Configure a PlaybackKeyPair with a specific name and additional tags.
 
 ```ts
-const advancedPlaybackKeyPair = await AWS.IVS.PlaybackKeyPair("advancedPlaybackKeyPair", {
-  Name: "AdvancedPlaybackKeyPair",
-  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEArG...your_public_key_here",
+const AdvancedPlaybackKeyPair = await AWS.IVS.PlaybackKeyPair("AdvancedPlaybackKeyPair", {
+  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...",
+  Name: "MyCustomPlaybackKeyPair",
   Tags: [
-    { Key: "Project", Value: "IVSStreaming" },
-    { Key: "Owner", Value: "TeamAlpha" }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Streaming" }
   ],
-  adopt: true // Allow adoption of existing resource
+  adopt: true // This will adopt the existing resource if it already exists
 });
 ```
 
-## Use Case: Updating an Existing PlaybackKeyPair
+## Updating an Existing Key Pair
 
-This example demonstrates how to update the name of an existing PlaybackKeyPair.
+Update an existing PlaybackKeyPair by changing its tags.
 
 ```ts
-const updatedPlaybackKeyPair = await AWS.IVS.PlaybackKeyPair("existingPlaybackKeyPair", {
-  Name: "UpdatedPlaybackKeyPair",
-  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEArG...your_public_key_here"
+const UpdatedPlaybackKeyPair = await AWS.IVS.PlaybackKeyPair("UpdatedPlaybackKeyPair", {
+  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Owner", Value: "UpdatedMediaTeam" }
+  ],
+  adopt: true // Ensures no error if the resource already exists
 });
 ```
-
-This allows you to manage existing resources effectively without needing to recreate them.

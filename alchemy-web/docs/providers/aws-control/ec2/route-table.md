@@ -5,82 +5,58 @@ description: Learn how to create, update, and manage AWS EC2 RouteTables using A
 
 # RouteTable
 
-The RouteTable resource lets you manage [AWS EC2 RouteTables](https://docs.aws.amazon.com/ec2/latest/userguide/) and their routing configurations within your VPC.
+The RouteTable resource allows you to create and manage [AWS EC2 RouteTables](https://docs.aws.amazon.com/ec2/latest/userguide/) for routing network traffic within your VPC.
 
 ## Minimal Example
 
-This example demonstrates creating a basic RouteTable associated with a specific VPC, including a tag for identification.
+Create a basic RouteTable with the required VPC ID and a tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const routeTable = await AWS.EC2.RouteTable("mainRouteTable", {
-  VpcId: "vpc-12345678",
+const BasicRouteTable = await AWS.EC2.RouteTable("BasicRouteTable", {
+  VpcId: "vpc-1234abcd", 
+  Tags: [{ Key: "Environment", Value: "Development" }]
+});
+```
+
+## Enhanced Configuration
+
+Configure a RouteTable with multiple tags for better organization and management.
+
+```ts
+const TaggedRouteTable = await AWS.EC2.RouteTable("TaggedRouteTable", {
+  VpcId: "vpc-5678efgh", 
   Tags: [
-    {
-      Key: "Name",
-      Value: "Main Route Table"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Networking" },
+    { Key: "Project", Value: "API Development" }
   ]
 });
 ```
 
-## Advanced Configuration
+## Adoption of Existing Resource
 
-In this example, we create a RouteTable with additional tags and enable the adoption of an existing resource if it already exists.
+Adopt an existing RouteTable without creating a new one, useful in scenarios where resources need to be managed without duplication.
 
 ```ts
-const advancedRouteTable = await AWS.EC2.RouteTable("advancedRouteTable", {
-  VpcId: "vpc-87654321",
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Owner",
-      Value: "Dev Team"
-    }
-  ],
-  adopt: true
+const ExistingRouteTable = await AWS.EC2.RouteTable("ExistingRouteTable", {
+  VpcId: "vpc-abcde123", 
+  adopt: true // Adopt the existing RouteTable if it already exists
 });
 ```
 
-## Route Configuration Example
+## Customizing RouteTable with Additional Properties
 
-Here is an example demonstrating how to set up a RouteTable with routes to different destinations.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const routeTableWithRoutes = await AWS.EC2.RouteTable("routeTableWithRoutes", {
-  VpcId: "vpc-11223344",
-  Tags: [
-    {
-      Key: "Name",
-      Value: "Route Table with Routes"
-    }
-  ]
-});
-
-// Here you would typically include additional logic to add routes,
-// for example, to an Internet Gateway or another VPC.
-```
-
-## Use Case: Private Subnet Routing
-
-This example illustrates how to create a RouteTable for a private subnet, ensuring that traffic is routed correctly to a NAT Gateway.
+Demonstrate how to access additional properties of the RouteTable after creation, like ARN and creation time.
 
 ```ts
-const privateRouteTable = await AWS.EC2.RouteTable("privateRouteTable", {
-  VpcId: "vpc-44556677",
-  Tags: [
-    {
-      Key: "Name",
-      Value: "Private Route Table"
-    }
-  ]
+const CustomRouteTable = await AWS.EC2.RouteTable("CustomRouteTable", {
+  VpcId: "vpc-ijkl456", 
+  Tags: [{ Key: "Environment", Value: "Staging" }]
 });
 
-// Additional logic would be required to create routes towards the NAT Gateway.
+// Accessing additional properties
+console.log(`RouteTable ARN: ${CustomRouteTable.Arn}`);
+console.log(`Created At: ${CustomRouteTable.CreationTime}`);
 ```

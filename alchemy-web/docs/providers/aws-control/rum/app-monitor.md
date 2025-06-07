@@ -5,85 +5,37 @@ description: Learn how to create, update, and manage AWS RUM AppMonitors using A
 
 # AppMonitor
 
-The AppMonitor resource lets you create and manage [AWS RUM AppMonitors](https://docs.aws.amazon.com/rum/latest/userguide/) for monitoring the performance of web applications.
+The AppMonitor resource lets you create and manage [AWS RUM AppMonitors](https://docs.aws.amazon.com/rum/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rum-appmonitor.html
 
 ## Minimal Example
-
-Create a basic AppMonitor with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const appMonitor = await AWS.RUM.AppMonitor("myAppMonitor", {
-  name: "MyWebAppMonitor",
-  domain: "mywebapp.com",
-  DomainList: ["mywebapp.com", "www.mywebapp.com"],
-  CwLogEnabled: true
+const appmonitor = await AWS.RUM.AppMonitor("appmonitor-example", {
+  Name: "appmonitor-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AppMonitor with a custom events settings and a resource policy.
+Create a appmonitor with additional configuration:
 
 ```ts
-const customAppMonitor = await AWS.RUM.AppMonitor("customAppMonitor", {
-  name: "CustomWebAppMonitor",
-  domain: "customwebapp.com",
-  CustomEvents: {
-    Events: [
-      {
-        EventName: "ButtonClick",
-        EventType: "click",
-        Selector: "#myButton"
-      }
-    ]
+import AWS from "alchemy/aws/control";
+
+const advancedAppMonitor = await AWS.RUM.AppMonitor("advanced-appmonitor", {
+  Name: "appmonitor-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  ResourcePolicy: {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Principal: "*",
-        Action: "rum:PutRumEvents",
-        Resource: "*",
-        Condition: {
-          "StringEquals": {
-            "rum:AppMonitor": "CustomWebAppMonitor"
-          }
-        }
-      }
-    ]
-  }
 });
 ```
 
-## Deobfuscation Configuration
-
-Set up an AppMonitor with deobfuscation configuration for JavaScript error tracking.
-
-```ts
-const deobfuscatedAppMonitor = await AWS.RUM.AppMonitor("deobfuscatedAppMonitor", {
-  name: "DeobfuscatedWebAppMonitor",
-  domain: "deobfuscatedwebapp.com",
-  DeobfuscationConfiguration: {
-    S3Bucket: "my-deobfuscation-bucket",
-    S3KeyPrefix: "deobfuscation/"
-  }
-});
-```
-
-## Tags for Resource Organization
-
-Create an AppMonitor with tags for better resource management.
-
-```ts
-const taggedAppMonitor = await AWS.RUM.AppMonitor("taggedAppMonitor", {
-  name: "TaggedWebAppMonitor",
-  domain: "taggedwebapp.com",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "WebApp" }
-  ]
-});
-```

@@ -5,20 +5,23 @@ description: Learn how to create, update, and manage AWS ApiGateway GatewayRespo
 
 # GatewayResponse
 
-The GatewayResponse resource allows you to manage custom responses from the AWS ApiGateway, enabling you to tailor error messages and responses for your API clients. For more details, visit the [AWS ApiGateway GatewayResponses documentation](https://docs.aws.amazon.com/apigateway/latest/userguide/).
+The GatewayResponse resource allows you to manage custom Gateway Responses for your [AWS ApiGateway](https://docs.aws.amazon.com/apigateway/latest/userguide/). This is useful for customizing the output of your API Gateway responses based on the status code and response type.
 
 ## Minimal Example
 
-Create a basic GatewayResponse that customizes the response for unauthorized requests.
+Create a basic GatewayResponse for handling unauthorized requests with a custom message.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const unauthorizedResponse = await AWS.ApiGateway.GatewayResponse("UnauthorizedResponse", {
-  RestApiId: "myApiId123",
+const UnauthorizedResponse = await AWS.ApiGateway.GatewayResponse("UnauthorizedResponse", {
+  RestApiId: "123456abcdef",
   ResponseType: "UNAUTHORIZED",
+  StatusCode: "401",
   ResponseTemplates: {
-    "application/json": "{\"message\": \"Access denied.\"}"
+    "application/json": JSON.stringify({
+      message: "You are not authorized to access this resource."
+    })
   },
   ResponseParameters: {
     "gatewayresponse.header.Access-Control-Allow-Origin": "'*'"
@@ -28,49 +31,44 @@ const unauthorizedResponse = await AWS.ApiGateway.GatewayResponse("UnauthorizedR
 
 ## Advanced Configuration
 
-Configure a GatewayResponse to handle internal server errors with a customized message and specific headers.
+Configure a GatewayResponse with additional response parameters for better control over CORS settings.
 
 ```ts
-const internalServerErrorResponse = await AWS.ApiGateway.GatewayResponse("InternalServerErrorResponse", {
-  RestApiId: "myApiId123",
-  ResponseType: "INTERNAL_SERVER_ERROR",
-  StatusCode: "500",
+const CustomErrorResponse = await AWS.ApiGateway.GatewayResponse("CustomErrorResponse", {
+  RestApiId: "123456abcdef",
+  ResponseType: "DEFAULT_4XX",
+  StatusCode: "404",
   ResponseTemplates: {
-    "application/json": "{\"error\": \"Internal server error occurred.\"}"
+    "application/json": JSON.stringify({
+      error: "Resource not found",
+      code: 404
+    })
   },
   ResponseParameters: {
     "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
     "gatewayresponse.header.Content-Type": "'application/json'"
-  }
+  },
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Customizing Other Response Types
+## Customizing Responses for Specific Scenarios
 
-You can also customize the response for not found errors in a flexible way.
-
-```ts
-const notFoundResponse = await AWS.ApiGateway.GatewayResponse("NotFoundResponse", {
-  RestApiId: "myApiId123",
-  ResponseType: "RESOURCE_NOT_FOUND",
-  StatusCode: "404",
-  ResponseTemplates: {
-    "application/json": "{\"error\": \"Resource not found.\"}"
-  }
-});
-```
-
-## Using Adopt Option
-
-If you want to ensure that your resource is created or updated without failing when it already exists, you can use the adopt option.
+Handle specific scenarios like missing API keys with custom responses.
 
 ```ts
-const adoptResponse = await AWS.ApiGateway.GatewayResponse("AdoptResponse", {
-  RestApiId: "myApiId123",
-  ResponseType: "DEFAULT_4XX",
-  adopt: true,
+const MissingApiKeyResponse = await AWS.ApiGateway.GatewayResponse("MissingApiKeyResponse", {
+  RestApiId: "123456abcdef",
+  ResponseType: "API_KEY_REQUIRED",
+  StatusCode: "403",
   ResponseTemplates: {
-    "application/json": "{\"error\": \"An error occurred.\"}"
+    "application/json": JSON.stringify({
+      error: "API key is required to access this endpoint."
+    })
+  },
+  ResponseParameters: {
+    "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+    "gatewayresponse.header.Retry-After": "'3600'"
   }
 });
 ```

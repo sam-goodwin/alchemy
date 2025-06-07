@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS Connect ContactFlows us
 
 # ContactFlow
 
-The ContactFlow resource lets you manage [AWS Connect ContactFlows](https://docs.aws.amazon.com/connect/latest/userguide/) for automating customer interactions and improving service quality.
+The ContactFlow resource allows you to create and manage [AWS Connect ContactFlows](https://docs.aws.amazon.com/connect/latest/userguide/) that define the flow of customer interactions in an Amazon Connect instance.
 
 ## Minimal Example
 
@@ -14,11 +14,13 @@ Create a basic contact flow with required properties and a description.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicContactFlow = await AWS.Connect.ContactFlow("basicContactFlow", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcdefg-12345-hijk-67890-lmnopqrs",
-  Name: "Basic Contact Flow",
+const basicContactFlow = await AWS.Connect.ContactFlow("BasicContactFlow", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcdefg-12345",
   Type: "CONTACT_FLOW",
+  Name: "Basic Contact Flow",
+  Description: "A simple contact flow to greet customers.",
   Content: JSON.stringify({
+    Version: "2019-10-30",
     StartAction: "Start",
     Actions: [
       {
@@ -26,97 +28,80 @@ const basicContactFlow = await AWS.Connect.ContactFlow("basicContactFlow", {
         Type: "PlayPrompt",
         Parameters: {
           Prompt: {
-            Text: "Welcome to our service. Please hold."
-          }
+            TextToSpeech: "Welcome to our service. Please hold while we connect you."
+          },
+          NextAction: "End"
         }
+      },
+      {
+        Identifier: "End",
+        Type: "Disconnect",
+        Parameters: {}
       }
     ]
-  }),
-  Description: "A simple contact flow to greet customers."
+  })
 });
 ```
 
 ## Advanced Configuration
 
-Configure a more complex contact flow with various actions and states.
+Configure a contact flow with additional options such as tags and a specific state.
 
 ```ts
-const advancedContactFlow = await AWS.Connect.ContactFlow("advancedContactFlow", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcdefg-12345-hijk-67890-lmnopqrs",
-  Name: "Advanced Contact Flow",
+const advancedContactFlow = await AWS.Connect.ContactFlow("AdvancedContactFlow", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcdefg-12345",
   Type: "CONTACT_FLOW",
+  Name: "Advanced Contact Flow",
+  Description: "An advanced contact flow with tags and active state.",
   Content: JSON.stringify({
-    StartAction: "Init",
+    Version: "2019-10-30",
+    StartAction: "Start",
     Actions: [
       {
-        Identifier: "Init",
+        Identifier: "Start",
         Type: "PlayPrompt",
         Parameters: {
           Prompt: {
-            Text: "Welcome to our advanced service. Your call is important to us."
-          }
+            TextToSpeech: "Thank you for calling. Your call is important to us."
+          },
+          NextAction: "Queue"
         }
       },
       {
         Identifier: "Queue",
-        Type: "Queue",
+        Type: "Enqueue",
         Parameters: {
-          QueueId: "arn:aws:connect:us-east-1:123456789012:queue/abcdefg-12345-hijk-67890-lmnopqrs"
+          Queue: "SupportQueue",
+          NextAction: "End"
         }
+      },
+      {
+        Identifier: "End",
+        Type: "Disconnect",
+        Parameters: {}
       }
     ]
   }),
   State: "ACTIVE",
-  Description: "An advanced contact flow that includes a queue action."
-});
-```
-
-## Using Tags for Organization
-
-Create a contact flow with tags for better organization and tracking.
-
-```ts
-const taggedContactFlow = await AWS.Connect.ContactFlow("taggedContactFlow", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcdefg-12345-hijk-67890-lmnopqrs",
-  Name: "Tagged Contact Flow",
-  Type: "CONTACT_FLOW",
-  Content: JSON.stringify({
-    StartAction: "Start",
-    Actions: [
-      {
-        Identifier: "Start",
-        Type: "PlayPrompt",
-        Parameters: {
-          Prompt: {
-            Text: "Thank you for calling. Please listen carefully."
-          }
-        }
-      }
-    ]
-  }),
   Tags: [
-    {
-      Key: "Department",
-      Value: "Sales"
-    },
-    {
-      Key: "Project",
-      Value: "Customer Service Optimization"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Department", Value: "Customer Support" }
   ]
 });
 ```
 
-## Adoption of Existing Resources
+## Integration with Other AWS Services
 
-Adopt an existing contact flow instead of creating a new one if it already exists.
+Demonstrate how to connect a contact flow to an existing queue.
 
 ```ts
-const adoptedContactFlow = await AWS.Connect.ContactFlow("adoptedContactFlow", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcdefg-12345-hijk-67890-lmnopqrs",
-  Name: "Existing Contact Flow",
+const contactFlowWithQueue = await AWS.Connect.ContactFlow("QueueContactFlow", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcdefg-12345",
   Type: "CONTACT_FLOW",
+  Name: "Queue Contact Flow",
+  Description: "A contact flow that connects customers to a support queue.",
   Content: JSON.stringify({
+    Version: "2019-10-30",
     StartAction: "Start",
     Actions: [
       {
@@ -124,12 +109,26 @@ const adoptedContactFlow = await AWS.Connect.ContactFlow("adoptedContactFlow", {
         Type: "PlayPrompt",
         Parameters: {
           Prompt: {
-            Text: "Welcome! Please wait while we connect your call."
-          }
+            TextToSpeech: "You are being connected to our support team."
+          },
+          NextAction: "Queue"
         }
+      },
+      {
+        Identifier: "Queue",
+        Type: "Enqueue",
+        Parameters: {
+          Queue: "SupportQueue",
+          NextAction: "End"
+        }
+      },
+      {
+        Identifier: "End",
+        Type: "Disconnect",
+        Parameters: {}
       }
     ]
   }),
-  adopt: true // This will adopt the existing resource instead of failing
+  State: "ACTIVE"
 });
 ```

@@ -1,65 +1,25 @@
 ---
-title: Managing AWS Glue DataCatalogEncryptionSettings with Alchemy
-description: Learn how to create, update, and manage AWS Glue DataCatalogEncryptionSettings using Alchemy Cloud Control.
+title: Managing AWS Glue DataCatalogEncryptionSettingss with Alchemy
+description: Learn how to create, update, and manage AWS Glue DataCatalogEncryptionSettingss using Alchemy Cloud Control.
 ---
 
 # DataCatalogEncryptionSettings
 
-The DataCatalogEncryptionSettings resource allows you to manage the encryption settings for the AWS Glue Data Catalog. This resource is essential for ensuring that your data is securely managed and compliant with data protection regulations. For more information, refer to the [AWS Glue DataCatalogEncryptionSettings documentation](https://docs.aws.amazon.com/glue/latest/userguide/).
+The DataCatalogEncryptionSettings resource lets you create and manage [AWS Glue DataCatalogEncryptionSettingss](https://docs.aws.amazon.com/glue/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-glue-datacatalogencryptionsettings.html
 
 ## Minimal Example
-
-Create a basic DataCatalogEncryptionSettings resource with the required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dataCatalogEncryptionSettings = await AWS.Glue.DataCatalogEncryptionSettings("default-encryption-settings", {
-  DataCatalogEncryptionSettings: {
-    EncryptionAtRest: {
-      CatalogEncryptionMode: "DISABLED"
-    },
-    ConnectionPasswordEncryption: {
-      ReturnConnectionPasswordEncrypted: true,
-      AwsKmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-12ab-34cd-56ef-1234567890ab"
-    }
-  },
-  CatalogId: "123456789012"
-});
+const datacatalogencryptionsettings = await AWS.Glue.DataCatalogEncryptionSettings(
+  "datacatalogencryptionsettings-example",
+  {
+    DataCatalogEncryptionSettings: "example-datacatalogencryptionsettings",
+    CatalogId: "example-catalogid",
+  }
+);
 ```
 
-## Advanced Configuration
-
-Configure the DataCatalogEncryptionSettings with more complex encryption options for enhanced security.
-
-```ts
-const advancedEncryptionSettings = await AWS.Glue.DataCatalogEncryptionSettings("advanced-encryption-settings", {
-  DataCatalogEncryptionSettings: {
-    EncryptionAtRest: {
-      CatalogEncryptionMode: "SSE-KMS",
-      SseAwsKmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-12ab-34cd-56ef-1234567890ab"
-    },
-    ConnectionPasswordEncryption: {
-      ReturnConnectionPasswordEncrypted: true,
-      AwsKmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd5678-12ab-34cd-56ef-1234567890cd"
-    }
-  },
-  CatalogId: "123456789012"
-});
-```
-
-## Using Existing Encryption Settings
-
-Adopt existing DataCatalogEncryptionSettings instead of failing when the resource already exists.
-
-```ts
-const adoptExistingSettings = await AWS.Glue.DataCatalogEncryptionSettings("existing-encryption-settings", {
-  DataCatalogEncryptionSettings: {
-    EncryptionAtRest: {
-      CatalogEncryptionMode: "DISABLED"
-    }
-  },
-  CatalogId: "123456789012",
-  adopt: true
-});
-```

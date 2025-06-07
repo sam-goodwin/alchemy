@@ -5,29 +5,29 @@ description: Learn how to create, update, and manage AWS CodeDeploy Applications
 
 # Application
 
-The Application resource allows you to create and manage [AWS CodeDeploy Applications](https://docs.aws.amazon.com/codedeploy/latest/userguide/) for deploying applications to various compute platforms.
+The Application resource lets you manage [AWS CodeDeploy Applications](https://docs.aws.amazon.com/codedeploy/latest/userguide/) for deploying applications to Amazon EC2 or AWS Lambda.
 
 ## Minimal Example
 
-Create a basic CodeDeploy application with a specified name and compute platform.
+Create a basic CodeDeploy application with a specified name.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const codeDeployApplication = await AWS.CodeDeploy.Application("myCodeDeployApp", {
-  ApplicationName: "MyAwesomeApp",
+const BasicApplication = await AWS.CodeDeploy.Application("BasicApplication", {
+  ApplicationName: "MyApp",
   ComputePlatform: "Server"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CodeDeploy application with tags for better resource management.
+Configure an application with tags for better resource management and identification.
 
 ```ts
-const taggedCodeDeployApplication = await AWS.CodeDeploy.Application("myTaggedApp", {
-  ApplicationName: "MyAwesomeAppWithTags",
-  ComputePlatform: "Lambda",
+const TaggedApplication = await AWS.CodeDeploy.Application("TaggedApplication", {
+  ApplicationName: "MyAppWithTags",
+  ComputePlatform: "Server",
   Tags: [
     { Key: "Environment", Value: "Production" },
     { Key: "Team", Value: "DevOps" }
@@ -35,33 +35,14 @@ const taggedCodeDeployApplication = await AWS.CodeDeploy.Application("myTaggedAp
 });
 ```
 
-## Resource Adoption
+## Adoption of Existing Resources
 
-Create a CodeDeploy application while adopting an existing resource if it already exists.
+Create an application while adopting an existing resource instead of failing if it already exists.
 
 ```ts
-const adoptExistingApplication = await AWS.CodeDeploy.Application("myAdoptedApp", {
+const ExistingApplication = await AWS.CodeDeploy.Application("ExistingApplication", {
   ApplicationName: "MyExistingApp",
-  ComputePlatform: "ECS",
+  ComputePlatform: "Server",
   adopt: true
 });
-```
-
-## Full Metadata
-
-Create a CodeDeploy application and retrieve its metadata, including ARN and timestamps.
-
-```ts
-const fullMetadataApplication = await AWS.CodeDeploy.Application("myFullMetadataApp", {
-  ApplicationName: "MyFullMetadataApp",
-  ComputePlatform: "Server",
-  Tags: [
-    { Key: "Environment", Value: "Staging" }
-  ]
-});
-
-// Access application metadata
-console.log(`Application ARN: ${fullMetadataApplication.Arn}`);
-console.log(`Created Time: ${fullMetadataApplication.CreationTime}`);
-console.log(`Last Updated Time: ${fullMetadataApplication.LastUpdateTime}`);
 ```

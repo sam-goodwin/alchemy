@@ -5,61 +5,99 @@ description: Learn how to create, update, and manage AWS EMRContainers VirtualCl
 
 # VirtualCluster
 
-The VirtualCluster resource allows you to create and manage [AWS EMRContainers VirtualClusters](https://docs.aws.amazon.com/emrcontainers/latest/userguide/) for running serverless Apache Spark applications. This resource facilitates the management of your containerized EMR workloads.
+The VirtualCluster resource lets you manage [AWS EMRContainers VirtualClusters](https://docs.aws.amazon.com/emrcontainers/latest/userguide/) for running serverless data analytics applications.
 
 ## Minimal Example
 
-Create a basic VirtualCluster with required properties and one optional security configuration.
+Create a basic VirtualCluster with required properties and a common optional setting.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const virtualCluster = await AWS.EMRContainers.VirtualCluster("myVirtualCluster", {
-  name: "MyVirtualCluster",
-  containerProvider: {
-    type: "EKS",
-    id: "myEKSCluster"
+const basicVirtualCluster = await AWS.EMRContainers.VirtualCluster("BasicVirtualCluster", {
+  Name: "BasicCluster",
+  ContainerProvider: {
+    Id: "my-container-provider",
+    Type: "EKS",
+    Info: {
+      EksInfo: {
+        Namespace: "default"
+      }
+    }
   },
-  securityConfigurationId: "mySecurityConfigId" // Optional
+  SecurityConfigurationId: "my-security-config",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DataScience" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VirtualCluster with tags for better resource management and identification.
+Configure a VirtualCluster with additional properties, including security configurations and tags.
 
 ```ts
-const advancedVirtualCluster = await AWS.EMRContainers.VirtualCluster("advancedVirtualCluster", {
-  name: "AdvancedVirtualCluster",
-  containerProvider: {
-    type: "EKS",
-    id: "myAdvancedEKSCluster"
-  },
-  securityConfigurationId: "myAdvancedSecurityConfigId", // Optional
-  tags: [
-    {
-      key: "Environment",
-      value: "Production"
-    },
-    {
-      key: "Department",
-      value: "DataScience"
+const advancedVirtualCluster = await AWS.EMRContainers.VirtualCluster("AdvancedVirtualCluster", {
+  Name: "AdvancedCluster",
+  ContainerProvider: {
+    Id: "my-container-provider",
+    Type: "EKS",
+    Info: {
+      EksInfo: {
+        Namespace: "production"
+      }
     }
+  },
+  SecurityConfigurationId: "my-secure-config",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Project", Value: "DataPipeline" }
   ]
 });
 ```
 
-## Using Existing Resource
+## Using Adopt Option
 
-This example demonstrates how to adopt an existing VirtualCluster instead of failing if it already exists.
+Create a VirtualCluster using the adopt option to prevent failure if the resource already exists.
 
 ```ts
-const existingVirtualCluster = await AWS.EMRContainers.VirtualCluster("existingVirtualCluster", {
-  name: "ExistingVirtualCluster",
-  containerProvider: {
-    type: "EKS",
-    id: "myExistingEKSCluster"
+const adoptedVirtualCluster = await AWS.EMRContainers.VirtualCluster("AdoptedVirtualCluster", {
+  Name: "AdoptedCluster",
+  ContainerProvider: {
+    Id: "my-container-provider",
+    Type: "EKS",
+    Info: {
+      EksInfo: {
+        Namespace: "adopted"
+      }
+    }
   },
-  adopt: true // Enables adopting existing resources
+  SecurityConfigurationId: "my-adopted-security-config",
+  adopt: true
+});
+```
+
+## Tagging for Resource Management
+
+Create a VirtualCluster with a comprehensive tagging strategy for better resource management.
+
+```ts
+const taggedVirtualCluster = await AWS.EMRContainers.VirtualCluster("TaggedVirtualCluster", {
+  Name: "TaggedCluster",
+  ContainerProvider: {
+    Id: "my-container-provider",
+    Type: "EKS",
+    Info: {
+      EksInfo: {
+        Namespace: "tagged"
+      }
+    }
+  },
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Department", Value: "Analytics" },
+    { Key: "Owner", Value: "JohnDoe" }
+  ]
 });
 ```

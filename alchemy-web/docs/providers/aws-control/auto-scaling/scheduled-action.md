@@ -5,65 +5,62 @@ description: Learn how to create, update, and manage AWS AutoScaling ScheduledAc
 
 # ScheduledAction
 
-The ScheduledAction resource lets you manage [AWS AutoScaling ScheduledActions](https://docs.aws.amazon.com/autoscaling/latest/userguide/) to automate scaling actions for your Auto Scaling groups.
+The ScheduledAction resource allows you to manage [AWS AutoScaling ScheduledActions](https://docs.aws.amazon.com/autoscaling/latest/userguide/) for scaling your Auto Scaling group at specified times.
 
 ## Minimal Example
 
-Create a basic scheduled action to scale your Auto Scaling group with a desired capacity at a specific time.
+This example demonstrates how to create a basic ScheduledAction with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const scheduledAction = await AWS.AutoScaling.ScheduledAction("scale-up-action", {
-  AutoScalingGroupName: "my-auto-scaling-group",
-  DesiredCapacity: 3,
-  StartTime: "2023-10-01T12:00:00Z",
-  EndTime: "2023-10-01T15:00:00Z"
+const DailyScheduledAction = await AWS.AutoScaling.ScheduledAction("DailyScalingAction", {
+  AutoScalingGroupName: "MyAutoScalingGroup",
+  DesiredCapacity: 5,
+  StartTime: "2023-10-01T08:00:00Z",
+  EndTime: "2023-10-31T18:00:00Z"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a scheduled action with a recurrence pattern and timezone for repeating scaling activities.
+In this example, we enhance the ScheduledAction with additional optional properties, including recurrence and timezone.
 
 ```ts
-const recurringAction = await AWS.AutoScaling.ScheduledAction("recurring-scale-action", {
-  AutoScalingGroupName: "my-auto-scaling-group",
-  DesiredCapacity: 5,
-  MinSize: 1,
+const WeeklyScheduledAction = await AWS.AutoScaling.ScheduledAction("WeeklyScalingAction", {
+  AutoScalingGroupName: "MyAutoScalingGroup",
+  MinSize: 3,
   MaxSize: 10,
-  Recurrence: "0 10 * * *", // Every day at 10:00 AM UTC
+  DesiredCapacity: 5,
+  Recurrence: "0 10 * * 1", // Every Monday at 10:00 AM UTC
   TimeZone: "UTC"
 });
 ```
 
-## Scaling Down During Off-Peak Hours
+## Conditional Scaling
 
-Set a scheduled action to scale down the Auto Scaling group during off-peak hours.
+This example shows how to set a ScheduledAction that adjusts the desired capacity based on a specific day and time.
 
 ```ts
-const scaleDownAction = await AWS.AutoScaling.ScheduledAction("scale-down-action", {
-  AutoScalingGroupName: "my-auto-scaling-group",
-  DesiredCapacity: 1,
-  StartTime: "2023-10-01T20:00:00Z",
-  EndTime: "2023-10-01T23:00:00Z"
+const WeekendScalingAction = await AWS.AutoScaling.ScheduledAction("WeekendScalingAction", {
+  AutoScalingGroupName: "MyAutoScalingGroup",
+  DesiredCapacity: 8,
+  StartTime: "2023-10-01T00:00:00Z",
+  EndTime: "2023-10-02T23:59:59Z",
+  Recurrence: "0 0 * * 0" // Every Sunday at midnight
 });
 ```
 
-## Complete Lifecycle Management
+## Adoption of Existing ScheduledAction
 
-Manage both scaling up and down actions for a complete lifecycle management of your Auto Scaling group.
+This example illustrates how to adopt an existing ScheduledAction instead of failing if it already exists.
 
 ```ts
-const scaleUpAction = await AWS.AutoScaling.ScheduledAction("scale-up-action", {
-  AutoScalingGroupName: "my-auto-scaling-group",
-  DesiredCapacity: 5,
-  StartTime: "2023-10-01T08:00:00Z"
-});
-
-const scaleDownAction = await AWS.AutoScaling.ScheduledAction("scale-down-action", {
-  AutoScalingGroupName: "my-auto-scaling-group",
-  DesiredCapacity: 2,
-  StartTime: "2023-10-01T18:00:00Z"
+const ExistingScheduledAction = await AWS.AutoScaling.ScheduledAction("ExistingAction", {
+  AutoScalingGroupName: "MyAutoScalingGroup",
+  DesiredCapacity: 6,
+  StartTime: "2023-10-01T08:00:00Z",
+  EndTime: "2023-10-31T18:00:00Z",
+  adopt: true // Adopt existing resource if it exists
 });
 ```

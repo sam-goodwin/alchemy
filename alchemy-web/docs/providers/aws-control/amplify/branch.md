@@ -5,88 +5,72 @@ description: Learn how to create, update, and manage AWS Amplify Branchs using A
 
 # Branch
 
-The Branch resource lets you manage [AWS Amplify Branchs](https://docs.aws.amazon.com/amplify/latest/userguide/) for your applications, allowing for features such as preview environments, performance modes, and more.
+The Branch resource lets you manage [AWS Amplify Branches](https://docs.aws.amazon.com/amplify/latest/userguide/) for deploying and managing different versions of web applications.
 
 ## Minimal Example
 
-Create a basic Amplify Branch with required properties and some common optional settings.
+Create a basic Amplify Branch with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const amplifyBranch = await AWS.Amplify.Branch("mainBranch", {
-  AppId: "your-amplify-app-id",
+const AmplifyBranch = await AWS.Amplify.Branch("MainBranch", {
+  AppId: "your-app-id",
   BranchName: "main",
   EnableAutoBuild: true,
-  EnablePerformanceMode: false,
   Description: "Main branch for production deployment"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an Amplify Branch with advanced settings, including environment variables and pull request previews.
+Configure an Amplify Branch with additional settings such as environment variables and performance mode.
 
 ```ts
-const featureBranch = await AWS.Amplify.Branch("featureBranch", {
-  AppId: "your-amplify-app-id",
-  BranchName: "feature/new-feature",
-  EnablePullRequestPreview: true,
-  PullRequestEnvironmentName: "feature-env",
+const AdvancedAmplifyBranch = await AWS.Amplify.Branch("FeatureBranch", {
+  AppId: "your-app-id",
+  BranchName: "feature-branch",
+  EnableAutoBuild: true,
+  EnablePerformanceMode: true,
   EnvironmentVariables: [
-    { Name: "API_URL", Value: "https://api.example.com" },
-    { Name: "NODE_ENV", Value: "development" }
+    { Name: "NODE_ENV", Value: "development" },
+    { Name: "API_URL", Value: "https://api.example.com" }
   ],
-  BasicAuthConfig: {
-    Username: "admin",
-    Password: "securePassword123"
-  }
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Frontend" }
+  ]
+});
+```
+
+## Pull Request Preview
+
+Create a branch specifically for previewing pull requests with skew protection enabled.
+
+```ts
+const PullRequestBranch = await AWS.Amplify.Branch("PR-Preview-Branch", {
+  AppId: "your-app-id",
+  BranchName: "pr-1234",
+  PullRequestEnvironmentName: "pr-1234-preview",
+  EnablePullRequestPreview: true,
+  EnableSkewProtection: true,
+  Description: "Preview branch for pull request #1234"
 });
 ```
 
 ## Custom Build Specifications
 
-Set a custom build specification for your Amplify Branch to control the build process.
+Set up a branch with a custom build specification to control the build process.
 
 ```ts
-const customBuildBranch = await AWS.Amplify.Branch("customBuildBranch", {
-  AppId: "your-amplify-app-id",
+const CustomBuildSpecBranch = await AWS.Amplify.Branch("CustomBuildSpecBranch", {
+  AppId: "your-app-id",
   BranchName: "custom-build",
-  BuildSpec: `
-    version: 0.1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - npm install
-        build:
-          commands:
-            - npm run build
-      artifacts:
-        baseDirectory: build
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - node_modules/**/*
-  `
-});
-```
-
-## Performance Optimizations
-
-Create an Amplify Branch optimized for performance with skew protection enabled.
-
-```ts
-const optimizedBranch = await AWS.Amplify.Branch("optimizedBranch", {
-  AppId: "your-amplify-app-id",
-  BranchName: "optimized",
-  EnableSkewProtection: true,
+  BuildSpec: "version: 0.1\nfrontend:\n  phases:\n    build:\n      commands:\n        - npm install\n        - npm run build",
   EnableAutoBuild: true,
-  EnablePerformanceMode: true,
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "Development" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
   ]
 });
 ```

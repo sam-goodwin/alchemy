@@ -5,91 +5,109 @@ description: Learn how to create, update, and manage AWS EC2 SecurityGroups usin
 
 # SecurityGroup
 
-The SecurityGroup resource lets you manage [AWS EC2 SecurityGroups](https://docs.aws.amazon.com/ec2/latest/userguide/) and their configuration settings.
+The SecurityGroup resource allows you to define and manage [AWS EC2 SecurityGroups](https://docs.aws.amazon.com/ec2/latest/userguide/) which control inbound and outbound traffic for your instances.
 
 ## Minimal Example
 
-Create a basic security group with a description and a VPC ID:
+Create a basic SecurityGroup with a description and a default ingress rule allowing SSH access.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSecurityGroup = await AWS.EC2.SecurityGroup("basicSecurityGroup", {
-  GroupDescription: "Allow SSH access",
-  VpcId: "vpc-12345abcde",
-  SecurityGroupIngress: [{
-    IpProtocol: "tcp",
-    FromPort: 22,
-    ToPort: 22,
-    CidrIp: "203.0.113.0/24"
-  }]
+const BasicSecurityGroup = await AWS.EC2.SecurityGroup("BasicSecurityGroup", {
+  GroupDescription: "Basic security group for allowing SSH access",
+  GroupName: "BasicSSHGroup",
+  SecurityGroupIngress: [
+    {
+      IpProtocol: "tcp",
+      FromPort: 22,
+      ToPort: 22,
+      CidrIp: "203.0.113.0/24" // Allow SSH from a specific IP range
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a security group with both ingress and egress rules for HTTP and HTTPS access:
+Configure a SecurityGroup with both ingress and egress rules, allowing HTTP and HTTPS traffic while restricting all other outbound traffic.
 
 ```ts
-const advancedSecurityGroup = await AWS.EC2.SecurityGroup("advancedSecurityGroup", {
-  GroupDescription: "Allow HTTP and HTTPS access",
-  VpcId: "vpc-12345abcde",
+const AdvancedSecurityGroup = await AWS.EC2.SecurityGroup("AdvancedSecurityGroup", {
+  GroupDescription: "Advanced security group for web servers",
   SecurityGroupIngress: [
     {
       IpProtocol: "tcp",
       FromPort: 80,
       ToPort: 80,
-      CidrIp: "0.0.0.0/0"
+      CidrIp: "0.0.0.0/0" // Allow HTTP from anywhere
     },
     {
       IpProtocol: "tcp",
       FromPort: 443,
       ToPort: 443,
+      CidrIp: "0.0.0.0/0" // Allow HTTPS from anywhere
+    }
+  ],
+  SecurityGroupEgress: [
+    {
+      IpProtocol: "-1", // Allow all outbound traffic
+      FromPort: 0,
+      ToPort: 0,
       CidrIp: "0.0.0.0/0"
     }
   ],
-  SecurityGroupEgress: [{
-    IpProtocol: "-1", // Allows all outbound traffic
-    CidrIp: "0.0.0.0/0"
-  }]
-});
-```
-
-## Custom Name and Tags
-
-Create a security group with a custom name and tags for better identification:
-
-```ts
-const taggedSecurityGroup = await AWS.EC2.SecurityGroup("taggedSecurityGroup", {
-  GroupDescription: "Allow database access",
-  GroupName: "db-access-sg",
-  VpcId: "vpc-12345abcde",
-  SecurityGroupIngress: [{
-    IpProtocol: "tcp",
-    FromPort: 3306,
-    ToPort: 3306,
-    CidrIp: "192.0.2.0/24"
-  }],
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Department",
-      Value: "Engineering"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "WebOps" }
   ]
 });
 ```
 
-## Adopting Existing Resources
+## Restricting Access by IP
 
-If you want to adopt an existing security group instead of creating a new one, set the `adopt` property to true:
+Create a SecurityGroup that restricts access to a specific set of IP addresses for database connections.
 
 ```ts
-const existingSecurityGroup = await AWS.EC2.SecurityGroup("existingSecurityGroup", {
-  GroupDescription: "Adopt existing security group",
-  adopt: true
+const DatabaseSecurityGroup = await AWS.EC2.SecurityGroup("DatabaseSecurityGroup", {
+  GroupDescription: "Security group for database access",
+  SecurityGroupIngress: [
+    {
+      IpProtocol: "tcp",
+      FromPort: 3306,
+      ToPort: 3306,
+      CidrIp: "192.0.2.0/24" // Allow MySQL access from a specific IP range
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Database" }
+  ]
+});
+```
+
+## Allowing Internal Communication
+
+Set up a SecurityGroup that allows internal communication between instances within the same VPC.
+
+```ts
+const InternalCommunicationSecurityGroup = await AWS.EC2.SecurityGroup("InternalCommunicationSecurityGroup", {
+  GroupDescription: "Security group for internal instance communication",
+  SecurityGroupIngress: [
+    {
+      IpProtocol: "tcp",
+      FromPort: 0,
+      ToPort: 65535,
+      SourceSecurityGroupId: "sg-12345678" // Allow traffic from another security group
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```

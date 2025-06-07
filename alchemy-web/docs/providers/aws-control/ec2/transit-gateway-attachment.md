@@ -5,60 +5,47 @@ description: Learn how to create, update, and manage AWS EC2 TransitGatewayAttac
 
 # TransitGatewayAttachment
 
-The TransitGatewayAttachment resource lets you manage [AWS EC2 Transit Gateway Attachments](https://docs.aws.amazon.com/ec2/latest/userguide/) for connecting VPCs and on-premises networks to a transit gateway.
+The TransitGatewayAttachment resource lets you create and manage [AWS EC2 TransitGatewayAttachments](https://docs.aws.amazon.com/ec2/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-transitgatewayattachment.html
 
 ## Minimal Example
-
-Create a basic Transit Gateway Attachment with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const transitGatewayAttachment = await AWS.EC2.TransitGatewayAttachment("myTransitGatewayAttachment", {
-  TransitGatewayId: "tgw-0abcd1234efgh5678",
-  VpcId: "vpc-0abcd1234efgh5678",
-  SubnetIds: ["subnet-0abcd1234efgh5678", "subnet-1abcd1234efgh5678"],
-  Tags: [
-    {
-      Key: "Name",
-      Value: "MyTransitGatewayAttachment"
-    }
-  ]
-});
+const transitgatewayattachment = await AWS.EC2.TransitGatewayAttachment(
+  "transitgatewayattachment-example",
+  {
+    TransitGatewayId: "example-transitgatewayid",
+    VpcId: "example-vpcid",
+    SubnetIds: ["example-subnetids-1"],
+    Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  }
+);
 ```
 
 ## Advanced Configuration
 
-Configure a Transit Gateway Attachment with specific options for routing.
+Create a transitgatewayattachment with additional configuration:
 
 ```ts
-const advancedTransitGatewayAttachment = await AWS.EC2.TransitGatewayAttachment("advancedTransitGatewayAttachment", {
-  TransitGatewayId: "tgw-0abcd1234efgh5678",
-  VpcId: "vpc-0abcd1234efgh5678",
-  SubnetIds: ["subnet-0abcd1234efgh5678", "subnet-1abcd1234efgh5678"],
-  Options: {
-    ApplianceMode: "enable",
-    DnsSupport: "enable",
-    IPv6Support: "disable"
-  },
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
-  ]
-});
+import AWS from "alchemy/aws/control";
+
+const advancedTransitGatewayAttachment = await AWS.EC2.TransitGatewayAttachment(
+  "advanced-transitgatewayattachment",
+  {
+    TransitGatewayId: "example-transitgatewayid",
+    VpcId: "example-vpcid",
+    SubnetIds: ["example-subnetids-1"],
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+  }
+);
 ```
 
-## Adoption of Existing Resource
-
-Adopt an existing Transit Gateway Attachment instead of failing if it already exists.
-
-```ts
-const adoptTransitGatewayAttachment = await AWS.EC2.TransitGatewayAttachment("adoptExistingTransitGatewayAttachment", {
-  TransitGatewayId: "tgw-0abcd1234efgh5678",
-  VpcId: "vpc-0abcd1234efgh5678",
-  SubnetIds: ["subnet-0abcd1234efgh5678"],
-  adopt: true
-});
-```

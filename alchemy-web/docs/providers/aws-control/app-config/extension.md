@@ -5,24 +5,25 @@ description: Learn how to create, update, and manage AWS AppConfig Extensions us
 
 # Extension
 
-The Extension resource lets you manage [AWS AppConfig Extensions](https://docs.aws.amazon.com/appconfig/latest/userguide/) for extending application configurations with custom actions and parameters.
+The Extension resource lets you manage [AWS AppConfig Extensions](https://docs.aws.amazon.com/appconfig/latest/userguide/) to enhance the configuration management capabilities in your applications.
 
 ## Minimal Example
 
-Create a basic AppConfig Extension with essential properties.
+Create a basic AppConfig Extension with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const appConfigExtension = await AWS.AppConfig.Extension("basicExtension", {
-  Name: "MyBasicExtension",
+const BasicExtension = await AWS.AppConfig.Extension("BasicExtension", {
+  Name: "BasicAppConfigExtension",
+  Description: "This extension is used to enhance app configuration.",
   Actions: {
-    "MyAction": {
-      "ActionType": "AWS::Lambda::Function",
-      "FunctionArn": "arn:aws:lambda:us-west-2:123456789012:function:myLambdaFunction"
-    }
+    // Define actions here (e.g., actions to be performed by the extension)
   },
-  Description: "A basic AppConfig extension for demonstration purposes."
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "AppConfig" }
+  ]
 });
 ```
 
@@ -31,42 +32,47 @@ const appConfigExtension = await AWS.AppConfig.Extension("basicExtension", {
 Configure an AppConfig Extension with parameters and additional actions.
 
 ```ts
-const advancedAppConfigExtension = await AWS.AppConfig.Extension("advancedExtension", {
-  Name: "MyAdvancedExtension",
-  Actions: {
-    "MyAdvancedAction": {
-      "ActionType": "AWS::StepFunctions::StateMachine",
-      "StateMachineArn": "arn:aws:states:us-west-2:123456789012:stateMachine:myStateMachine"
-    }
-  },
+const AdvancedExtension = await AWS.AppConfig.Extension("AdvancedExtension", {
+  Name: "AdvancedAppConfigExtension",
+  Description: "This extension includes advanced configuration options.",
   Parameters: {
-    "parameter1": "value1",
-    "parameter2": 42
+    // Add parameter key-value pairs here (e.g., specific configuration parameters)
+  },
+  Actions: {
+    // Define actions here (e.g., actions to be performed by the extension)
   },
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "AppConfig" }
   ],
-  Description: "An advanced AppConfig extension with parameters and tags."
+  adopt: true // Adopt existing resource if it exists
 });
 ```
 
-## Adoption of Existing Resource
+## Custom Actions
 
-Create an AppConfig Extension that adopts an existing resource instead of failing if it already exists.
+Demonstrate how to configure an extension with custom actions to be executed.
 
 ```ts
-const adoptExistingExtension = await AWS.AppConfig.Extension("existingExtension", {
-  Name: "ExistingExtension",
+const CustomActionExtension = await AWS.AppConfig.Extension("CustomActionExtension", {
+  Name: "CustomActionAppConfigExtension",
+  Description: "This extension has custom actions.",
   Actions: {
-    "ExistingAction": {
-      "ActionType": "AWS::SNS::Topic",
-      "TopicArn": "arn:aws:sns:us-west-2:123456789012:myTopic"
+    // Define your custom actions here
+    Action1: {
+      Type: "AWS::Lambda::Function",
+      Properties: {
+        FunctionName: "MyCustomActionHandler",
+        Runtime: "nodejs14.x",
+        Handler: "index.handler",
+        Code: {
+          ZipFile: "exports.handler = async (event) => { return 'Hello from custom action!'; };"
+        }
+      }
     }
   },
-  adopt: true, // Adopt existing resource if it exists
-  Description: "This extension adopts an existing resource if available."
+  Tags: [
+    { Key: "Environment", Value: "Staging" }
+  ]
 });
 ```

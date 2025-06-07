@@ -5,56 +5,31 @@ description: Learn how to create, update, and manage AWS ApiGatewayV2 Deployment
 
 # Deployment
 
-The Deployment resource lets you manage [AWS ApiGatewayV2 Deployments](https://docs.aws.amazon.com/apigatewayv2/latest/userguide/) to create and deploy APIs in AWS. This resource facilitates versioning for API changes and allows you to manage your API lifecycle effectively.
+The Deployment resource lets you create and manage [AWS ApiGatewayV2 Deployments](https://docs.aws.amazon.com/apigatewayv2/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigatewayv2-deployment.html
 
 ## Minimal Example
-
-Create a basic deployment for an API with a description and a stage name:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const apiDeployment = await AWS.ApiGatewayV2.Deployment("myApiDeployment", {
-  ApiId: "abc123def456",
-  Description: "Initial deployment of my API",
-  StageName: "prod"
+const deployment = await AWS.ApiGatewayV2.Deployment("deployment-example", {
+  ApiId: "example-apiid",
+  Description: "A deployment resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a deployment with additional properties such as adopting existing resources:
+Create a deployment with additional configuration:
 
 ```ts
-const advancedApiDeployment = await AWS.ApiGatewayV2.Deployment("myAdvancedApiDeployment", {
-  ApiId: "abc123def456",
-  Description: "Advanced deployment with existing resource adoption",
-  StageName: "staging",
-  adopt: true
+import AWS from "alchemy/aws/control";
+
+const advancedDeployment = await AWS.ApiGatewayV2.Deployment("advanced-deployment", {
+  ApiId: "example-apiid",
+  Description: "A deployment resource managed by Alchemy",
 });
 ```
 
-## Rollback to Previous Version
-
-Demonstrate how to rollback to a previous version of an API by creating a new deployment for the existing API:
-
-```ts
-const rollbackDeployment = await AWS.ApiGatewayV2.Deployment("myRollbackDeployment", {
-  ApiId: "abc123def456",
-  Description: "Rolling back to previous API version",
-  StageName: "prod"
-});
-```
-
-## Deployment with Monitoring
-
-Create a deployment that includes monitoring settings for better observability:
-
-```ts
-const monitoredApiDeployment = await AWS.ApiGatewayV2.Deployment("myMonitoredApiDeployment", {
-  ApiId: "abc123def456",
-  Description: "Deployment with monitoring enabled",
-  StageName: "prod",
-  adopt: false // Not adopting existing resources for fresh deployment
-});
-```

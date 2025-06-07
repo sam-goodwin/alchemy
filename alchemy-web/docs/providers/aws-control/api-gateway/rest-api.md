@@ -5,95 +5,77 @@ description: Learn how to create, update, and manage AWS ApiGateway RestApis usi
 
 # RestApi
 
-The RestApi resource allows you to create and manage [AWS ApiGateway RestApis](https://docs.aws.amazon.com/apigateway/latest/userguide/) for building and deploying APIs for your applications.
+The RestApi resource lets you manage [AWS ApiGateway RestApis](https://docs.aws.amazon.com/apigateway/latest/userguide/) for creating, deploying, and managing secure APIs at scale.
 
 ## Minimal Example
 
-This example demonstrates how to create a basic RestApi with essential properties and a description.
+Create a basic RestApi with a name and description, along with a policy for access control.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicApi = await AWS.ApiGateway.RestApi("basicApi", {
-  name: "BasicAPI",
-  description: "This is a basic API for demonstration purposes.",
-  binaryMediaTypes: ["application/octet-stream"],
-  tags: [
-    { key: "Project", value: "Demo" }
-  ]
-});
-```
-
-## Advanced Configuration
-
-Here is an example of creating a RestApi with advanced configuration options, including a policy and endpoint configuration.
-
-```ts
-const advancedApi = await AWS.ApiGateway.RestApi("advancedApi", {
-  name: "AdvancedAPI",
-  description: "This API includes advanced settings.",
-  policy: {
+const basicRestApi = await AWS.ApiGateway.RestApi("BasicRestApi", {
+  Name: "MyBasicApi",
+  Description: "This is a basic API for demonstration purposes.",
+  Policy: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
         Principal: "*",
         Action: "execute-api:Invoke",
-        Resource: "arn:aws:execute-api:us-east-1:123456789012:advancedApi/*"
+        Resource: "*"
       }
     ]
   },
-  endpointConfiguration: {
-    types: ["REGIONAL"],
-    vpcEndpointIds: ["vpce-12345678"]
-  },
-  minimumCompressionSize: 1024,
-  tags: [
-    { key: "Environment", value: "Production" }
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Owner", Value: "DevTeam" }
   ]
 });
 ```
 
-## Importing an Existing API
+## Advanced Configuration
 
-This example demonstrates how to clone an existing RestApi and adopt it into your management.
-
-```ts
-const clonedApi = await AWS.ApiGateway.RestApi("clonedApi", {
-  cloneFrom: "arn:aws:execute-api:us-east-1:123456789012:existingApi/*",
-  adopt: true
-});
-```
-
-## Disabling Execute API Endpoint
-
-In this example, we create a RestApi with the execute API endpoint disabled, useful for internal APIs.
+Configure a RestApi with more advanced settings including binary media types and a minimum compression size.
 
 ```ts
-const internalApi = await AWS.ApiGateway.RestApi("internalApi", {
-  name: "InternalAPI",
-  description: "This API is internal and does not expose an endpoint.",
-  disableExecuteApiEndpoint: true,
-  tags: [
-    { key: "Access", value: "Internal" }
-  ]
-});
-```
-
-## Configuration with S3 Body Location
-
-This example shows how to create a RestApi that specifies an S3 location for the API definition body.
-
-```ts
-const s3BodyApi = await AWS.ApiGateway.RestApi("s3BodyApi", {
-  name: "S3BodyAPI",
-  bodyS3Location: {
-    bucket: "my-api-definitions",
-    key: "api-definition.json",
-    version: "latest"
+const advancedRestApi = await AWS.ApiGateway.RestApi("AdvancedRestApi", {
+  Name: "MyAdvancedApi",
+  Description: "This API supports binary data and compression.",
+  MinimumCompressionSize: 1024, // Compress responses larger than 1KB
+  BinaryMediaTypes: ["image/png", "application/octet-stream"],
+  EndpointConfiguration: {
+    Types: ["REGIONAL"] // Use REGIONAL endpoint type
   },
-  tags: [
-    { key: "Source", value: "S3" }
+  FailOnWarnings: true
+});
+```
+
+## Clone from Existing Api
+
+Demonstrate how to clone an existing RestApi configuration.
+
+```ts
+const clonedRestApi = await AWS.ApiGateway.RestApi("ClonedRestApi", {
+  CloneFrom: "arn:aws:apigateway:us-east-1::/restapis/abcdefghij", // Replace with existing API ARN
+  Name: "MyClonedApi",
+  Description: "Cloned API from an existing configuration."
+});
+```
+
+## Disable Execute API Endpoint
+
+Create a RestApi with the execute API endpoint disabled for enhanced security.
+
+```ts
+const secureRestApi = await AWS.ApiGateway.RestApi("SecureRestApi", {
+  Name: "MySecureApi",
+  Description: "This API has the execute API endpoint disabled.",
+  DisableExecuteApiEndpoint: true,
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Compliance", Value: "PCI-DSS" }
   ]
 });
 ```

@@ -5,64 +5,53 @@ description: Learn how to create, update, and manage AWS RDS DBParameterGroups u
 
 # DBParameterGroup
 
-The DBParameterGroup resource lets you manage [AWS RDS DBParameterGroups](https://docs.aws.amazon.com/rds/latest/userguide/) and their configuration settings. This resource allows you to define database engine-specific parameters that control the behavior of your RDS instances.
+The DBParameterGroup resource lets you manage [AWS RDS DBParameterGroups](https://docs.aws.amazon.com/rds/latest/userguide/) for fine-tuning your database configurations.
 
 ## Minimal Example
 
-Create a basic DBParameterGroup with required properties and one optional property.
+Create a basic DBParameterGroup with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbParameterGroup = await AWS.RDS.DBParameterGroup("myDbParameterGroup", {
-  DBParameterGroupName: "custom-db-parameters",
-  Description: "Custom parameter group for my database",
-  Family: "mysql8.0"
+const basicDBParameterGroup = await AWS.RDS.DBParameterGroup("BasicDBParameterGroup", {
+  Description: "Basic parameter group for MySQL",
+  Family: "mysql8.0",
+  Tags: [{ Key: "Environment", Value: "development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DBParameterGroup with custom parameters for performance tuning.
+Configure a DBParameterGroup with specific parameters and multiple tags.
 
 ```ts
-const advancedDbParameterGroup = await AWS.RDS.DBParameterGroup("advancedDbParameterGroup", {
-  DBParameterGroupName: "high-performance-parameters",
-  Description: "High performance parameter group for optimized settings",
-  Family: "postgres12",
+const advancedDBParameterGroup = await AWS.RDS.DBParameterGroup("AdvancedDBParameterGroup", {
+  Description: "Advanced parameter group for MySQL with custom parameters",
+  Family: "mysql8.0",
   Parameters: {
-    "max_connections": "200",
-    "work_mem": "64MB",
-    "shared_buffers": "512MB"
-  }
-});
-```
-
-## Using Tags for Resource Management
-
-Add tags to your DBParameterGroup for improved resource management.
-
-```ts
-const taggedDbParameterGroup = await AWS.RDS.DBParameterGroup("taggedDbParameterGroup", {
-  DBParameterGroupName: "tagged-db-parameters",
-  Description: "DB parameter group with tags",
-  Family: "oracle-se2",
+    max_connections: "150",
+    innodb_buffer_pool_size: "536870912" // 512 MB
+  },
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DatabaseOptimization" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Owner", Value: "DatabaseTeam" }
   ]
 });
 ```
 
-## Modifying an Existing DBParameterGroup
+## Using Custom Parameters
 
-Adopt an existing parameter group instead of creating a new one.
+Create a DBParameterGroup with additional custom parameters suited for specific use cases.
 
 ```ts
-const existingDbParameterGroup = await AWS.RDS.DBParameterGroup("existingDbParameterGroup", {
-  DBParameterGroupName: "existing-db-parameters",
-  Description: "Existing parameter group to be adopted",
-  Family: "mysql8.0",
-  adopt: true
+const customParametersDBParameterGroup = await AWS.RDS.DBParameterGroup("CustomParametersDBParameterGroup", {
+  Description: "Custom parameter group with specialized settings",
+  Family: "postgres12",
+  Parameters: {
+    work_mem: "65536", // 64 MB
+    effective_cache_size: "2097152" // 2 GB
+  },
+  Tags: [{ Key: "Project", Value: "AnalyticsApp" }]
 });
 ```

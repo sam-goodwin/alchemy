@@ -5,32 +5,32 @@ description: Learn how to create, update, and manage AWS Backup LogicallyAirGapp
 
 # LogicallyAirGappedBackupVault
 
-The LogicallyAirGappedBackupVault resource allows you to manage [AWS Backup Logically Air Gapped Backup Vaults](https://docs.aws.amazon.com/backup/latest/userguide/) for secure backup storage with enhanced protection against cyber threats.
+The LogicallyAirGappedBackupVault resource lets you manage AWS Backup Logically Air Gapped Backup Vaults, which provide a secure way to store backup data that is not accessible from the internet. For more information, visit the [AWS Backup LogicallyAirGappedBackupVaults documentation](https://docs.aws.amazon.com/backup/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic logically air gapped backup vault with required properties and some optional tags.
+Create a basic Logically Air Gapped Backup Vault with required properties and some optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const backupVault = await AWS.Backup.LogicallyAirGappedBackupVault("myBackupVault", {
+const backupVault = await AWS.Backup.LogicallyAirGappedBackupVault("MyBackupVault", {
   BackupVaultName: "MyBackupVault",
   MaxRetentionDays: 30,
   MinRetentionDays: 7,
-  BackupVaultTags: {
-    Environment: "production",
-    Project: "critical-backup"
-  }
+  BackupVaultTags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a logically air gapped backup vault with an access policy and notifications settings.
+Configure a Logically Air Gapped Backup Vault with an access policy and notifications.
 
 ```ts
-const advancedBackupVault = await AWS.Backup.LogicallyAirGappedBackupVault("advancedBackupVault", {
+const advancedBackupVault = await AWS.Backup.LogicallyAirGappedBackupVault("AdvancedBackupVault", {
   BackupVaultName: "AdvancedBackupVault",
   MaxRetentionDays: 60,
   MinRetentionDays: 14,
@@ -39,30 +39,44 @@ const advancedBackupVault = await AWS.Backup.LogicallyAirGappedBackupVault("adva
     Statement: [
       {
         Effect: "Allow",
-        Principal: {
-          AWS: "arn:aws:iam::123456789012:role/MyBackupRole"
-        },
+        Principal: { AWS: "arn:aws:iam::123456789012:user/BackupUser" },
         Action: "backup:StartBackupJob",
         Resource: "*"
       }
     ]
   },
   Notifications: {
-    BackupVaultEvents: ["BACKUP_JOB_STARTED", "BACKUP_JOB_COMPLETED"],
-    SnsTopicArn: "arn:aws:sns:us-east-1:123456789012:MyNotificationTopic"
+    BackupVaultEvents: ["BACKUP_JOB_FAILED", "BACKUP_JOB_COMPLETED"],
+    SNSTopicArn: "arn:aws:sns:us-west-2:123456789012:BackupNotifications"
   }
 });
 ```
 
-## Adoption of Existing Resources
+## Use Case: Adoption of Existing Vault
 
-Use the adoption feature to manage an existing logically air gapped backup vault without failing.
+If you need to adopt an existing Logically Air Gapped Backup Vault, set the `adopt` property to `true`.
 
 ```ts
-const adoptBackupVault = await AWS.Backup.LogicallyAirGappedBackupVault("adoptBackupVault", {
+const adoptedBackupVault = await AWS.Backup.LogicallyAirGappedBackupVault("AdoptedBackupVault", {
   BackupVaultName: "ExistingBackupVault",
+  MaxRetentionDays: 90,
+  MinRetentionDays: 30,
+  adopt: true
+});
+```
+
+## Use Case: Custom Notification Settings
+
+Create a vault with customized notification settings for various backup events.
+
+```ts
+const customNotificationVault = await AWS.Backup.LogicallyAirGappedBackupVault("CustomNotificationVault", {
+  BackupVaultName: "CustomNotificationVault",
   MaxRetentionDays: 45,
   MinRetentionDays: 10,
-  adopt: true // Adopt existing resource if it already exists
+  Notifications: {
+    BackupVaultEvents: ["BACKUP_JOB_STARTED", "BACKUP_JOB_FAILED"],
+    SNSTopicArn: "arn:aws:sns:us-west-2:123456789012:CustomBackupNotifications"
+  }
 });
 ```

@@ -5,54 +5,40 @@ description: Learn how to create, update, and manage AWS SecurityHub FindingAggr
 
 # FindingAggregator
 
-The FindingAggregator resource allows you to manage AWS SecurityHub FindingAggregators, which helps in aggregating and consolidating findings across multiple AWS accounts and regions. For more detailed information, refer to the [AWS SecurityHub FindingAggregators documentation](https://docs.aws.amazon.com/securityhub/latest/userguide/).
+The FindingAggregator resource allows you to manage the aggregation of findings across multiple AWS accounts and regions in AWS Security Hub. You can find more information in the [AWS SecurityHub FindingAggregators](https://docs.aws.amazon.com/securityhub/latest/userguide/) documentation.
 
 ## Minimal Example
 
-Create a basic FindingAggregator with required properties and one optional property.
+Create a basic FindingAggregator with required properties and one optional property for regions.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const findingAggregator = await AWS.SecurityHub.FindingAggregator("myFindingAggregator", {
+const BasicFindingAggregator = await AWS.SecurityHub.FindingAggregator("BasicAggregator", {
   RegionLinkingMode: "ALL",
-  Regions: ["us-east-1", "us-west-2"],
-  adopt: true // Allow adopting existing resources
+  Regions: ["us-east-1", "us-west-2"]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a FindingAggregator with specific region linking modes and multiple regions.
+Configure a FindingAggregator with the option to adopt an existing resource if it already exists.
 
 ```ts
-const advancedAggregator = await AWS.SecurityHub.FindingAggregator("advancedAggregator", {
-  RegionLinkingMode: "LINK_ACCOUNTS", // Aggregate findings from linked accounts
-  Regions: ["eu-central-1", "ap-south-1"],
-  adopt: true // Adopt existing resources if they are already present
+const AdvancedFindingAggregator = await AWS.SecurityHub.FindingAggregator("AdvancedAggregator", {
+  RegionLinkingMode: "LINKED",
+  Regions: ["us-east-1", "eu-west-1"],
+  adopt: true
 });
 ```
 
-## Use Case: Centralized Security Management
+## Specific Use Case: Multi-Region Setup
 
-Set up a FindingAggregator to centralize security findings across different regions for a comprehensive security overview.
-
-```ts
-const centralizedAggregator = await AWS.SecurityHub.FindingAggregator("centralizedAggregator", {
-  RegionLinkingMode: "ALL", // Link all regions for comprehensive aggregation
-  Regions: ["us-east-1", "us-west-1", "ap-northeast-1"],
-  adopt: false // Fail if the resource already exists
-});
-```
-
-## Use Case: Multi-Account Security Insights
-
-Create a FindingAggregator that supports multi-account security insights by linking specified regions.
+Set up a FindingAggregator that links multiple regions for a comprehensive security overview.
 
 ```ts
-const multiAccountAggregator = await AWS.SecurityHub.FindingAggregator("multiAccountAggregator", {
-  RegionLinkingMode: "LINK_ACCOUNTS", // Link accounts for aggregated findings
-  Regions: ["us-east-1", "us-west-2", "ca-central-1"],
-  adopt: true // Adopt if the resource already exists
+const MultiRegionFindingAggregator = await AWS.SecurityHub.FindingAggregator("MultiRegionAggregator", {
+  RegionLinkingMode: "ALL",
+  Regions: ["us-east-1", "us-west-1", "eu-central-1"]
 });
 ```

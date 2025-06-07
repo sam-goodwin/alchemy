@@ -1,70 +1,35 @@
 ---
-title: Managing AWS DataZone EnvironmentActions with Alchemy
-description: Learn how to create, update, and manage AWS DataZone EnvironmentActions using Alchemy Cloud Control.
+title: Managing AWS DataZone EnvironmentActionss with Alchemy
+description: Learn how to create, update, and manage AWS DataZone EnvironmentActionss using Alchemy Cloud Control.
 ---
 
 # EnvironmentActions
 
-The EnvironmentActions resource lets you manage [AWS DataZone EnvironmentActions](https://docs.aws.amazon.com/datazone/latest/userguide/) for various operations within a data environment.
+The EnvironmentActions resource lets you create and manage [AWS DataZone EnvironmentActionss](https://docs.aws.amazon.com/datazone/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-datazone-environmentactions.html
 
 ## Minimal Example
-
-Create a basic EnvironmentActions resource with required properties and an optional description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicEnvironmentAction = await AWS.DataZone.EnvironmentActions("basic-env-action", {
-  name: "BasicEnvironmentAction",
-  environmentIdentifier: "env-12345",
-  description: "This is a basic environment action for demonstration purposes."
+const environmentactions = await AWS.DataZone.EnvironmentActions("environmentactions-example", {
+  Name: "environmentactions-",
+  Description: "A environmentactions resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EnvironmentActions resource with additional properties such as parameters and domain identifier:
+Create a environmentactions with additional configuration:
 
 ```ts
-const advancedEnvironmentAction = await AWS.DataZone.EnvironmentActions("advanced-env-action", {
-  name: "AdvancedEnvironmentAction",
-  environmentIdentifier: "env-12345",
-  domainIdentifier: "domain-56789",
-  parameters: {
-    consoleLink: {
-      url: "https://console.aws.amazon.com/datazone/home",
-      description: "Link to AWS DataZone Console"
-    }
-  }
-});
+import AWS from "alchemy/aws/control";
+
+const advancedEnvironmentActions = await AWS.DataZone.EnvironmentActions(
+  "advanced-environmentactions",
+  { Name: "environmentactions-", Description: "A environmentactions resource managed by Alchemy" }
+);
 ```
 
-## Using Adoption Feature
-
-Create an EnvironmentActions resource that adopts an existing resource instead of failing if it already exists:
-
-```ts
-const adoptingEnvironmentAction = await AWS.DataZone.EnvironmentActions("adopt-env-action", {
-  name: "AdoptedEnvironmentAction",
-  environmentIdentifier: "env-12345",
-  adopt: true,
-  description: "This action will adopt an existing resource if it exists."
-});
-```
-
-## Environment Action with Parameters
-
-Define an EnvironmentActions resource that includes specific parameters for console linking:
-
-```ts
-const parameterizedEnvironmentAction = await AWS.DataZone.EnvironmentActions("parameterized-env-action", {
-  name: "ParameterizedEnvironmentAction",
-  environmentIdentifier: "env-12345",
-  parameters: {
-    consoleLink: {
-      url: "https://console.aws.amazon.com/datazone/home",
-      description: "Access the DataZone Console directly."
-    }
-  }
-});
-```

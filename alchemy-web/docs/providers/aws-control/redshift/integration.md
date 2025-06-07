@@ -5,50 +5,70 @@ description: Learn how to create, update, and manage AWS Redshift Integrations u
 
 # Integration
 
-The Integration resource allows you to manage [AWS Redshift Integrations](https://docs.aws.amazon.com/redshift/latest/userguide/) for secure data sharing between AWS services and your Redshift cluster.
+The Integration resource lets you manage [AWS Redshift Integrations](https://docs.aws.amazon.com/redshift/latest/userguide/) for connecting various data sources and targets securely.
 
 ## Minimal Example
 
-Create a basic Redshift integration with required properties and a common optional property.
+Create a basic Redshift Integration with required properties and a KMS Key ID.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const redshiftIntegration = await AWS.Redshift.Integration("basicIntegration", {
-  SourceArn: "arn:aws:s3:::my-data-bucket",
-  TargetArn: "arn:aws:redshift:us-west-2:123456789012:cluster:my-cluster",
-  KMSKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-key-id" // Optional
+const basicRedshiftIntegration = await AWS.Redshift.Integration("BasicRedshiftIntegration", {
+  SourceArn: "arn:aws:redshift:us-west-2:123456789012:cluster:my-cluster",
+  TargetArn: "arn:aws:s3:::my-data-bucket",
+  KMSKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Redshift integration with additional encryption context and tags for better management.
+Configure a Redshift Integration with additional encryption context for enhanced security.
 
 ```ts
-const advancedIntegration = await AWS.Redshift.Integration("advancedIntegration", {
-  SourceArn: "arn:aws:s3:::my-secure-data-bucket",
-  TargetArn: "arn:aws:redshift:us-west-2:123456789012:cluster:my-cluster",
-  KMSKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-key-id",
+const advancedRedshiftIntegration = await AWS.Redshift.Integration("AdvancedRedshiftIntegration", {
+  SourceArn: "arn:aws:redshift:us-west-2:123456789012:cluster:my-cluster",
+  TargetArn: "arn:aws:s3:::my-secure-data-bucket",
+  KMSKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst",
   AdditionalEncryptionContext: {
-    "Project": "DataPipeline",
-    "Environment": "Production"
+    "userId": "user123",
+    "sessionId": "session456"
   },
   Tags: [
-    { Key: "Owner", Value: "DataTeam" },
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataAnalytics" }
   ]
 });
 ```
 
 ## Adoption of Existing Resources
 
-If you want to adopt an existing Redshift integration rather than creating a new one, you can set the `adopt` flag to true.
+Adopt an existing Redshift Integration if it already exists without failing.
 
 ```ts
-const adoptIntegration = await AWS.Redshift.Integration("adoptedIntegration", {
-  SourceArn: "arn:aws:s3:::existing-bucket",
-  TargetArn: "arn:aws:redshift:us-west-2:123456789012:cluster:my-cluster",
-  adopt: true // This will adopt the existing resource if it exists
+const adoptExistingIntegration = await AWS.Redshift.Integration("AdoptExistingIntegration", {
+  SourceArn: "arn:aws:redshift:us-west-2:123456789012:cluster:my-cluster",
+  TargetArn: "arn:aws:s3:::my-existing-bucket",
+  adopt: true
+});
+```
+
+## Using Tags for Resource Management
+
+Create a Redshift Integration while utilizing tags for better resource management and tracking.
+
+```ts
+const taggedRedshiftIntegration = await AWS.Redshift.Integration("TaggedRedshiftIntegration", {
+  SourceArn: "arn:aws:redshift:us-west-2:123456789012:cluster:my-cluster",
+  TargetArn: "arn:aws:s3:::my-tagged-bucket",
+  KMSKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst",
+  Tags: [
+    { Key: "Project", Value: "DataMigration" },
+    { Key: "Owner", Value: "Alice" }
+  ]
 });
 ```

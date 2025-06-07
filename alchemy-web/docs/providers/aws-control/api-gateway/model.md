@@ -5,19 +5,19 @@ description: Learn how to create, update, and manage AWS ApiGateway Models using
 
 # Model
 
-The Model resource lets you manage [AWS ApiGateway Models](https://docs.aws.amazon.com/apigateway/latest/userguide/) that define the data structure of the API's request and response bodies.
+The Model resource lets you manage [AWS ApiGateway Models](https://docs.aws.amazon.com/apigateway/latest/userguide/) for defining the structure of request and response bodies in your APIs.
 
 ## Minimal Example
 
-Create a basic model with required properties and a description:
+Create a basic ApiGateway Model with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicModel = await AWS.ApiGateway.Model("basicModel", {
-  RestApiId: "abcd1234efgh5678ijkl9012mnop3456", // Replace with your actual RestApiId
+const basicApiGatewayModel = await AWS.ApiGateway.Model("BasicApiGatewayModel", {
+  RestApiId: "abc123xyz",
   Name: "UserModel",
-  Description: "Model representing a user in the system",
+  Description: "Model representing a User entity",
   ContentType: "application/json",
   Schema: {
     type: "object",
@@ -33,13 +33,13 @@ const basicModel = await AWS.ApiGateway.Model("basicModel", {
 
 ## Advanced Configuration
 
-Configure a model with additional properties, including an updated schema definition:
+Configure an ApiGateway Model with a more complex schema and additional properties.
 
 ```ts
-const advancedModel = await AWS.ApiGateway.Model("advancedModel", {
-  RestApiId: "abcd1234efgh5678ijkl9012mnop3456", // Replace with your actual RestApiId
+const advancedApiGatewayModel = await AWS.ApiGateway.Model("AdvancedApiGatewayModel", {
+  RestApiId: "abc123xyz",
   Name: "ProductModel",
-  Description: "Model representing a product in the inventory",
+  Description: "Model representing a Product entity with detailed specifications",
   ContentType: "application/json",
   Schema: {
     type: "object",
@@ -47,43 +47,35 @@ const advancedModel = await AWS.ApiGateway.Model("advancedModel", {
       productId: { type: "string" },
       productName: { type: "string" },
       price: { type: "number" },
-      inStock: { type: "boolean" }
+      tags: {
+        type: "array",
+        items: { type: "string" }
+      }
     },
     required: ["productId", "productName", "price"]
   }
 });
 ```
 
-## Updating an Existing Model
+## Adoption of Existing Models
 
-This example demonstrates how to update an existing model's description and schema:
+Create a new ApiGateway Model that adopts an existing resource instead of failing.
 
 ```ts
-const updatedModel = await AWS.ApiGateway.Model("updatedModel", {
-  RestApiId: "abcd1234efgh5678ijkl9012mnop3456", // Replace with your actual RestApiId
-  Name: "UserModel",
-  Description: "Updated model representing a user with additional fields",
+const adoptedApiGatewayModel = await AWS.ApiGateway.Model("AdoptedApiGatewayModel", {
+  RestApiId: "abc123xyz",
+  Name: "AdoptedUserModel",
+  Description: "Adopt existing UserModel if it exists",
+  ContentType: "application/json",
   Schema: {
     type: "object",
     properties: {
       id: { type: "string" },
       name: { type: "string" },
-      email: { type: "string" },
-      createdAt: { type: "string", format: "date-time" }
+      email: { type: "string" }
     },
-    required: ["id", "name", "email", "createdAt"]
-  }
-});
-```
-
-## Conditional Resource Adoption
-
-This example shows how to adopt an existing model if it already exists:
-
-```ts
-const adoptedModel = await AWS.ApiGateway.Model("adoptedModel", {
-  RestApiId: "abcd1234efgh5678ijkl9012mnop3456", // Replace with your actual RestApiId
-  Name: "UserModel",
-  adopt: true // Adopt existing resource instead of failing
+    required: ["id", "name", "email"]
+  },
+  adopt: true
 });
 ```

@@ -5,50 +5,52 @@ description: Learn how to create, update, and manage AWS IoTSiteWise Projects us
 
 # Project
 
-The Project resource lets you manage [AWS IoTSiteWise Projects](https://docs.aws.amazon.com/iotsitewise/latest/userguide/) and their configuration settings.
+The Project resource lets you manage [AWS IoTSiteWise Projects](https://docs.aws.amazon.com/iotsitewise/latest/userguide/) for organizing and visualizing your industrial data.
 
 ## Minimal Example
 
-Create a basic IoTSiteWise project with the required properties and a common optional property.
+Create a basic IoTSiteWise Project with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const iotProject = await AWS.IoTSiteWise.Project("basic-iot-project", {
-  ProjectName: "Manufacturing Overview",
+const basicProject = await AWS.IoTSiteWise.Project("BasicProject", {
+  ProjectName: "ProductionLineMonitoring",
   PortalId: "portal-123456",
-  ProjectDescription: "A project to visualize manufacturing data.",
-  AssetIds: ["asset-1", "asset-2"]
+  ProjectDescription: "A project to monitor the production line",
+  AssetIds: ["asset-1", "asset-2"],
+  Tags: [{ Key: "Environment", Value: "Production" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IoTSiteWise project with additional tags for better organization and management.
+Create a more complex IoTSiteWise Project with additional tags.
 
 ```ts
-const advancedIotProject = await AWS.IoTSiteWise.Project("advanced-iot-project", {
-  ProjectName: "Energy Management",
-  PortalId: "portal-123456",
-  ProjectDescription: "A project to monitor and manage energy consumption.",
+const advancedProject = await AWS.IoTSiteWise.Project("AdvancedProject", {
+  ProjectName: "QualityControlMonitoring",
+  PortalId: "portal-654321",
+  ProjectDescription: "A project focused on quality control monitoring",
   AssetIds: ["asset-3", "asset-4"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Energy" }
-  ]
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Department", Value: "QualityAssurance" }
+  ],
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Adoption of Existing Resources
+## Utilizing with Existing Assets
 
-Create a project that adopts an existing resource instead of failing if the resource already exists.
+Demonstrate how to create a project that links to existing assets.
 
 ```ts
-const adoptExistingProject = await AWS.IoTSiteWise.Project("adopt-iot-project", {
-  ProjectName: "Water Treatment Monitoring",
-  PortalId: "portal-123456",
-  ProjectDescription: "A project to monitor water treatment processes.",
-  AssetIds: ["asset-5"],
-  adopt: true
+const projectWithExistingAssets = await AWS.IoTSiteWise.Project("ExistingAssetsProject", {
+  ProjectName: "ExistingAssetsMonitoring",
+  PortalId: "portal-789012",
+  AssetIds: ["existing-asset-1", "existing-asset-2"], // Link to existing assets
+  ProjectDescription: "A project that utilizes existing assets for monitoring",
+  Tags: [{ Key: "UseCase", Value: "AssetMonitoring" }]
 });
 ```

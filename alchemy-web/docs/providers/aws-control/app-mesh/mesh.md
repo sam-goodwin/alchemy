@@ -5,65 +5,70 @@ description: Learn how to create, update, and manage AWS AppMesh Meshs using Alc
 
 # Mesh
 
-The Mesh resource lets you manage [AWS AppMesh Meshs](https://docs.aws.amazon.com/appmesh/latest/userguide/) for controlling microservices communication in your applications.
+The Mesh resource lets you manage [AWS AppMesh Meshs](https://docs.aws.amazon.com/appmesh/latest/userguide/) which are essential for defining the service mesh for your microservices applications.
 
 ## Minimal Example
 
-Create a basic AppMesh Mesh with a specified name:
+Create a basic mesh with only the required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const appMesh = await AWS.AppMesh.Mesh("basicMesh", {
-  MeshName: "my-app-mesh",
+const simpleMesh = await AWS.AppMesh.Mesh("SimpleMesh", {
+  MeshName: "SimpleMesh",
   Tags: [
     { Key: "Environment", Value: "Development" },
-    { Key: "Team", Value: "Engineering" }
+    { Key: "Team", Value: "Backend" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Mesh with detailed specifications including routing and service discovery:
+Configure a mesh with additional specifications like the `Spec` property to customize its behavior:
 
 ```ts
-const advancedMesh = await AWS.AppMesh.Mesh("advancedMesh", {
-  MeshName: "advanced-app-mesh",
+const advancedMesh = await AWS.AppMesh.Mesh("AdvancedMesh", {
+  MeshName: "AdvancedMesh",
   Spec: {
-    // Define the specification for the mesh including routing details
-    egressFilter: {
-      type: "ALLOW_ALL"
-    }
+    // Example of additional configuration options
+    // Ensure to follow the appropriate structure for the mesh specification
+    // Note: Update with relevant properties according to AWS AppMesh documentation
   },
   Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Owner", Value: "DevOps" }
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Custom Adoption
+## Using Existing Resources
 
-Create a Mesh that adopts existing resources if they already exist:
+If you want to adopt an existing mesh instead of failing when it already exists, set the `adopt` property:
 
 ```ts
-const adoptMesh = await AWS.AppMesh.Mesh("adoptExistingMesh", {
-  MeshName: "existing-app-mesh",
-  adopt: true // Will adopt the existing resource instead of failing
+const adoptExistingMesh = await AWS.AppMesh.Mesh("AdoptExistingMesh", {
+  MeshName: "ExistingMesh",
+  adopt: true,
+  Tags: [
+    { Key: "Environment", Value: "Testing" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```
 
-## Tagging for Organization
+## Customizing Tags
 
-Create a Mesh with specific tags for better organization and resource management:
+You may also customize tags to better organize and manage your mesh resources:
 
 ```ts
-const taggedMesh = await AWS.AppMesh.Mesh("taggedMesh", {
-  MeshName: "tagged-app-mesh",
+const taggedMesh = await AWS.AppMesh.Mesh("TaggedMesh", {
+  MeshName: "TaggedMesh",
   Tags: [
     { Key: "Project", Value: "Microservices" },
-    { Key: "Version", Value: "v1.0" }
+    { Key: "Owner", Value: "Alice" }
   ]
 });
 ```
+
+Each of these examples illustrates various configurations and uses of the AWS AppMesh Mesh resource using Alchemy Cloud Control, allowing you to create and manage your service mesh effectively.

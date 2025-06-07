@@ -5,80 +5,61 @@ description: Learn how to create, update, and manage AWS SSM MaintenanceWindowTa
 
 # MaintenanceWindowTarget
 
-The MaintenanceWindowTarget resource lets you manage [AWS SSM Maintenance Window Targets](https://docs.aws.amazon.com/ssm/latest/userguide/) for executing tasks on specific resources during a defined maintenance window.
+The MaintenanceWindowTarget resource allows you to define targets for your AWS Systems Manager Maintenance Windows. These targets can be specified using various resource types, enabling flexible management of the resources that will be operated on during the maintenance window. For more detailed information, refer to the [AWS SSM MaintenanceWindowTargets documentation](https://docs.aws.amazon.com/ssm/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic Maintenance Window Target with required properties and a common optional property.
+Create a basic MaintenanceWindowTarget with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const maintenanceWindowTarget = await AWS.SSM.MaintenanceWindowTarget("myMaintenanceWindowTarget", {
-  WindowId: "mw-1234567890abcdef0", // Specify the ID of the maintenance window
-  ResourceType: "INSTANCE", // Type of the resource to target
-  Targets: [
-    {
-      Key: "InstanceIds",
-      Values: ["i-0abcd1234efgh5678"] // List of EC2 instance IDs to target
-    }
-  ],
-  OwnerInformation: "example-owner-info" // Optional owner information
+const BasicMaintenanceWindowTarget = await AWS.SSM.MaintenanceWindowTarget("BasicTarget", {
+  WindowId: "mw-1234567890abcdef0",
+  ResourceType: "INSTANCE",
+  Targets: [{
+    Key: "tag:Environment",
+    Values: ["Production"]
+  }],
+  Description: "Target for production instances"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Maintenance Window Target with additional settings for better management and identification.
+Configure a MaintenanceWindowTarget with additional options, including owner information and a more detailed target specification.
 
 ```ts
-const advancedMaintenanceWindowTarget = await AWS.SSM.MaintenanceWindowTarget("advancedMaintenanceWindowTarget", {
-  WindowId: "mw-0987654321fedcba0", // Specify the ID of the maintenance window
-  ResourceType: "INSTANCE", // Type of the resource to target
-  Targets: [
-    {
-      Key: "Tag:Environment",
-      Values: ["Production"] // Target instances with a specific tag
-    }
-  ],
-  Description: "Targets production instances for scheduled maintenance", // Optional description
-  Name: "ProdMaintenanceTarget" // Optional name for the maintenance target
+const AdvancedMaintenanceWindowTarget = await AWS.SSM.MaintenanceWindowTarget("AdvancedTarget", {
+  WindowId: "mw-0987654321abcdef0",
+  ResourceType: "INSTANCE",
+  Targets: [{
+    Key: "instanceids",
+    Values: ["i-0abcd1234efgh5678", "i-0abcd1234efgh5679"]
+  }],
+  OwnerInformation: "Managed by DevOps Team",
+  Name: "Advanced Production Target"
 });
 ```
 
-## Targeting Resources by Tags
+## Multiple Resource Types
 
-Demonstrate how to target resources using tags for more flexible management.
-
-```ts
-const tagBasedMaintenanceWindowTarget = await AWS.SSM.MaintenanceWindowTarget("tagBasedMaintenanceWindowTarget", {
-  WindowId: "mw-1122334455aabbcc0", // Specify the ID of the maintenance window
-  ResourceType: "INSTANCE", // Type of the resource to target
-  Targets: [
-    {
-      Key: "Tag:Role",
-      Values: ["WebServer"] // Target instances with the "Role" tag set to "WebServer"
-    }
-  ],
-  OwnerInformation: "tagging-strategy" // Optional owner information
-});
-```
-
-## Targeting Multiple Resource Types
-
-Create a Maintenance Window Target that can handle multiple resource types.
+Define a MaintenanceWindowTarget that targets multiple resource types, including EC2 instances and tags.
 
 ```ts
-const multiTypeMaintenanceWindowTarget = await AWS.SSM.MaintenanceWindowTarget("multiTypeMaintenanceWindowTarget", {
-  WindowId: "mw-2233445566ddeeff0", // Specify the ID of the maintenance window
-  ResourceType: "MANAGED_INSTANCE", // Type of the resource to target
+const MultiResourceMaintenanceWindowTarget = await AWS.SSM.MaintenanceWindowTarget("MultiResourceTarget", {
+  WindowId: "mw-abcdef1234567890",
+  ResourceType: "ALL",
   Targets: [
     {
-      Key: "InstanceIds",
-      Values: ["i-0abcd1234efgh5678", "i-0ijkl9012mnop3456"] // List of multiple EC2 instance IDs to target
+      Key: "tag:Environment",
+      Values: ["Staging"]
+    },
+    {
+      Key: "instanceids",
+      Values: ["i-0abcd1234efgh5678"]
     }
   ],
-  Description: "Targets managed instances for maintenance", // Optional description
-  Name: "ManagedInstanceTarget" // Optional name for the maintenance target
+  Description: "Target for all staging resources"
 });
 ```

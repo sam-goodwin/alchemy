@@ -5,62 +5,63 @@ description: Learn how to create, update, and manage AWS SageMaker MlflowTrackin
 
 # MlflowTrackingServer
 
-The MlflowTrackingServer resource allows you to manage an [AWS SageMaker MlflowTrackingServer](https://docs.aws.amazon.com/sagemaker/latest/userguide/) for tracking machine learning experiments and managing model artifacts.
+The MlflowTrackingServer resource lets you manage [AWS SageMaker MlflowTrackingServers](https://docs.aws.amazon.com/sagemaker/latest/userguide/) for tracking and managing machine learning experiments.
 
 ## Minimal Example
 
-Create a basic MlflowTrackingServer instance with required properties and a common optional property.
+Create a basic MlflowTrackingServer with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const mlflowTrackingServer = await AWS.SageMaker.MlflowTrackingServer("myMlflowTrackingServer", {
-  TrackingServerName: "my-tracking-server",
-  ArtifactStoreUri: "s3://my-artifact-store",
-  RoleArn: "arn:aws:iam::123456789012:role/my-sagemaker-role"
+const basicMlflowTrackingServer = await AWS.SageMaker.MlflowTrackingServer("BasicMlflowServer", {
+  TrackingServerName: "BasicTrackingServer",
+  ArtifactStoreUri: "s3://my-mlflow-artifacts",
+  RoleArn: "arn:aws:iam::123456789012:role/MySageMakerRole"
 });
 ```
 
 ## Advanced Configuration
 
-Configure the MlflowTrackingServer with additional optional properties such as MLflow version and automatic model registration.
+Configure an MlflowTrackingServer with additional settings like maintenance window and automatic model registration.
 
 ```ts
-const advancedMlflowTrackingServer = await AWS.SageMaker.MlflowTrackingServer("advancedMlflowTrackingServer", {
-  TrackingServerName: "advanced-tracking-server",
-  ArtifactStoreUri: "s3://my-advanced-artifact-store",
-  RoleArn: "arn:aws:iam::123456789012:role/my-sagemaker-role",
-  MlflowVersion: "1.20.2",
+const advancedMlflowTrackingServer = await AWS.SageMaker.MlflowTrackingServer("AdvancedMlflowServer", {
+  TrackingServerName: "AdvancedTrackingServer",
+  ArtifactStoreUri: "s3://my-mlflow-artifacts",
+  RoleArn: "arn:aws:iam::123456789012:role/MySageMakerRole",
+  MlflowVersion: "1.20.0",
+  WeeklyMaintenanceWindowStart: "Mon:01:00",
   AutomaticModelRegistration: true,
-  WeeklyMaintenanceWindowStart: "Mon:00:00" // Maintenance window starts on Monday at midnight
-});
-```
-
-## Custom Size Configuration
-
-Create a MlflowTrackingServer with a custom tracking server size.
-
-```ts
-const customSizeMlflowTrackingServer = await AWS.SageMaker.MlflowTrackingServer("customSizeMlflowTrackingServer", {
-  TrackingServerName: "custom-size-tracking-server",
-  ArtifactStoreUri: "s3://my-custom-size-artifact-store",
-  RoleArn: "arn:aws:iam::123456789012:role/my-sagemaker-role",
-  TrackingServerSize: "large" // Specify the size of the tracking server
-});
-```
-
-## Tagging Resources
-
-Add tags to your MlflowTrackingServer for better resource management.
-
-```ts
-const taggedMlflowTrackingServer = await AWS.SageMaker.MlflowTrackingServer("taggedMlflowTrackingServer", {
-  TrackingServerName: "tagged-tracking-server",
-  ArtifactStoreUri: "s3://my-tagged-artifact-store",
-  RoleArn: "arn:aws:iam::123456789012:role/my-sagemaker-role",
   Tags: [
-    { Key: "Environment", Value: "Production" },
+    { Key: "Environment", Value: "production" },
     { Key: "Team", Value: "DataScience" }
   ]
+});
+```
+
+## Custom Resource Adoption
+
+Create an MlflowTrackingServer while adopting an existing resource if it already exists.
+
+```ts
+const adoptedMlflowTrackingServer = await AWS.SageMaker.MlflowTrackingServer("AdoptMlflowServer", {
+  TrackingServerName: "ExistingTrackingServer",
+  ArtifactStoreUri: "s3://my-mlflow-artifacts",
+  RoleArn: "arn:aws:iam::123456789012:role/MySageMakerRole",
+  adopt: true
+});
+```
+
+## Resource Size Configuration
+
+Instantiate an MlflowTrackingServer with a specific tracking server size.
+
+```ts
+const sizedMlflowTrackingServer = await AWS.SageMaker.MlflowTrackingServer("SizedMlflowServer", {
+  TrackingServerName: "LargeTrackingServer",
+  ArtifactStoreUri: "s3://my-mlflow-artifacts",
+  RoleArn: "arn:aws:iam::123456789012:role/MySageMakerRole",
+  TrackingServerSize: "Large"
 });
 ```

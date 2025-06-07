@@ -5,66 +5,68 @@ description: Learn how to create, update, and manage AWS Glue Workflows using Al
 
 # Workflow
 
-The Workflow resource lets you manage [AWS Glue Workflows](https://docs.aws.amazon.com/glue/latest/userguide/) for orchestrating complex ETL (Extract, Transform, Load) processes.
+The Workflow resource allows you to manage [AWS Glue Workflows](https://docs.aws.amazon.com/glue/latest/userguide/) for orchestrating ETL (Extract, Transform, Load) activities in a serverless environment.
 
 ## Minimal Example
 
-Create a basic AWS Glue Workflow with a name and description:
+Create a basic AWS Glue Workflow with a name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicWorkflow = await AWS.Glue.Workflow("basicWorkflow", {
-  name: "DataProcessingWorkflow",
-  description: "A workflow for processing data from various sources.",
-  maxConcurrentRuns: 2
+const GlueWorkflow = await AWS.Glue.Workflow("BasicGlueWorkflow", {
+  Name: "ETLWorkflow",
+  Description: "Workflow to manage ETL processes",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AWS Glue Workflow with additional properties like default run properties and tags:
+Configure a Glue Workflow with default run properties and maximum concurrent runs.
 
 ```ts
-const advancedWorkflow = await AWS.Glue.Workflow("advancedWorkflow", {
-  name: "AdvancedDataWorkflow",
-  description: "An advanced workflow with custom properties.",
-  defaultRunProperties: {
-    "key1": "value1",
-    "key2": "value2"
+const AdvancedGlueWorkflow = await AWS.Glue.Workflow("AdvancedGlueWorkflow", {
+  Name: "AdvancedETLWorkflow",
+  Description: "Advanced workflow for complex ETL processes",
+  DefaultRunProperties: {
+    "Property1": "Value1",
+    "Property2": "Value2"
   },
-  tags: {
-    "Environment": "Production",
-    "Team": "DataScience"
-  },
-  maxConcurrentRuns: 5
+  MaxConcurrentRuns: 5,
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataScience" }
+  ]
 });
 ```
 
 ## Adoption of Existing Resource
 
-Create a workflow that adopts an existing resource instead of failing if it already exists:
+Create a Glue Workflow and adopt an existing resource if it already exists.
 
 ```ts
-const adoptedWorkflow = await AWS.Glue.Workflow("adoptedWorkflow", {
-  name: "ExistingWorkflow",
-  description: "This workflow adopts an existing Glue Workflow.",
+const ExistingGlueWorkflow = await AWS.Glue.Workflow("ExistingGlueWorkflow", {
+  Name: "ExistingETLWorkflow",
+  Description: "Workflow that adopts an existing Glue Workflow",
   adopt: true
 });
 ```
 
-## Workflow with Detailed Run Properties
+## Workflow with Default Run Properties
 
-Set up a workflow that utilizes detailed run properties for customized execution:
+Create a Glue Workflow that utilizes specific default run properties.
 
 ```ts
-const detailedRunPropertiesWorkflow = await AWS.Glue.Workflow("detailedRunPropertiesWorkflow", {
-  name: "DetailedRunPropertiesWorkflow",
-  description: "Workflow with specific run properties.",
-  defaultRunProperties: {
-    "source": "S3Bucket",
-    "format": "CSV"
-  },
-  maxConcurrentRuns: 3
+const WorkflowWithRunProperties = await AWS.Glue.Workflow("RunPropertiesWorkflow", {
+  Name: "RunPropertiesETLWorkflow",
+  Description: "Workflow with specific default run properties.",
+  DefaultRunProperties: {
+    "Timeout": "600", // Maximum timeout in seconds
+    "RetryAttempts": "3" // Number of retry attempts on failure
+  }
 });
 ```

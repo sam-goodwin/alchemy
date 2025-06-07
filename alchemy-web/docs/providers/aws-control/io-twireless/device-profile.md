@@ -5,69 +5,35 @@ description: Learn how to create, update, and manage AWS IoTWireless DeviceProfi
 
 # DeviceProfile
 
-The DeviceProfile resource allows you to manage [AWS IoTWireless DeviceProfiles](https://docs.aws.amazon.com/iotwireless/latest/userguide/) which define the configuration settings for devices that connect to AWS IoT services.
+The DeviceProfile resource lets you create and manage [AWS IoTWireless DeviceProfiles](https://docs.aws.amazon.com/iotwireless/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iotwireless-deviceprofile.html
 
 ## Minimal Example
-
-Create a basic DeviceProfile with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const deviceProfile = await AWS.IoTWireless.DeviceProfile("basicDeviceProfile", {
-  Name: "BasicDeviceProfile",
-  LoRaWAN: {
-    ClassBTimeout: 30,
-    PingSlotPeriod: "hourly",
-    PingSlotDr: 0,
-    PingSlotFreq: "923.3",
-    MaxEirp: 30,
-    SupportsClassB: true,
-    SupportsJoin: true
-  },
-  Tags: [{ Key: "Environment", Value: "Development" }]
+const deviceprofile = await AWS.IoTWireless.DeviceProfile("deviceprofile-example", {
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DeviceProfile with additional settings for LoRaWAN, including advanced parameters.
+Create a deviceprofile with additional configuration:
 
 ```ts
-const advancedDeviceProfile = await AWS.IoTWireless.DeviceProfile("advancedDeviceProfile", {
-  Name: "AdvancedDeviceProfile",
-  LoRaWAN: {
-    ClassBTimeout: 60,
-    PingSlotPeriod: "every-2-hours",
-    PingSlotDr: 1,
-    PingSlotFreq: "923.5",
-    MaxEirp: 27,
-    SupportsClassB: true,
-    SupportsJoin: true,
-    ClassCTimeout: 30,
-    ClassCDr: 3,
-    ClassCFreq: "923.7"
+import AWS from "alchemy/aws/control";
+
+const advancedDeviceProfile = await AWS.IoTWireless.DeviceProfile("advanced-deviceprofile", {
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Tags: [{ Key: "Environment", Value: "Production" }, { Key: "Owner", Value: "TeamA" }]
 });
 ```
 
-## Adoption of Existing DeviceProfile
-
-If you want to adopt an existing DeviceProfile instead of failing when it already exists, set the `adopt` property to true.
-
-```ts
-const adoptedDeviceProfile = await AWS.IoTWireless.DeviceProfile("adoptedDeviceProfile", {
-  Name: "ExistingDeviceProfile",
-  LoRaWAN: {
-    ClassBTimeout: 30,
-    PingSlotPeriod: "hourly",
-    PingSlotDr: 0,
-    PingSlotFreq: "923.3",
-    MaxEirp: 30,
-    SupportsClassB: true,
-    SupportsJoin: true
-  },
-  adopt: true
-});
-```

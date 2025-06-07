@@ -5,16 +5,16 @@ description: Learn how to create, update, and manage AWS CodeArtifact Domains us
 
 # Domain
 
-The Domain resource allows you to manage [AWS CodeArtifact Domains](https://docs.aws.amazon.com/codeartifact/latest/userguide/) which serve as a central repository for your software packages.
+The Domain resource allows you to manage [AWS CodeArtifact Domains](https://docs.aws.amazon.com/codeartifact/latest/userguide/) for your software packages, enabling you to effectively organize and control your package repositories.
 
 ## Minimal Example
 
-Create a basic CodeArtifact Domain with a specified name and a permissions policy document.
+Create a basic CodeArtifact Domain with default settings and a permissions policy.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const codeArtifactDomain = await AWS.CodeArtifact.Domain("myCodeArtifactDomain", {
+const CodeArtifactDomain = await AWS.CodeArtifact.Domain("MyDomain", {
   DomainName: "my-domain",
   PermissionsPolicyDocument: {
     Version: "2012-10-17",
@@ -24,7 +24,7 @@ const codeArtifactDomain = await AWS.CodeArtifact.Domain("myCodeArtifactDomain",
         Principal: {
           AWS: "*"
         },
-        Action: "codeartifact:GetDomain",
+        Action: "codeartifact:*",
         Resource: "*"
       }
     ]
@@ -34,54 +34,40 @@ const codeArtifactDomain = await AWS.CodeArtifact.Domain("myCodeArtifactDomain",
 
 ## Advanced Configuration
 
-Configure a CodeArtifact Domain with additional properties such as an encryption key and tags.
+Configure a CodeArtifact Domain with encryption and tags for better management.
 
 ```ts
-const secureCodeArtifactDomain = await AWS.CodeArtifact.Domain("secureDomain", {
+const EncryptedDomain = await AWS.CodeArtifact.Domain("EncryptedDomain", {
   DomainName: "secure-domain",
-  PermissionsPolicyDocument: {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Principal: {
-          AWS: "*"
-        },
-        Action: "codeartifact:GetDomain",
-        Resource: "*"
-      }
-    ]
-  },
-  EncryptionKey: "arn:aws:kms:us-west-2:123456789012:key/my-key-id",
+  EncryptionKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyProject" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
 ## Adoption of Existing Resource
 
-Use the adoption feature to create a domain only if it does not already exist.
+Adopt an existing CodeArtifact Domain instead of failing if it already exists.
 
 ```ts
-const adoptedCodeArtifactDomain = await AWS.CodeArtifact.Domain("adoptedDomain", {
-  DomainName: "adopted-domain",
-  adopt: true // Adopt existing resource if it already exists
+const ExistingDomain = await AWS.CodeArtifact.Domain("AdoptedDomain", {
+  DomainName: "existing-domain",
+  adopt: true
 });
 ```
 
-## Managing Tags
+## Adding Additional Tags
 
-Create a CodeArtifact Domain with detailed tagging for better resource management and organization.
+Add tags to an existing CodeArtifact Domain for better resource tracking.
 
 ```ts
-const taggedCodeArtifactDomain = await AWS.CodeArtifact.Domain("taggedDomain", {
+const TaggedDomain = await AWS.CodeArtifact.Domain("TaggedDomain", {
   DomainName: "tagged-domain",
   Tags: [
-    { Key: "Team", Value: "Development" },
-    { Key: "CostCenter", Value: "CC12345" },
-    { Key: "Project", Value: "CodeArtifactProject" }
+    { Key: "Project", Value: "ProjectX" },
+    { Key: "Owner", Value: "Alice" }
   ]
 });
 ```

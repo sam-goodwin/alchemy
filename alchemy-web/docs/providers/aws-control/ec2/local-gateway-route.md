@@ -5,16 +5,16 @@ description: Learn how to create, update, and manage AWS EC2 LocalGatewayRoutes 
 
 # LocalGatewayRoute
 
-The LocalGatewayRoute resource allows you to manage routing within an AWS EC2 Local Gateway, facilitating communication between your VPC and on-premises networks. For more details, refer to the [AWS EC2 LocalGatewayRoutes documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The LocalGatewayRoute resource lets you manage [AWS EC2 Local Gateway Routes](https://docs.aws.amazon.com/ec2/latest/userguide/), which are used to route traffic from your Local Gateway to a specified destination.
 
 ## Minimal Example
 
-Create a basic Local Gateway Route with required properties and one optional property.
+Create a basic Local Gateway Route with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const localGatewayRoute = await AWS.EC2.LocalGatewayRoute("myLocalGatewayRoute", {
+const BasicLocalGatewayRoute = await AWS.EC2.LocalGatewayRoute("BasicRoute", {
   LocalGatewayRouteTableId: "lgw-rtb-12345678",
   DestinationCidrBlock: "10.0.0.0/16",
   NetworkInterfaceId: "eni-12345678" // Optional
@@ -23,24 +23,25 @@ const localGatewayRoute = await AWS.EC2.LocalGatewayRoute("myLocalGatewayRoute",
 
 ## Advanced Configuration
 
-Configure a Local Gateway Route with an additional optional property for a Virtual Interface Group ID.
+Configure a Local Gateway Route with additional optional properties for enhanced routing.
 
 ```ts
-const advancedLocalGatewayRoute = await AWS.EC2.LocalGatewayRoute("advancedLocalGatewayRoute", {
+const AdvancedLocalGatewayRoute = await AWS.EC2.LocalGatewayRoute("AdvancedRoute", {
   LocalGatewayRouteTableId: "lgw-rtb-87654321",
   DestinationCidrBlock: "192.168.1.0/24",
-  LocalGatewayVirtualInterfaceGroupId: "vgw-12345678" // Optional
+  NetworkInterfaceId: "eni-87654321", // Optional
+  LocalGatewayVirtualInterfaceGroupId: "lgw-vifg-12345678" // Optional
 });
 ```
 
 ## Adoption of Existing Resource
 
-If you want to adopt an existing Local Gateway Route instead of creating a new one, you can set the adopt property to true.
+Use the adopt property to take over an existing Local Gateway Route instead of failing if it already exists.
 
 ```ts
-const adoptLocalGatewayRoute = await AWS.EC2.LocalGatewayRoute("adoptLocalGatewayRoute", {
+const AdoptExistingLocalGatewayRoute = await AWS.EC2.LocalGatewayRoute("AdoptedRoute", {
   LocalGatewayRouteTableId: "lgw-rtb-12345678",
   DestinationCidrBlock: "172.16.0.0/12",
-  adopt: true // Adopt existing resource
+  adopt: true // Enables adoption of existing resource
 });
 ```

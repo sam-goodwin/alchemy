@@ -5,62 +5,43 @@ description: Learn how to create, update, and manage AWS ImageBuilder Workflows 
 
 # Workflow
 
-The Workflow resource lets you manage [AWS ImageBuilder Workflows](https://docs.aws.amazon.com/imagebuilder/latest/userguide/) for automating the creation of Virtual Machine images. This resource enables you to define the workflow type, version, and additional configurations.
+The Workflow resource lets you create and manage [AWS ImageBuilder Workflows](https://docs.aws.amazon.com/imagebuilder/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-imagebuilder-workflow.html
 
 ## Minimal Example
-
-Create a basic ImageBuilder Workflow with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicWorkflow = await AWS.ImageBuilder.Workflow("basicWorkflow", {
-  Type: "build",
-  Version: "1.0",
-  Description: "A simple ImageBuilder workflow for building images."
+const workflow = await AWS.ImageBuilder.Workflow("workflow-example", {
+  Type: "example-type",
+  Version: "example-version",
+  Name: "workflow-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A workflow resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an ImageBuilder Workflow with additional options including KMS Key ID and tags.
+Create a workflow with additional configuration:
 
 ```ts
-const advancedWorkflow = await AWS.ImageBuilder.Workflow("advancedWorkflow", {
-  Type: "build",
-  Version: "1.1",
-  Description: "An advanced ImageBuilder workflow with encryption and tags.",
-  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrstuv",
+import AWS from "alchemy/aws/control";
+
+const advancedWorkflow = await AWS.ImageBuilder.Workflow("advanced-workflow", {
+  Type: "example-type",
+  Version: "example-version",
+  Name: "workflow-",
   Tags: {
-    Environment: "Production",
-    Project: "ImageBuilderDemo"
-  }
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A workflow resource managed by Alchemy",
 });
 ```
 
-## Workflow with Change Description
-
-Create a workflow that includes a change description for tracking modifications.
-
-```ts
-const changeDescriptionWorkflow = await AWS.ImageBuilder.Workflow("changeDescriptionWorkflow", {
-  Type: "build",
-  Version: "1.2",
-  Description: "Workflow with change description.",
-  ChangeDescription: "Updated to include new security features."
-});
-```
-
-## Workflow with URI and Data
-
-Define a workflow that utilizes a specific URI and data payload.
-
-```ts
-const uriDataWorkflow = await AWS.ImageBuilder.Workflow("uriDataWorkflow", {
-  Type: "build",
-  Version: "1.3",
-  Description: "Workflow using a URI and data.",
-  Uri: "https://example.com/imageBuilderWorkflow",
-  Data: JSON.stringify({ key: "value" })
-});
-```

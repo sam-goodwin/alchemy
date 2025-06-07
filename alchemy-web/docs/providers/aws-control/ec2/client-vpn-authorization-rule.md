@@ -5,58 +5,58 @@ description: Learn how to create, update, and manage AWS EC2 ClientVpnAuthorizat
 
 # ClientVpnAuthorizationRule
 
-The ClientVpnAuthorizationRule resource allows you to manage [AWS EC2 Client VPN authorization rules](https://docs.aws.amazon.com/ec2/latest/userguide/). These rules control access for VPN clients to specific network resources.
+The ClientVpnAuthorizationRule resource allows you to manage [AWS EC2 ClientVpnAuthorizationRules](https://docs.aws.amazon.com/ec2/latest/userguide/) to control access to your Client VPN endpoints.
 
 ## Minimal Example
 
-Create a basic ClientVpnAuthorizationRule with required properties and a common optional property.
+Create a basic ClientVpnAuthorizationRule with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAuthRule = await AWS.EC2.ClientVpnAuthorizationRule("basicAuthRule", {
-  ClientVpnEndpointId: "cvpn-endpoint-1234567890abcdef0",
+const basicAuthorizationRule = await AWS.EC2.ClientVpnAuthorizationRule("BasicAuthRule", {
+  ClientVpnEndpointId: "cvpn-endpoint-12345678",
   TargetNetworkCidr: "10.0.0.0/16",
-  Description: "Basic authorization rule for VPN clients"
+  Description: "Basic authorization rule for VPN access"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ClientVpnAuthorizationRule that uses an access group and authorizes all groups.
+Configure a ClientVpnAuthorizationRule with additional settings, including access group ID and authorization for all groups.
 
 ```ts
-const advancedAuthRule = await AWS.EC2.ClientVpnAuthorizationRule("advancedAuthRule", {
-  ClientVpnEndpointId: "cvpn-endpoint-0987654321abcdef0",
-  TargetNetworkCidr: "192.168.1.0/24",
-  AccessGroupId: "sg-0123456789abcdef0",
+const advancedAuthorizationRule = await AWS.EC2.ClientVpnAuthorizationRule("AdvancedAuthRule", {
+  ClientVpnEndpointId: "cvpn-endpoint-87654321",
+  TargetNetworkCidr: "10.1.0.0/16",
+  AccessGroupId: "vpn-access-group-01",
   AuthorizeAllGroups: true,
-  Description: "Advanced authorization rule with all groups authorized"
+  Description: "Advanced rule allowing access to all groups"
 });
 ```
 
-## Specific Use Case: Restrict Access to a Subnet
+## Specific Use Case: Restricting Access
 
-This example demonstrates how to create a rule that restricts VPN access to a specific subnet.
+Create a ClientVpnAuthorizationRule that restricts access to a specific CIDR block for a defined access group.
 
 ```ts
-const subnetAuthRule = await AWS.EC2.ClientVpnAuthorizationRule("subnetAuthRule", {
-  ClientVpnEndpointId: "cvpn-endpoint-abcdef0123456789",
-  TargetNetworkCidr: "172.16.0.0/12",
-  AccessGroupId: "sg-abcdef0123456789",
-  Description: "Authorization rule for restricted subnet access"
+const restrictedAccessRule = await AWS.EC2.ClientVpnAuthorizationRule("RestrictedAccessRule", {
+  ClientVpnEndpointId: "cvpn-endpoint-abcdef12",
+  TargetNetworkCidr: "10.2.0.0/24",
+  AccessGroupId: "restricted-access-group",
+  Description: "Rule restricting access to a specific subnet"
 });
 ```
 
 ## Adoption of Existing Resource
 
-In this example, we adopt an existing ClientVpnAuthorizationRule instead of failing if it already exists.
+Create a rule that adopts an existing resource instead of failing if the resource already exists.
 
 ```ts
-const adoptAuthRule = await AWS.EC2.ClientVpnAuthorizationRule("adoptAuthRule", {
-  ClientVpnEndpointId: "cvpn-endpoint-abcdefgh12345678",
-  TargetNetworkCidr: "10.1.0.0/16",
-  Description: "Adopting an existing authorization rule",
-  adopt: true
+const adoptExistingRule = await AWS.EC2.ClientVpnAuthorizationRule("AdoptExistingRule", {
+  ClientVpnEndpointId: "cvpn-endpoint-12345678",
+  TargetNetworkCidr: "10.3.0.0/24",
+  adopt: true,
+  Description: "Adopts existing authorization rule if present"
 });
 ```

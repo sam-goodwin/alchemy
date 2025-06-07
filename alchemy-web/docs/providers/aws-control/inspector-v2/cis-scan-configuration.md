@@ -5,70 +5,49 @@ description: Learn how to create, update, and manage AWS InspectorV2 CisScanConf
 
 # CisScanConfiguration
 
-The CisScanConfiguration resource allows you to create and manage [AWS InspectorV2 CisScanConfigurations](https://docs.aws.amazon.com/inspectorv2/latest/userguide/) for assessing the security of your infrastructure against CIS benchmarks.
+The CisScanConfiguration resource lets you create and manage [AWS InspectorV2 CisScanConfigurations](https://docs.aws.amazon.com/inspectorv2/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-inspectorv2-cisscanconfiguration.html
 
 ## Minimal Example
-
-Create a basic CIS scan configuration with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const cisScanConfig = await AWS.InspectorV2.CisScanConfiguration("myCisScanConfig", {
-  SecurityLevel: "High",
-  Schedule: {
-    Interval: "Daily"
-  },
-  Targets: {
-    ResourceGroupArn: "arn:aws:inspector:us-west-2:123456789012:resourcegroup/my-resource-group"
-  },
-  ScanName: "DailyCISScan",
-  Tags: {
-    Environment: "Production"
+const cisscanconfiguration = await AWS.InspectorV2.CisScanConfiguration(
+  "cisscanconfiguration-example",
+  {
+    SecurityLevel: "example-securitylevel",
+    Schedule: "example-schedule",
+    Targets: "example-targets",
+    ScanName: "cisscanconfiguration-scan",
+    Tags: { Environment: "production", ManagedBy: "Alchemy" },
   }
-});
+);
 ```
 
 ## Advanced Configuration
 
-Configure a CIS scan with additional settings including a customized schedule and multiple targets.
+Create a cisscanconfiguration with additional configuration:
 
 ```ts
-const advancedCisScanConfig = await AWS.InspectorV2.CisScanConfiguration("advancedCisScanConfig", {
-  SecurityLevel: "Medium",
-  Schedule: {
-    Interval: "Weekly",
-    StartTime: "2023-10-01T00:00:00Z"
-  },
-  Targets: {
-    ResourceGroupArn: "arn:aws:inspector:us-west-2:123456789012:resourcegroup/my-resource-group",
-    AdditionalTargets: [
-      {
-        ResourceArn: "arn:aws:ec2:us-west-2:123456789012:instance/i-0123456789abcdef0"
-      }
-    ]
-  },
-  ScanName: "WeeklyCISScan"
-});
-```
+import AWS from "alchemy/aws/control";
 
-## Custom Security Level
-
-Set up a scan configuration with a specific security level and multiple tags for better organization.
-
-```ts
-const customSecurityLevelScanConfig = await AWS.InspectorV2.CisScanConfiguration("customSecurityLevelScanConfig", {
-  SecurityLevel: "Critical",
-  Schedule: {
-    Interval: "Monthly"
-  },
-  Targets: {
-    ResourceGroupArn: "arn:aws:inspector:us-west-2:123456789012:resourcegroup/my-resource-group"
-  },
-  ScanName: "MonthlyCriticalCISScan",
-  Tags: {
-    Project: "SecurityAudit",
-    Owner: "SecurityTeam"
+const advancedCisScanConfiguration = await AWS.InspectorV2.CisScanConfiguration(
+  "advanced-cisscanconfiguration",
+  {
+    SecurityLevel: "example-securitylevel",
+    Schedule: "example-schedule",
+    Targets: "example-targets",
+    ScanName: "cisscanconfiguration-scan",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
   }
-});
+);
 ```
+

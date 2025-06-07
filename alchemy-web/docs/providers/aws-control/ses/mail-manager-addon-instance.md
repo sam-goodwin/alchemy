@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS SES MailManagerAddonIns
 
 # MailManagerAddonInstance
 
-The MailManagerAddonInstance resource allows you to manage AWS SES Mail Manager Addon Instances, which provide additional capabilities for sending and managing email. For more information, refer to the [AWS SES MailManagerAddonInstances documentation](https://docs.aws.amazon.com/ses/latest/userguide/).
+The MailManagerAddonInstance resource allows you to manage AWS SES Mail Manager Add-on Instances, which facilitate the integration of email management features into your applications. For more information, refer to the official AWS documentation: [AWS SES MailManagerAddonInstances](https://docs.aws.amazon.com/ses/latest/userguide/).
 
 ## Minimal Example
 
@@ -14,45 +14,40 @@ Create a basic MailManagerAddonInstance with the required properties and one opt
 ```ts
 import AWS from "alchemy/aws/control";
 
-const mailManagerAddonInstance = await AWS.SES.MailManagerAddonInstance("myMailManagerAddon", {
-  AddonSubscriptionId: "sub-1234567890abcdef",
+const BasicMailManagerAddonInstance = await AWS.SES.MailManagerAddonInstance("BasicMailManager", {
+  AddonSubscriptionId: "sub-123456",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "Development" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a MailManagerAddonInstance with additional properties, including tags for better organization.
+Configure a MailManagerAddonInstance with an additional tag and the option to adopt an existing resource if it already exists.
 
 ```ts
-const advancedMailManagerAddonInstance = await AWS.SES.MailManagerAddonInstance("advancedMailManagerAddon", {
-  AddonSubscriptionId: "sub-abcdef1234567890",
+const AdvancedMailManagerAddonInstance = await AWS.SES.MailManagerAddonInstance("AdvancedMailManager", {
+  AddonSubscriptionId: "sub-654321",
   Tags: [
-    {
-      Key: "Project",
-      Value: "EmailCampaign"
-    },
-    {
-      Key: "Owner",
-      Value: "DevTeam"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Project", Value: "EmailService" }
   ],
-  adopt: true // Allows adopting an existing resource if it already exists
+  adopt: true
 });
 ```
 
-## Adoption of Existing Resource
+## Resource Management
 
-Adopt an existing MailManagerAddonInstance instead of failing if it already exists.
+Manage an existing MailManagerAddonInstance by updating its tags.
 
 ```ts
-const existingMailManagerAddonInstance = await AWS.SES.MailManagerAddonInstance("adoptExistingMailManagerAddon", {
-  AddonSubscriptionId: "sub-0987654321fedcba",
-  adopt: true
+const UpdateMailManagerAddonInstance = await AWS.SES.MailManagerAddonInstance("UpdateMailManager", {
+  AddonSubscriptionId: "sub-987654",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Marketing" }
+  ],
+  adopt: true // Adopt the existing resource
 });
 ```

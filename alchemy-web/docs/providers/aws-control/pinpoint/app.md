@@ -5,60 +5,64 @@ description: Learn how to create, update, and manage AWS Pinpoint Apps using Alc
 
 # App
 
-The App resource lets you manage [AWS Pinpoint Apps](https://docs.aws.amazon.com/pinpoint/latest/userguide/) for sending targeted push notifications, emails, and SMS messages to your users.
+The App resource lets you manage [AWS Pinpoint Apps](https://docs.aws.amazon.com/pinpoint/latest/userguide/) for engaging with your customers through targeted messaging and analytics.
 
 ## Minimal Example
 
-Create a basic Pinpoint App with a specified name and optional tags.
+Create a basic Pinpoint App with a name and optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
 const pinpointApp = await AWS.Pinpoint.App("myPinpointApp", {
-  name: "My Awesome App",
-  tags: {
-    environment: "production",
-    team: "marketing"
-  }
+  Name: "MyFirstApp",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "Marketing" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an app with additional properties such as adopting an existing resource.
+Configure a Pinpoint App with additional properties such as adoption of existing resources.
 
 ```ts
-const existingApp = await AWS.Pinpoint.App("existingPinpointApp", {
-  name: "Existing App",
-  adopt: true // Adopts the existing resource if it already exists
+const existingApp = await AWS.Pinpoint.App("existingApp", {
+  Name: "MyExistingApp",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Owner", Value: "Marketing" }
+  ],
+  adopt: true // Adopt the existing resource instead of failing
 });
 ```
 
-## App with Custom Tags
+## Creating a Unique App
 
-Create a Pinpoint App with custom tags to help categorize resources.
+Create a unique Pinpoint App that focuses on a specific marketing campaign.
 
 ```ts
-const taggedApp = await AWS.Pinpoint.App("taggedPinpointApp", {
-  name: "My Tagged App",
-  tags: {
-    project: "User Engagement",
-    owner: "dev-team"
-  }
+const campaignApp = await AWS.Pinpoint.App("campaignApp", {
+  Name: "SummerSaleCampaign",
+  Tags: [
+    { Key: "Campaign", Value: "Summer Sale" },
+    { Key: "Owner", Value: "SalesTeam" }
+  ]
 });
 ```
 
-## App with Adoption Logic
+## Updating an Existing App
 
-Handle resource adoption in a situation where the app may already exist.
+Update an existing Pinpoint App with a new name and tags.
 
 ```ts
-const adoptedApp = await AWS.Pinpoint.App("adoptedPinpointApp", {
-  name: "Adopted App",
-  adopt: true,
-  tags: {
-    status: "active",
-    department: "sales"
-  }
+const updatedApp = await AWS.Pinpoint.App("updateApp", {
+  Name: "UpdatedAppName",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Owner", Value: "ProductTeam" }
+  ],
+  adopt: true // Adopt the existing resource instead of failing
 });
 ```

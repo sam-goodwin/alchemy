@@ -5,70 +5,73 @@ description: Learn how to create, update, and manage AWS ApiGateway Stages using
 
 # Stage
 
-The Stage resource allows you to manage [AWS ApiGateway Stages](https://docs.aws.amazon.com/apigateway/latest/userguide/) for your API deployments, enabling you to define different environments like development, testing, and production.
+The Stage resource lets you manage [AWS ApiGateway Stages](https://docs.aws.amazon.com/apigateway/latest/userguide/) for your APIs, enabling you to control deployment settings, configurations, and behaviors.
 
 ## Minimal Example
 
-Create a basic ApiGateway Stage with required properties and a description.
+This example demonstrates creating a basic ApiGateway Stage with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const apiStage = await AWS.ApiGateway.Stage("myApiStage", {
-  RestApiId: "1234567890",
-  StageName: "dev",
-  Description: "Development stage for testing new features"
+const basicStage = await AWS.ApiGateway.Stage("BasicStage", {
+  RestApiId: "abc1234",
+  StageName: "production",
+  Description: "Production stage for the API",
+  MethodSettings: [{
+    HttpMethod: "*",
+    ResourcePath: "/*",
+    ThrottlingBurstLimit: 100,
+    ThrottlingRateLimit: 50
+  }],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Project", Value: "API Project" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a stage with additional settings like method settings and tracing enabled for better monitoring.
+This example shows how to set up an ApiGateway Stage with additional configurations like Canary settings and access logging.
 
 ```ts
-const advancedApiStage = await AWS.ApiGateway.Stage("advancedApiStage", {
-  RestApiId: "1234567890",
-  StageName: "prod",
-  Description: "Production stage with enhanced monitoring",
-  TracingEnabled: true,
+const advancedStage = await AWS.ApiGateway.Stage("AdvancedStage", {
+  RestApiId: "abc1234",
+  StageName: "staging",
+  Description: "Staging stage for the API",
+  CanarySetting: {
+    PercentTraffic: 10,
+    DeploymentId: "xyz5678"
+  },
+  AccessLogSetting: {
+    DestinationArn: "arn:aws:logs:us-east-1:123456789012:log-group:ApiAccessLogs",
+    Format: "$context.identity.sourceIp - $context.identity.caller"
+  },
   MethodSettings: [{
     HttpMethod: "*",
-    ResourceId: "abcdef1234",
-    ThrottlingBurstLimit: 100,
-    ThrottlingRateLimit: 50
+    ResourcePath: "/*",
+    ThrottlingBurstLimit: 200,
+    ThrottlingRateLimit: 100
   }]
 });
 ```
 
-## Canary Release
+## Using Cache Settings
 
-Set up a stage with canary release settings to gradually deploy changes.
-
-```ts
-const canaryApiStage = await AWS.ApiGateway.Stage("canaryApiStage", {
-  RestApiId: "1234567890",
-  StageName: "canary",
-  DeploymentId: "deployment123",
-  CanarySetting: {
-    PercentTraffic: 10,
-    StageVariableOverrides: {
-      "newFeatureEnabled": "true"
-    }
-  }
-});
-```
-
-## Access Logging
-
-Enable access logging for the stage to monitor API requests.
+This example illustrates how to enable caching for an ApiGateway Stage to improve performance.
 
 ```ts
-const loggingApiStage = await AWS.ApiGateway.Stage("loggingApiStage", {
-  RestApiId: "1234567890",
-  StageName: "prod",
-  AccessLogSetting: {
-    DestinationArn: "arn:aws:logs:us-west-2:123456789012:log-group:my-api-logs",
-    Format: "${context.requestId} - ${context.identity.sourceIp} - ${context.httpMethod} ${context.path}"
-  }
+const cacheEnabledStage = await AWS.ApiGateway.Stage("CacheEnabledStage", {
+  RestApiId: "abc1234",
+  StageName: "cached",
+  CacheClusterEnabled: true,
+  CacheClusterSize: "0.5",
+  MethodSettings: [{
+    HttpMethod: "*",
+    ResourcePath: "/*",
+    CachingEnabled: true,
+    CacheTtlInSeconds: 300
+  }]
 });
 ```

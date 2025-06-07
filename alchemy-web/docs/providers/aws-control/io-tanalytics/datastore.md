@@ -5,104 +5,35 @@ description: Learn how to create, update, and manage AWS IoTAnalytics Datastores
 
 # Datastore
 
-The Datastore resource lets you manage [AWS IoTAnalytics Datastores](https://docs.aws.amazon.com/iotanalytics/latest/userguide/) for storing and querying data from IoT devices.
+The Datastore resource lets you create and manage [AWS IoTAnalytics Datastores](https://docs.aws.amazon.com/iotanalytics/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iotanalytics-datastore.html
 
 ## Minimal Example
-
-Create a basic IoTAnalytics Datastore with required properties and a retention period.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDatastore = await AWS.IoTAnalytics.Datastore("basicDatastore", {
-  DatastoreName: "BasicDatastore",
-  DatastoreStorage: {
-    S3: {
-      Bucket: "my-iot-analytics-bucket",
-      KeyPrefix: "datastore/"
-    }
-  },
-  RetentionPeriod: {
-    NumberOfDays: 30,
-    Unlimited: false
-  }
+const datastore = await AWS.IoTAnalytics.Datastore("datastore-example", {
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IoTAnalytics Datastore with file format settings and partitioning.
+Create a datastore with additional configuration:
 
 ```ts
-const advancedDatastore = await AWS.IoTAnalytics.Datastore("advancedDatastore", {
-  DatastoreName: "AdvancedDatastore",
-  DatastoreStorage: {
-    S3: {
-      Bucket: "my-iot-analytics-advanced-bucket",
-      KeyPrefix: "advanced-datastore/"
-    }
+import AWS from "alchemy/aws/control";
+
+const advancedDatastore = await AWS.IoTAnalytics.Datastore("advanced-datastore", {
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  FileFormatConfiguration: {
-    Json: {
-      Enable: true
-    }
-  },
-  DatastorePartitions: {
-    Partitions: [
-      {
-        Partition: {
-          Attribute: "deviceId",
-          Type: "STRING"
-        }
-      }
-    ]
-  },
-  RetentionPeriod: {
-    NumberOfDays: 60,
-    Unlimited: false
-  }
 });
 ```
 
-## Using Tags
-
-Create a Datastore with tags for better resource management.
-
-```ts
-const taggedDatastore = await AWS.IoTAnalytics.Datastore("taggedDatastore", {
-  DatastoreName: "TaggedDatastore",
-  DatastoreStorage: {
-    S3: {
-      Bucket: "my-iot-analytics-tagged-bucket",
-      KeyPrefix: "tagged-datastore/"
-    }
-  },
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Project",
-      Value: "IoTAnalytics"
-    }
-  ]
-});
-```
-
-## Adopting Existing Resources
-
-Create a Datastore while adopting an existing resource if it already exists.
-
-```ts
-const adoptExistingDatastore = await AWS.IoTAnalytics.Datastore("adoptExistingDatastore", {
-  DatastoreName: "ExistingDatastore",
-  DatastoreStorage: {
-    S3: {
-      Bucket: "my-existing-bucket",
-      KeyPrefix: "existing-datastore/"
-    }
-  },
-  adopt: true
-});
-```

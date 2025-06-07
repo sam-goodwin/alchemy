@@ -5,55 +5,61 @@ description: Learn how to create, update, and manage AWS EC2 IPAMScopes using Al
 
 # IPAMScope
 
-The IPAMScope resource lets you manage [AWS EC2 IPAMScopes](https://docs.aws.amazon.com/ec2/latest/userguide/) for organizing your IP address management in a scalable and efficient manner.
+The IPAMScope resource allows you to manage [AWS EC2 IPAMScopes](https://docs.aws.amazon.com/ec2/latest/userguide/) which are used for IP Address Management (IPAM) within your AWS environment.
 
 ## Minimal Example
 
-Create a basic IPAMScope with required properties and a description.
+Create a basic IPAMScope with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicIpamScope = await AWS.EC2.IPAMScope("basicIpamScope", {
+const basicIpamScope = await AWS.EC2.IPAMScope("BasicIpamScope", {
   IpamId: "ipam-12345678",
-  Description: "Basic IPAM Scope for managing IP addresses"
+  Description: "A basic IPAM scope for managing IP addresses",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Networking" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IPAMScope with tags for better organization and management.
+Configure an IPAMScope with additional options such as tags for better resource management:
 
 ```ts
-const advancedIpamScope = await AWS.EC2.IPAMScope("advancedIpamScope", {
+const advancedIpamScope = await AWS.EC2.IPAMScope("AdvancedIpamScope", {
   IpamId: "ipam-87654321",
-  Description: "Advanced IPAM Scope with tags",
+  Description: "An advanced IPAM scope for production",
   Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "WebApp" }
-  ]
+    { Key: "Team", Value: "DevOps" },
+    { Key: "Project", Value: "IPAMMigration" }
+  ],
+  adopt: true // Adopt an existing resource if it already exists
 });
 ```
 
-## Adoption of Existing Resources
+## Use Case: Adopting Existing Resources
 
-Adopt an existing IPAMScope if it already exists instead of failing.
+This example demonstrates how to adopt an existing IPAMScope instead of failing when it already exists:
 
 ```ts
-const adoptedIpamScope = await AWS.EC2.IPAMScope("adoptedIpamScope", {
-  IpamId: "ipam-13579246",
-  Description: "This scope might already exist",
+const existingIpamScope = await AWS.EC2.IPAMScope("ExistingIpamScope", {
+  IpamId: "ipam-existing-id",
+  Description: "Adopting an existing IPAM scope",
   adopt: true
 });
 ```
 
-## Updating an IPAMScope
+## Use Case: Creating Without Tags
 
-Update an existing IPAMScope's description to reflect changes in your network architecture.
+You can create an IPAMScope without any tags if not required:
 
 ```ts
-const updatedIpamScope = await AWS.EC2.IPAMScope("updatedIpamScope", {
-  IpamId: "ipam-24681357",
-  Description: "Updated description for IPAM Scope"
+const ipamScopeWithoutTags = await AWS.EC2.IPAMScope("NoTagsIpamScope", {
+  IpamId: "ipam-no-tags-id",
+  Description: "An IPAM scope created without tags"
 });
 ```

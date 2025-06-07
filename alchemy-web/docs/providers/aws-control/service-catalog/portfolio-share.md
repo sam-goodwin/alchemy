@@ -5,42 +5,65 @@ description: Learn how to create, update, and manage AWS ServiceCatalog Portfoli
 
 # PortfolioShare
 
-The PortfolioShare resource lets you manage [AWS ServiceCatalog PortfolioShares](https://docs.aws.amazon.com/servicecatalog/latest/userguide/) for sharing portfolios across AWS accounts.
+The PortfolioShare resource allows you to share AWS Service Catalog portfolios with other AWS accounts. This is a crucial feature for organizations that want to manage and share product offerings across multiple accounts efficiently. For more details, refer to the [AWS ServiceCatalog PortfolioShares documentation](https://docs.aws.amazon.com/servicecatalog/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic PortfolioShare with required properties and one optional property.
+Create a basic portfolio share with required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const portfolioShare = await AWS.ServiceCatalog.PortfolioShare("basicPortfolioShare", {
-  AccountId: "123456789012",
-  PortfolioId: "portfolio-abc-123",
-  AcceptLanguage: "en"
+const BasicPortfolioShare = await AWS.ServiceCatalog.PortfolioShare("BasicPortfolioShare", {
+  AccountId: "123456789012", // Target account ID to share the portfolio with
+  PortfolioId: "portfolio-abc123", // ID of the portfolio to share
+  AcceptLanguage: "en", // Optional: Language for the response
+  ShareTagOptions: false // Optional: Whether to share tag options
 });
 ```
 
 ## Advanced Configuration
 
-Configure a PortfolioShare to enable sharing of tag options.
+Share a portfolio with additional settings, including tag options and a specified language:
 
 ```ts
-const advancedPortfolioShare = await AWS.ServiceCatalog.PortfolioShare("advancedPortfolioShare", {
-  AccountId: "123456789013",
-  PortfolioId: "portfolio-def-456",
-  ShareTagOptions: true
+const AdvancedPortfolioShare = await AWS.ServiceCatalog.PortfolioShare("AdvancedPortfolioShare", {
+  AccountId: "987654321098", // Target account ID
+  PortfolioId: "portfolio-def456", // Portfolio ID to be shared
+  AcceptLanguage: "fr", // Optional: French language for the response
+  ShareTagOptions: true, // Optional: Share tag options
+  adopt: true // Optional: Adopt existing resource if it exists
 });
 ```
 
-## Adopting Existing Resources
+## Using Tag Options
 
-Configure a PortfolioShare to adopt existing resources instead of failing if the resource already exists.
+Configure a portfolio share that includes specific tag options to enhance resource management:
 
 ```ts
-const adoptPortfolioShare = await AWS.ServiceCatalog.PortfolioShare("adoptExistingPortfolioShare", {
-  AccountId: "123456789014",
-  PortfolioId: "portfolio-ghi-789",
-  adopt: true
+const TaggedPortfolioShare = await AWS.ServiceCatalog.PortfolioShare("TaggedPortfolioShare", {
+  AccountId: "112233445566", // Target account ID
+  PortfolioId: "portfolio-ghi789", // Portfolio ID to share
+  AcceptLanguage: "es", // Optional: Spanish language for the response
+  ShareTagOptions: true, // Enable sharing of tag options
+  adopt: false // Do not adopt existing resources
 });
+```
+
+## Handling Errors
+
+When sharing a portfolio, you may want to handle errors gracefully, especially if the resource already exists. Here's how you can implement that:
+
+```ts
+try {
+  const ErrorHandledShare = await AWS.ServiceCatalog.PortfolioShare("ErrorHandledShare", {
+    AccountId: "445566778899", // Target account ID
+    PortfolioId: "portfolio-jkl012", // Portfolio ID to share
+    AcceptLanguage: "en", // Optional: Language for the response
+    ShareTagOptions: true, // Optional: Share tag options
+    adopt: true // Attempt to adopt if the resource exists
+  });
+} catch (error) {
+  console.error("Error sharing portfolio:", error);
+}
 ```

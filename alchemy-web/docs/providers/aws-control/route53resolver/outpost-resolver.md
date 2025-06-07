@@ -5,54 +5,57 @@ description: Learn how to create, update, and manage AWS Route53Resolver Outpost
 
 # OutpostResolver
 
-The OutpostResolver resource allows you to create and manage AWS Route53Resolver OutpostResolvers, enabling DNS resolution for resources in your AWS Outposts. For more information, visit the [AWS Route53Resolver OutpostResolvers documentation](https://docs.aws.amazon.com/route53resolver/latest/userguide/).
+The OutpostResolver resource lets you manage [AWS Route53Resolver OutpostResolvers](https://docs.aws.amazon.com/route53resolver/latest/userguide/) for DNS resolution within an AWS Outpost.
 
 ## Minimal Example
 
-Create a basic OutpostResolver with required properties and one optional property.
+Create a basic OutpostResolver with essential properties and a couple of optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const outpostResolver = await AWS.Route53Resolver.OutpostResolver("basicOutpostResolver", {
-  outpostArn: "arn:aws:outposts:us-east-1:123456789012:outpost/op-0abcd1234efgh5678",
-  preferredInstanceType: "r5.large",
-  instanceCount: 2, // Optional: specify the number of instances
-  name: "BasicOutpostResolver"
+const BasicOutpostResolver = await AWS.Route53Resolver.OutpostResolver("BasicOutpostResolver", {
+  OutpostArn: "arn:aws:outposts:us-west-2:123456789012:outpost/op-1234567890abcdef",
+  PreferredInstanceType: "r5.large",
+  InstanceCount: 2,
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Network" }
+  ],
+  Name: "DevOutpostResolver"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an OutpostResolver with tags for better resource management.
+Configure an OutpostResolver with additional settings for instance count and tags.
 
 ```ts
-const taggedOutpostResolver = await AWS.Route53Resolver.OutpostResolver("taggedOutpostResolver", {
-  outpostArn: "arn:aws:outposts:us-west-2:123456789012:outpost/op-1abcd1234efgh5678",
-  preferredInstanceType: "r5.xlarge",
-  instanceCount: 4,
-  name: "TaggedOutpostResolver",
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Project", value: "DNSManagement" }
-  ]
+const AdvancedOutpostResolver = await AWS.Route53Resolver.OutpostResolver("AdvancedOutpostResolver", {
+  OutpostArn: "arn:aws:outposts:us-east-1:123456789012:outpost/op-abcdef1234567890",
+  PreferredInstanceType: "m5.xlarge",
+  InstanceCount: 4,
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Owner", Value: "Operations" }
+  ],
+  Name: "ProdOutpostResolver"
 });
 ```
 
-## Scaling and Resource Management
+## Custom Name and Instance Count
 
-Create an OutpostResolver and later update it to scale the instance count based on demand.
+Create an OutpostResolver with a unique name and specific instance count based on workload.
 
 ```ts
-const scalableOutpostResolver = await AWS.Route53Resolver.OutpostResolver("scalableOutpostResolver", {
-  outpostArn: "arn:aws:outposts:eu-central-1:123456789012:outpost/op-2abcd1234efgh5678",
-  preferredInstanceType: "m5.large",
-  instanceCount: 3,
-  name: "ScalableOutpostResolver"
-});
-
-// Later, scale up the instance count to 6
-await AWS.Route53Resolver.OutpostResolver.update("scalableOutpostResolver", {
-  instanceCount: 6
+const CustomNameOutpostResolver = await AWS.Route53Resolver.OutpostResolver("CustomNameOutpostResolver", {
+  OutpostArn: "arn:aws:outposts:us-west-1:123456789012:outpost/op-0987654321fedcba",
+  PreferredInstanceType: "c5.large",
+  InstanceCount: 3,
+  Name: "CustomResolverForApp",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Project", Value: "WebApp" }
+  ]
 });
 ```

@@ -5,112 +5,70 @@ description: Learn how to create, update, and manage AWS Bedrock Blueprints usin
 
 # Blueprint
 
-The Blueprint resource allows you to create, update, and manage [AWS Bedrock Blueprints](https://docs.aws.amazon.com/bedrock/latest/userguide/) that define the parameters and configurations required for your AI models.
+The Blueprint resource allows you to create and manage [AWS Bedrock Blueprints](https://docs.aws.amazon.com/bedrock/latest/userguide/) that define your AI models and their configurations.
 
 ## Minimal Example
 
-Create a basic Bedrock Blueprint with required properties and a common optional property.
+Create a basic Bedrock Blueprint with required properties and a KMS key for encryption:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicBlueprint = await AWS.Bedrock.Blueprint("basicBlueprint", {
-  Type: "TextGeneration",
-  BlueprintName: "BasicTextGenBlueprint",
+const BasicBlueprint = await AWS.Bedrock.Blueprint("BasicBlueprint", {
+  Type: "Model",
+  BlueprintName: "MyFirstBlueprint",
   KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrstuv",
   Schema: {
-    input: {
-      type: "string",
-      description: "Input text for generation"
-    },
-    output: {
-      type: "string",
-      description: "Generated text output"
-    }
+    ModelType: "CustomModel",
+    Version: "1.0"
   },
   Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "AIModeling" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "AI" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a more complex Bedrock Blueprint with additional settings, including KMS encryption context and custom tags.
+Configure a Blueprint with additional KMS context and custom encryption settings:
 
 ```ts
-const advancedBlueprint = await AWS.Bedrock.Blueprint("advancedBlueprint", {
-  Type: "ImageGeneration",
-  BlueprintName: "AdvancedImageGenBlueprint",
-  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/wxyz1234-56ef-78gh-90ij-klmnopqrstuv",
+const AdvancedBlueprint = await AWS.Bedrock.Blueprint("AdvancedBlueprint", {
+  Type: "Model",
+  BlueprintName: "MyAdvancedBlueprint",
+  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrstuv",
   KmsEncryptionContext: {
-    Project: "ImageGeneration",
-    Owner: "AITeam"
+    "Project": "AI-Research",
+    "Data": "Sensitive"
   },
   Schema: {
-    input: {
-      type: "object",
-      properties: {
-        prompt: {
-          type: "string",
-          description: "Prompt for image generation"
-        },
-        style: {
-          type: "string",
-          enum: ["cartoon", "realistic"],
-          description: "Style of the generated image"
-        }
-      },
-      required: ["prompt"]
-    },
-    output: {
-      type: "string",
-      description: "URL of the generated image"
+    ModelType: "AdvancedCustomModel",
+    Version: "2.0",
+    Parameters: {
+      LearningRate: 0.001,
+      Epochs: 50
     }
   },
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "AIImageModeling" }
-  ],
-  adopt: true
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataScience" }
+  ]
 });
 ```
 
-## Use Case: Text Generation with Custom Schema
+## Using Existing Resources
 
-Create a Bedrock Blueprint specifically for text generation with a custom schema that includes additional validation.
+If you want to adopt an existing Blueprint resource instead of failing when it already exists:
 
 ```ts
-const textGenBlueprint = await AWS.Bedrock.Blueprint("textGenBlueprint", {
-  Type: "TextGeneration",
-  BlueprintName: "CustomTextGenBlueprint",
-  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/ijkl1234-56ef-78gh-90ij-klmnopqrstuv",
+const AdoptExistingBlueprint = await AWS.Bedrock.Blueprint("AdoptExistingBlueprint", {
+  Type: "Model",
+  BlueprintName: "ExistingBlueprint",
+  adopt: true,
   Schema: {
-    input: {
-      type: "object",
-      properties: {
-        prompt: {
-          type: "string",
-          description: "The text input to guide the generation"
-        },
-        temperature: {
-          type: "number",
-          description: "Controls the randomness of the output",
-          minimum: 0,
-          maximum: 1
-        }
-      },
-      required: ["prompt"]
-    },
-    output: {
-      type: "string",
-      description: "The generated text response"
-    }
-  },
-  Tags: [
-    { Key: "UseCase", Value: "ContentCreation" },
-    { Key: "Team", Value: "Marketing" }
-  ]
+    ModelType: "AdoptedModel",
+    Version: "1.0"
+  }
 });
 ```

@@ -5,84 +5,68 @@ description: Learn how to create, update, and manage AWS Organizations Organizat
 
 # OrganizationalUnit
 
-The OrganizationalUnit resource lets you manage [AWS Organizations OrganizationalUnits](https://docs.aws.amazon.com/organizations/latest/userguide/) within your AWS account, allowing you to organize accounts in a hierarchical structure.
+The OrganizationalUnit resource lets you manage [AWS Organizations OrganizationalUnits](https://docs.aws.amazon.com/organizations/latest/userguide/) within your AWS environment, allowing you to structure your accounts in a hierarchical manner.
 
 ## Minimal Example
 
-Create a basic organizational unit under a specified parent organizational unit.
+Create an OrganizationalUnit under a specified parent with basic properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const organizationalUnit = await AWS.Organizations.OrganizationalUnit("basicOU", {
-  ParentId: "ou-1234-abcdef",
-  Name: "Finance",
+const OrgUnit = await AWS.Organizations.OrganizationalUnit("DevOrgUnit", {
+  ParentId: "ou-1234-5678", // Replace with your actual Parent ID
+  Name: "Development Team",
   Tags: [
-    {
-      Key: "Department",
-      Value: "Finance"
-    }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Create an organizational unit with additional tags for better organization and identification.
+Create an OrganizationalUnit while adopting an existing resource if it already exists.
 
 ```ts
-const advancedOU = await AWS.Organizations.OrganizationalUnit("advancedOU", {
-  ParentId: "ou-5678-ghijkl",
-  Name: "Engineering",
+const ProductionOrgUnit = await AWS.Organizations.OrganizationalUnit("ProdOrgUnit", {
+  ParentId: "ou-1234-5678", // Replace with your actual Parent ID
+  Name: "Production Team",
   Tags: [
-    {
-      Key: "Team",
-      Value: "DevOps"
-    },
-    {
-      Key: "Project",
-      Value: "Infrastructure"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Operations" }
   ],
   adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Nested Organizational Units
+## Nested OrganizationalUnits
 
-Create a nested organizational unit under an existing one to facilitate better account management.
+Create a nested OrganizationalUnit under an existing one to further structure your AWS accounts.
 
 ```ts
-const nestedOU = await AWS.Organizations.OrganizationalUnit("nestedOU", {
-  ParentId: "ou-1234-abcdef", // ID of the parent OU
-  Name: "Cloud Services",
+const SubTeamOrgUnit = await AWS.Organizations.OrganizationalUnit("SubTeamOrgUnit", {
+  ParentId: "ou-1234-5678", // Replace with the Parent ID of the Development Team
+  Name: "Sub Development Team",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "SubDev" }
   ]
 });
 ```
 
-## Bulk Organizational Unit Creation
+## Tagging for Management
 
-Demonstrate how to create multiple organizational units in a loop for batch processing.
+Create an OrganizationalUnit with tags for better management and cost allocation.
 
 ```ts
-const ouNames = ["HR", "Marketing", "Sales"];
-const parentOUId = "ou-5678-ghijkl";
-
-for (const ouName of ouNames) {
-  await AWS.Organizations.OrganizationalUnit(`ou-${ouName}`, {
-    ParentId: parentOUId,
-    Name: ouName,
-    Tags: [
-      {
-        Key: "Department",
-        Value: ouName
-      }
-    ]
-  });
-}
+const MarketingOrgUnit = await AWS.Organizations.OrganizationalUnit("MarketingOrgUnit", {
+  ParentId: "ou-1234-5678", // Replace with your actual Parent ID
+  Name: "Marketing Team",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Department", Value: "Marketing" },
+    { Key: "Project", Value: "Q4Campaign" }
+  ]
+});
 ```

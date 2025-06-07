@@ -5,70 +5,70 @@ description: Learn how to create, update, and manage AWS Wisdom Assistants using
 
 # Assistant
 
-The Assistant resource lets you create and manage [AWS Wisdom Assistants](https://docs.aws.amazon.com/wisdom/latest/userguide/) which provide contextual information and insights to support agents in customer interactions.
+The Assistant resource lets you create and manage [AWS Wisdom Assistants](https://docs.aws.amazon.com/wisdom/latest/userguide/) which help in providing contextual information to agents during customer interactions.
 
 ## Minimal Example
 
-Create a basic Wisdom Assistant with required properties and a description:
+Create a basic Wisdom Assistant with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAssistant = await AWS.Wisdom.Assistant("basic-assistant", {
-  Type: "CUSTOM",
-  Description: "A basic Wisdom Assistant to support customer service agents.",
-  Name: "BasicAssistant"
+const basicAssistant = await AWS.Wisdom.Assistant("BasicAssistant", {
+  Type: "Standard",
+  Description: "This assistant provides contextual information for customer service agents.",
+  Name: "CustomerServiceAssistant"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an Assistant with server-side encryption and tags for better management:
+Configure an Assistant with server-side encryption and tags for better resource management.
 
 ```ts
-const advancedAssistant = await AWS.Wisdom.Assistant("advanced-assistant", {
-  Type: "CUSTOM",
-  Description: "An advanced Wisdom Assistant with encryption.",
-  Name: "AdvancedAssistant",
+const advancedAssistant = await AWS.Wisdom.Assistant("AdvancedAssistant", {
+  Type: "Secure",
+  Description: "This assistant uses encryption for sensitive information.",
+  Name: "SecureCustomerServiceAssistant",
   ServerSideEncryptionConfiguration: {
-    KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-ef56-7890-abcd-ef1234567890",
-    EncryptionType: "KMS"
+    // Assuming the configuration requires specific properties
+    KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrstuv"
   },
   Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Customer Support" }
+    { Key: "Team", Value: "CustomerSupport" }
   ]
 });
 ```
 
-## Adoption of Existing Resources
+## Utilizing Existing Resources
 
-Create an Assistant that adopts an existing resource if it already exists, avoiding failure:
+If you want to adopt an existing Assistant instead of creating a new one, you can use the adopt property.
 
 ```ts
-const adoptAssistant = await AWS.Wisdom.Assistant("adopt-assistant", {
-  Type: "CUSTOM",
-  Name: "AdoptableAssistant",
+const adoptExistingAssistant = await AWS.Wisdom.Assistant("AdoptExistingAssistant", {
+  Type: "Standard",
+  Description: "Adopting an existing assistant resource.",
+  Name: "ExistingAssistantName",
   adopt: true
 });
 ```
 
-## Custom Usage Scenarios
+## Example with Enhanced Security Settings
 
-Create an Assistant with specific configurations for a training environment:
+Create an Assistant configured with specific security settings to handle sensitive information.
 
 ```ts
-const trainingAssistant = await AWS.Wisdom.Assistant("training-assistant", {
-  Type: "CUSTOM",
-  Description: "A Wisdom Assistant for training purposes.",
-  Name: "TrainingAssistant",
+const secureAssistant = await AWS.Wisdom.Assistant("SecureAssistant", {
+  Type: "Standard",
+  Description: "This assistant is configured with enhanced security settings.",
+  Name: "SensitiveDataAssistant",
   ServerSideEncryptionConfiguration: {
-    KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-ef56-7890-abcd-ef1234567890",
-    EncryptionType: "KMS"
+    KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrstuv"
   },
   Tags: [
-    { Key: "Environment", Value: "Training" },
-    { Key: "Purpose", Value: "Agent Training" }
+    { Key: "Compliance", Value: "GDPR" },
+    { Key: "Team", Value: "Legal" }
   ]
 });
 ```

@@ -5,16 +5,16 @@ description: Learn how to create, update, and manage AWS CloudFormation HookDefa
 
 # HookDefaultVersion
 
-The HookDefaultVersion resource allows you to manage the default version of a CloudFormation hook, which can be used for custom resource types. This resource enables you to specify the hook's type name, version ID, and ARN. For more detailed information, visit the [AWS CloudFormation HookDefaultVersions documentation](https://docs.aws.amazon.com/cloudformation/latest/userguide/).
+The HookDefaultVersion resource allows you to define the default version of a CloudFormation hook in your AWS account. This is useful for managing custom hooks that can be associated with your CloudFormation stacks. For more details, refer to the [AWS CloudFormation HookDefaultVersions documentation](https://docs.aws.amazon.com/cloudformation/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic HookDefaultVersion with the required properties and one optional property.
+Create a basic hook default version with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const hookDefaultVersion = await AWS.CloudFormation.HookDefaultVersion("MyHookDefaultVersion", {
+const DefaultHookVersion = await AWS.CloudFormation.HookDefaultVersion("MyDefaultHookVersion", {
   TypeName: "MyCustomHook",
   VersionId: "v1.0.0"
 });
@@ -22,38 +22,37 @@ const hookDefaultVersion = await AWS.CloudFormation.HookDefaultVersion("MyHookDe
 
 ## Advanced Configuration
 
-Here’s an example that includes additional optional properties like `TypeVersionArn` and `adopt`.
+Configure a hook default version with additional optional properties such as `TypeVersionArn`.
 
 ```ts
-const advancedHookDefaultVersion = await AWS.CloudFormation.HookDefaultVersion("AdvancedHookDefaultVersion", {
-  TypeName: "MyAdvancedCustomHook",
-  VersionId: "v2.0.0",
-  TypeVersionArn: "arn:aws:cloudformation:us-west-2:123456789012:type/MyAdvancedCustomHook/v2.0.0",
-  adopt: true // Adopt existing resource if it already exists
+const AdvancedHookVersion = await AWS.CloudFormation.HookDefaultVersion("AdvancedHookVersion", {
+  TypeName: "MyAdvancedHook",
+  VersionId: "v1.0.1",
+  TypeVersionArn: "arn:aws:cloudformation:us-west-2:123456789012:type/MyAdvancedHook/v1.0.1"
 });
 ```
 
-## Adoption Scenario
+## Adoption of Existing Resource
 
-This example shows how to adopt an existing hook default version instead of failing when it already exists.
+Set the `adopt` property to true to adopt an existing hook default version instead of failing if it already exists.
 
 ```ts
-const adoptHookDefaultVersion = await AWS.CloudFormation.HookDefaultVersion("AdoptExistingHook", {
-  TypeName: "MyExistingCustomHook",
+const AdoptedHookVersion = await AWS.CloudFormation.HookDefaultVersion("AdoptedHookVersion", {
+  TypeName: "MyAdoptedHook",
   VersionId: "v1.0.0",
-  adopt: true // Set to true to adopt the existing resource
+  adopt: true
 });
 ```
 
-## Complete Hook Configuration
+## Complete Configuration Example
 
-In this example, we set up a complete hook configuration with all relevant properties.
+This example demonstrates a complete configuration with all properties, including optional metadata.
 
 ```ts
-const completeHookDefaultVersion = await AWS.CloudFormation.HookDefaultVersion("CompleteHook", {
-  TypeName: "MyCompleteCustomHook",
-  VersionId: "v1.0.0",
-  TypeVersionArn: "arn:aws:cloudformation:us-west-2:123456789012:type/MyCompleteCustomHook/v1.0.0",
-  adopt: false // Set to false to fail if the resource exists
+const CompleteHookVersion = await AWS.CloudFormation.HookDefaultVersion("CompleteHookVersion", {
+  TypeName: "MyCompleteHook",
+  VersionId: "v1.0.2",
+  TypeVersionArn: "arn:aws:cloudformation:us-east-1:123456789012:type/MyCompleteHook/v1.0.2",
+  adopt: false // Default is false
 });
 ```

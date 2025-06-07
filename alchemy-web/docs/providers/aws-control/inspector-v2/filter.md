@@ -5,56 +5,35 @@ description: Learn how to create, update, and manage AWS InspectorV2 Filters usi
 
 # Filter
 
-The Filter resource allows you to create and manage [AWS InspectorV2 Filters](https://docs.aws.amazon.com/inspectorv2/latest/userguide/) that help define criteria for the assessment of your AWS resources.
+The Filter resource lets you create and manage [AWS InspectorV2 Filters](https://docs.aws.amazon.com/inspectorv2/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-inspectorv2-filter.html
 
 ## Minimal Example
-
-Create a basic filter with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicFilter = await AWS.InspectorV2.Filter("basic-filter", {
-  Name: "Critical Vulnerabilities Filter",
-  Description: "Filter for critical vulnerabilities",
-  FilterCriteria: {
-    // Define filter criteria here
-  },
-  FilterAction: "Exclude"
+const filter = await AWS.InspectorV2.Filter("filter-example", {
+  FilterCriteria: "example-filtercriteria",
+  FilterAction: "example-filteraction",
+  Name: "filter-",
+  Description: "A filter resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Set up a more complex filter with additional criteria and a detailed description.
+Create a filter with additional configuration:
 
 ```ts
+import AWS from "alchemy/aws/control";
+
 const advancedFilter = await AWS.InspectorV2.Filter("advanced-filter", {
-  Name: "High Severity Vulnerabilities Filter",
-  Description: "Filter for high severity vulnerabilities affecting EC2 instances",
-  FilterCriteria: {
-    // Example filter criteria for severity level
-    Severity: {
-      Equals: ["HIGH"]
-    },
-    // Add additional criteria as needed
-  },
-  FilterAction: "Include"
+  FilterCriteria: "example-filtercriteria",
+  FilterAction: "example-filteraction",
+  Name: "filter-",
+  Description: "A filter resource managed by Alchemy",
 });
 ```
 
-## Adopt Existing Resource
-
-Create a filter that adopts an existing resource instead of failing if it already exists.
-
-```ts
-const existingFilter = await AWS.InspectorV2.Filter("existing-filter", {
-  Name: "Existing Filter",
-  Description: "This filter adopts an existing resource",
-  FilterCriteria: {
-    // Define filter criteria here
-  },
-  FilterAction: "Exclude",
-  adopt: true
-});
-```

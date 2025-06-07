@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS GuardDuty Members using
 
 # Member
 
-The Member resource allows you to manage [AWS GuardDuty Members](https://docs.aws.amazon.com/guardduty/latest/userguide/) within your AWS account. This resource enables you to invite and manage member accounts to participate in GuardDuty threat detection.
+The Member resource allows you to manage [AWS GuardDuty Members](https://docs.aws.amazon.com/guardduty/latest/userguide/) within your AWS account. This includes inviting members to a GuardDuty detector and managing their statuses.
 
 ## Minimal Example
 
@@ -14,46 +14,54 @@ Create a basic GuardDuty member with essential properties.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const guardDutyMember = await AWS.GuardDuty.Member("guardDutyMember", {
+const guardDutyMember = await AWS.GuardDuty.Member("BasicGuardDutyMember", {
   Email: "member@example.com",
-  DetectorId: "1234567890abcdef1234567890abcdef",
+  DetectorId: "detector-1234567890abcdef",
+  Status: "INVITED",
   DisableEmailNotification: false
 });
 ```
 
 ## Advanced Configuration
 
-Configure a GuardDuty member with additional properties, including a custom message and status.
+Configure additional properties such as a welcome message and adopting existing resources.
 
 ```ts
-const advancedGuardDutyMember = await AWS.GuardDuty.Member("advancedGuardDutyMember", {
-  Email: "advancedMember@example.com",
-  DetectorId: "1234567890abcdef1234567890abcdef",
-  Message: "Welcome to GuardDuty!",
-  Status: "Invited"
+const advancedGuardDutyMember = await AWS.GuardDuty.Member("AdvancedGuardDutyMember", {
+  Email: "advanced.member@example.com",
+  DetectorId: "detector-0987654321abcdef",
+  Status: "ACTIVE",
+  Message: "Welcome to our GuardDuty team!",
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Adoption of Existing Resource
+## Inviting Multiple Members
 
-Adopt an existing GuardDuty member instead of failing if it already exists.
+You can also invite multiple members by creating separate resources for each.
 
 ```ts
-const adoptGuardDutyMember = await AWS.GuardDuty.Member("adoptGuardDutyMember", {
-  Email: "existingMember@example.com",
-  DetectorId: "1234567890abcdef1234567890abcdef",
-  adopt: true
+const firstMember = await AWS.GuardDuty.Member("FirstGuardDutyMember", {
+  Email: "first.member@example.com",
+  DetectorId: "detector-1234567890abcdef",
+  Status: "INVITED"
+});
+
+const secondMember = await AWS.GuardDuty.Member("SecondGuardDutyMember", {
+  Email: "second.member@example.com",
+  DetectorId: "detector-1234567890abcdef",
+  Status: "INVITED"
 });
 ```
 
-## Disable Email Notification
+## Updating Member Status
 
-Create a GuardDuty member while disabling email notifications.
+Update the status of an existing member when they accept the invitation.
 
 ```ts
-const noEmailGuardDutyMember = await AWS.GuardDuty.Member("noEmailGuardDutyMember", {
-  Email: "noNotificationMember@example.com",
-  DetectorId: "1234567890abcdef1234567890abcdef",
-  DisableEmailNotification: true
+const updatedMember = await AWS.GuardDuty.Member("UpdatedGuardDutyMember", {
+  Email: "member@example.com",
+  DetectorId: "detector-1234567890abcdef",
+  Status: "ACTIVE"
 });
 ```

@@ -5,65 +5,76 @@ description: Learn how to create, update, and manage AWS RDS DBProxyEndpoints us
 
 # DBProxyEndpoint
 
-The DBProxyEndpoint resource allows you to manage AWS RDS DB Proxy Endpoints, which serve as an entry point for applications to connect to a DB Proxy. For more information, refer to the [AWS RDS DBProxyEndpoints documentation](https://docs.aws.amazon.com/rds/latest/userguide/).
+The DBProxyEndpoint resource allows you to manage [AWS RDS DBProxyEndpoints](https://docs.aws.amazon.com/rds/latest/userguide/) which serve as an intermediary between your application and RDS database instances, enhancing connection management and scalability.
 
 ## Minimal Example
 
-Create a basic DB Proxy Endpoint with required properties and one optional property.
+Create a basic DBProxyEndpoint with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbProxyEndpoint = await AWS.RDS.DBProxyEndpoint("myDbProxyEndpoint", {
-  DBProxyEndpointName: "my-endpoint",
-  DBProxyName: "my-db-proxy",
-  VpcSubnetIds: ["subnet-0a1b2c3d", "subnet-0e4f5g6h"],
-  TargetRole: "READ_WRITE"
+const BasicDBProxyEndpoint = await AWS.RDS.DBProxyEndpoint("BasicDBProxyEndpoint", {
+  DBProxyEndpointName: "MyDBProxyEndpoint",
+  DBProxyName: "MyDBProxy",
+  VpcSubnetIds: ["subnet-12345678", "subnet-87654321"],
+  VpcSecurityGroupIds: ["sg-12345678"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DB Proxy Endpoint with additional optional properties such as VPC security groups and tags.
+Configure a DBProxyEndpoint with specific roles and multiple security groups for enhanced security.
 
 ```ts
-const advancedDbProxyEndpoint = await AWS.RDS.DBProxyEndpoint("advancedDbProxyEndpoint", {
-  DBProxyEndpointName: "my-advanced-endpoint",
-  DBProxyName: "my-db-proxy",
-  VpcSubnetIds: ["subnet-0a1b2c3d", "subnet-0e4f5g6h"],
-  VpcSecurityGroupIds: ["sg-0123456789abcdef0"],
+const AdvancedDBProxyEndpoint = await AWS.RDS.DBProxyEndpoint("AdvancedDBProxyEndpoint", {
+  DBProxyEndpointName: "AdvancedDBProxyEndpoint",
+  DBProxyName: "AdvancedDBProxy",
+  VpcSubnetIds: ["subnet-12345678", "subnet-87654321"],
+  VpcSecurityGroupIds: ["sg-12345678", "sg-87654321"],
+  TargetRole: "READ_WRITE",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyProject" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Read-Only Endpoint Configuration
+## Connection Management Example
 
-Create a read-only DB Proxy Endpoint for applications that only need to read data.
+Demonstrate how to create a DBProxyEndpoint focused on connection management with role settings.
 
 ```ts
-const readOnlyDbProxyEndpoint = await AWS.RDS.DBProxyEndpoint("readOnlyDbProxyEndpoint", {
-  DBProxyEndpointName: "my-read-only-endpoint",
-  DBProxyName: "my-db-proxy",
-  VpcSubnetIds: ["subnet-0a1b2c3d", "subnet-0e4f5g6h"],
-  TargetRole: "READ_ONLY"
+const ConnectionManagementDBProxyEndpoint = await AWS.RDS.DBProxyEndpoint("ConnectionManagementDBProxyEndpoint", {
+  DBProxyEndpointName: "ConnectionManagementEndpoint",
+  DBProxyName: "ConnectionManagementProxy",
+  VpcSubnetIds: ["subnet-12345678", "subnet-87654321"],
+  VpcSecurityGroupIds: ["sg-12345678"],
+  TargetRole: "READ_ONLY",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```
 
-## Testing Environment Configuration
+## Custom Security Groups Example
 
-Set up a DB Proxy Endpoint for a testing environment with specific security group settings.
+Set up a DBProxyEndpoint with custom security groups for tighter network security.
 
 ```ts
-const testDbProxyEndpoint = await AWS.RDS.DBProxyEndpoint("testDbProxyEndpoint", {
-  DBProxyEndpointName: "my-test-endpoint",
-  DBProxyName: "my-db-proxy",
-  VpcSubnetIds: ["subnet-0a1b2c3d", "subnet-0e4f5g6h"],
-  VpcSecurityGroupIds: ["sg-abcdef0123456789"],
+const CustomSecurityGroupsDBProxyEndpoint = await AWS.RDS.DBProxyEndpoint("CustomSecurityGroupsDBProxyEndpoint", {
+  DBProxyEndpointName: "CustomSecurityGroupsEndpoint",
+  DBProxyName: "CustomSecurityGroupsProxy",
+  VpcSubnetIds: ["subnet-abcdef12", "subnet-fedcba21"],
+  VpcSecurityGroupIds: ["sg-abcdef12", "sg-fedcba21"],
   Tags: [
-    { Key: "Environment", Value: "Testing" }
+    { Key: "Environment", Value: "testing" },
+    { Key: "Team", Value: "Integration" }
   ]
 });
 ```

@@ -5,67 +5,58 @@ description: Learn how to create, update, and manage AWS FSx Snapshots using Alc
 
 # Snapshot
 
-The Snapshot resource allows you to manage [AWS FSx Snapshots](https://docs.aws.amazon.com/fsx/latest/userguide/) for your Amazon FSx file systems, enabling you to create backups and restore your data efficiently.
+The Snapshot resource allows you to manage [AWS FSx Snapshots](https://docs.aws.amazon.com/fsx/latest/userguide/) for your file systems, enabling you to create backups and restore data as needed.
 
 ## Minimal Example
 
-Create a basic FSx snapshot with required properties and a tag.
+Create a basic FSx Snapshot with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const fsxSnapshot = await AWS.FSx.Snapshot("myFsxSnapshot", {
-  volumeId: "vol-12345678",
-  name: "MyFirstSnapshot",
-  tags: [
-    { key: "Environment", value: "Production" }
-  ]
+const basicSnapshot = await AWS.FSx.Snapshot("BasicSnapshot", {
+  VolumeId: "fs-12345678", // Replace with your actual volume ID
+  Name: "DailyBackup", 
+  Tags: [{ Key: "Environment", Value: "production" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a snapshot with additional properties, including adopting an existing resource.
+Configure an FSx Snapshot with additional options, including multiple tags and an adoption flag.
 
 ```ts
-const advancedFsxSnapshot = await AWS.FSx.Snapshot("advancedFsxSnapshot", {
-  volumeId: "vol-87654321",
-  name: "AdvancedSnapshot",
-  adopt: true,
-  tags: [
-    { key: "Project", value: "Alpha" },
-    { key: "Owner", value: "Team-X" }
-  ]
+const advancedSnapshot = await AWS.FSx.Snapshot("AdvancedSnapshot", {
+  VolumeId: "fs-87654321", // Replace with your actual volume ID
+  Name: "WeeklyBackup",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataOps" }
+  ],
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Using Snapshot for Data Recovery
+## Snapshot Restoration
 
-Create a snapshot and then use it to restore the volume if needed.
+Demonstrate how to create a snapshot that can be used for restoring data later.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const recoverySnapshot = await AWS.FSx.Snapshot("recoverySnapshot", {
-  volumeId: "vol-12345678",
-  name: "RecoverySnapshot"
+const restoreSnapshot = await AWS.FSx.Snapshot("RestoreSnapshot", {
+  VolumeId: "fs-12345678", // Replace with your actual volume ID
+  Name: "RestorePoint",
+  Tags: [{ Key: "Purpose", Value: "DataRecovery" }]
 });
-
-// Logic to restore the volume from the snapshot would go here
 ```
 
-## Tagging for Organization
+## Scheduled Snapshots
 
-Create a snapshot with multiple tags for better organization in your AWS account.
+Create a configuration for taking scheduled snapshots for regular backups.
 
 ```ts
-const organizedSnapshot = await AWS.FSx.Snapshot("organizedSnapshot", {
-  volumeId: "vol-12345678",
-  name: "OrganizedSnapshot",
-  tags: [
-    { key: "Department", value: "Finance" },
-    { key: "BackupType", value: "Weekly" },
-    { key: "RetentionPolicy", value: "30Days" }
-  ]
+const scheduledSnapshot = await AWS.FSx.Snapshot("ScheduledSnapshot", {
+  VolumeId: "fs-12345678", // Replace with your actual volume ID
+  Name: "ScheduledBackup",
+  Tags: [{ Key: "Cron", Value: "0 2 * * *" }] // Example cron for daily at 2 AM
 });
 ```

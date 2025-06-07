@@ -1,88 +1,89 @@
 ---
-title: Managing AWS ECR Repositorys with Alchemy
-description: Learn how to create, update, and manage AWS ECR Repositorys using Alchemy Cloud Control.
+title: Managing AWS ECR Repositories with Alchemy
+description: Learn how to create, update, and manage AWS ECR Repositories using Alchemy Cloud Control.
 ---
 
 # Repository
 
-The Repository resource lets you manage [AWS ECR Repositories](https://docs.aws.amazon.com/ecr/latest/userguide/) for storing and managing Docker container images.
+The Repository resource lets you manage [AWS ECR Repositories](https://docs.aws.amazon.com/ecr/latest/userguide/) for storing, managing, and deploying Docker container images.
 
 ## Minimal Example
 
-Create a basic ECR repository with default settings:
+Create a basic ECR repository with a name and enable image scanning.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const ecrRepository = await AWS.ECR.Repository("myEcrRepository", {
-  repositoryName: "my-docker-repo",
-  imageTagMutability: "MUTABLE",
-  tags: [
-    { key: "Environment", value: "Development" }
+const MyEcrRepository = await AWS.ECR.Repository("MyEcrRepository", {
+  RepositoryName: "my-app-repo",
+  ImageScanningConfiguration: {
+    ScanOnPush: true
+  },
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an ECR repository with image scanning and encryption settings:
+Configure an ECR repository with lifecycle policies and encryption settings.
 
 ```ts
-const secureEcrRepository = await AWS.ECR.Repository("secureEcrRepository", {
-  repositoryName: "secure-docker-repo",
-  imageTagMutability: "IMMUTABLE",
-  imageScanningConfiguration: {
-    scanOnPush: true
+const SecureEcrRepository = await AWS.ECR.Repository("SecureEcrRepository", {
+  RepositoryName: "secure-app-repo",
+  ImageTagMutability: "MUTABLE",
+  LifecyclePolicy: {
+    LifecyclePolicyText: JSON.stringify({
+      Rules: [
+        {
+          RulePriority: 1,
+          SelectionCriteria: {
+            TagStatus: "untagged"
+          },
+          Action: {
+            Type: "expire"
+          }
+        }
+      ]
+    })
   },
-  encryptionConfiguration: {
-    encryptionType: "AES256"
-  },
-  lifecyclePolicy: {
-    rules: [
-      {
-        rulePriority: 1,
-        selectionTag: { key: "Environment", value: "Staging" },
-        action: { type: "expire" },
-        expirationInDays: 30
-      }
-    ]
-  },
-  tags: [
-    { key: "Environment", value: "Staging" }
-  ]
+  EncryptionConfiguration: {
+    EncryptionType: "AES256"
+  }
 });
 ```
 
-## Repository Policy
+## Repository Policy Example
 
-Set a repository policy to control access permissions:
+Set a repository policy to control access to the ECR repository.
 
 ```ts
-const policyEcrRepository = await AWS.ECR.Repository("policyEcrRepository", {
-  repositoryName: "policy-docker-repo",
-  repositoryPolicyText: {
+const RepositoryPolicy = await AWS.ECR.Repository("RepositoryPolicy", {
+  RepositoryName: "my-secure-repo",
+  RepositoryPolicyText: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Principal: { AWS: "arn:aws:iam::123456789012:role/myECRRole" },
-        Action: "ecr:BatchCheckLayerAvailability"
+        Principal: {
+          Service: "codebuild.amazonaws.com"
+        },
+        Action: "ecr:BatchGetImage"
       }
     ]
   }
 });
 ```
 
-## Empty on Delete
+## Empty on Delete Example
 
-Create a repository that empties its contents upon deletion:
+Create an ECR repository that will be emptied before deletion.
 
 ```ts
-const emptyOnDeleteEcrRepository = await AWS.ECR.Repository("emptyOnDeleteEcrRepository", {
-  repositoryName: "empty-repo",
-  emptyOnDelete: true,
-  tags: [
-    { key: "Environment", value: "Production" }
-  ]
+const EmptyOnDeleteEcrRepository = await AWS.ECR.Repository("EmptyOnDeleteEcrRepository", {
+  RepositoryName: "empty-on-delete-repo",
+  EmptyOnDelete: true
 });
 ```

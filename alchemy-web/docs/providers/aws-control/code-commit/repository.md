@@ -5,66 +5,66 @@ description: Learn how to create, update, and manage AWS CodeCommit Repositorys 
 
 # Repository
 
-The Repository resource lets you manage [AWS CodeCommit repositories](https://docs.aws.amazon.com/codecommit/latest/userguide/) and their configuration settings.
+The Repository resource lets you manage [AWS CodeCommit Repositories](https://docs.aws.amazon.com/codecommit/latest/userguide/) for source control and collaboration on your code.
 
 ## Minimal Example
 
-Create a basic CodeCommit repository with required properties and an optional description.
+Create a basic CodeCommit repository with a name and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const codeCommitRepo = await AWS.CodeCommit.Repository("myRepo", {
+const BasicRepository = await AWS.CodeCommit.Repository("BasicRepo", {
   RepositoryName: "MyFirstRepo",
   RepositoryDescription: "This is my first CodeCommit repository",
-  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/my-key-id"
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Create a repository with triggers that notify an AWS Lambda function on repository events.
+Configure a repository with encryption using KMS and custom triggers for notifications:
 
 ```ts
-const repoWithTriggers = await AWS.CodeCommit.Repository("repoWithTriggers", {
-  RepositoryName: "MyRepoWithTriggers",
-  Triggers: [{
-    Name: "MyTrigger",
-    DestinationArn: "arn:aws:lambda:us-east-1:123456789012:function:myLambdaFunction",
-    Events: ["all"],
-    Branches: ["main"]
-  }],
-  RepositoryDescription: "This repository has triggers configured."
-});
-```
-
-## Repository with Tags
-
-Create a CodeCommit repository and apply tags to it for better organization and management.
-
-```ts
-const taggedRepo = await AWS.CodeCommit.Repository("taggedRepo", {
-  RepositoryName: "MyTaggedRepo",
+const AdvancedRepository = await AWS.CodeCommit.Repository("AdvancedRepo", {
+  RepositoryName: "MyAdvancedRepo",
+  RepositoryDescription: "This repository uses advanced settings",
+  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst",
+  Triggers: [
+    {
+      Name: "NotifyOnPush",
+      DestinationArn: "arn:aws:sns:us-west-2:123456789012:MySNSTopic",
+      Events: ["all"],
+      Branches: ["main"]
+    }
+  ],
   Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "ProjectX" }
+    { Key: "Team", Value: "Development" }
   ]
 });
 ```
 
-## Repository with Initial Code
+## Initial Code Setup
 
-Create a repository and also initialize it with some initial code.
+Create a repository and provide initial code from a local directory:
 
 ```ts
-const repoWithInitialCode = await AWS.CodeCommit.Repository("repoWithInitialCode", {
+const RepositoryWithCode = await AWS.CodeCommit.Repository("RepoWithCode", {
   RepositoryName: "MyRepoWithInitialCode",
+  RepositoryDescription: "Repository with initial code from local",
   Code: {
     S3: {
-      Bucket: "my-bucket",
+      Bucket: "my-code-bucket",
       Key: "initial-code.zip"
     }
   },
-  RepositoryDescription: "This repository is initialized with code from S3."
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```

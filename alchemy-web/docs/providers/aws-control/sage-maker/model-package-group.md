@@ -5,30 +5,30 @@ description: Learn how to create, update, and manage AWS SageMaker ModelPackageG
 
 # ModelPackageGroup
 
-The ModelPackageGroup resource allows you to manage [AWS SageMaker ModelPackageGroups](https://docs.aws.amazon.com/sagemaker/latest/userguide/) and their associated model packages. This resource is essential for organizing and managing multiple model packages as a single entity.
+The ModelPackageGroup resource lets you manage [AWS SageMaker ModelPackageGroups](https://docs.aws.amazon.com/sagemaker/latest/userguide/) for organizing and managing model packages.
 
 ## Minimal Example
 
-This example demonstrates how to create a basic ModelPackageGroup with the required properties.
+Create a basic ModelPackageGroup with required name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const modelPackageGroup = await AWS.SageMaker.ModelPackageGroup("basicModelPackageGroup", {
+const BasicModelPackageGroup = await AWS.SageMaker.ModelPackageGroup("BasicModelPackageGroup", {
   ModelPackageGroupName: "MyModelPackageGroup",
-  ModelPackageGroupDescription: "This group contains my model packages for project X"
+  ModelPackageGroupDescription: "A group for managing my ML models."
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we configure a ModelPackageGroup with a policy and tags for finer access control and organization.
+Configure a ModelPackageGroup with a detailed policy and tags.
 
 ```ts
-const advancedModelPackageGroup = await AWS.SageMaker.ModelPackageGroup("advancedModelPackageGroup", {
+const AdvancedModelPackageGroup = await AWS.SageMaker.ModelPackageGroup("AdvancedModelPackageGroup", {
   ModelPackageGroupName: "AdvancedModelPackageGroup",
-  ModelPackageGroupDescription: "This group contains advanced model packages with specific policies",
-  ModelPackageGroupPolicy: {
+  ModelPackageGroupDescription: "An advanced group with a policy and tags.",
+  ModelPackageGroupPolicy: JSON.stringify({
     Version: "2012-10-17",
     Statement: [
       {
@@ -40,21 +40,35 @@ const advancedModelPackageGroup = await AWS.SageMaker.ModelPackageGroup("advance
         Resource: "*"
       }
     ]
-  },
+  }),
   Tags: [
-    { Key: "Project", Value: "ProjectX" },
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "DataScience" }
   ]
 });
 ```
 
-## Creating with Existing Resource Adoption
+## Example with Existing Resource Adoption
 
-This example illustrates how to create a ModelPackageGroup while adopting an existing resource if it already exists.
+Create a ModelPackageGroup while adopting an existing resource if it already exists.
 
 ```ts
-const adoptModelPackageGroup = await AWS.SageMaker.ModelPackageGroup("adoptModelPackageGroup", {
-  ModelPackageGroupName: "AdoptedModelPackageGroup",
-  adopt: true // Adopt existing resource if it already exists
+const AdoptModelPackageGroup = await AWS.SageMaker.ModelPackageGroup("AdoptModelPackageGroup", {
+  ModelPackageGroupName: "ExistingModelPackageGroup",
+  adopt: true // Adopt existing resource instead of failing
+});
+```
+
+## Example with Custom Tags
+
+Create a ModelPackageGroup with custom tags for better resource management.
+
+```ts
+const TaggedModelPackageGroup = await AWS.SageMaker.ModelPackageGroup("TaggedModelPackageGroup", {
+  ModelPackageGroupName: "TaggedModelPackageGroup",
+  Tags: [
+    { Key: "Project", Value: "ModelTraining" },
+    { Key: "Owner", Value: "Alice" }
+  ]
 });
 ```

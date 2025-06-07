@@ -5,61 +5,66 @@ description: Learn how to create, update, and manage AWS LicenseManager Grants u
 
 # Grant
 
-The Grant resource lets you manage [AWS LicenseManager Grants](https://docs.aws.amazon.com/licensemanager/latest/userguide/) which are used to grant permissions for using licenses to specified principals.
+The Grant resource allows you to create, update, and manage [AWS LicenseManager Grants](https://docs.aws.amazon.com/licensemanager/latest/userguide/) which enable the sharing of licenses across AWS accounts and regions.
 
 ## Minimal Example
 
-Create a basic grant with essential properties, including the license ARN and principals.
+Create a basic LicenseManager Grant with required properties and common optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicGrant = await AWS.LicenseManager.Grant("basicGrant", {
+const LicenseGrant = await AWS.LicenseManager.Grant("LicenseGrant", {
   LicenseArn: "arn:aws:license-manager:us-east-1:123456789012:license:example-license",
-  Principals: [
-    "arn:aws:iam::123456789012:user/Alice"
-  ],
-  Status: "ACTIVE"
+  Principals: ["arn:aws:iam::123456789012:role/ExampleRole"],
+  HomeRegion: "us-east-1",
+  AllowedOperations: ["CreateSnapshot", "RestoreSnapshot"]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a grant with allowed operations and a home region for more specific control.
+Enhance your LicenseManager Grant with additional configurations such as status and grant name.
 
 ```ts
-const advancedGrant = await AWS.LicenseManager.Grant("advancedGrant", {
+const AdvancedLicenseGrant = await AWS.LicenseManager.Grant("AdvancedLicenseGrant", {
   LicenseArn: "arn:aws:license-manager:us-east-1:123456789012:license:example-license",
-  Principals: [
-    "arn:aws:iam::123456789012:user/Bob",
-    "arn:aws:iam::123456789012:user/Charlie"
-  ],
-  AllowedOperations: [
-    "Checkout",
-    "Transfer"
-  ],
+  Principals: ["arn:aws:iam::123456789012:role/AdvancedRole"],
   HomeRegion: "us-east-1",
-  GrantName: "MyAdvancedGrant"
+  AllowedOperations: ["CreateSnapshot", "RestoreSnapshot"],
+  GrantName: "AdvancedLicenseGrant",
+  Status: "ACTIVE"
 });
 ```
 
-## Grant with Expiration
+## Adopting Existing Resources
 
-Create a grant that includes an expiration date to limit the duration of the permissions.
+Create a LicenseManager Grant that adopts an existing resource rather than failing if it already exists.
 
 ```ts
-const expirationGrant = await AWS.LicenseManager.Grant("expirationGrant", {
+const ExistingLicenseGrant = await AWS.LicenseManager.Grant("ExistingLicenseGrant", {
   LicenseArn: "arn:aws:license-manager:us-east-1:123456789012:license:example-license",
-  Principals: [
-    "arn:aws:iam::123456789012:user/Diana"
-  ],
+  Principals: ["arn:aws:iam::123456789012:role/ExistingRole"],
+  HomeRegion: "us-east-1",
+  AllowedOperations: ["CreateSnapshot", "RestoreSnapshot"],
+  adopt: true
+});
+```
+
+## Granting Additional Operations
+
+Configure a Grant with a broader set of allowed operations to enable more flexibility.
+
+```ts
+const FlexibleLicenseGrant = await AWS.LicenseManager.Grant("FlexibleLicenseGrant", {
+  LicenseArn: "arn:aws:license-manager:us-east-1:123456789012:license:example-license",
+  Principals: ["arn:aws:iam::123456789012:role/FlexibleRole"],
+  HomeRegion: "us-east-1",
   AllowedOperations: [
-    "Checkout"
-  ],
-  Status: "ACTIVE",
-  HomeRegion: "us-west-2",
-  GrantName: "TemporaryGrant",
-  CreationTime: new Date().toISOString(),
-  LastUpdateTime: new Date().toISOString()
+    "CreateSnapshot",
+    "RestoreSnapshot",
+    "ListLicenses",
+    "UpdateLicense"
+  ]
 });
 ```

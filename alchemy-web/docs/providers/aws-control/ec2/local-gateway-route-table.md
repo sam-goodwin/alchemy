@@ -5,62 +5,51 @@ description: Learn how to create, update, and manage AWS EC2 LocalGatewayRouteTa
 
 # LocalGatewayRouteTable
 
-The LocalGatewayRouteTable resource allows you to manage route tables associated with a local gateway in AWS EC2. For more details, visit the [AWS EC2 LocalGatewayRouteTables documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The LocalGatewayRouteTable resource allows you to manage route tables for local gateways in your Amazon EC2 environment, facilitating routing for local network traffic. For more information, refer to the [AWS EC2 LocalGatewayRouteTables documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic LocalGatewayRouteTable with the required properties and a common optional property for tags.
+This example demonstrates how to create a LocalGatewayRouteTable with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const localGatewayRouteTable = await AWS.EC2.LocalGatewayRouteTable("myRouteTable", {
-  LocalGatewayId: "lgw-12345678",
+const LocalGatewayRouteTable = await AWS.EC2.LocalGatewayRouteTable("MyLocalGatewayRouteTable", {
+  LocalGatewayId: "lgw-0123456789abcdef0",
+  Mode: "active",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyProject" }
+    { Key: "Environment", Value: "production" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a LocalGatewayRouteTable with additional options including the mode.
+In this example, we configure a LocalGatewayRouteTable with additional properties, including multiple tags.
 
 ```ts
-const advancedLocalGatewayRouteTable = await AWS.EC2.LocalGatewayRouteTable("myAdvancedRouteTable", {
-  LocalGatewayId: "lgw-87654321",
-  Mode: "static", // Options can include "static" or "dynamic"
+const AdvancedLocalGatewayRouteTable = await AWS.EC2.LocalGatewayRouteTable("AdvancedLocalGatewayRouteTable", {
+  LocalGatewayId: "lgw-0123456789abcdef0",
+  Mode: "active",
   Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Owner", Value: "DevTeam" }
-  ]
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Networking" }
+  ],
+  adopt: true
 });
 ```
 
-## Adoption of Existing Resource
+## Route Table with Multiple Tags
 
-Create a LocalGatewayRouteTable while adopting an existing resource instead of failing if it already exists.
-
-```ts
-const adoptedLocalGatewayRouteTable = await AWS.EC2.LocalGatewayRouteTable("myAdoptedRouteTable", {
-  LocalGatewayId: "lgw-12345678",
-  adopt: true // This will adopt the existing resource
-});
-```
-
-## Example of Custom Route Management
-
-Demonstrate how to manage routes in the LocalGatewayRouteTable for a specific CIDR block.
+This example illustrates how to create a LocalGatewayRouteTable with multiple tags for enhanced resource categorization.
 
 ```ts
-const customRouteTable = await AWS.EC2.LocalGatewayRouteTable("myCustomRouteTable", {
-  LocalGatewayId: "lgw-11223344",
+const TaggedLocalGatewayRouteTable = await AWS.EC2.LocalGatewayRouteTable("TaggedLocalGatewayRouteTable", {
+  LocalGatewayId: "lgw-0123456789abcdef0",
   Tags: [
-    { Key: "Environment", Value: "Test" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Project", Value: "Migration" },
+    { Key: "Owner", Value: "Alice" }
   ]
 });
-
-// Here you would typically add routes using another API call to associate routes with this table
-// Example: AWS.EC2.LocalGatewayRoute("myRoute", { LocalGatewayRouteTableId: customRouteTable.id, DestinationCidrBlock: "192.168.1.0/24", LocalGatewayVirtualInterfaceId: "lvif-abcdefg" });
 ```

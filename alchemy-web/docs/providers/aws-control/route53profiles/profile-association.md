@@ -5,64 +5,69 @@ description: Learn how to create, update, and manage AWS Route53Profiles Profile
 
 # ProfileAssociation
 
-The ProfileAssociation resource allows you to associate a resource with a profile in AWS Route53Profiles. This is essential for managing resources in a controlled manner, ensuring that they adhere to the policies and settings defined in the associated profile. For more information, refer to the [AWS Route53Profiles ProfileAssociations documentation](https://docs.aws.amazon.com/route53profiles/latest/userguide/).
+The ProfileAssociation resource lets you manage associations between Route 53 profiles and other AWS resources. This allows for the configuration of DNS settings and other related functionalities in a streamlined manner. For more detailed information, refer to the [AWS Route53Profiles ProfileAssociations](https://docs.aws.amazon.com/route53profiles/latest/userguide/) documentation.
 
 ## Minimal Example
 
-Create a basic ProfileAssociation linking a resource to a profile:
+Create a basic profile association with required properties and one optional tag:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const profileAssociation = await AWS.Route53Profiles.ProfileAssociation("basicProfileAssociation", {
-  ProfileId: "profile-12345",
-  ResourceId: "resource-67890",
+const BasicProfileAssociation = await AWS.Route53Profiles.ProfileAssociation("BasicProfileAssociation", {
+  ProfileId: "profile-123456",
+  ResourceId: "resource-abc123",
+  Tags: [
+    { Key: "Environment", Value: "production" }
+  ],
   Name: "MyProfileAssociation"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ProfileAssociation with tags and the option to adopt an existing resource:
+Configure a profile association with additional properties, including an ARN and multiple tags:
 
 ```ts
-const advancedProfileAssociation = await AWS.Route53Profiles.ProfileAssociation("advancedProfileAssociation", {
-  ProfileId: "profile-12345",
-  ResourceId: "resource-67890",
-  Name: "AdvancedProfileAssociation",
+const AdvancedProfileAssociation = await AWS.Route53Profiles.ProfileAssociation("AdvancedProfileAssociation", {
+  ProfileId: "profile-789012",
+  ResourceId: "resource-def456",
+  Arn: "arn:aws:route53-profiles:us-west-2:123456789012:profile-association/advanced-association",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Owner", Value: "DevTeam" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
   ],
-  adopt: true
+  Name: "AdvancedProfileAssociation"
 });
 ```
 
-## Handling Resource Updates
+## Adoption of Existing Resource
 
-Update an existing ProfileAssociation by changing its name and tags:
+This example demonstrates how to adopt an existing resource instead of failing when the resource already exists by setting the `adopt` property to true:
 
 ```ts
-const updatedProfileAssociation = await AWS.Route53Profiles.ProfileAssociation("updatedProfileAssociation", {
-  ProfileId: "profile-12345",
-  ResourceId: "resource-67890",
-  Name: "UpdatedProfileAssociation",
-  Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Owner", Value: "QA Team" }
-  ]
+const AdoptExistingProfileAssociation = await AWS.Route53Profiles.ProfileAssociation("AdoptExistingProfileAssociation", {
+  ProfileId: "profile-345678",
+  ResourceId: "resource-ghi789",
+  adopt: true,
+  Name: "AdoptedProfileAssociation"
 });
 ```
 
-## Deleting a ProfileAssociation
+## Creating Multiple Profile Associations
 
-Remove a ProfileAssociation when it's no longer needed:
+Demonstrate how to create multiple profile associations for different resources under the same profile:
 
 ```ts
-const deleteProfileAssociation = await AWS.Route53Profiles.ProfileAssociation("deleteProfileAssociation", {
-  ProfileId: "profile-12345",
-  ResourceId: "resource-67890",
-  Name: "DeleteProfileAssociation",
-  adopt: false // Ensure this does not fail if resource is absent
+const FirstProfileAssociation = await AWS.Route53Profiles.ProfileAssociation("FirstProfileAssociation", {
+  ProfileId: "profile-123456",
+  ResourceId: "resource-abc123",
+  Name: "FirstAssociation"
+});
+
+const SecondProfileAssociation = await AWS.Route53Profiles.ProfileAssociation("SecondProfileAssociation", {
+  ProfileId: "profile-123456",
+  ResourceId: "resource-def456",
+  Name: "SecondAssociation"
 });
 ```

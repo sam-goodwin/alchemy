@@ -5,60 +5,54 @@ description: Learn how to create, update, and manage AWS Route53RecoveryReadines
 
 # ReadinessCheck
 
-The ReadinessCheck resource allows you to manage [AWS Route53RecoveryReadiness ReadinessChecks](https://docs.aws.amazon.com/route53recoveryreadiness/latest/userguide/) for ensuring your applications can recover from failures.
+The ReadinessCheck resource allows you to create and manage [AWS Route53RecoveryReadiness ReadinessChecks](https://docs.aws.amazon.com/route53recoveryreadiness/latest/userguide/) for assessing the readiness of your resources for recovery. This resource helps ensure your application can effectively recover from failures.
 
 ## Minimal Example
 
-Create a basic readiness check with a specified resource set name and check name.
+Create a basic ReadinessCheck with required properties and an optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicReadinessCheck = await AWS.Route53RecoveryReadiness.ReadinessCheck("basicReadinessCheck", {
-  ResourceSetName: "myResourceSet",
-  ReadinessCheckName: "myReadinessCheck"
+const BasicReadinessCheck = await AWS.Route53RecoveryReadiness.ReadinessCheck("BasicReadinessCheck", {
+  ResourceSetName: "MyResourceSet",
+  ReadinessCheckName: "MyReadinessCheck",
+  Tags: [
+    { Key: "Environment", Value: "Production" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a readiness check with tags for better resource management and organization.
+Configure a ReadinessCheck with additional properties such as adopting existing resources.
 
 ```ts
-const taggedReadinessCheck = await AWS.Route53RecoveryReadiness.ReadinessCheck("taggedReadinessCheck", {
-  ResourceSetName: "myResourceSet",
-  ReadinessCheckName: "myTagCheck",
+const AdvancedReadinessCheck = await AWS.Route53RecoveryReadiness.ReadinessCheck("AdvancedReadinessCheck", {
+  ResourceSetName: "MyResourceSet",
+  ReadinessCheckName: "AdvancedReadinessCheck",
+  adopt: true,
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "WebApp" }
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Adoption of Existing Resources
+## Using ReadinessChecks for Multiple Resource Sets
 
-Create a readiness check that adopts an existing resource if it already exists.
-
-```ts
-const adoptExistingReadinessCheck = await AWS.Route53RecoveryReadiness.ReadinessCheck("adoptExistingCheck", {
-  ResourceSetName: "myResourceSet",
-  ReadinessCheckName: "myAdoptCheck",
-  adopt: true
-});
-```
-
-## Monitoring Readiness Check Properties
-
-You can access the properties of a readiness check after its creation, such as ARN and timestamps.
+Demonstrate how to create multiple ReadinessChecks for different resource sets.
 
 ```ts
-const readinessCheckDetails = await AWS.Route53RecoveryReadiness.ReadinessCheck("detailsCheck", {
-  ResourceSetName: "myResourceSet",
-  ReadinessCheckName: "myDetailsCheck"
+const PrimaryReadinessCheck = await AWS.Route53RecoveryReadiness.ReadinessCheck("PrimaryReadinessCheck", {
+  ResourceSetName: "PrimaryResourceSet",
+  ReadinessCheckName: "PrimaryCheck",
+  Tags: [{ Key: "Service", Value: "MainApp" }]
 });
 
-// Log details about the readiness check
-console.log(`ARN: ${readinessCheckDetails.Arn}`);
-console.log(`Created At: ${readinessCheckDetails.CreationTime}`);
-console.log(`Last Updated At: ${readinessCheckDetails.LastUpdateTime}`);
+const SecondaryReadinessCheck = await AWS.Route53RecoveryReadiness.ReadinessCheck("SecondaryReadinessCheck", {
+  ResourceSetName: "SecondaryResourceSet",
+  ReadinessCheckName: "SecondaryCheck",
+  Tags: [{ Key: "Service", Value: "BackupApp" }]
+});
 ```

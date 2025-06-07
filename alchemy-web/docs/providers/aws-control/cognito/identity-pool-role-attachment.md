@@ -5,63 +5,100 @@ description: Learn how to create, update, and manage AWS Cognito IdentityPoolRol
 
 # IdentityPoolRoleAttachment
 
-The IdentityPoolRoleAttachment resource allows you to manage role attachments for Amazon Cognito Identity Pools, enabling you to assign roles to authenticated and unauthenticated users. For more information, visit the [AWS Cognito IdentityPoolRoleAttachments](https://docs.aws.amazon.com/cognito/latest/userguide/).
+The IdentityPoolRoleAttachment resource allows you to manage role attachments for AWS Cognito Identity Pools. This enables you to set IAM roles for authenticated and unauthenticated users, providing different access levels based on user authentication status. For more details, refer to the [AWS Cognito IdentityPoolRoleAttachments documentation](https://docs.aws.amazon.com/cognito/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic IdentityPoolRoleAttachment with required properties and a common optional property.
+Create a basic IdentityPoolRoleAttachment with required properties and a common optional role mapping.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const identityPoolRoleAttachment = await AWS.Cognito.IdentityPoolRoleAttachment("basicAttachment", {
+const identityPoolRoleAttachment = await AWS.Cognito.IdentityPoolRoleAttachment("MyIdentityPoolRoleAttachment", {
   IdentityPoolId: "us-east-1:12345678-1234-1234-1234-123456789012",
   Roles: {
-    authenticated: "arn:aws:iam::123456789012:role/Cognito_Authenticated",
-    unauthenticated: "arn:aws:iam::123456789012:role/Cognito_Unauthenticated"
-  }
-});
-```
-
-## Advanced Configuration
-
-Configure an IdentityPoolRoleAttachment with role mappings for specific user pools.
-
-```ts
-const advancedIdentityPoolRoleAttachment = await AWS.Cognito.IdentityPoolRoleAttachment("advancedAttachment", {
-  IdentityPoolId: "us-east-1:87654321-4321-4321-4321-210987654321",
-  Roles: {
-    authenticated: "arn:aws:iam::123456789012:role/Cognito_Authenticated",
-    unauthenticated: "arn:aws:iam::123456789012:role/Cognito_Unauthenticated"
+    authenticated: "arn:aws:iam::123456789012:role/Cognito_MyAppAuth_Role",
+    unauthenticated: "arn:aws:iam::123456789012:role/Cognito_MyAppUnauth_Role"
   },
   RoleMappings: {
-    "CustomProvider": {
-      "Type": "Token",
-      "AmbiguousRoleResolution": "AuthenticatedRole",
-      "RulesConfiguration": {
-        "Rules": [{
-          "Claim": "cognito:groups",
-          "MatchType": "Contains",
-          "MatchValue": "Admins",
-          "RoleARN": "arn:aws:iam::123456789012:role/AdminRole"
-        }]
+    "Cognito:default": {
+      Type: "Token",
+      AmbiguousRoleResolution: "AuthenticatedRole",
+      RulesConfiguration: {
+        Rules: [
+          {
+            Claim: "cognito:groups",
+            MatchType: "contains",
+            Value: "Admins",
+            RoleARN: "arn:aws:iam::123456789012:role/Cognito_MyAppAdmin_Role"
+          }
+        ]
       }
     }
   }
 });
 ```
 
-## Using Adopt Property
+## Advanced Configuration
 
-Create an IdentityPoolRoleAttachment while adopting an existing resource if it already exists.
+Configure an IdentityPoolRoleAttachment with additional role mapping rules and the adopt flag.
 
 ```ts
-const adoptIdentityPoolRoleAttachment = await AWS.Cognito.IdentityPoolRoleAttachment("adoptAttachment", {
-  IdentityPoolId: "us-east-1:abcdef12-3456-7890-abcd-ef1234567890",
+const advancedIdentityPoolRoleAttachment = await AWS.Cognito.IdentityPoolRoleAttachment("AdvancedIdentityPoolRoleAttachment", {
+  IdentityPoolId: "us-east-1:87654321-4321-4321-4321-210987654321",
   Roles: {
-    authenticated: "arn:aws:iam::123456789012:role/Cognito_Authenticated",
-    unauthenticated: "arn:aws:iam::123456789012:role/Cognito_Unauthenticated"
+    authenticated: "arn:aws:iam::123456789012:role/Cognito_MyAppAuth_Role"
+  },
+  RoleMappings: {
+    "Cognito:default": {
+      Type: "Token",
+      AmbiguousRoleResolution: "Deny",
+      RulesConfiguration: {
+        Rules: [
+          {
+            Claim: "cognito:groups",
+            MatchType: "contains",
+            Value: "Users",
+            RoleARN: "arn:aws:iam::123456789012:role/Cognito_MyAppUser_Role"
+          },
+          {
+            Claim: "cognito:custom:admin",
+            MatchType: "equals",
+            Value: "true",
+            RoleARN: "arn:aws:iam::123456789012:role/Cognito_MyAppAdmin_Role"
+          }
+        ]
+      }
+    }
   },
   adopt: true
 });
 ```
+
+## Using Role Mappings for Custom Claims
+
+Demonstrate how to attach roles based on custom claims in the JWT.
+
+```ts
+const customClaimRoleAttachment = await AWS.Cognito.IdentityPoolRoleAttachment("CustomClaimRoleAttachment", {
+  IdentityPoolId: "us-east-1:12345678-1234-1234-1234-123456789012",
+  RoleMappings: {
+    "Cognito:default": {
+      Type: "Token",
+      AmbiguousRoleResolution: "AuthenticatedRole",
+      RulesConfiguration: {
+        Rules: [
+          {
+            Claim: "custom:role",
+            MatchType: "equals",
+            Value: "manager",
+            RoleARN: "arn:aws:iam::123456789012:role/Cognito_MyAppManager_Role"
+          }
+        ]
+      }
+    }
+  }
+});
+``` 
+
+This variety of examples showcases how to manage role attachments for AWS Cognito Identity Pools effectively, catering to both basic and advanced use cases.

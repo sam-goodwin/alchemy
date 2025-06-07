@@ -5,101 +5,44 @@ description: Learn how to create, update, and manage AWS IoT ProvisioningTemplat
 
 # ProvisioningTemplate
 
-The ProvisioningTemplate resource allows you to create and manage [AWS IoT ProvisioningTemplates](https://docs.aws.amazon.com/iot/latest/userguide/) that define how IoT devices are provisioned in AWS IoT.
+The ProvisioningTemplate resource lets you create and manage [AWS IoT ProvisioningTemplates](https://docs.aws.amazon.com/iot/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iot-provisioningtemplate.html
 
 ## Minimal Example
-
-Create a basic provisioning template with required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const provisioningTemplate = await AWS.IoT.ProvisioningTemplate("basicTemplate", {
-  ProvisioningRoleArn: "arn:aws:iam::123456789012:role/provisioningRole",
-  TemplateBody: JSON.stringify({
-    Version: "2018-11-30",
-    Resources: {
-      MyThing: {
-        Type: "AWS::IoT::Thing",
-        Properties: {
-          ThingName: "MyIoTDevice",
-          AttributePayload: {
-            Attributes: {
-              key1: "value1",
-              key2: "value2"
-            }
-          }
-        }
-      }
-    }
-  }),
-  Description: "Basic provisioning template for IoT devices.",
-  Enabled: true
+const provisioningtemplate = await AWS.IoT.ProvisioningTemplate("provisioningtemplate-example", {
+  ProvisioningRoleArn: "example-provisioningrolearn",
+  TemplateBody: "example-templatebody",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A provisioningtemplate resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a provisioning template with hooks for custom pre-provisioning actions and additional tags.
+Create a provisioningtemplate with additional configuration:
 
 ```ts
-const advancedTemplate = await AWS.IoT.ProvisioningTemplate("advancedTemplate", {
-  ProvisioningRoleArn: "arn:aws:iam::123456789012:role/provisioningRole",
-  TemplateBody: JSON.stringify({
-    Version: "2018-11-30",
-    Resources: {
-      MyThing: {
-        Type: "AWS::IoT::Thing",
-        Properties: {
-          ThingName: "AdvancedIoTDevice",
-          AttributePayload: {
-            Attributes: {
-              key1: "value1",
-              key2: "value2"
-            }
-          }
-        }
-      }
-    }
-  }),
-  PreProvisioningHook: {
-    TargetArn: "arn:aws:lambda:us-east-1:123456789012:function:myPreProvisioningHook",
-    Payload: JSON.stringify({ key: "value" }),
-    TimeoutInSeconds: 30
-  },
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "IoTDeployment" }
-  ],
-  Enabled: true
-});
+import AWS from "alchemy/aws/control";
+
+const advancedProvisioningTemplate = await AWS.IoT.ProvisioningTemplate(
+  "advanced-provisioningtemplate",
+  {
+    ProvisioningRoleArn: "example-provisioningrolearn",
+    TemplateBody: "example-templatebody",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+    Description: "A provisioningtemplate resource managed by Alchemy",
+  }
+);
 ```
 
-## Custom Template Type
-
-Create a provisioning template with a specific template type for custom provisioning workflows.
-
-```ts
-const customTypeTemplate = await AWS.IoT.ProvisioningTemplate("customTypeTemplate", {
-  ProvisioningRoleArn: "arn:aws:iam::123456789012:role/provisioningRole",
-  TemplateBody: JSON.stringify({
-    Version: "2018-11-30",
-    Resources: {
-      MyThing: {
-        Type: "AWS::IoT::Thing",
-        Properties: {
-          ThingName: "CustomTypeIoTDevice",
-          AttributePayload: {
-            Attributes: {
-              key1: "value1",
-              key2: "value2"
-            }
-          }
-        }
-      }
-    }
-  }),
-  TemplateType: "FLEET_PROVISIONING",
-  Enabled: true
-});
-```

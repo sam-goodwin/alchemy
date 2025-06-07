@@ -5,41 +5,41 @@ description: Learn how to create, update, and manage AWS ApplicationSignals Disc
 
 # Discovery
 
-The Discovery resource lets you manage [AWS ApplicationSignals Discoverys](https://docs.aws.amazon.com/applicationsignals/latest/userguide/) for tracking application performance and signals.
+The Discovery resource allows you to manage [AWS ApplicationSignals Discoverys](https://docs.aws.amazon.com/applicationsignals/latest/userguide/) to help discover and manage application signals effectively.
 
 ## Minimal Example
 
-Create a basic Discovery resource with minimal properties.
+This example demonstrates how to create a basic Discovery resource with minimal required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDiscovery = await AWS.ApplicationSignals.Discovery("basic-discovery", {
-  adopt: false // Default is false; it will fail if the resource already exists
+const basicDiscovery = await AWS.ApplicationSignals.Discovery("BasicDiscovery", {
+  adopt: false // Default is false, will fail if the resource already exists
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Discovery resource with the option to adopt an existing resource.
+In this example, we configure a Discovery resource with the `adopt` property set to true, allowing the adoption of an existing resource instead of failing.
 
 ```ts
-const advancedDiscovery = await AWS.ApplicationSignals.Discovery("advanced-discovery", {
-  adopt: true // This will adopt the existing resource instead of failing
+const advancedDiscovery = await AWS.ApplicationSignals.Discovery("AdvancedDiscovery", {
+  adopt: true
 });
 ```
 
-## Monitoring Discovery Details
+## Creation Time and Last Update Time
 
-Create a Discovery resource and monitor its properties such as ARN and timestamps.
+This example shows how to access the ARN, creation time, and last update time of the Discovery resource after creation.
 
 ```ts
-const monitoredDiscovery = await AWS.ApplicationSignals.Discovery("monitored-discovery", {
+const detailedDiscovery = await AWS.ApplicationSignals.Discovery("DetailedDiscovery", {
   adopt: false
 });
 
-// Log details about the Discovery resource
-console.log(`ARN: ${monitoredDiscovery.Arn}`);
-console.log(`Creation Time: ${monitoredDiscovery.CreationTime}`);
-console.log(`Last Update Time: ${monitoredDiscovery.LastUpdateTime}`);
+// Accessing additional properties
+console.log("ARN:", detailedDiscovery.Arn);
+console.log("Creation Time:", detailedDiscovery.CreationTime);
+console.log("Last Update Time:", detailedDiscovery.LastUpdateTime);
 ```

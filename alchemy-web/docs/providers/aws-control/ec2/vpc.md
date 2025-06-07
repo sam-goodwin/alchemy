@@ -5,34 +5,35 @@ description: Learn how to create, update, and manage AWS EC2 VPCs using Alchemy 
 
 # VPC
 
-The VPC resource lets you create and manage [AWS EC2 VPCs](https://docs.aws.amazon.com/ec2/latest/userguide/) to isolate your AWS resources in a virtual network.
+The VPC (Virtual Private Cloud) resource lets you create and manage [AWS EC2 VPCs](https://docs.aws.amazon.com/ec2/latest/userguide/) for your cloud infrastructure.
 
 ## Minimal Example
 
-Create a basic VPC with a CIDR block and enable DNS support.
+Create a basic VPC with a CIDR block and DNS support enabled.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const myVPC = await AWS.EC2.VPC("my-vpc", {
+const MyVpc = await AWS.EC2.VPC("MyVpc", {
   CidrBlock: "10.0.0.0/16",
   EnableDnsSupport: true,
+  EnableDnsHostnames: true,
   Tags: [
-    { Key: "Name", Value: "MyVPC" }
+    { Key: "Name", Value: "MyVPC" },
+    { Key: "Environment", Value: "Development" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VPC with instance tenancy options and a specific IPv4 netmask length.
+Configure a VPC with instance tenancy and an IPAM pool ID for more advanced networking.
 
 ```ts
-const advancedVPC = await AWS.EC2.VPC("advanced-vpc", {
-  CidrBlock: "192.168.0.0/24",
+const AdvancedVpc = await AWS.EC2.VPC("AdvancedVpc", {
+  CidrBlock: "192.168.1.0/24",
   InstanceTenancy: "dedicated",
-  Ipv4NetmaskLength: 24,
-  EnableDnsHostnames: true,
+  Ipv4IpamPoolId: "ipam-pool-id-12345",
   Tags: [
     { Key: "Name", Value: "AdvancedVPC" },
     { Key: "Environment", Value: "Production" }
@@ -40,31 +41,33 @@ const advancedVPC = await AWS.EC2.VPC("advanced-vpc", {
 });
 ```
 
-## Example with IPAM Pool ID
+## Custom DNS Settings
 
-Create a VPC that uses a specific IPv4 IPAM pool.
+Create a VPC with customized DNS settings to support specific use cases.
 
 ```ts
-const ipamVPC = await AWS.EC2.VPC("ipam-vpc", {
-  Ipv4IpamPoolId: "ipam-pool-12345678",
-  CidrBlock: "10.1.0.0/16",
+const CustomDnsVpc = await AWS.EC2.VPC("CustomDnsVpc", {
+  CidrBlock: "172.31.0.0/16",
   EnableDnsSupport: true,
+  EnableDnsHostnames: false,
   Tags: [
-    { Key: "Name", Value: "IPAMVPC" }
+    { Key: "Name", Value: "CustomDnsVPC" },
+    { Key: "Environment", Value: "Testing" }
   ]
 });
 ```
 
-## Example with Adoption of Existing Resource
+## VPC with IPAM Pool
 
-Adopt an existing VPC if it is already created instead of failing.
+Deploy a VPC that uses an IP Address Management (IPAM) pool for allocating IP addresses.
 
 ```ts
-const existingVPC = await AWS.EC2.VPC("existing-vpc", {
-  CidrBlock: "10.2.0.0/16",
-  adopt: true,
+const IpamVpc = await AWS.EC2.VPC("IpamVpc", {
+  CidrBlock: "10.1.0.0/16",
+  Ipv4IpamPoolId: "ipam-pool-id-67890",
   Tags: [
-    { Key: "Name", Value: "ExistingVPC" }
+    { Key: "Name", Value: "IpamVPC" },
+    { Key: "Environment", Value: "Staging" }
   ]
 });
 ```

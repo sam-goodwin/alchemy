@@ -5,90 +5,68 @@ description: Learn how to create, update, and manage AWS DocDB DBClusterParamete
 
 # DBClusterParameterGroup
 
-The `DBClusterParameterGroup` resource allows you to manage Amazon DocumentDB (with MongoDB compatibility) cluster parameter groups, which are used to manage configuration settings for your DocumentDB clusters. For more information, refer to the [AWS DocDB DBClusterParameterGroups documentation](https://docs.aws.amazon.com/docdb/latest/userguide/).
+The DBClusterParameterGroup resource allows you to manage [AWS DocumentDB DBClusterParameterGroups](https://docs.aws.amazon.com/docdb/latest/userguide/) to control the configuration settings for your DocumentDB clusters.
 
 ## Minimal Example
 
-Create a basic `DBClusterParameterGroup` with essential properties and one optional tag.
+Create a basic DBClusterParameterGroup with required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbClusterParameterGroup = await AWS.DocDB.DBClusterParameterGroup("myDbClusterParamGroup", {
-  Description: "Parameter group for my DocumentDB cluster",
-  Parameters: {
-    "maxConnections": "200",
-    "timeout": "30"
-  },
+const BasicDBClusterParameterGroup = await AWS.DocDB.DBClusterParameterGroup("BasicDBClusterParameterGroup", {
+  Description: "Basic parameter group for DocumentDB",
   Family: "docdb4.0",
+  Parameters: {
+    "max_connections": "100",
+    "query_timeout": "30000"
+  },
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Database" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a `DBClusterParameterGroup` with more complex parameters settings for performance tuning.
+Configure a DBClusterParameterGroup with more advanced parameter settings for performance tuning.
 
 ```ts
-const advancedDbClusterParameterGroup = await AWS.DocDB.DBClusterParameterGroup("advancedDbClusterParamGroup", {
-  Description: "Advanced parameter group for optimizing DocumentDB performance",
-  Parameters: {
-    "maxConnections": "300",
-    "readPreference": "primaryPreferred",
-    "enableSharding": "true",
-    "slowQueryLog": "true"
-  },
+const AdvancedDBClusterParameterGroup = await AWS.DocDB.DBClusterParameterGroup("AdvancedDBClusterParameterGroup", {
+  Description: "Advanced parameter group for performance tuning",
   Family: "docdb4.0",
-  Name: "advanced-docdb-param-group"
-});
-```
-
-## Custom Parameters Example
-
-Create a `DBClusterParameterGroup` with customized parameters for specific application needs.
-
-```ts
-const customParamsDbClusterParameterGroup = await AWS.DocDB.DBClusterParameterGroup("customParamsDbClusterParamGroup", {
-  Description: "Custom parameter group for specific application settings",
   Parameters: {
-    "maxIdleTime": "60",
-    "enableAutoBackup": "true",
-    "preferredBackupWindow": "03:00-04:00"
+    "max_connections": "200",
+    "query_timeout": "60000",
+    "enable_audit_log": "true",
+    "audit_log_retention": "7"
   },
-  Family: "docdb4.0",
-  Name: "custom-docdb-param-group"
-});
-```
-
-## Tagging for Organization
-
-Demonstrate how to categorize `DBClusterParameterGroup` resources using multiple tags for better organization.
-
-```ts
-const taggedDbClusterParameterGroup = await AWS.DocDB.DBClusterParameterGroup("taggedDbClusterParamGroup", {
-  Description: "Parameter group with multiple tags for categorization",
-  Parameters: {
-    "maxConnections": "250"
-  },
-  Family: "docdb4.0",
+  Name: "AdvancedDBCluster",
   Tags: [
-    {
-      Key: "Project",
-      Value: "MyProject"
-    },
-    {
-      Key: "Owner",
-      Value: "DevTeam"
-    },
-    {
-      Key: "Environment",
-      Value: "Staging"
-    }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
+  ]
+});
+```
+
+## Custom Parameter Group for Testing
+
+Create a custom DBClusterParameterGroup specifically designed for testing environments.
+
+```ts
+const TestDBClusterParameterGroup = await AWS.DocDB.DBClusterParameterGroup("TestDBClusterParameterGroup", {
+  Description: "Parameter group for testing DocumentDB",
+  Family: "docdb4.0",
+  Parameters: {
+    "max_connections": "50",
+    "query_timeout": "15000",
+    "log_statement": "all"
+  },
+  Name: "TestDBCluster",
+  Tags: [
+    { Key: "Environment", Value: "testing" },
+    { Key: "Team", Value: "QA" }
   ]
 });
 ```

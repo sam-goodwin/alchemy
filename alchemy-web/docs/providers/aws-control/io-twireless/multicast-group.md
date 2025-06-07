@@ -5,76 +5,39 @@ description: Learn how to create, update, and manage AWS IoTWireless MulticastGr
 
 # MulticastGroup
 
-The MulticastGroup resource allows you to manage [AWS IoTWireless MulticastGroups](https://docs.aws.amazon.com/iotwireless/latest/userguide/) to facilitate communication with multiple devices in a single operation.
+The MulticastGroup resource lets you create and manage [AWS IoTWireless MulticastGroups](https://docs.aws.amazon.com/iotwireless/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iotwireless-multicastgroup.html
 
 ## Minimal Example
-
-Create a basic multicast group with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const multicastGroup = await AWS.IoTWireless.MulticastGroup("basicMulticastGroup", {
-  LoRaWAN: {
-    // Provide necessary LoRaWAN properties here
-    RfRegion: "EU868",
-    ChannelPlan: "EU868"
-  },
-  Description: "This is a basic multicast group for testing purposes.",
-  Name: "TestMulticastGroup"
+const multicastgroup = await AWS.IoTWireless.MulticastGroup("multicastgroup-example", {
+  LoRaWAN: "example-lorawan",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A multicastgroup resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Set up a multicast group with additional device associations and tags.
+Create a multicastgroup with additional configuration:
 
 ```ts
-const advancedMulticastGroup = await AWS.IoTWireless.MulticastGroup("advancedMulticastGroup", {
-  LoRaWAN: {
-    RfRegion: "US915",
-    ChannelPlan: "US915"
+import AWS from "alchemy/aws/control";
+
+const advancedMulticastGroup = await AWS.IoTWireless.MulticastGroup("advanced-multicastgroup", {
+  LoRaWAN: "example-lorawan",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  AssociateWirelessDevice: "arn:aws:iotwireless:us-east-1:123456789012:wireless-device/test-device-id",
-  DisassociateWirelessDevice: "arn:aws:iotwireless:us-east-1:123456789012:wireless-device/old-device-id",
-  Description: "Advanced multicast group with device associations.",
-  Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Team", Value: "IoT" }
-  ],
-  Name: "AdvancedMulticastGroup"
+  Description: "A multicastgroup resource managed by Alchemy",
 });
 ```
 
-## Using Tags for Management
-
-Create a multicast group while utilizing tags for better resource management.
-
-```ts
-const taggedMulticastGroup = await AWS.IoTWireless.MulticastGroup("taggedMulticastGroup", {
-  LoRaWAN: {
-    RfRegion: "EU868",
-    ChannelPlan: "EU868"
-  },
-  Tags: [
-    { Key: "Project", Value: "IoTDeployment" },
-    { Key: "Owner", Value: "DevTeam" }
-  ],
-  Name: "TaggedMulticastGroup"
-});
-```
-
-## Adoption of Existing Resources
-
-Create a multicast group that adopts an existing resource if it already exists.
-
-```ts
-const adoptiveMulticastGroup = await AWS.IoTWireless.MulticastGroup("adoptiveMulticastGroup", {
-  LoRaWAN: {
-    RfRegion: "EU868",
-    ChannelPlan: "EU868"
-  },
-  Name: "AdoptiveMulticastGroup",
-  adopt: true // This will adopt the existing multicast group if found
-});
-```

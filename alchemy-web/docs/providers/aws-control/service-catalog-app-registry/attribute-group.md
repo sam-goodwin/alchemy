@@ -5,59 +5,65 @@ description: Learn how to create, update, and manage AWS ServiceCatalogAppRegist
 
 # AttributeGroup
 
-The AttributeGroup resource lets you manage [AWS ServiceCatalogAppRegistry AttributeGroups](https://docs.aws.amazon.com/servicecatalogappregistry/latest/userguide/) which are used to group application attributes in AWS Service Catalog App Registry.
+The AttributeGroup resource lets you manage [AWS ServiceCatalogAppRegistry AttributeGroups](https://docs.aws.amazon.com/servicecatalogappregistry/latest/userguide/) which are collections of attributes that describe application resources.
 
 ## Minimal Example
 
-Create a basic AttributeGroup with required properties and a description.
+Create a basic AttributeGroup with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAttributeGroup = await AWS.ServiceCatalogAppRegistry.AttributeGroup("basicAttributeGroup", {
-  name: "MyApplicationAttributes",
-  description: "This group contains attributes for my application.",
-  attributes: {
-    Environment: "Production",
-    Owner: "DevTeam",
-    Version: "1.0.0"
-  }
+const BasicAttributeGroup = await AWS.ServiceCatalogAppRegistry.AttributeGroup("BasicAttributeGroup", {
+  Name: "MyApplicationAttributes",
+  Description: "Attributes for my application",
+  Attributes: {
+    Version: "1.0",
+    Owner: "DevTeam"
+  },
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Engineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AttributeGroup with tags for better resource management.
+Configure an AttributeGroup with complex attributes and multiple tags:
 
 ```ts
-const advancedAttributeGroup = await AWS.ServiceCatalogAppRegistry.AttributeGroup("advancedAttributeGroup", {
-  name: "MyAdvancedApplicationAttributes",
-  description: "This group contains advanced attributes for my application.",
-  attributes: {
-    Environment: "Staging",
-    Owner: "DevOpsTeam",
-    Version: "2.0.0",
-    LastUpdated: new Date().toISOString()
+const AdvancedAttributeGroup = await AWS.ServiceCatalogAppRegistry.AttributeGroup("AdvancedAttributeGroup", {
+  Name: "AdvancedApplicationAttributes",
+  Description: "Advanced attributes for my application",
+  Attributes: {
+    Version: "2.0",
+    Owner: "DevTeam",
+    Framework: "React",
+    Database: {
+      Engine: "PostgreSQL",
+      Version: "13"
+    }
   },
-  tags: {
-    Project: "MyProject",
-    Team: "Development"
-  }
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" },
+    { Key: "Service", Value: "WebApp" }
+  ]
 });
 ```
 
-## Adopting Existing Resources
+## Adoption of Existing Resources
 
-Create an AttributeGroup that adopts an existing resource if it already exists.
+Create an AttributeGroup that adopts an existing resource if it already exists:
 
 ```ts
-const adoptAttributeGroup = await AWS.ServiceCatalogAppRegistry.AttributeGroup("adoptAttributeGroup", {
-  name: "MyAdoptedApplicationAttributes",
-  description: "This group adopts existing resource attributes.",
-  attributes: {
-    Environment: "Testing",
-    Owner: "QA Team",
-    Version: "1.2.3"
+const AdoptedAttributeGroup = await AWS.ServiceCatalogAppRegistry.AttributeGroup("AdoptedAttributeGroup", {
+  Name: "ExistingAttributes",
+  Description: "Adopts existing attributes if available",
+  Attributes: {
+    Version: "1.5",
+    Owner: "LegacyTeam"
   },
   adopt: true
 });

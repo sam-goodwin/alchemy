@@ -5,66 +5,56 @@ description: Learn how to create, update, and manage AWS DataBrew Schedules usin
 
 # Schedule
 
-The Schedule resource allows you to manage [AWS DataBrew Schedules](https://docs.aws.amazon.com/databrew/latest/userguide/) for automating jobs on a specified cadence. 
+The Schedule resource lets you manage [AWS DataBrew Schedules](https://docs.aws.amazon.com/databrew/latest/userguide/) for orchestrating jobs in data preparation workflows.
 
 ## Minimal Example
 
-Create a basic DataBrew Schedule with required properties and one optional tag:
+Create a basic DataBrew Schedule with required properties and a couple of common optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dataBrewSchedule = await AWS.DataBrew.Schedule("daily-data-processing", {
-  Name: "DailyDataProcessing",
-  CronExpression: "cron(0 12 * * ? *)",
-  JobNames: ["DataCleaningJob"],
+const BasicSchedule = await AWS.DataBrew.Schedule("basic-schedule", {
+  Name: "DailyDataPrep",
+  CronExpression: "cron(0 12 * * ? *)", // Runs daily at 12 PM UTC
+  JobNames: ["DataCleaningJob", "DataTransformationJob"],
   Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataOps" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DataBrew Schedule with additional options, such as multiple jobs and additional tags:
+Configure a more advanced DataBrew Schedule with additional options such as adopting existing resources.
 
 ```ts
-const advancedSchedule = await AWS.DataBrew.Schedule("weekly-data-reports", {
-  Name: "WeeklyDataReports",
-  CronExpression: "cron(0 10 ? * MON *)",
-  JobNames: ["WeeklySalesReportJob", "WeeklyInventoryJob"],
+const AdvancedSchedule = await AWS.DataBrew.Schedule("advanced-schedule", {
+  Name: "WeeklyDataPrep",
+  CronExpression: "cron(0 0 ? * MON *)", // Runs every Monday at 12 AM UTC
+  JobNames: ["WeeklyReportJob"],
+  adopt: true, // Adopt existing resource if it already exists
   Tags: [
-    { Key: "Department", Value: "Sales" },
-    { Key: "Status", Value: "Active" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Analytics" }
   ]
 });
 ```
 
-## Using the Adopt Option
+## Detailed Configuration with Tags
 
-Create a DataBrew Schedule while adopting an existing resource if it already exists:
-
-```ts
-const adoptSchedule = await AWS.DataBrew.Schedule("adopted-schedule", {
-  Name: "AdoptedExistingSchedule",
-  CronExpression: "cron(0 15 * * ? *)",
-  JobNames: ["AdoptedJob"],
-  adopt: true // This will attempt to adopt the existing schedule if present
-});
-```
-
-## Managing Tags
-
-Update the tags of an existing DataBrew Schedule to reflect changes in project classification:
+Create a schedule with more detailed tag configurations for better resource management.
 
 ```ts
-const updatedTagsSchedule = await AWS.DataBrew.Schedule("updated-tags-schedule", {
-  Name: "UpdatedTagsSchedule",
-  CronExpression: "cron(0 9 * * ? *)",
-  JobNames: ["DataQualityCheckJob"],
+const DetailedSchedule = await AWS.DataBrew.Schedule("detailed-schedule", {
+  Name: "MonthlyDataAudit",
+  CronExpression: "cron(0 0 1 * ? *)", // Runs on the 1st of every month at 12 AM UTC
+  JobNames: ["MonthlyAuditJob"],
   Tags: [
-    { Key: "Project", Value: "DataQuality" },
-    { Key: "LastUpdated", Value: "2023-10-01" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "DataTeam" },
+    { Key: "Project", Value: "DataQuality" }
   ]
 });
 ```

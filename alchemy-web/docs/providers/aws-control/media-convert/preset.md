@@ -5,105 +5,102 @@ description: Learn how to create, update, and manage AWS MediaConvert Presets us
 
 # Preset
 
-The Preset resource lets you manage [AWS MediaConvert Presets](https://docs.aws.amazon.com/mediaconvert/latest/userguide/) for configuring media transcoding settings.
+The Preset resource allows you to manage [AWS MediaConvert Presets](https://docs.aws.amazon.com/mediaconvert/latest/userguide/) used for video transcoding. Presets define the settings for encoding tasks, making it easier to ensure consistent output across multiple media files.
 
 ## Minimal Example
 
-Create a basic MediaConvert Preset with required settings and a custom name.
+Create a basic MediaConvert Preset with essential settings and a category.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPreset = await AWS.MediaConvert.Preset("basicPreset", {
+const BasicPreset = await AWS.MediaConvert.Preset("basic-preset", {
   Name: "BasicPreset",
-  SettingsJson: {
+  Category: "System-Avc_16x9_1080p_30fps_16x9",
+  SettingsJson: JSON.stringify({
     Version: "1.0",
     Preset: {
-      Container: "mp4",
-      Audio: {
-        Codec: "aac",
-        Bitrate: 128000,
-        Channels: 2
-      },
       Video: {
-        Codec: "h264",
-        Bitrate: 5000000,
+        Codec: "H264",
         Width: 1920,
         Height: 1080,
-        Framerate: 30
+        Bitrate: 5000000,
+        FrameRate: 30
+      },
+      Audio: {
+        Codec: "AAC",
+        SampleRate: 48000,
+        Bitrate: 192000,
+        Channels: 2
       }
     }
-  },
-  Description: "A basic preset for high quality MP4 output."
+  }),
+  Tags: [{ Key: "Environment", Value: "production" }, { Key: "Project", Value: "VideoProcessing" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a MediaConvert Preset with additional options for enhanced settings.
+Configure a MediaConvert Preset with advanced video settings for better quality and performance.
 
 ```ts
-const advancedPreset = await AWS.MediaConvert.Preset("advancedPreset", {
+const AdvancedPreset = await AWS.MediaConvert.Preset("advanced-preset", {
   Name: "AdvancedPreset",
-  SettingsJson: {
+  Description: "An advanced preset for high-quality video output",
+  Category: "Custom",
+  SettingsJson: JSON.stringify({
     Version: "1.0",
     Preset: {
-      Container: "mp4",
-      Audio: {
-        Codec: "aac",
-        Bitrate: 192000,
-        Channels: 2,
-        SampleRate: 48000
-      },
       Video: {
-        Codec: "h265",
-        Bitrate: 8000000,
+        Codec: "H264",
         Width: 1920,
         Height: 1080,
-        Framerate: 60,
-        GopSize: 2
+        Bitrate: 8000000,
+        FrameRate: 60,
+        GopSize: 60,
+        GopSizeUnits: "FRAMES"
+      },
+      Audio: {
+        Codec: "AAC",
+        SampleRate: 48000,
+        Bitrate: 256000,
+        Channels: 2
       }
     }
-  },
-  Category: "Custom Presets",
-  Tags: {
-    Environment: "Production",
-    Team: "MediaTeam"
-  },
-  Description: "An advanced preset for high quality streaming."
+  }),
+  Tags: [{ Key: "Environment", Value: "staging" }, { Key: "Team", Value: "Media" }]
 });
 ```
 
-## Custom Category and Tags
+## Custom Preset for Live Streaming
 
-Create a preset with a specific category and tags for better resource management.
+Define a MediaConvert Preset tailored for live streaming workflows.
 
 ```ts
-const categorizedPreset = await AWS.MediaConvert.Preset("categorizedPreset", {
-  Name: "CategorizedPreset",
-  SettingsJson: {
+const LiveStreamingPreset = await AWS.MediaConvert.Preset("live-streaming-preset", {
+  Name: "LiveStreamingPreset",
+  Description: "Preset optimized for live streaming applications",
+  Category: "Live",
+  SettingsJson: JSON.stringify({
     Version: "1.0",
     Preset: {
-      Container: "mkv",
-      Audio: {
-        Codec: "mp3",
-        Bitrate: 160000,
-        Channels: 2
-      },
       Video: {
-        Codec: "vp9",
-        Bitrate: 6000000,
+        Codec: "H264",
         Width: 1280,
         Height: 720,
-        Framerate: 30
+        Bitrate: 3000000,
+        FrameRate: 30,
+        GopSize: 60,
+        GopSizeUnits: "FRAMES"
+      },
+      Audio: {
+        Codec: "AAC",
+        SampleRate: 48000,
+        Bitrate: 128000,
+        Channels: 2
       }
     }
-  },
-  Category: "Video Processing",
-  Tags: {
-    Project: "VideoEditing",
-    Owner: "JohnDoe"
-  },
-  Description: "A categorized preset for video editing projects."
+  }),
+  Tags: [{ Key: "Environment", Value: "production" }, { Key: "Type", Value: "Streaming" }]
 });
 ```

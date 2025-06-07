@@ -5,85 +5,64 @@ description: Learn how to create, update, and manage AWS AppConfig Deployments u
 
 # Deployment
 
-The Deployment resource allows you to manage [AWS AppConfig Deployments](https://docs.aws.amazon.com/appconfig/latest/userguide/) for your applications, enabling you to deploy application configurations to your environments efficiently.
+The Deployment resource lets you manage [AWS AppConfig Deployments](https://docs.aws.amazon.com/appconfig/latest/userguide/) for your applications, enabling you to deploy configurations to your application environments seamlessly.
 
 ## Minimal Example
 
-Create a basic AppConfig Deployment with required properties and common optional ones like KMS key identifier and description.
+Create a basic AppConfig Deployment with required properties and a couple of optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const appConfigDeployment = await AWS.AppConfig.Deployment("myAppConfigDeployment", {
-  DeploymentStrategyId: "myDeploymentStrategy",
-  ConfigurationProfileId: "myConfigurationProfile",
-  EnvironmentId: "myEnvironment",
+const appConfigDeployment = await AWS.AppConfig.Deployment("MyAppConfigDeployment", {
+  ApplicationId: "my-application-id",
+  ConfigurationProfileId: "my-configuration-profile-id",
+  EnvironmentId: "my-environment-id",
+  DeploymentStrategyId: "my-deployment-strategy-id",
   ConfigurationVersion: "1.0.0",
-  ApplicationId: "myApplication",
-  KmsKeyIdentifier: "arn:aws:kms:us-east-1:123456789012:key/my-key",
-  Description: "Deploying configuration version 1.0.0 to my environment"
+  Description: "Initial deployment of application configuration",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Deployment with dynamic extension parameters to customize the deployment behavior.
+Configure an AppConfig Deployment with advanced options including KMS key and dynamic extension parameters.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const dynamicDeployment = await AWS.AppConfig.Deployment("dynamicDeployment", {
-  DeploymentStrategyId: "myDeploymentStrategy",
-  ConfigurationProfileId: "myConfigurationProfile",
-  EnvironmentId: "myEnvironment",
+const advancedAppConfigDeployment = await AWS.AppConfig.Deployment("AdvancedAppConfigDeployment", {
+  ApplicationId: "my-application-id",
+  ConfigurationProfileId: "my-configuration-profile-id",
+  EnvironmentId: "my-environment-id",
+  DeploymentStrategyId: "my-deployment-strategy-id",
   ConfigurationVersion: "1.0.1",
-  ApplicationId: "myApplication",
+  KmsKeyIdentifier: "arn:aws:kms:us-west-2:123456789012:key/my-key-id",
   DynamicExtensionParameters: [
-    {
-      Name: "myParameter",
-      Value: "myValue"
-    },
-    {
-      Name: "anotherParameter",
-      Value: "anotherValue"
-    }
-  ]
-});
-```
-
-## Deployment with Tags
-
-Create a Deployment and assign tags to manage resources effectively.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const taggedDeployment = await AWS.AppConfig.Deployment("taggedDeployment", {
-  DeploymentStrategyId: "myDeploymentStrategy",
-  ConfigurationProfileId: "myConfigurationProfile",
-  EnvironmentId: "myEnvironment",
-  ConfigurationVersion: "1.0.2",
-  ApplicationId: "myApplication",
+    { ParameterName: "FeatureFlag", ParameterValue: "Enabled" },
+    { ParameterName: "Timeout", ParameterValue: "30" }
+  ],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyApp" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
   ]
 });
 ```
 
-## Adoption of Existing Resource
+## Using Adoption
 
-Create a Deployment that adopts an existing resource instead of failing if it already exists.
+Deploy an AppConfig resource and adopt an existing deployment if it already exists.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const adoptExistingDeployment = await AWS.AppConfig.Deployment("adoptExistingDeployment", {
-  DeploymentStrategyId: "myDeploymentStrategy",
-  ConfigurationProfileId: "myConfigurationProfile",
-  EnvironmentId: "myEnvironment",
-  ConfigurationVersion: "1.0.3",
-  ApplicationId: "myApplication",
-  adopt: true // Allow adoption of existing deployment
+const adoptedAppConfigDeployment = await AWS.AppConfig.Deployment("AdoptedAppConfigDeployment", {
+  ApplicationId: "my-application-id",
+  ConfigurationProfileId: "my-configuration-profile-id",
+  EnvironmentId: "my-environment-id",
+  DeploymentStrategyId: "my-deployment-strategy-id",
+  ConfigurationVersion: "1.0.2",
+  Description: "Adopting an existing deployment",
+  adopt: true // Will not fail if the resource already exists
 });
 ```

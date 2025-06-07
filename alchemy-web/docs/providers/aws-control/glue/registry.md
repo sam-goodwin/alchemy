@@ -5,44 +5,44 @@ description: Learn how to create, update, and manage AWS Glue Registrys using Al
 
 # Registry
 
-The Registry resource lets you manage [AWS Glue Registrys](https://docs.aws.amazon.com/glue/latest/userguide/) for organizing and managing schemas in AWS Glue Data Catalog.
+The Registry resource lets you manage [AWS Glue Registrys](https://docs.aws.amazon.com/glue/latest/userguide/) that store metadata for your data assets.
 
 ## Minimal Example
 
-Create a basic registry with a name and description.
+Create a basic Glue Registry with a name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicRegistry = await AWS.Glue.Registry("basic-registry", {
-  name: "MyDataRegistry",
-  description: "This registry holds schemas for my data assets."
+const basicRegistry = await AWS.Glue.Registry("BasicRegistry", {
+  Name: "CustomerDataRegistry",
+  Description: "Registry for customer data assets"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a registry with tags for better management and organization.
+Create a Glue Registry with tags for better resource management.
 
 ```ts
-const taggedRegistry = await AWS.Glue.Registry("tagged-registry", {
-  name: "MyTaggedDataRegistry",
-  description: "This registry holds schemas for my data assets with tags.",
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Department", value: "Finance" }
+const taggedRegistry = await AWS.Glue.Registry("TaggedRegistry", {
+  Name: "SalesDataRegistry",
+  Description: "Registry for sales data assets",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
   ]
 });
 ```
 
-## Adoption of Existing Registry
+## Adoption of Existing Resource
 
-Adopt an existing registry instead of failing if it already exists.
+Adopt an existing Glue Registry if it already exists, preventing the creation failure.
 
 ```ts
-const adoptRegistry = await AWS.Glue.Registry("adopt-registry", {
-  name: "ExistingDataRegistry",
-  description: "This registry will adopt an existing resource.",
+const existingRegistry = await AWS.Glue.Registry("ExistingRegistry", {
+  Name: "ExistingCustomerDataRegistry",
+  Description: "Adopting existing customer data registry",
   adopt: true
 });
 ```

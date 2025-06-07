@@ -5,48 +5,52 @@ description: Learn how to create, update, and manage AWS Logs LogAnomalyDetector
 
 # LogAnomalyDetector
 
-The LogAnomalyDetector resource allows you to create and manage [AWS Logs LogAnomalyDetectors](https://docs.aws.amazon.com/logs/latest/userguide/), which help identify unusual patterns in your CloudWatch Logs data.
+The LogAnomalyDetector resource allows you to create and manage anomaly detection capabilities for your AWS Logs, enabling you to identify unusual patterns in your log data. For more information, visit the [AWS Logs LogAnomalyDetectors documentation](https://docs.aws.amazon.com/logs/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic log anomaly detector with required properties and a common optional property.
+Create a basic LogAnomalyDetector with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const logAnomalyDetector = await AWS.Logs.LogAnomalyDetector("myLogAnomalyDetector", {
-  DetectorName: "MyFirstAnomalyDetector",
-  FilterPattern: "{ $.statusCode = 500 }",
-  EvaluationFrequency: "PT5M", // Evaluate every 5 minutes
-  AnomalyVisibilityTime: 60 // Anomaly visible for 60 minutes
+const basicAnomalyDetector = await AWS.Logs.LogAnomalyDetector("BasicAnomalyDetector", {
+  DetectorName: "MyAnomalyDetector",
+  EvaluationFrequency: "PT5M",
+  LogGroupArnList: [
+    "arn:aws:logs:us-east-1:123456789012:log-group:my-log-group"
+  ],
+  FilterPattern: "{ $.statusCode = 500 }"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a log anomaly detector with additional options, including specifying a KMS key for encryption and a list of log groups.
+Configure a LogAnomalyDetector with additional properties such as KMS Key ID and Anomaly Visibility Time.
 
 ```ts
-const advancedLogAnomalyDetector = await AWS.Logs.LogAnomalyDetector("advancedLogAnomalyDetector", {
+const advancedAnomalyDetector = await AWS.Logs.LogAnomalyDetector("AdvancedAnomalyDetector", {
   DetectorName: "AdvancedAnomalyDetector",
-  FilterPattern: "{ $.statusCode = 503 }",
-  EvaluationFrequency: "PT1H", // Evaluate every hour
-  AnomalyVisibilityTime: 120, // Anomaly visible for 120 minutes
-  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
+  EvaluationFrequency: "PT1H",
   LogGroupArnList: [
-    "arn:aws:logs:us-west-2:123456789012:log-group:/aws/lambda/myLambdaFunction",
-    "arn:aws:logs:us-west-2:123456789012:log-group:/aws/ec2/myEC2Instance"
-  ]
+    "arn:aws:logs:us-east-1:123456789012:log-group:my-log-group"
+  ],
+  FilterPattern: "{ $.statusCode = 500 }",
+  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcdefg-0123-4567-89ab-cdef01234567",
+  AnomalyVisibilityTime: 300 // Time in seconds
 });
 ```
 
-## Adoption of Existing Resource
+## Adoption of Existing Resources
 
-If you want to adopt an existing log anomaly detector instead of failing when it already exists, you can set the `adopt` property to true.
+If you want to adopt an existing LogAnomalyDetector instead of creating a new one, you can specify the `adopt` property.
 
 ```ts
-const adoptExistingDetector = await AWS.Logs.LogAnomalyDetector("adoptExistingDetector", {
+const adoptedAnomalyDetector = await AWS.Logs.LogAnomalyDetector("AdoptedAnomalyDetector", {
   DetectorName: "ExistingAnomalyDetector",
-  adopt: true // Adopt existing resource if present
+  LogGroupArnList: [
+    "arn:aws:logs:us-east-1:123456789012:log-group:my-log-group"
+  ],
+  adopt: true
 });
 ```

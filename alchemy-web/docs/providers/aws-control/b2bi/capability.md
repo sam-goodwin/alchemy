@@ -5,85 +5,41 @@ description: Learn how to create, update, and manage AWS B2BI Capabilitys using 
 
 # Capability
 
-The Capability resource lets you manage [AWS B2BI Capabilitys](https://docs.aws.amazon.com/b2bi/latest/userguide/) for enabling various integration functionalities within the B2B Integration service.
+The Capability resource lets you create and manage [AWS B2BI Capabilitys](https://docs.aws.amazon.com/b2bi/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-b2bi-capability.html
 
 ## Minimal Example
-
-Create a basic B2BI capability with required properties and a couple of optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const b2biCapability = await AWS.B2BI.Capability("basicCapability", {
-  name: "BasicIntegrationCapability",
-  type: "Integration",
-  configuration: {
-    // Example configuration settings
-    setting1: "value1",
-    setting2: "value2"
-  },
-  instructionsDocuments: [{
-    bucket: "my-bucket",
-    key: "instructions/integration-guide.pdf"
-  }],
-  tags: [{
-    key: "Environment",
-    value: "Production"
-  }]
+const capability = await AWS.B2BI.Capability("capability-example", {
+  Type: "example-type",
+  Configuration: "example-configuration",
+  Name: "capability-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a B2BI capability with advanced settings and more detailed configurations.
+Create a capability with additional configuration:
 
 ```ts
-const advancedCapability = await AWS.B2BI.Capability("advancedCapability", {
-  name: "AdvancedIntegrationCapability",
-  type: "AdvancedIntegration",
-  configuration: {
-    setting1: "advancedValue1",
-    setting2: "advancedValue2",
-    retryPolicy: {
-      maxAttempts: 5,
-      delay: 3000 // delay in milliseconds
-    }
+import AWS from "alchemy/aws/control";
+
+const advancedCapability = await AWS.B2BI.Capability("advanced-capability", {
+  Type: "example-type",
+  Configuration: "example-configuration",
+  Name: "capability-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  instructionsDocuments: [{
-    bucket: "my-bucket",
-    key: "instructions/advanced-integration-guide.pdf"
-  }],
-  tags: [{
-    key: "Environment",
-    value: "Staging"
-  }, {
-    key: "Version",
-    value: "v1.0"
-  }],
-  adopt: true // Adopt existing resource if it exists
 });
 ```
 
-## Custom Configuration
-
-Create a B2BI capability with a custom configuration tailored for specific integration scenarios.
-
-```ts
-const customCapability = await AWS.B2BI.Capability("customCapability", {
-  name: "CustomIntegrationCapability",
-  type: "CustomIntegration",
-  configuration: {
-    customSetting: "customValue",
-    webhookUrl: "https://api.example.com/webhook",
-    timeout: 60000 // timeout in milliseconds
-  },
-  instructionsDocuments: [{
-    bucket: "my-bucket",
-    key: "instructions/custom-integration-guide.pdf"
-  }],
-  tags: [{
-    key: "Environment",
-    value: "Development"
-  }]
-});
-```

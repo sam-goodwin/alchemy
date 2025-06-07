@@ -5,100 +5,43 @@ description: Learn how to create, update, and manage AWS ResilienceHub Apps usin
 
 # App
 
-The App resource lets you manage [AWS ResilienceHub Apps](https://docs.aws.amazon.com/resiliencehub/latest/userguide/) for assessing and improving the resiliency of your applications.
+The App resource lets you create and manage [AWS ResilienceHub Apps](https://docs.aws.amazon.com/resiliencehub/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-resiliencehub-app.html
 
 ## Minimal Example
-
-Create a basic ResilienceHub app with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const resilienceHubApp = await AWS.ResilienceHub.App("basicApp", {
-  name: "MyResilienceApp",
-  appTemplateBody: JSON.stringify({
-    version: "1.0",
-    resources: []
-  }),
-  resourceMappings: [
-    {
-      resourceName: "MyEC2Instance",
-      resourceType: "AWS::EC2::Instance"
-    }
-  ],
-  description: "This is a minimal ResilienceHub app."
+const app = await AWS.ResilienceHub.App("app-example", {
+  AppTemplateBody: "example-apptemplatebody",
+  ResourceMappings: [],
+  Name: "app-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A app resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ResilienceHub app with an assessment schedule and event subscriptions.
+Create a app with additional configuration:
 
 ```ts
-const advancedResilienceHubApp = await AWS.ResilienceHub.App("advancedApp", {
-  name: "AdvancedResilienceApp",
-  appTemplateBody: JSON.stringify({
-    version: "1.0",
-    resources: []
-  }),
-  resourceMappings: [
-    {
-      resourceName: "MyDynamoDBTable",
-      resourceType: "AWS::DynamoDB::Table"
-    }
-  ],
-  appAssessmentSchedule: "rate(1 day)",
-  eventSubscriptions: [
-    {
-      event: "Creation",
-      target: "arn:aws:sns:us-west-2:123456789012:MySNSTopic"
-    }
-  ],
-  tags: {
-    Environment: "Production",
-    Team: "DevOps"
-  }
+import AWS from "alchemy/aws/control";
+
+const advancedApp = await AWS.ResilienceHub.App("advanced-app", {
+  AppTemplateBody: "example-apptemplatebody",
+  ResourceMappings: [],
+  Name: "app-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A app resource managed by Alchemy",
 });
 ```
 
-## Adoption of Existing Resources
-
-Create a ResilienceHub app that adopts existing resources without failure if they already exist.
-
-```ts
-const adoptExistingApp = await AWS.ResilienceHub.App("adoptApp", {
-  name: "AdoptExistingApp",
-  appTemplateBody: JSON.stringify({
-    version: "1.0",
-    resources: []
-  }),
-  resourceMappings: [
-    {
-      resourceName: "MyS3Bucket",
-      resourceType: "AWS::S3::Bucket"
-    }
-  ],
-  adopt: true // Adopt existing resources if they exist
-});
-```
-
-## Resiliency Policy Association
-
-Set a Resiliency Policy ARN while creating the app to ensure compliance with defined policies.
-
-```ts
-const policyAssociatedApp = await AWS.ResilienceHub.App("policyApp", {
-  name: "PolicyAssociatedApp",
-  appTemplateBody: JSON.stringify({
-    version: "1.0",
-    resources: []
-  }),
-  resourceMappings: [
-    {
-      resourceName: "MyLambdaFunction",
-      resourceType: "AWS::Lambda::Function"
-    }
-  ],
-  resiliencyPolicyArn: "arn:aws:resiliencehub:us-west-2:123456789012:policy/MyResiliencyPolicy"
-});
-```

@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS ServiceCatalog TagOptio
 
 # TagOption
 
-The TagOption resource allows you to create and manage [AWS ServiceCatalog TagOptions](https://docs.aws.amazon.com/servicecatalog/latest/userguide/) which are used for tagging products in AWS ServiceCatalog.
+The TagOption resource allows you to create and manage [AWS ServiceCatalog TagOptions](https://docs.aws.amazon.com/servicecatalog/latest/userguide/) that can be used to tag AWS resources for better organization and management.
 
 ## Minimal Example
 
@@ -14,58 +14,58 @@ Create a basic TagOption with required properties and one optional property.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicTagOption = await AWS.ServiceCatalog.TagOption("basicTagOption", {
-  Value: "Production",
+const basicTagOption = await AWS.ServiceCatalog.TagOption("BasicTagOption", {
   Key: "Environment",
-  Active: true // Optional property to specify if the tag option is active
+  Value: "Production",
+  Active: true // This TagOption is active
 });
 ```
 
 ## Advanced Configuration
 
-Create a TagOption with additional attributes while ensuring it is active.
+Create a TagOption with multiple TagOptions to represent different environments.
 
 ```ts
-const advancedTagOption = await AWS.ServiceCatalog.TagOption("advancedTagOption", {
-  Value: "Database",
-  Key: "ServiceType",
-  Active: true, // Ensure the TagOption is active
-  adopt: true // Optional property to adopt existing resource if it already exists
-});
-```
-
-## TagOption for Multiple Environments
-
-Create multiple TagOptions to categorize resources for different environments.
-
-```ts
-const devTagOption = await AWS.ServiceCatalog.TagOption("devTagOption", {
-  Value: "Development",
+const stagingTagOption = await AWS.ServiceCatalog.TagOption("StagingTagOption", {
   Key: "Environment",
+  Value: "Staging",
   Active: true
 });
 
-const testTagOption = await AWS.ServiceCatalog.TagOption("testTagOption", {
+const testingTagOption = await AWS.ServiceCatalog.TagOption("TestingTagOption", {
+  Key: "Environment",
   Value: "Testing",
-  Key: "Environment",
-  Active: false // This option is not active and won't be used in ServiceCatalog
+  Active: false // This TagOption is inactive
 });
 ```
 
-## TagOption for Service Classification
+## Adoption of Existing TagOptions
 
-Define TagOptions for classifying services within your AWS environment.
+Create a TagOption that adopts an existing resource instead of failing if it already exists.
 
 ```ts
-const webServiceTagOption = await AWS.ServiceCatalog.TagOption("webServiceTagOption", {
-  Value: "Web Application",
-  Key: "ServiceClassification",
+const existingTagOption = await AWS.ServiceCatalog.TagOption("ExistingTagOption", {
+  Key: "Project",
+  Value: "Migration",
+  Active: true,
+  adopt: true // Adopt existing resource if it exists
+});
+```
+
+## Example with Multiple Tags
+
+Create multiple TagOptions that can be used together to represent a project and its environment.
+
+```ts
+const projectTagOption = await AWS.ServiceCatalog.TagOption("ProjectTagOption", {
+  Key: "Project",
+  Value: "WebsiteRedesign",
   Active: true
 });
 
-const apiServiceTagOption = await AWS.ServiceCatalog.TagOption("apiServiceTagOption", {
-  Value: "API",
-  Key: "ServiceClassification",
+const teamTagOption = await AWS.ServiceCatalog.TagOption("TeamTagOption", {
+  Key: "Team",
+  Value: "WebDevelopment",
   Active: true
 });
 ```

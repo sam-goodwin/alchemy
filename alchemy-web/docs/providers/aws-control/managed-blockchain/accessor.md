@@ -5,67 +5,77 @@ description: Learn how to create, update, and manage AWS ManagedBlockchain Acces
 
 # Accessor
 
-The Accessor resource lets you manage AWS ManagedBlockchain Accessors, which are used to interact with blockchain networks. For more details, refer to the [AWS ManagedBlockchain Accessors](https://docs.aws.amazon.com/managedblockchain/latest/userguide/) documentation.
+The Accessor resource allows you to manage [AWS ManagedBlockchain Accessors](https://docs.aws.amazon.com/managedblockchain/latest/userguide/) which are used to interact with your Managed Blockchain networks.
 
 ## Minimal Example
 
-Create a basic Accessor with required properties and a common optional property:
+Create a basic Accessor with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAccessor = await AWS.ManagedBlockchain.Accessor("basicAccessor", {
-  AccessorType: "AMAZON_MANAGED",
+const basicAccessor = await AWS.ManagedBlockchain.Accessor("BasicAccessor", {
+  AccessorType: "NODE",
   NetworkType: "HYPERLEDGER_FABRIC",
   Tags: [
-    { Key: "Project", Value: "BlockchainDemo" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Blockchain" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an Accessor with additional properties such as adopting existing resources:
+Configure an Accessor with additional properties to suit your needs.
 
 ```ts
-const advancedAccessor = await AWS.ManagedBlockchain.Accessor("advancedAccessor", {
-  AccessorType: "AMAZON_MANAGED",
+const advancedAccessor = await AWS.ManagedBlockchain.Accessor("AdvancedAccessor", {
+  AccessorType: "MEMBER",
   NetworkType: "ETHEREUM",
   Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Project", Value: "DAppDevelopment" }
   ],
-  adopt: true
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Accessor with Custom Tags
+## Using Accessor to Manage Multiple Networks
 
-Create an Accessor with multiple custom tags for better organization:
+Create multiple Accessors for different types of Managed Blockchain networks.
 
 ```ts
-const taggedAccessor = await AWS.ManagedBlockchain.Accessor("taggedAccessor", {
-  AccessorType: "CUSTOM",
+const fabricAccessor = await AWS.ManagedBlockchain.Accessor("FabricAccessor", {
+  AccessorType: "NODE",
   NetworkType: "HYPERLEDGER_FABRIC",
   Tags: [
-    { Key: "Department", Value: "Finance" },
-    { Key: "Owner", Value: "Alice" },
-    { Key: "Status", Value: "Active" }
+    { Key: "Environment", Value: "development" },
+    { Key: "UseCase", Value: "SupplyChain" }
+  ]
+});
+
+const ethereumAccessor = await AWS.ManagedBlockchain.Accessor("EthereumAccessor", {
+  AccessorType: "MEMBER",
+  NetworkType: "ETHEREUM",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "UseCase", Value: "Finance" }
   ]
 });
 ```
 
-## Accessor for Multi-Environment Setup
+## Error Handling with Existing Resources
 
-Set up an Accessor for a multi-environment configuration with distinct properties:
+Handle scenarios where the Accessor might already exist.
 
 ```ts
-const multiEnvAccessor = await AWS.ManagedBlockchain.Accessor("multiEnvAccessor", {
-  AccessorType: "CUSTOM",
-  NetworkType: "ETHEREUM",
-  Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Project", Value: "BlockchainExperiment" }
-  ],
-  adopt: false
-});
+try {
+  const existingAccessor = await AWS.ManagedBlockchain.Accessor("ExistingAccessor", {
+    AccessorType: "NODE",
+    NetworkType: "HYPERLEDGER_FABRIC",
+    adopt: true // Attempt to adopt the existing resource
+  });
+} catch (error) {
+  console.error("Error creating Accessor:", error);
+}
 ```

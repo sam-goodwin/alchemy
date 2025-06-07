@@ -5,62 +5,36 @@ description: Learn how to create, update, and manage AWS MediaConnect FlowEntitl
 
 # FlowEntitlement
 
-The FlowEntitlement resource allows you to manage [AWS MediaConnect FlowEntitlements](https://docs.aws.amazon.com/mediaconnect/latest/userguide/) which provide control over how media flows are shared between different users and services.
+The FlowEntitlement resource lets you create and manage [AWS MediaConnect FlowEntitlements](https://docs.aws.amazon.com/mediaconnect/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-mediaconnect-flowentitlement.html
 
 ## Minimal Example
-
-Create a basic FlowEntitlement with required properties and one optional property for description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const simpleFlowEntitlement = await AWS.MediaConnect.FlowEntitlement("basicFlowEntitlement", {
-  description: "Basic entitlement for sharing video flow",
-  FlowArn: "arn:aws:mediaconnect:us-east-1:123456789012:flow:example-flow",
-  Subscribers: ["arn:aws:mediaconnect:us-east-1:123456789012:subscriber:example-subscriber"]
+const flowentitlement = await AWS.MediaConnect.FlowEntitlement("flowentitlement-example", {
+  Description: "A flowentitlement resource managed by Alchemy",
+  Subscribers: ["example-subscribers-1"],
+  FlowArn: "example-flowarn",
+  Name: "flowentitlement-",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a FlowEntitlement with encryption settings and data transfer subscriber fee percent.
+Create a flowentitlement with additional configuration:
 
 ```ts
-const secureFlowEntitlement = await AWS.MediaConnect.FlowEntitlement("secureFlowEntitlement", {
-  description: "Secure entitlement with encryption",
-  FlowArn: "arn:aws:mediaconnect:us-east-1:123456789012:flow:example-secure-flow",
-  Subscribers: ["arn:aws:mediaconnect:us-east-1:123456789012:subscriber:another-subscriber"],
-  Encryption: {
-    Algorithm: "aes128", // Encryption algorithm
-    KeyType: "static-key", // Key type used for encryption
-    RoleArn: "arn:aws:iam::123456789012:role/MediaConnectEncryptionRole" // IAM role for encryption
-  },
-  DataTransferSubscriberFeePercent: 10 // 10% fee for data transfer
+import AWS from "alchemy/aws/control";
+
+const advancedFlowEntitlement = await AWS.MediaConnect.FlowEntitlement("advanced-flowentitlement", {
+  Description: "A flowentitlement resource managed by Alchemy",
+  Subscribers: ["example-subscribers-1"],
+  FlowArn: "example-flowarn",
+  Name: "flowentitlement-",
+  Encryption: { Enabled: true, KmsKeyId: "alias/aws/s3" },
 });
 ```
 
-## Managing Entitlement Status
-
-You can also set the entitlement status to enable or disable the flow entitlement.
-
-```ts
-const entitlementWithStatus = await AWS.MediaConnect.FlowEntitlement("entitlementWithStatus", {
-  description: "Entitlement with status management",
-  FlowArn: "arn:aws:mediaconnect:us-east-1:123456789012:flow:example-status-flow",
-  Subscribers: ["arn:aws:mediaconnect:us-east-1:123456789012:subscriber:status-subscriber"],
-  EntitlementStatus: "ENABLED" // Set the entitlement status to ENABLED
-});
-```
-
-## Adopting Existing Resources
-
-If you need to adopt an existing FlowEntitlement without failing, you can set the adopt property to true.
-
-```ts
-const existingFlowEntitlement = await AWS.MediaConnect.FlowEntitlement("existingFlowEntitlement", {
-  description: "Adopting an existing entitlement",
-  FlowArn: "arn:aws:mediaconnect:us-east-1:123456789012:flow:existing-flow",
-  Subscribers: ["arn:aws:mediaconnect:us-east-1:123456789012:subscriber:existing-subscriber"],
-  adopt: true // Adopt existing resource instead of failing
-});
-```

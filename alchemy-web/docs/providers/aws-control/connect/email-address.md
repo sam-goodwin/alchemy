@@ -5,33 +5,32 @@ description: Learn how to create, update, and manage AWS Connect EmailAddresss u
 
 # EmailAddress
 
-The EmailAddress resource lets you manage [AWS Connect Email Addresses](https://docs.aws.amazon.com/connect/latest/userguide/) for your contact center, enabling email communication capabilities.
+The EmailAddress resource lets you manage email addresses within AWS Connect for customer engagement. For more information, visit the [AWS Connect EmailAddresss documentation](https://docs.aws.amazon.com/connect/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic email address associated with an AWS Connect instance, including a description and display name.
+This example demonstrates how to create a basic email address resource with required properties and an optional display name.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const emailAddress = await AWS.Connect.EmailAddress("customerSupportEmail", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-abcd-1234-abcd-1234567890ab",
+const basicEmailAddress = await AWS.Connect.EmailAddress("BasicEmail", {
+  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234-5678-90ef-ghij-1234567890ab",
   EmailAddress: "support@example.com",
-  Description: "Customer support email address",
-  DisplayName: "Customer Support"
+  DisplayName: "Support Team"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an email address with tags for better management and organization.
+In this example, we will create an email address with a description and tags for better organization.
 
 ```ts
-const taggedEmailAddress = await AWS.Connect.EmailAddress("salesEmail", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-abcd-1234-abcd-1234567890ab",
+const advancedEmailAddress = await AWS.Connect.EmailAddress("AdvancedEmail", {
+  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234-5678-90ef-ghij-1234567890ab",
   EmailAddress: "sales@example.com",
-  Description: "Sales department email address",
   DisplayName: "Sales Team",
+  Description: "Email address for the sales team",
   Tags: [
     { Key: "Department", Value: "Sales" },
     { Key: "Environment", Value: "Production" }
@@ -41,25 +40,12 @@ const taggedEmailAddress = await AWS.Connect.EmailAddress("salesEmail", {
 
 ## Adoption of Existing Resource
 
-If you want to adopt an existing email address instead of creating a new one, you can set the adopt property to true.
+This example shows how to adopt an existing email address resource instead of failing if it already exists.
 
 ```ts
-const existingEmailAddress = await AWS.Connect.EmailAddress("existingSupportEmail", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-abcd-1234-abcd-1234567890ab",
-  EmailAddress: "existing-support@example.com",
-  adopt: true // Adopt existing resource if it exists
-});
-```
-
-## Updating an Email Address
-
-Update the display name of an existing email address.
-
-```ts
-const updatedEmailAddress = await AWS.Connect.EmailAddress("updatedSupportEmail", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-abcd-1234-abcd-1234567890ab",
-  EmailAddress: "support@example.com",
-  Description: "Updated customer support email address",
-  DisplayName: "Updated Customer Support"
+const adoptEmailAddress = await AWS.Connect.EmailAddress("AdoptEmail", {
+  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234-5678-90ef-ghij-1234567890ab",
+  EmailAddress: "info@example.com",
+  adopt: true // Adopts the existing resource
 });
 ```

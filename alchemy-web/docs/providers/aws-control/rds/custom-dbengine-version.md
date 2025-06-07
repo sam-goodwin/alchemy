@@ -5,62 +5,81 @@ description: Learn how to create, update, and manage AWS RDS CustomDBEngineVersi
 
 # CustomDBEngineVersion
 
-The CustomDBEngineVersion resource allows you to manage custom database engine versions for Amazon RDS. This enables you to deploy a custom version of a database engine, providing flexibility in your database environment. For more details, refer to the [AWS RDS CustomDBEngineVersions documentation](https://docs.aws.amazon.com/rds/latest/userguide/).
+The `CustomDBEngineVersion` resource allows you to create and manage custom database engine versions for Amazon RDS. This resource provides flexibility in defining custom configurations and installation files for your database engines. For more details, refer to the [AWS RDS CustomDBEngineVersions documentation](https://docs.aws.amazon.com/rds/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic custom database engine version with required properties and common optional settings.
+Create a basic custom database engine version with required properties and a few common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const customDBEngineVersion = await AWS.RDS.CustomDBEngineVersion("myCustomDBEngineVersion", {
+const CustomDBEngineVersion = await AWS.RDS.CustomDBEngineVersion("MyCustomDBEngineVersion", {
   Engine: "mysql",
   EngineVersion: "8.0.26",
-  DatabaseInstallationFilesS3BucketName: "my-custom-db-files",
-  Description: "My custom MySQL engine version 8.0.26"
+  DatabaseInstallationFilesS3BucketName: "my-db-install-files",
+  DatabaseInstallationFilesS3Prefix: "mysql-install",
+  Description: "My custom MySQL DB Engine Version",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a custom database engine version with additional options such as KMS key and manifest file.
+Configure a custom database engine version with advanced settings, including KMS Key for encryption and a custom image ID.
 
 ```ts
-const advancedCustomDBEngineVersion = await AWS.RDS.CustomDBEngineVersion("myAdvancedCustomDBEngineVersion", {
+const AdvancedCustomDBEngineVersion = await AWS.RDS.CustomDBEngineVersion("AdvancedCustomDBEngineVersion", {
   Engine: "postgres",
   EngineVersion: "13.3",
-  DatabaseInstallationFilesS3BucketName: "my-custom-db-files",
+  DatabaseInstallationFilesS3BucketName: "my-db-install-files",
+  DatabaseInstallationFilesS3Prefix: "postgres-install",
   KMSKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-key-id",
-  Manifest: "my-manifest.json",
-  UseAwsProvidedLatestImage: true
-});
-```
-
-## Using Tags for Resource Management
-
-Create a custom database engine version while applying tags for better resource management.
-
-```ts
-const taggedCustomDBEngineVersion = await AWS.RDS.CustomDBEngineVersion("myTaggedCustomDBEngineVersion", {
-  Engine: "oracle",
-  EngineVersion: "19.0.0.0",
-  DatabaseInstallationFilesS3BucketName: "my-custom-db-files",
+  ImageId: "ami-1234567890abcdef0",
+  UseAwsProvidedLatestImage: true,
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DatabaseMigration" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Adopting an Existing Resource
+## Using Source Custom DB Engine Version
 
-Attempt to adopt an existing custom database engine version without failing if it already exists.
+Create a custom database engine version based on an existing source custom DB engine version identifier.
 
 ```ts
-const adoptExistingCustomDBEngineVersion = await AWS.RDS.CustomDBEngineVersion("myAdoptExistingCustomDBEngineVersion", {
-  Engine: "mysql",
-  EngineVersion: "8.0.26",
-  adopt: true
+const SourceCustomDBEngineVersion = await AWS.RDS.CustomDBEngineVersion("SourceCustomDBEngineVersion", {
+  Engine: "oracle",
+  EngineVersion: "19.0.0",
+  DatabaseInstallationFilesS3BucketName: "my-db-install-files",
+  DatabaseInstallationFilesS3Prefix: "oracle-install",
+  SourceCustomDbEngineVersionIdentifier: "source-db-engine-id",
+  Description: "Oracle Custom DB Engine Version based on source",
+  Tags: [
+    { Key: "Environment", Value: "testing" },
+    { Key: "Team", Value: "QA" }
+  ]
+});
+```
+
+## Adoption of Existing Resource
+
+If you want to adopt an existing custom DB engine version rather than failing, you can set the adopt property to true.
+
+```ts
+const AdoptExistingResource = await AWS.RDS.CustomDBEngineVersion("AdoptExistingResource", {
+  Engine: "mariadb",
+  EngineVersion: "10.5.9",
+  DatabaseInstallationFilesS3BucketName: "my-db-install-files",
+  DatabaseInstallationFilesS3Prefix: "mariadb-install",
+  adopt: true,
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Research" }
+  ]
 });
 ```

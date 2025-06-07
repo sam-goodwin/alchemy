@@ -5,61 +5,35 @@ description: Learn how to create, update, and manage AWS VpcLattice ServiceNetwo
 
 # ServiceNetwork
 
-The ServiceNetwork resource allows you to manage [AWS VpcLattice ServiceNetworks](https://docs.aws.amazon.com/vpclattice/latest/userguide/) that facilitate service communication and discovery across VPCs.
+The ServiceNetwork resource lets you create and manage [AWS VpcLattice ServiceNetworks](https://docs.aws.amazon.com/vpclattice/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-vpclattice-servicenetwork.html
 
 ## Minimal Example
-
-Create a basic ServiceNetwork with a name and authentication type.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicServiceNetwork = await AWS.VpcLattice.ServiceNetwork("basicServiceNetwork", {
-  name: "MyServiceNetwork",
-  authType: "NONE", // No authentication required
+const servicenetwork = await AWS.VpcLattice.ServiceNetwork("servicenetwork-example", {
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ServiceNetwork with sharing options and tags for better organization.
+Create a servicenetwork with additional configuration:
 
 ```ts
-const advancedServiceNetwork = await AWS.VpcLattice.ServiceNetwork("advancedServiceNetwork", {
-  name: "AdvancedServiceNetwork",
-  authType: "IAM",
-  sharingConfig: {
-    allowExternal: true,
-    externalPrincipals: ["arn:aws:iam::123456789012:role/ExternalServiceRole"]
+import AWS from "alchemy/aws/control";
+
+const advancedServiceNetwork = await AWS.VpcLattice.ServiceNetwork("advanced-servicenetwork", {
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "ServiceDiscovery" }
-  ]
 });
 ```
 
-## Adoption of Existing Resource
-
-Create a ServiceNetwork that adopts an existing resource rather than failing if it already exists.
-
-```ts
-const existingServiceNetwork = await AWS.VpcLattice.ServiceNetwork("existingServiceNetwork", {
-  name: "ExistingServiceNetwork",
-  adopt: true // Adopt an existing resource if it already exists
-});
-```
-
-## Tagging for Organization
-
-Demonstrate how to use tags to organize your ServiceNetworks effectively.
-
-```ts
-const taggedServiceNetwork = await AWS.VpcLattice.ServiceNetwork("taggedServiceNetwork", {
-  name: "TaggedServiceNetwork",
-  tags: [
-    { Key: "Owner", Value: "DevTeam" },
-    { Key: "Purpose", Value: "Testing" }
-  ]
-});
-```

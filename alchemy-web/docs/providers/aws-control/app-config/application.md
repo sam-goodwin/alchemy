@@ -5,55 +5,62 @@ description: Learn how to create, update, and manage AWS AppConfig Applications 
 
 # Application
 
-The Application resource lets you manage [AWS AppConfig Applications](https://docs.aws.amazon.com/appconfig/latest/userguide/) for deploying application configurations in a controlled manner.
+The Application resource lets you create and manage [AWS AppConfig Applications](https://docs.aws.amazon.com/appconfig/latest/userguide/) for dynamic configuration management in your applications.
 
 ## Minimal Example
 
-Create a basic AppConfig application with a name and description.
+This example demonstrates how to create a basic AWS AppConfig Application with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const appConfigApplication = await AWS.AppConfig.Application("myAppConfigApp", {
-  name: "MyApplication",
-  description: "This application manages configurations for my service."
+const MyAppConfigApplication = await AWS.AppConfig.Application("MyApplication", {
+  Name: "MyApplication",
+  Description: "This application manages configurations for my microservices.",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Owner", Value: "DevTeam" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AppConfig application with tags for better organization and management.
+In this example, we create an application with additional tags for better resource management.
 
 ```ts
-const taggedAppConfigApplication = await AWS.AppConfig.Application("taggedAppConfigApp", {
-  name: "TaggedApplication",
-  description: "This application manages configurations with tags.",
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Team", value: "DevOps" }
+const AdvancedAppConfigApplication = await AWS.AppConfig.Application("AdvancedApplication", {
+  Name: "AdvancedApplication",
+  Description: "This application handles multiple configurations for various services.",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "DevOps" },
+    { Key: "Project", Value: "ProjectX" }
+  ],
+  adopt: true // This allows adopting an existing resource if it already exists
+});
+```
+
+## Application Creation with Only Required Properties
+
+Here’s how to create an application using only the required properties.
+
+```ts
+const BasicAppConfigApplication = await AWS.AppConfig.Application("BasicApplication", {
+  Name: "BasicApplication"
+});
+```
+
+## Application with Descriptive Tagging
+
+This example shows how to create an application with descriptive tagging for better identification.
+
+```ts
+const TaggedAppConfigApplication = await AWS.AppConfig.Application("TaggedApplication", {
+  Name: "TaggedApplication",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Service", Value: "API" }
   ]
-});
-```
-
-## Adoption of Existing Resource
-
-Adopt an existing AppConfig application without failing if it already exists.
-
-```ts
-const adoptedAppConfigApplication = await AWS.AppConfig.Application("existingAppConfigApp", {
-  name: "ExistingApplication",
-  description: "This will adopt an existing application.",
-  adopt: true
-});
-```
-
-## Update Application Description
-
-Update the description of an existing AppConfig application.
-
-```ts
-const updatedAppConfigApplication = await AWS.AppConfig.Application("updateAppConfigApp", {
-  name: "MyApplication",
-  description: "Updated description for my application."
 });
 ```

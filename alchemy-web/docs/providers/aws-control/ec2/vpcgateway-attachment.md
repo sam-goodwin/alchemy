@@ -5,42 +5,40 @@ description: Learn how to create, update, and manage AWS EC2 VPCGatewayAttachmen
 
 # VPCGatewayAttachment
 
-The VPCGatewayAttachment resource allows you to attach a Virtual Private Cloud (VPC) to either an Internet Gateway or a Virtual Private Network (VPN) Gateway, enabling connectivity to the internet or other networks. For more details, refer to the [AWS EC2 VPCGatewayAttachments](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The VPCGatewayAttachment resource allows you to attach a virtual private cloud (VPC) to an internet gateway or a virtual private network (VPN) gateway. This resource is essential for enabling internet access for your VPC or establishing a secure connection to your on-premises network. For more information, visit the [AWS EC2 VPCGatewayAttachments documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic VPCGatewayAttachment by attaching an Internet Gateway to a VPC.
+This example demonstrates how to create a basic VPCGatewayAttachment with the required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const vpcGatewayAttachment = await AWS.EC2.VPCGatewayAttachment("myVpcGatewayAttachment", {
-  InternetGatewayId: "igw-0123456789abcdef0",
-  VpcId: "vpc-0123456789abcdef0"
+const VPCGatewayAttachment = await AWS.EC2.VPCGatewayAttachment("MyVPCGatewayAttachment", {
+  VpcId: "vpc-12345678", // Replace with your actual VPC ID
+  InternetGatewayId: "igw-87654321" // Replace with your actual Internet Gateway ID
 });
 ```
 
 ## Advanced Configuration
 
-Attach a VPN Gateway to a VPC while adopting an existing resource if it already exists.
+In this example, we specify the VPN Gateway ID to attach a VPC to a VPN gateway instead of an internet gateway.
 
 ```ts
-const vpnGatewayAttachment = await AWS.EC2.VPCGatewayAttachment("myVpnGatewayAttachment", {
-  VpnGatewayId: "vgw-0123456789abcdef0",
-  VpcId: "vpc-0123456789abcdef0",
-  adopt: true // Adopt existing resource
+const VPCGatewayAttachmentWithVpn = await AWS.EC2.VPCGatewayAttachment("MyVpnGatewayAttachment", {
+  VpcId: "vpc-12345678", // Replace with your actual VPC ID
+  VpnGatewayId: "vgw-11223344" // Replace with your actual VPN Gateway ID
 });
 ```
 
-## Attaching Multiple Gateways
+## Resource Adoption
 
-Create a VPCGatewayAttachment that can be switched between Internet Gateway and VPN Gateway.
+This example shows how to adopt an existing VPCGatewayAttachment instead of failing if it already exists.
 
 ```ts
-const gatewayType = "internet"; // change to "vpn" for VPN Gateway
-
-const multiGatewayAttachment = await AWS.EC2.VPCGatewayAttachment("myMultiGatewayAttachment", {
-  VpcId: "vpc-0123456789abcdef0",
-  ...(gatewayType === "internet" ? { InternetGatewayId: "igw-0123456789abcdef0" } : { VpnGatewayId: "vgw-0123456789abcdef0" })
+const AdoptExistingVPCGatewayAttachment = await AWS.EC2.VPCGatewayAttachment("MyAdoptedVPCGatewayAttachment", {
+  VpcId: "vpc-12345678", // Replace with your actual VPC ID
+  InternetGatewayId: "igw-87654321", // Replace with your actual Internet Gateway ID
+  adopt: true // Set to true to adopt an existing resource
 });
 ```

@@ -5,34 +5,33 @@ description: Learn how to create, update, and manage AWS Pinpoint GCMChannels us
 
 # GCMChannel
 
-The GCMChannel resource lets you manage [AWS Pinpoint GCMChannels](https://docs.aws.amazon.com/pinpoint/latest/userguide/) for sending push notifications to Android devices.
+The GCMChannel resource lets you manage the Google Cloud Messaging (GCM) channel for AWS Pinpoint, enabling you to send push notifications to Android devices. For more details, refer to the [AWS Pinpoint GCMChannels documentation](https://docs.aws.amazon.com/pinpoint/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic GCMChannel with required properties and one optional property.
+Create a basic GCM channel with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
 const gcmChannel = await AWS.Pinpoint.GCMChannel("MyGCMChannel", {
-  ApplicationId: "my-pinpoint-application-id",
-  ApiKey: "my-gcm-api-key",
-  Enabled: true
+  ApiKey: "AIzaSyD-YourAPIKeyHere",
+  Enabled: true,
+  ApplicationId: "my-pinpoint-app-id"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a GCMChannel with more advanced options such as service JSON and authentication method.
+Configure a GCM channel with additional properties including service JSON and default authentication method.
 
 ```ts
 const advancedGcmChannel = await AWS.Pinpoint.GCMChannel("AdvancedGCMChannel", {
-  ApplicationId: "my-pinpoint-application-id",
-  ApiKey: "my-gcm-api-key",
+  ApiKey: "AIzaSyD-YourAPIKeyHere",
   Enabled: true,
+  ApplicationId: "my-pinpoint-app-id",
   ServiceJson: JSON.stringify({
-    project_number: "123456789012",
-    api_key: "my-api-key"
+    someKey: "someValue"
   }),
   DefaultAuthenticationMethod: "API_KEY"
 });
@@ -40,13 +39,12 @@ const advancedGcmChannel = await AWS.Pinpoint.GCMChannel("AdvancedGCMChannel", {
 
 ## Adoption of Existing Resource
 
-If you want to adopt an existing GCMChannel instead of creating a new one, you can set the adopt property to true.
+Create a GCM channel that adopts an existing resource instead of failing if it already exists.
 
 ```ts
-const adoptedGcmChannel = await AWS.Pinpoint.GCMChannel("AdoptedGCMChannel", {
-  ApplicationId: "my-pinpoint-application-id",
-  ApiKey: "my-gcm-api-key",
-  Enabled: true,
-  adopt: true // Adopts existing resource
+const adoptGcmChannel = await AWS.Pinpoint.GCMChannel("AdoptedGCMChannel", {
+  ApiKey: "AIzaSyD-YourAPIKeyHere",
+  ApplicationId: "my-pinpoint-app-id",
+  adopt: true
 });
 ```

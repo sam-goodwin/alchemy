@@ -5,46 +5,46 @@ description: Learn how to create, update, and manage AWS Backup BackupVaults usi
 
 # BackupVault
 
-The BackupVault resource allows you to manage [AWS Backup BackupVaults](https://docs.aws.amazon.com/backup/latest/userguide/) for storing and organizing backup data securely.
+The BackupVault resource allows you to manage [AWS Backup BackupVaults](https://docs.aws.amazon.com/backup/latest/userguide/) for storing and managing backups of your AWS resources.
 
 ## Minimal Example
 
-Create a basic backup vault with a name and optional tags.
+Create a basic BackupVault with a name and optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const backupVault = await AWS.Backup.BackupVault("myBackupVault", {
+const BackupVaultExample = await AWS.Backup.BackupVault("MyBackupVault", {
   BackupVaultName: "MyBackupVault",
-  BackupVaultTags: {
-    Environment: "Production",
-    Project: "WebsiteMigration"
-  }
+  BackupVaultTags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a backup vault with encryption and notifications.
+Configure a BackupVault with encryption and a notification configuration.
 
 ```ts
-const secureBackupVault = await AWS.Backup.BackupVault("secureBackupVault", {
-  BackupVaultName: "SecureBackupVault",
-  EncryptionKeyArn: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
+const EncryptedBackupVault = await AWS.Backup.BackupVault("EncryptedVault", {
+  BackupVaultName: "EncryptedVault",
+  EncryptionKeyArn: "arn:aws:kms:us-east-1:123456789012:key/my-key-id",
   Notifications: {
     BackupVaultEvents: ["BACKUP_JOB_FAILED", "BACKUP_JOB_COMPLETED"],
-    SNSTopicArn: "arn:aws:sns:us-west-2:123456789012:MySNSTopic"
+    SNSTopicArn: "arn:aws:sns:us-east-1:123456789012:MySNSTopic"
   }
 });
 ```
 
 ## Lock Configuration
 
-Create a backup vault with lock configuration to prevent accidental deletion.
+Create a BackupVault with a lock configuration to prevent accidental deletion of backups.
 
 ```ts
-const lockedBackupVault = await AWS.Backup.BackupVault("lockedBackupVault", {
-  BackupVaultName: "LockedBackupVault",
+const LockedBackupVault = await AWS.Backup.BackupVault("LockedVault", {
+  BackupVaultName: "LockedVault",
   LockConfiguration: {
     MinRetentionDays: 30,
     MaxRetentionDays: 365
@@ -54,19 +54,17 @@ const lockedBackupVault = await AWS.Backup.BackupVault("lockedBackupVault", {
 
 ## Access Policy
 
-Set an access policy for the backup vault to control permissions.
+Define an access policy for your BackupVault to control permissions.
 
 ```ts
-const policyBackupVault = await AWS.Backup.BackupVault("policyBackupVault", {
-  BackupVaultName: "PolicyBackupVault",
+const AccessControlledVault = await AWS.Backup.BackupVault("AccessControlledVault", {
+  BackupVaultName: "AccessControlledVault",
   AccessPolicy: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Principal: {
-          AWS: "arn:aws:iam::123456789012:user/BackupUser"
-        },
+        Principal: { AWS: "arn:aws:iam::123456789012:role/MyBackupRole" },
         Action: "backup:StartBackupJob",
         Resource: "*"
       }

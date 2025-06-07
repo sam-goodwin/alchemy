@@ -5,64 +5,64 @@ description: Learn how to create, update, and manage AWS MemoryDB ParameterGroup
 
 # ParameterGroup
 
-The ParameterGroup resource lets you manage [AWS MemoryDB ParameterGroups](https://docs.aws.amazon.com/memorydb/latest/userguide/) and their configuration settings.
+The ParameterGroup resource lets you manage [AWS MemoryDB ParameterGroups](https://docs.aws.amazon.com/memorydb/latest/userguide/) which are used to specify configuration settings for your MemoryDB clusters.
 
 ## Minimal Example
 
-Create a basic MemoryDB ParameterGroup with required properties and a description.
+Create a basic MemoryDB ParameterGroup with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicParameterGroup = await AWS.MemoryDB.ParameterGroup("basic-parameter-group", {
+const BasicParameterGroup = await AWS.MemoryDB.ParameterGroup("BasicParameterGroup", {
   ParameterGroupName: "default",
-  Family: "redis",
-  Description: "Basic parameter group for Redis"
+  Family: "memorydb.redis",
+  Description: "Default parameter group for MemoryDB"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ParameterGroup with specific parameters to customize MemoryDB settings.
+Configure a ParameterGroup with specific parameters for fine-tuning performance.
 
 ```ts
-const advancedParameterGroup = await AWS.MemoryDB.ParameterGroup("advanced-parameter-group", {
-  ParameterGroupName: "custom-redis",
-  Family: "redis",
-  Description: "Advanced parameter group with custom settings",
+const AdvancedParameterGroup = await AWS.MemoryDB.ParameterGroup("AdvancedParameterGroup", {
+  ParameterGroupName: "custom-advanced",
+  Family: "memorydb.redis",
+  Description: "Advanced parameter group for MemoryDB with custom settings",
   Parameters: {
-    maxmemory: "512mb",
-    timeout: "300",
-    save: "60 1"
+    "maxmemory-policy": "volatile-lru",
+    "notify-keyspace-events": "Ex"
   }
 });
 ```
 
 ## Tagging for Resource Management
 
-Create a ParameterGroup with tags for better resource management and identification.
+Create a ParameterGroup and associate it with tags for better resource management.
 
 ```ts
-const taggedParameterGroup = await AWS.MemoryDB.ParameterGroup("tagged-parameter-group", {
-  ParameterGroupName: "tagged-redis",
-  Family: "redis",
-  Description: "Parameter group with tags",
+const TaggedParameterGroup = await AWS.MemoryDB.ParameterGroup("TaggedParameterGroup", {
+  ParameterGroupName: "tagged-group",
+  Family: "memorydb.redis",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyApp" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
   ]
 });
 ```
 
-## Adopting Existing Resources
+## Parameter Group for Cluster Optimization
 
-Create a ParameterGroup while adopting an existing resource, avoiding failure if it already exists.
+Set up a ParameterGroup that optimizes memory usage for a specific workload.
 
 ```ts
-const adoptedParameterGroup = await AWS.MemoryDB.ParameterGroup("adopted-parameter-group", {
-  ParameterGroupName: "existing-redis",
-  Family: "redis",
-  Description: "Adopting an existing parameter group",
-  adopt: true
+const OptimizedParameterGroup = await AWS.MemoryDB.ParameterGroup("OptimizedParameterGroup", {
+  ParameterGroupName: "optimized-cluster",
+  Family: "memorydb.redis",
+  Parameters: {
+    "maxmemory-samples": "5",
+    "maxmemory": "2gb"
+  }
 });
 ```

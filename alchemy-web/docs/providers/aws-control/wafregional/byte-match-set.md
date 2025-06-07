@@ -5,96 +5,17 @@ description: Learn how to create, update, and manage AWS WAFRegional ByteMatchSe
 
 # ByteMatchSet
 
-The ByteMatchSet resource lets you manage [AWS WAFRegional ByteMatchSets](https://docs.aws.amazon.com/wafregional/latest/userguide/) which are used to specify a sequence of bytes that you want AWS WAF to search for in web requests.
+The ByteMatchSet resource lets you manage [AWS WAFRegional ByteMatchSets](https://docs.aws.amazon.com/wafregional/latest/userguide/) for inspecting and matching byte sequences in web requests.
 
 ## Minimal Example
 
-Create a basic ByteMatchSet with a name and a single ByteMatchTuple.
+Create a basic ByteMatchSet with a simple byte match tuple.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicByteMatchSet = await AWS.WAFRegional.ByteMatchSet("basicByteMatchSet", {
-  Name: "BasicByteMatchSet",
-  ByteMatchTuples: [{
-    FieldToMatch: {
-      Type: "HEADER",
-      Data: "User-Agent"
-    },
-    TargetString: "BadBot",
-    PositionalConstraint: "CONTAINS",
-    TextTransformation: "NONE"
-  }]
-});
-```
-
-## Advanced Configuration
-
-Configure a ByteMatchSet with multiple ByteMatchTuples and various settings.
-
-```ts
-const advancedByteMatchSet = await AWS.WAFRegional.ByteMatchSet("advancedByteMatchSet", {
-  Name: "AdvancedByteMatchSet",
-  ByteMatchTuples: [
-    {
-      FieldToMatch: {
-        Type: "URI",
-        Data: "/login"
-      },
-      TargetString: "malicious",
-      PositionalConstraint: "EXACTLY",
-      TextTransformation: "NONE"
-    },
-    {
-      FieldToMatch: {
-        Type: "BODY",
-        Data: ""
-      },
-      TargetString: "attack",
-      PositionalConstraint: "CONTAINS",
-      TextTransformation: "URL_DECODE"
-    }
-  ]
-});
-```
-
-## Use Case: Protect Against SQL Injection
-
-Create a ByteMatchSet specifically designed to protect against SQL injection attacks.
-
-```ts
-const sqlInjectionByteMatchSet = await AWS.WAFRegional.ByteMatchSet("sqlInjectionByteMatchSet", {
-  Name: "SQLInjectionProtectionSet",
-  ByteMatchTuples: [
-    {
-      FieldToMatch: {
-        Type: "QUERY_STRING",
-        Data: ""
-      },
-      TargetString: "' OR '1'='1",
-      PositionalConstraint: "CONTAINS",
-      TextTransformation: "URL_DECODE"
-    },
-    {
-      FieldToMatch: {
-        Type: "BODY",
-        Data: ""
-      },
-      TargetString: "--",
-      PositionalConstraint: "CONTAINS",
-      TextTransformation: "NONE"
-    }
-  ]
-});
-```
-
-## Use Case: Block Specific User Agents
-
-Define a ByteMatchSet to block requests from specific user agents.
-
-```ts
-const userAgentBlockSet = await AWS.WAFRegional.ByteMatchSet("userAgentBlockSet", {
-  Name: "UserAgentBlockSet",
+const BasicByteMatchSet = await AWS.WAFRegional.ByteMatchSet("BasicByteMatchSet", {
+  Name: "MyByteMatchSet",
   ByteMatchTuples: [
     {
       FieldToMatch: {
@@ -102,17 +23,94 @@ const userAgentBlockSet = await AWS.WAFRegional.ByteMatchSet("userAgentBlockSet"
         Data: "User-Agent"
       },
       TargetString: "BadBot",
-      PositionalConstraint: "CONTAINS",
-      TextTransformation: "NONE"
+      TextTransformation: "NONE",
+      PositionalConstraint: "CONTAINS"
+    }
+  ]
+});
+```
+
+## Advanced Configuration
+
+Configure a ByteMatchSet with multiple match tuples and transformations.
+
+```ts
+const AdvancedByteMatchSet = await AWS.WAFRegional.ByteMatchSet("AdvancedByteMatchSet", {
+  Name: "AdvancedByteMatchSet",
+  ByteMatchTuples: [
+    {
+      FieldToMatch: {
+        Type: "BODY"
+      },
+      TargetString: "malicious_code",
+      TextTransformation: "URL_DECODE",
+      PositionalConstraint: "EXACTLY"
+    },
+    {
+      FieldToMatch: {
+        Type: "QUERY_STRING"
+      },
+      TargetString: "suspicious_parameter",
+      TextTransformation: "NONE",
+      PositionalConstraint: "STARTS_WITH"
+    }
+  ]
+});
+```
+
+## Use Case: Protecting Against SQL Injection
+
+Create a ByteMatchSet specifically designed to detect SQL injection attempts.
+
+```ts
+const SqlInjectionByteMatchSet = await AWS.WAFRegional.ByteMatchSet("SqlInjectionByteMatchSet", {
+  Name: "SQLInjectionProtection",
+  ByteMatchTuples: [
+    {
+      FieldToMatch: {
+        Type: "QUERY_STRING"
+      },
+      TargetString: "SELECT",
+      TextTransformation: "LOWERCASE",
+      PositionalConstraint: "CONTAINS"
+    },
+    {
+      FieldToMatch: {
+        Type: "BODY"
+      },
+      TargetString: "UNION",
+      TextTransformation: "LOWERCASE",
+      PositionalConstraint: "CONTAINS"
+    }
+  ]
+});
+```
+
+## Use Case: Blocking Specific User Agents
+
+Create a ByteMatchSet to block requests from certain user agents.
+
+```ts
+const UserAgentBlockByteMatchSet = await AWS.WAFRegional.ByteMatchSet("UserAgentBlockByteMatchSet", {
+  Name: "BlockBadUserAgents",
+  ByteMatchTuples: [
+    {
+      FieldToMatch: {
+        Type: "HEADER",
+        Data: "User-Agent"
+      },
+      TargetString: "BadBot",
+      TextTransformation: "NONE",
+      PositionalConstraint: "EXACTLY"
     },
     {
       FieldToMatch: {
         Type: "HEADER",
         Data: "User-Agent"
       },
-      TargetString: "Scraper",
-      PositionalConstraint: "CONTAINS",
-      TextTransformation: "NONE"
+      TargetString: "MaliciousCrawler",
+      TextTransformation: "NONE",
+      PositionalConstraint: "EXACTLY"
     }
   ]
 });

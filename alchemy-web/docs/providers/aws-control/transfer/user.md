@@ -5,92 +5,93 @@ description: Learn how to create, update, and manage AWS Transfer Users using Al
 
 # User
 
-The User resource lets you manage [AWS Transfer Users](https://docs.aws.amazon.com/transfer/latest/userguide/) for secure file transfers via SFTP, FTPS, and FTP. This resource allows you to configure user permissions, home directories, and other user-related properties.
+The User resource allows you to manage [AWS Transfer Users](https://docs.aws.amazon.com/transfer/latest/userguide/) for transferring files over SFTP, FTPS, and FTP protocols.
 
 ## Minimal Example
 
-Create a basic AWS Transfer User with required properties and a simple home directory setting.
+Create a basic AWS Transfer User with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const transferUser = await AWS.Transfer.User("basicTransferUser", {
+const TransferUser = await AWS.Transfer.User("basic-transfer-user", {
   Role: "arn:aws:iam::123456789012:role/MyTransferRole",
   ServerId: "s-12345678",
-  UserName: "transferUser01",
-  HomeDirectory: "/home/transferUser01"
+  UserName: "johndoe",
+  HomeDirectory: "/home/johndoe",
+  Tags: [{ Key: "Environment", Value: "development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AWS Transfer User with additional security settings like SSH public keys and IAM policy.
+Configure an AWS Transfer User with additional properties like policy and SSH public keys.
 
 ```ts
-const advancedTransferUser = await AWS.Transfer.User("advancedTransferUser", {
+const AdvancedTransferUser = await AWS.Transfer.User("advanced-transfer-user", {
   Role: "arn:aws:iam::123456789012:role/MyTransferRole",
   ServerId: "s-12345678",
-  UserName: "transferUser02",
-  HomeDirectory: "/home/transferUser02",
-  SshPublicKeys: [
-    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3...",
-    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCr..."
-  ],
+  UserName: "janedoe",
+  HomeDirectory: "/home/janedoe",
   Policy: JSON.stringify({
     Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: "transfer:List*",
-        Resource: "*"
-      },
-      {
-        Effect: "Allow",
-        Action: "s3:GetObject",
-        Resource: "arn:aws:s3:::my-bucket-name/*"
+    Statement: [{
+      Effect: "Allow",
+      Action: ["s3:ListBucket"],
+      Resource: ["arn:aws:s3:::my-bucket"],
+      Condition: {
+        StringEquals: {
+          "s3:prefix": ["home/janedoe/"]
+        }
       }
-    ]
-  })
+    }]
+  }),
+  SshPublicKeys: [
+    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3... user@hostname"
+  ],
+  Tags: [{ Key: "Environment", Value: "production" }, { Key: "Team", Value: "DevOps" }]
 });
 ```
 
-## Home Directory Mappings
+## Using Home Directory Mappings
 
-Demonstrate how to map a user’s home directory to specific S3 paths using home directory mappings.
+Demonstrate how to set up home directory mappings for the user.
 
 ```ts
-const mappedTransferUser = await AWS.Transfer.User("mappedTransferUser", {
+const MappedTransferUser = await AWS.Transfer.User("mapped-transfer-user", {
   Role: "arn:aws:iam::123456789012:role/MyTransferRole",
   ServerId: "s-12345678",
-  UserName: "transferUser03",
-  HomeDirectory: "/home/transferUser03",
+  UserName: "mikejohnson",
+  HomeDirectory: "/home/mikejohnson",
   HomeDirectoryMappings: [
     {
-      Entry: "/home/transferUser03",
-      Target: "arn:aws:s3:::my-bucket-name/user01"
+      Entry: "/",
+      Target: "/home/mikejohnson"
     },
     {
-      Entry: "/uploads",
-      Target: "arn:aws:s3:::my-bucket-name/user01/uploads"
+      Entry: "/documents",
+      Target: "/home/mikejohnson/documents"
     }
-  ]
+  ],
+  Tags: [{ Key: "Environment", Value: "staging" }]
 });
 ```
 
-## POSIX Profile Configuration
+## Adding POSIX Profile
 
-Create a user with a POSIX profile for managing UNIX-like permissions.
+Create a Transfer User with a POSIX profile to manage permissions.
 
 ```ts
-const posixUser = await AWS.Transfer.User("posixTransferUser", {
+const PosixTransferUser = await AWS.Transfer.User("posix-transfer-user", {
   Role: "arn:aws:iam::123456789012:role/MyTransferRole",
   ServerId: "s-12345678",
-  UserName: "transferUser04",
-  HomeDirectory: "/home/transferUser04",
+  UserName: "sarahconnor",
+  HomeDirectory: "/home/sarahconnor",
   PosixProfile: {
     Gid: 1001,
-    SecondaryGids: [1002, 1003],
-    Uid: 1000
-  }
+    Uid: 1001,
+    SecondaryGids: [1002, 1003]
+  },
+  Tags: [{ Key: "Environment", Value: "testing" }]
 });
 ```

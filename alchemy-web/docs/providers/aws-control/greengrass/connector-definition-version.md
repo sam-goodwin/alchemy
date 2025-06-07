@@ -5,87 +5,105 @@ description: Learn how to create, update, and manage AWS Greengrass ConnectorDef
 
 # ConnectorDefinitionVersion
 
-The ConnectorDefinitionVersion resource allows you to manage versions of connector definitions in AWS Greengrass, enabling you to define how your Greengrass connectors should behave and interact with your devices. For more details, visit the [AWS Greengrass ConnectorDefinitionVersions documentation](https://docs.aws.amazon.com/greengrass/latest/userguide/).
+The ConnectorDefinitionVersion resource allows you to manage [AWS Greengrass ConnectorDefinitionVersions](https://docs.aws.amazon.com/greengrass/latest/userguide/) which define a version of a Greengrass connector that can be deployed to devices.
 
 ## Minimal Example
 
-Create a basic Greengrass ConnectorDefinitionVersion with the required properties and a common optional property.
+Create a basic ConnectorDefinitionVersion with required properties and an optional adoption flag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const connectorDefinitionVersion = await AWS.Greengrass.ConnectorDefinitionVersion("myConnectorDefVersion", {
+const basicConnectorDefinitionVersion = await AWS.Greengrass.ConnectorDefinitionVersion("BasicConnectorDefVersion", {
   Connectors: [
     {
-      ConnectorArn: "arn:aws:greengrass:us-east-1:123456789012:connectors/myConnector",
-      Id: "myConnector"
+      ConnectorArn: "arn:aws:greengrass:us-west-2:123456789012:connectors/MyConnector",
+      Id: "MyConnector",
+      Parameters: {
+        Key1: "Value1",
+        Key2: "Value2"
+      }
     }
   ],
-  ConnectorDefinitionId: "myConnectorDefinitionId",
-  adopt: true // Adopt existing resource if it already exists
+  ConnectorDefinitionId: "MyConnectorDefinitionId",
+  adopt: true // Optional: Adopt existing resource
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ConnectorDefinitionVersion with multiple connectors and additional properties.
+Define multiple connectors with specific parameters for advanced use cases.
 
 ```ts
-const advancedConnectorDefinitionVersion = await AWS.Greengrass.ConnectorDefinitionVersion("advancedConnectorDefVersion", {
+const advancedConnectorDefinitionVersion = await AWS.Greengrass.ConnectorDefinitionVersion("AdvancedConnectorDefVersion", {
   Connectors: [
     {
-      ConnectorArn: "arn:aws:greengrass:us-east-1:123456789012:connectors/myFirstConnector",
-      Id: "myFirstConnector",
+      ConnectorArn: "arn:aws:greengrass:us-west-2:123456789012:connectors/MyFirstConnector",
+      Id: "MyFirstConnector",
       Parameters: {
-        key1: "value1",
-        key2: "value2"
+        ParameterA: "ValueA",
+        ParameterB: "ValueB"
       }
     },
     {
-      ConnectorArn: "arn:aws:greengrass:us-east-1:123456789012:connectors/mySecondConnector",
-      Id: "mySecondConnector",
+      ConnectorArn: "arn:aws:greengrass:us-west-2:123456789012:connectors/MySecondConnector",
+      Id: "MySecondConnector",
       Parameters: {
-        keyA: "valueA",
-        keyB: "valueB"
+        ParameterX: "ValueX",
+        ParameterY: "ValueY"
       }
     }
   ],
-  ConnectorDefinitionId: "myAdvancedConnectorDefinitionId"
+  ConnectorDefinitionId: "MyAdvancedConnectorDefinitionId",
+  adopt: false // Optional: Do not adopt existing resource
 });
 ```
 
-## Use Case: Updating a ConnectorDefinitionVersion
+## Use Case: Multiple Connectors for Data Processing
 
-Update an existing ConnectorDefinitionVersion by adding a new connector.
-
-```ts
-const updatedConnectorDefinitionVersion = await AWS.Greengrass.ConnectorDefinitionVersion("updatedConnectorDefVersion", {
-  Connectors: [
-    {
-      ConnectorArn: "arn:aws:greengrass:us-east-1:123456789012:connectors/myNewConnector",
-      Id: "myNewConnector"
-    }
-  ],
-  ConnectorDefinitionId: "myExistingConnectorDefinitionId"
-});
-```
-
-## Use Case: Reference Existing Connectors
-
-Create a ConnectorDefinitionVersion that references existing connectors in your AWS account.
+Create a connector definition version that uses multiple connectors for data ingestion and processing.
 
 ```ts
-const referencedConnectorDefinitionVersion = await AWS.Greengrass.ConnectorDefinitionVersion("referencedConnectorDefVersion", {
+const dataProcessingConnectorDefinitionVersion = await AWS.Greengrass.ConnectorDefinitionVersion("DataProcessingConnectorDefVersion", {
   Connectors: [
     {
-      ConnectorArn: "arn:aws:greengrass:us-east-1:123456789012:connectors/existingConnector1",
-      Id: "existingConnector1"
+      ConnectorArn: "arn:aws:greengrass:us-west-2:123456789012:connectors/IoTDataConnector",
+      Id: "IoTDataConnector",
+      Parameters: {
+        DataStream: "SensorData",
+        Frequency: "5s"
+      }
     },
     {
-      ConnectorArn: "arn:aws:greengrass:us-east-1:123456789012:connectors/existingConnector2",
-      Id: "existingConnector2"
+      ConnectorArn: "arn:aws:greengrass:us-west-2:123456789012:connectors/DataLoggerConnector",
+      Id: "DataLoggerConnector",
+      Parameters: {
+        LogLevel: "INFO",
+        FilePath: "/var/log/sensordata.log"
+      }
     }
   ],
-  ConnectorDefinitionId: "myReferencedConnectorDefinitionId"
+  ConnectorDefinitionId: "MyDataProcessingConnectorDefinitionId"
+});
+``` 
+
+## Use Case: Adoption of Existing Connector Definitions
+
+Create a ConnectorDefinitionVersion that adopts an existing connector definition.
+
+```ts
+const adoptExistingConnectorDefinitionVersion = await AWS.Greengrass.ConnectorDefinitionVersion("AdoptExistingConnectorDefVersion", {
+  Connectors: [
+    {
+      ConnectorArn: "arn:aws:greengrass:us-west-2:123456789012:connectors/ExistingConnector",
+      Id: "ExistingConnector",
+      Parameters: {
+        Setting1: "NewValue1",
+        Setting2: "NewValue2"
+      }
+    }
+  ],
+  ConnectorDefinitionId: "MyExistingConnectorDefinitionId",
+  adopt: true // Adopt existing resource
 });
 ```

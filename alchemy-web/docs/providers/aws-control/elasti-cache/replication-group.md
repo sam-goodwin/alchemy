@@ -5,78 +5,89 @@ description: Learn how to create, update, and manage AWS ElastiCache Replication
 
 # ReplicationGroup
 
-The ReplicationGroup resource allows you to manage [AWS ElastiCache ReplicationGroups](https://docs.aws.amazon.com/elasticache/latest/userguide/) for high availability and fault tolerance in your caching layers.
+The ReplicationGroup resource allows you to manage [AWS ElastiCache ReplicationGroups](https://docs.aws.amazon.com/elasticache/latest/userguide/) for enhanced data availability and fault tolerance across multiple cache nodes.
 
 ## Minimal Example
 
-Create a basic ReplicationGroup with required properties and a few common optional configurations.
+Create a basic ElastiCache ReplicationGroup with required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicReplicationGroup = await AWS.ElastiCache.ReplicationGroup("basicReplicationGroup", {
-  ReplicationGroupDescription: "Basic replication group for caching",
-  ReplicationGroupId: "basic-replication-group",
-  CacheNodeType: "cache.t2.micro",
-  Engine: "redis",
+const basicReplicationGroup = await AWS.ElastiCache.ReplicationGroup("BasicReplicationGroup", {
+  ReplicationGroupDescription: "My basic ElastiCache Replication Group",
+  ReplicationGroupId: "basic-replication-group-01",
   NumCacheClusters: 2,
-  AutomaticFailoverEnabled: true
+  CacheNodeType: "cache.t3.micro",
+  Engine: "redis",
+  AutomaticFailoverEnabled: true,
+  AtRestEncryptionEnabled: true,
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Project", Value: "Demo" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ReplicationGroup with advanced settings such as encryption and preferred maintenance windows.
+Configure a ReplicationGroup with advanced settings including multi-AZ support, data tiering, and specific maintenance windows.
 
 ```ts
-const advancedReplicationGroup = await AWS.ElastiCache.ReplicationGroup("advancedReplicationGroup", {
-  ReplicationGroupDescription: "Advanced replication group with encryption",
-  ReplicationGroupId: "advanced-replication-group",
+const advancedReplicationGroup = await AWS.ElastiCache.ReplicationGroup("AdvancedReplicationGroup", {
+  ReplicationGroupDescription: "My advanced ElastiCache Replication Group",
+  ReplicationGroupId: "advanced-replication-group-01",
+  NumNodeGroups: 2,
+  ReplicasPerNodeGroup: 2,
+  CacheNodeType: "cache.r5.large",
+  Engine: "redis",
+  MultiAZEnabled: true,
+  DataTieringEnabled: true,
+  PreferredMaintenanceWindow: "sun:23:00-mon:01:00",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Backend" }
+  ]
+});
+```
+
+## Security Features
+
+Setup a ReplicationGroup with enhanced security features including transit encryption and IAM authentication.
+
+```ts
+const secureReplicationGroup = await AWS.ElastiCache.ReplicationGroup("SecureReplicationGroup", {
+  ReplicationGroupDescription: "My secure ElastiCache Replication Group",
+  ReplicationGroupId: "secure-replication-group-01",
+  NumCacheClusters: 3,
   CacheNodeType: "cache.m5.large",
   Engine: "redis",
-  NumCacheClusters: 3,
-  AtRestEncryptionEnabled: true,
   TransitEncryptionEnabled: true,
-  PreferredMaintenanceWindow: "sun:05:00-sun:06:00",
-  SnapshotRetentionLimit: 7,
-  SnapshotWindow: "05:00-06:00"
+  AuthToken: "mySecureAuthToken123",
+  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-key-id",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Compliance", Value: "GDPR" }
+  ]
 });
 ```
 
-## Multi-AZ Configuration
+## Snapshot Management
 
-Create a ReplicationGroup designed for Multi-AZ deployment for better availability.
+Create a ReplicationGroup with snapshot settings to manage backups effectively.
 
 ```ts
-const multiAZReplicationGroup = await AWS.ElastiCache.ReplicationGroup("multiAZReplicationGroup", {
-  ReplicationGroupDescription: "Multi-AZ replication group",
-  ReplicationGroupId: "multi-az-replication-group",
-  CacheNodeType: "cache.r5.large",
-  Engine: "memcached",
+const snapshotReplicationGroup = await AWS.ElastiCache.ReplicationGroup("SnapshotReplicationGroup", {
+  ReplicationGroupDescription: "My snapshot capable ElastiCache Replication Group",
+  ReplicationGroupId: "snapshot-replication-group-01",
   NumCacheClusters: 2,
-  MultiAZEnabled: true,
-  PreferredCacheClusterAZs: ["us-east-1a", "us-east-1b"]
+  CacheNodeType: "cache.t3.medium",
+  Engine: "redis",
+  SnapshotRetentionLimit: 5,
+  SnapshotWindow: "05:00-06:00",
+  Tags: [
+    { Key: "Environment", Value: "Testing" },
+    { Key: "Backup", Value: "Enabled" }
+  ]
 });
 ```
-
-## Using Node Group Configuration
-
-Define a ReplicationGroup with specific node group configurations to control the number of replicas per node group.
-
-```ts
-const customNodeGroupReplicationGroup = await AWS.ElastiCache.ReplicationGroup("customNodeGroupReplicationGroup", {
-  ReplicationGroupDescription: "Replication group with custom node group config",
-  ReplicationGroupId: "custom-node-group-replication-group",
-  CacheNodeType: "cache.r5.large",
-  Engine: "redis",
-  NodeGroupConfiguration: [{
-    NodeGroupId: "0001",
-    ReplicasPerNodeGroup: 2,
-    PrimaryAvailabilityZone: "us-west-2a",
-    ReplicaAvailabilityZones: ["us-west-2b", "us-west-2c"]
-  }],
-  AutomaticFailoverEnabled: true
-});
-``` 
-
-These examples illustrate how to effectively manage AWS ElastiCache ReplicationGroups using Alchemy, enabling you to create scalable and resilient caching solutions.

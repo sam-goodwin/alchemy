@@ -5,79 +5,91 @@ description: Learn how to create, update, and manage AWS RDS DBClusters using Al
 
 # DBCluster
 
-The DBCluster resource allows you to manage [AWS RDS DBClusters](https://docs.aws.amazon.com/rds/latest/userguide/) and their associated configurations. This resource facilitates the creation and management of highly available and scalable database clusters.
+The DBCluster resource lets you manage [AWS RDS DBClusters](https://docs.aws.amazon.com/rds/latest/userguide/) for relational database services, enabling high availability and scalability.
 
 ## Minimal Example
 
-Create a basic DBCluster with essential properties and common optional configurations.
+Create a basic DBCluster with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbCluster = await AWS.RDS.DBCluster("myDbCluster", {
+const myDBCluster = await AWS.RDS.DBCluster("MyDBCluster", {
+  DBClusterIdentifier: "my-db-cluster",
   Engine: "aurora",
-  DBClusterIdentifier: "my-cluster-id",
-  MasterUsername: "adminUser",
-  MasterUserPassword: "securePassword123",
+  MasterUsername: "admin",
+  MasterUserPassword: "SuperSecret123!",
+  DBSubnetGroupName: "my-db-subnet-group",
   VpcSecurityGroupIds: ["sg-12345678"],
-  DBSubnetGroupName: "my-subnet-group",
-  Tags: [{ Key: "Environment", Value: "Production" }]
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DBCluster with advanced options such as performance insights and backup settings.
+Configure a DBCluster with advanced settings, including encryption and performance insights.
 
 ```ts
-const advancedDbCluster = await AWS.RDS.DBCluster("advancedDbCluster", {
+const advancedDBCluster = await AWS.RDS.DBCluster("AdvancedDBCluster", {
+  DBClusterIdentifier: "advanced-db-cluster",
   Engine: "aurora",
-  DBClusterIdentifier: "my-advanced-cluster",
-  MasterUsername: "adminUser",
-  MasterUserPassword: "securePassword123",
-  VpcSecurityGroupIds: ["sg-87654321"],
-  DBSubnetGroupName: "my-subnet-group",
+  MasterUsername: "admin",
+  MasterUserPassword: "SuperSecret123!",
+  DBSubnetGroupName: "my-db-subnet-group",
+  VpcSecurityGroupIds: ["sg-12345678"],
+  StorageEncrypted: true,
+  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrstuv",
   PerformanceInsightsEnabled: true,
-  PerformanceInsightsRetentionPeriod: 7,
-  BackupRetentionPeriod: 30,
-  EnableIAMDatabaseAuthentication: true,
-  Tags: [{ Key: "Environment", Value: "Staging" }]
+  PerformanceInsightsKmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrstuv",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
-## Read Replica Configuration
+## Multi-AZ Configuration
 
-Create a DBCluster configured as a read replica of an existing cluster.
+Create a DBCluster that is configured for multi-AZ deployments for improved availability.
 
 ```ts
-const readReplicaDbCluster = await AWS.RDS.DBCluster("readReplicaDbCluster", {
+const multiAZDBCluster = await AWS.RDS.DBCluster("MultiAZDBCluster", {
+  DBClusterIdentifier: "multi-az-db-cluster",
   Engine: "aurora",
-  DBClusterIdentifier: "my-read-replica-cluster",
-  MasterUsername: "adminUser",
-  MasterUserPassword: "securePassword123",
-  SourceDBClusterIdentifier: "my-cluster-id",
+  MasterUsername: "admin",
+  MasterUserPassword: "SuperSecret123!",
+  DBSubnetGroupName: "my-db-subnet-group",
   VpcSecurityGroupIds: ["sg-12345678"],
-  DBSubnetGroupName: "my-subnet-group",
-  Tags: [{ Key: "Environment", Value: "Development" }]
+  AvailabilityZones: ["us-east-1a", "us-east-1b"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
+  ]
 });
 ```
 
 ## Serverless Configuration
 
-Set up a serverless DBCluster with scaling configurations.
+Set up a serverless DBCluster with automatic scaling capabilities.
 
 ```ts
-const serverlessDbCluster = await AWS.RDS.DBCluster("serverlessDbCluster", {
+const serverlessDBCluster = await AWS.RDS.DBCluster("ServerlessDBCluster", {
+  DBClusterIdentifier: "serverless-db-cluster",
   Engine: "aurora",
-  DBClusterIdentifier: "my-serverless-cluster",
-  MasterUsername: "adminUser",
-  MasterUserPassword: "securePassword123",
+  MasterUsername: "admin",
+  MasterUserPassword: "SuperSecret123!",
+  DBSubnetGroupName: "my-db-subnet-group",
   VpcSecurityGroupIds: ["sg-12345678"],
-  DBSubnetGroupName: "my-subnet-group",
   ServerlessV2ScalingConfiguration: {
-    MinCapacity: "ACU_4",
-    MaxCapacity: "ACU_16"
+    MinCapacity: 2,
+    MaxCapacity: 8
   },
-  Tags: [{ Key: "Environment", Value: "Testing" }]
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Development" }
+  ]
 });
 ```

@@ -5,77 +5,64 @@ description: Learn how to create, update, and manage AWS Synthetics Groups using
 
 # Group
 
-The Group resource lets you manage [AWS Synthetics Groups](https://docs.aws.amazon.com/synthetics/latest/userguide/) for organizing and monitoring your canaries effectively.
+The Group resource allows you to manage [AWS Synthetics Groups](https://docs.aws.amazon.com/synthetics/latest/userguide/) that aggregates multiple canaries for better organization and management.
 
 ## Minimal Example
 
-This example demonstrates how to create a basic Synthetics Group with essential properties.
+Create a basic Synthetics Group with a name and a tag:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const syntheticsGroup = await AWS.Synthetics.Group("basicSyntheticsGroup", {
-  name: "MySyntheticsGroup",
-  resourceArns: [
-    "arn:aws:synthetics:us-east-1:123456789012:canary:MyCanary"
-  ],
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Project", value: "WebsiteMonitoring" }
+const SyntheticsGroup = await AWS.Synthetics.Group("MySyntheticsGroup", {
+  Name: "MySyntheticsGroup",
+  Tags: [
+    { Key: "Environment", Value: "Production" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we add more advanced configurations, such as adopting an existing resource if it already exists.
+Configure a Synthetics Group with resource ARNs and multiple tags:
 
 ```ts
-const advancedSyntheticsGroup = await AWS.Synthetics.Group("advancedSyntheticsGroup", {
-  name: "AdvancedSyntheticsGroup",
-  resourceArns: [
-    "arn:aws:synthetics:us-west-2:123456789012:canary:AnotherCanary"
+const AdvancedSyntheticsGroup = await AWS.Synthetics.Group("AdvancedSyntheticsGroup", {
+  Name: "AdvancedSyntheticsGroup",
+  ResourceArns: ["arn:aws:synthetics:us-east-1:123456789012:canary:MyCanary"],
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "QA" }
   ],
-  adopt: true,
-  tags: [
-    { key: "Environment", value: "Staging" },
-    { key: "Team", value: "DevOps" }
+  adopt: true // Set to true to adopt existing resources if they already exist
+});
+```
+
+## Using Resource ARNs
+
+Demonstrate how to create a Synthetics Group by specifying multiple resource ARNs:
+
+```ts
+const ResourceArnsGroup = await AWS.Synthetics.Group("ResourceArnsGroup", {
+  Name: "ResourceArnsGroup",
+  ResourceArns: [
+    "arn:aws:synthetics:us-east-1:123456789012:canary:CanaryA",
+    "arn:aws:synthetics:us-east-1:123456789012:canary:CanaryB"
   ]
 });
 ```
 
-## Adding More Resources
+## Tagging for Organization
 
-This example illustrates how to manage multiple canaries under a single Synthetics Group.
-
-```ts
-const multiResourceGroup = await AWS.Synthetics.Group("multiResourceSyntheticsGroup", {
-  name: "MultiResourceGroup",
-  resourceArns: [
-    "arn:aws:synthetics:us-east-1:123456789012:canary:CanaryOne",
-    "arn:aws:synthetics:us-east-1:123456789012:canary:CanaryTwo"
-  ],
-  tags: [
-    { key: "Environment", value: "Testing" },
-    { key: "Owner", value: "QA" }
-  ]
-});
-```
-
-## Using Tags for Organization
-
-This example shows how to use tags effectively to organize resources within the Synthetics Group.
+Create a Synthetics Group with multiple tags for better organization:
 
 ```ts
-const taggedSyntheticsGroup = await AWS.Synthetics.Group("taggedSyntheticsGroup", {
-  name: "TaggedSyntheticsGroup",
-  resourceArns: [
-    "arn:aws:synthetics:us-east-1:123456789012:canary:CanaryWithTags"
-  ],
-  tags: [
-    { key: "Department", value: "Monitoring" },
-    { key: "Project", value: "CriticalApp" },
-    { key: "Owner", value: "SRE" }
+const TaggedSyntheticsGroup = await AWS.Synthetics.Group("TaggedSyntheticsGroup", {
+  Name: "TaggedSyntheticsGroup",
+  Tags: [
+    { Key: "Project", Value: "WebsiteMonitoring" },
+    { Key: "Owner", Value: "DevOpsTeam" },
+    { Key: "CostCenter", Value: "IT" }
   ]
 });
 ```

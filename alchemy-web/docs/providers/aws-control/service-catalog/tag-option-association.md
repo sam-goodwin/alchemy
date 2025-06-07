@@ -5,58 +5,47 @@ description: Learn how to create, update, and manage AWS ServiceCatalog TagOptio
 
 # TagOptionAssociation
 
-The TagOptionAssociation resource lets you manage [AWS ServiceCatalog TagOption Associations](https://docs.aws.amazon.com/servicecatalog/latest/userguide/) which are used to associate TagOptions with resources in AWS Service Catalog.
+The TagOptionAssociation resource lets you associate tag options with AWS Service Catalog resources, enabling better organization and management of resources. For more details, refer to the [AWS ServiceCatalog TagOptionAssociations documentation](https://docs.aws.amazon.com/servicecatalog/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic TagOptionAssociation with required properties.
+This example demonstrates how to create a basic TagOptionAssociation with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const tagOptionAssociation = await AWS.ServiceCatalog.TagOptionAssociation("basicTagOptionAssociation", {
-  TagOptionId: "tag-option-1234",
-  ResourceId: "portfolio-5678",
-  adopt: false // Default is false: Fail if the resource already exists
+const BasicTagOptionAssociation = await AWS.ServiceCatalog.TagOptionAssociation("BasicTagOptionAssociation", {
+  TagOptionId: "tag-option-id-12345",
+  ResourceId: "prod-portfolio-67890"
 });
 ```
 
 ## Advanced Configuration
 
-This example demonstrates how to create a TagOptionAssociation and adopt an existing resource if it already exists.
+In this example, we add an optional `adopt` property to adopt an existing resource if it already exists.
 
 ```ts
-const advancedTagOptionAssociation = await AWS.ServiceCatalog.TagOptionAssociation("advancedTagOptionAssociation", {
-  TagOptionId: "tag-option-4321",
-  ResourceId: "product-8765",
-  adopt: true // Adopt existing resource instead of failing
+const AdvancedTagOptionAssociation = await AWS.ServiceCatalog.TagOptionAssociation("AdvancedTagOptionAssociation", {
+  TagOptionId: "tag-option-id-67890",
+  ResourceId: "dev-portfolio-12345",
+  adopt: true
 });
 ```
 
-## Use Case: Associating Multiple TagOptions
+## Multiple Tag Options
 
-You can manage multiple TagOption associations by creating separate instances. 
-
-```ts
-const firstTagOptionAssociation = await AWS.ServiceCatalog.TagOptionAssociation("firstTagOptionAssociation", {
-  TagOptionId: "tag-option-1111",
-  ResourceId: "portfolio-2222"
-});
-
-const secondTagOptionAssociation = await AWS.ServiceCatalog.TagOptionAssociation("secondTagOptionAssociation", {
-  TagOptionId: "tag-option-3333",
-  ResourceId: "portfolio-2222"
-});
-```
-
-## Use Case: Updating an Existing Association
-
-While the TagOptionAssociation resource does not directly support updates, you can manage them by re-creating the association if needed.
+Here’s how to associate multiple tag options with a resource for better categorization.
 
 ```ts
-const updateTagOptionAssociation = await AWS.ServiceCatalog.TagOptionAssociation("updateTagOptionAssociation", {
-  TagOptionId: "tag-option-2222",
-  ResourceId: "portfolio-3333",
-  adopt: true // Adopt existing resource
+const MultiTagOptionAssociation = await AWS.ServiceCatalog.TagOptionAssociation("MultiTagOptionAssociation", {
+  TagOptionId: "tag-option-id-11111",
+  ResourceId: "test-portfolio-22222",
+  adopt: true
+});
+
+// Additional tag options can be associated similarly
+const AdditionalTagOptionAssociation = await AWS.ServiceCatalog.TagOptionAssociation("AdditionalTagOptionAssociation", {
+  TagOptionId: "tag-option-id-22222",
+  ResourceId: "test-portfolio-22222"
 });
 ```

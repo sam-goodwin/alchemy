@@ -5,85 +5,72 @@ description: Learn how to create, update, and manage AWS CodeStarNotifications N
 
 # NotificationRule
 
-The NotificationRule resource lets you manage [AWS CodeStarNotifications NotificationRules](https://docs.aws.amazon.com/codestarnotifications/latest/userguide/) for monitoring events and sending notifications based on specific triggers.
+The NotificationRule resource lets you manage [AWS CodeStarNotifications NotificationRules](https://docs.aws.amazon.com/codestarnotifications/latest/userguide/) for receiving notifications based on events occurring in your AWS services.
 
 ## Minimal Example
 
-Create a basic notification rule with required properties and one optional property.
+Create a basic NotificationRule with required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicNotificationRule = await AWS.CodeStarNotifications.NotificationRule("basicNotificationRule", {
-  EventTypeIds: ["codecommit:ReferenceCreated"],
-  DetailType: "full",
-  Resource: "arn:aws:codestar:us-east-1:123456789012:project/my-project",
+const basicNotificationRule = await AWS.CodeStarNotifications.NotificationRule("BasicNotificationRule", {
+  Name: "MyNotificationRule",
+  EventTypeIds: ["codecommit:ReferenceCreated", "codecommit:ReferenceUpdated"],
+  DetailType: "FULL",
+  Resource: "arn:aws:codecommit:us-west-2:123456789012:MyDemoRepo",
   Targets: [{
-    TargetAddress: "example@example.com",
-    TargetType: "SNS"
+    TargetType: "SNS",
+    TargetAddress: "arn:aws:sns:us-west-2:123456789012:MySNSTopic"
   }],
-  Name: "BasicNotificationRule"
+  Status: "ACTIVE",
+  Tags: [{ Key: "Environment", Value: "Development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a notification rule with additional options such as tags and custom status.
+Configure a NotificationRule with additional properties such as a custom status and multiple targets.
 
 ```ts
-const advancedNotificationRule = await AWS.CodeStarNotifications.NotificationRule("advancedNotificationRule", {
-  EventTypeIds: ["codecommit:ReferenceCreated", "codebuild:BuildStateChanged"],
-  DetailType: "full",
-  Resource: "arn:aws:codestar:us-east-1:123456789012:project/my-advanced-project",
-  Targets: [{
-    TargetAddress: "arn:aws:sns:us-east-1:123456789012:my-sns-topic",
-    TargetType: "SNS"
-  }],
-  Tags: {
-    Environment: "Production",
-    Project: "MyAdvancedProject"
-  },
-  Status: "ACTIVE",
-  Name: "AdvancedNotificationRule"
-});
-```
-
-## Custom Notification Target
-
-Set up a notification rule targeting a Slack channel using a webhook.
-
-```ts
-const slackNotificationRule = await AWS.CodeStarNotifications.NotificationRule("slackNotificationRule", {
-  EventTypeIds: ["codecommit:ReferenceCreated"],
-  DetailType: "full",
-  Resource: "arn:aws:codestar:us-east-1:123456789012:project/my-slack-project",
-  Targets: [{
-    TargetAddress: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
-    TargetType: "Webhook"
-  }],
-  Name: "SlackNotificationRule"
-});
-```
-
-## Notification Rule with Multiple Targets
-
-Create a notification rule that sends alerts to both an SNS topic and an email address.
-
-```ts
-const multiTargetNotificationRule = await AWS.CodeStarNotifications.NotificationRule("multiTargetNotificationRule", {
-  EventTypeIds: ["codedeploy:DeploymentSuccess"],
-  DetailType: "full",
-  Resource: "arn:aws:codestar:us-east-1:123456789012:project/my-multi-target-project",
+const advancedNotificationRule = await AWS.CodeStarNotifications.NotificationRule("AdvancedNotificationRule", {
+  Name: "AdvancedNotificationRule",
+  EventTypeIds: ["codecommit:PullRequestCreated", "codecommit:PullRequestUpdated"],
+  DetailType: "BASIC",
+  Resource: "arn:aws:codecommit:us-west-2:123456789012:MyAdvancedRepo",
   Targets: [
     {
-      TargetAddress: "arn:aws:sns:us-east-1:123456789012:my-sns-topic",
-      TargetType: "SNS"
+      TargetType: "SNS",
+      TargetAddress: "arn:aws:sns:us-west-2:123456789012:MyAdvancedSNSTopic"
     },
     {
-      TargetAddress: "example@example.com",
-      TargetType: "Email"
+      TargetType: "Chatbot",
+      TargetAddress: "Slack:MySlackChannel"
     }
   ],
-  Name: "MultiTargetNotificationRule"
+  Status: "ACTIVE",
+  Tags: [{ Key: "Environment", Value: "Production" }, { Key: "Team", Value: "DevOps" }]
+});
+```
+
+## Example with Custom Status and Multiple Tags
+
+Create a NotificationRule that uses a custom status and multiple tags for better resource management.
+
+```ts
+const customStatusNotificationRule = await AWS.CodeStarNotifications.NotificationRule("CustomStatusNotificationRule", {
+  Name: "CustomStatusNotificationRule",
+  EventTypeIds: ["codecommit:CommitCreated"],
+  DetailType: "FULL",
+  Resource: "arn:aws:codecommit:us-west-2:123456789012:MyCustomRepo",
+  Targets: [{
+    TargetType: "Lambda",
+    TargetAddress: "arn:aws:lambda:us-west-2:123456789012:function:MyLambdaFunction"
+  }],
+  Status: "DISABLED",
+  Tags: [
+    { Key: "Environment", Value: "Testing" },
+    { Key: "Owner", Value: "TeamA" }
+  ]
 });
 ```

@@ -5,65 +5,67 @@ description: Learn how to create, update, and manage AWS NetworkManager TransitG
 
 # TransitGatewayPeering
 
-The TransitGatewayPeering resource allows you to manage [AWS NetworkManager TransitGatewayPeerings](https://docs.aws.amazon.com/networkmanager/latest/userguide/) for connecting transit gateways across different AWS accounts and regions.
+The TransitGatewayPeering resource lets you manage [AWS NetworkManager TransitGatewayPeerings](https://docs.aws.amazon.com/networkmanager/latest/userguide/) for connecting multiple transit gateways across different regions or accounts.
 
 ## Minimal Example
 
-Create a basic Transit Gateway Peering with required properties and one optional tag:
+Create a basic transit gateway peering connection with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const transitGatewayPeering = await AWS.NetworkManager.TransitGatewayPeering("myTransitGatewayPeering", {
+const TransitGatewayPeering = await AWS.NetworkManager.TransitGatewayPeering("MyTransitGatewayPeering", {
   CoreNetworkId: "core-network-12345678",
-  TransitGatewayArn: "arn:aws:ec2:us-west-2:123456789012:transit-gateway/tgw-0abc1234567890def",
+  TransitGatewayArn: "arn:aws:ec2:us-west-2:123456789012:transit-gateway/tgw-12345678",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Development"
-    }
+    { Key: "Environment", Value: "production" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Transit Gateway Peering with additional properties, including an adopt flag to handle existing resources:
+Configure a transit gateway peering with additional tags and the adoption property.
 
 ```ts
-const advancedTransitGatewayPeering = await AWS.NetworkManager.TransitGatewayPeering("advancedTransitGatewayPeering", {
+const AdvancedTransitGatewayPeering = await AWS.NetworkManager.TransitGatewayPeering("AdvancedTransitGatewayPeering", {
   CoreNetworkId: "core-network-87654321",
-  TransitGatewayArn: "arn:aws:ec2:us-east-1:123456789012:transit-gateway/tgw-0fedcba9876543210",
+  TransitGatewayArn: "arn:aws:ec2:us-east-1:123456789012:transit-gateway/tgw-87654321",
   Tags: [
-    {
-      Key: "Project",
-      Value: "Migration"
-    }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Networking" }
   ],
-  adopt: true // Adopt existing resource if it exists
+  adopt: true
 });
 ```
 
-## Handling Multiple Peerings
+## Use Case: Cross-Region Peering
 
-Create multiple peering connections to manage different transit gateways simultaneously:
+Establish a peering connection between transit gateways located in different AWS regions.
 
 ```ts
-const peeringConnection1 = await AWS.NetworkManager.TransitGatewayPeering("peeringConnection1", {
+const CrossRegionTransitGatewayPeering = await AWS.NetworkManager.TransitGatewayPeering("CrossRegionPeering", {
   CoreNetworkId: "core-network-11223344",
-  TransitGatewayArn: "arn:aws:ec2:us-west-1:123456789012:transit-gateway/tgw-0abcdef1234567890"
-});
-
-const peeringConnection2 = await AWS.NetworkManager.TransitGatewayPeering("peeringConnection2", {
-  CoreNetworkId: "core-network-22334455",
-  TransitGatewayArn: "arn:aws:ec2:us-west-1:123456789012:transit-gateway/tgw-0fedcba9876543210",
+  TransitGatewayArn: "arn:aws:ec2:us-west-1:123456789012:transit-gateway/tgw-11223344",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
-  ]
+    { Key: "Project", Value: "GlobalExpansion" }
+  ],
+  adopt: false
 });
 ```
 
-These examples demonstrate how to create and manage AWS NetworkManager TransitGatewayPeerings effectively using the Alchemy framework.
+## Use Case: Multi-Account Peering
+
+Set up a peering connection for transit gateways across multiple AWS accounts.
+
+```ts
+const MultiAccountTransitGatewayPeering = await AWS.NetworkManager.TransitGatewayPeering("MultiAccountPeering", {
+  CoreNetworkId: "core-network-99887766",
+  TransitGatewayArn: "arn:aws:ec2:us-east-2:123456789012:transit-gateway/tgw-99887766",
+  Tags: [
+    { Key: "Department", Value: "Engineering" },
+    { Key: "CostCenter", Value: "12345" }
+  ],
+  adopt: true
+});
+```

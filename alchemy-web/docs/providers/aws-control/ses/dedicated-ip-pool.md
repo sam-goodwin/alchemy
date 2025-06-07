@@ -5,16 +5,16 @@ description: Learn how to create, update, and manage AWS SES DedicatedIpPools us
 
 # DedicatedIpPool
 
-The DedicatedIpPool resource allows you to manage dedicated IP pools for Amazon Simple Email Service (SES), enabling better deliverability and control over your sending reputation. For more information, see the [AWS SES DedicatedIpPools documentation](https://docs.aws.amazon.com/ses/latest/userguide/).
+The DedicatedIpPool resource lets you manage [AWS SES Dedicated IP Pools](https://docs.aws.amazon.com/ses/latest/userguide/) for sending emails with dedicated IP addresses, providing better control over your email sending reputation.
 
 ## Minimal Example
 
-Create a basic dedicated IP pool with a specified name:
+Create a basic dedicated IP pool with a specified name.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dedicatedIpPool = await AWS.SES.DedicatedIpPool("myIpPool", {
+const BasicDedicatedIpPool = await AWS.SES.DedicatedIpPool("BasicDedicatedIpPool", {
   PoolName: "MyDedicatedIpPool",
   ScalingMode: "MANAGED"
 });
@@ -22,38 +22,30 @@ const dedicatedIpPool = await AWS.SES.DedicatedIpPool("myIpPool", {
 
 ## Advanced Configuration
 
-Configure a dedicated IP pool with additional options, including the ability to adopt an existing resource:
+Configure a dedicated IP pool with additional settings, including adopting an existing resource.
 
 ```ts
-const advancedIpPool = await AWS.SES.DedicatedIpPool("advancedIpPool", {
-  PoolName: "AdvancedDedicatedIpPool",
+import AWS from "alchemy/aws/control";
+
+const AdvancedDedicatedIpPool = await AWS.SES.DedicatedIpPool("AdvancedDedicatedIpPool", {
+  PoolName: "MyAdvancedDedicatedIpPool",
   ScalingMode: "MANAGED",
   adopt: true
 });
 ```
 
-## Adoption of Existing Pool
+## Resource Management
 
-This example demonstrates how to adopt an existing dedicated IP pool without failing if it already exists:
+Manage an existing dedicated IP pool by specifying the pool name and adopting its configuration.
 
 ```ts
-const adoptExistingIpPool = await AWS.SES.DedicatedIpPool("existingIpPool", {
-  PoolName: "ExistingDedicatedIpPool",
+import AWS from "alchemy/aws/control";
+
+const ManageExistingDedicatedIpPool = await AWS.SES.DedicatedIpPool("ManageExistingDedicatedIpPool", {
+  PoolName: "ExistingPool",
+  ScalingMode: "MANAGED",
   adopt: true
 });
 ```
 
-## Status and Metadata Retrieval
-
-After creating a dedicated IP pool, you can access its metadata, such as ARN and creation time:
-
-```ts
-const ipPoolMetadata = await AWS.SES.DedicatedIpPool("metadataIpPool", {
-  PoolName: "MetadataDedicatedIpPool"
-});
-
-// Accessing metadata
-console.log("Pool ARN:", ipPoolMetadata.Arn);
-console.log("Creation Time:", ipPoolMetadata.CreationTime);
-console.log("Last Updated:", ipPoolMetadata.LastUpdateTime);
-```
+This example demonstrates the management of a dedicated IP pool that may already exist, allowing you to incorporate it into your infrastructure seamlessly.

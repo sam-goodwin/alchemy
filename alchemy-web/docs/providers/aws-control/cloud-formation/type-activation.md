@@ -5,67 +5,61 @@ description: Learn how to create, update, and manage AWS CloudFormation TypeActi
 
 # TypeActivation
 
-The TypeActivation resource allows you to register a CloudFormation type for use in your stacks. This includes custom resource types that are defined by your organization or other AWS resources. For more information, refer to the [AWS CloudFormation TypeActivations](https://docs.aws.amazon.com/cloudformation/latest/userguide/).
+The TypeActivation resource lets you manage [AWS CloudFormation TypeActivations](https://docs.aws.amazon.com/cloudformation/latest/userguide/) to enable the use of custom resource types in your CloudFormation stacks.
 
 ## Minimal Example
 
-Create a basic TypeActivation with the required properties and one optional property.
+Create a basic TypeActivation with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const typeActivation = await AWS.CloudFormation.TypeActivation("MyTypeActivation", {
-  TypeName: "MyCustom::Resource",
-  ExecutionRoleArn: "arn:aws:iam::123456789012:role/MyExecutionRole",
+const BasicTypeActivation = await AWS.CloudFormation.TypeActivation("BasicTypeActivation", {
+  TypeName: "MyCustomResource",
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/MyCustomRole",
   MajorVersion: "1.0"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TypeActivation with additional features like logging and auto-update.
+Configure a TypeActivation with additional settings such as logging and auto-update features.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const advancedTypeActivation = await AWS.CloudFormation.TypeActivation("AdvancedTypeActivation", {
-  TypeName: "MyAdvanced::Resource",
-  ExecutionRoleArn: "arn:aws:iam::123456789012:role/MyExecutionRole",
-  MajorVersion: "1.0",
+const AdvancedTypeActivation = await AWS.CloudFormation.TypeActivation("AdvancedTypeActivation", {
+  TypeName: "MyAdvancedCustomResource",
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/MyAdvancedCustomRole",
+  MajorVersion: "1.1",
   AutoUpdate: true,
   LoggingConfig: {
-    LogGroupArn: "arn:aws:logs:us-east-1:123456789012:log-group:MyLogGroup",
+    LogGroupName: "MyCustomResourceLogs",
     LogRoleArn: "arn:aws:iam::123456789012:role/MyLoggingRole"
   }
 });
 ```
 
-## Adoption of Existing Resources
+## Adoption of Existing Resource
 
-Adopt an existing resource if the TypeActivation already exists.
+Adopt an existing TypeActivation instead of failing if it already exists.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const adoptExistingTypeActivation = await AWS.CloudFormation.TypeActivation("AdoptExistingTypeActivation", {
-  TypeName: "MyCustom::Resource",
-  ExecutionRoleArn: "arn:aws:iam::123456789012:role/MyExecutionRole",
+const AdoptExistingTypeActivation = await AWS.CloudFormation.TypeActivation("AdoptExistingTypeActivation", {
+  TypeName: "MyExistingResource",
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/MyExistingRole",
   MajorVersion: "1.0",
   adopt: true
 });
 ```
 
-## Custom Type with Alias
+## Type Name Alias
 
-Register a TypeActivation with a custom alias for easier reference in your stacks.
+Create a TypeActivation that includes a type name alias for better management.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const aliasTypeActivation = await AWS.CloudFormation.TypeActivation("AliasTypeActivation", {
-  TypeName: "MyCustom::Resource",
-  ExecutionRoleArn: "arn:aws:iam::123456789012:role/MyExecutionRole",
-  MajorVersion: "1.0",
-  TypeNameAlias: "MyResourceAlias"
+const AliasTypeActivation = await AWS.CloudFormation.TypeActivation("AliasTypeActivation", {
+  TypeName: "MyAliasResource",
+  TypeNameAlias: "MyAliasForResource",
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/MyAliasRole",
+  MajorVersion: "1.2"
 });
 ```

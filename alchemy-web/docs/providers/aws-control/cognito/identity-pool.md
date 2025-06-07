@@ -5,71 +5,65 @@ description: Learn how to create, update, and manage AWS Cognito IdentityPools u
 
 # IdentityPool
 
-The IdentityPool resource allows you to manage [AWS Cognito IdentityPools](https://docs.aws.amazon.com/cognito/latest/userguide/) for user authentication and access management in your applications.
+The IdentityPool resource allows you to manage [AWS Cognito IdentityPools](https://docs.aws.amazon.com/cognito/latest/userguide/) which provide temporary AWS credentials to users authenticated by social identity providers or your own identity system.
 
 ## Minimal Example
 
-Create a basic IdentityPool with the required properties and a common optional property.
+Create a basic IdentityPool with minimal required properties and one common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const identityPool = await AWS.Cognito.IdentityPool("myIdentityPool", {
-  IdentityPoolName: "MyAppIdentityPool",
+const BasicIdentityPool = await AWS.Cognito.IdentityPool("BasicIdentityPool", {
   AllowUnauthenticatedIdentities: true,
-  DeveloperProviderName: "my-developer-provider"
+  IdentityPoolName: "MyIdentityPool",
+  SupportedLoginProviders: {
+    "graph.facebook.com": "my-facebook-app-id"
+  }
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IdentityPool with additional options such as supported login providers and Cognito events.
+Configure an IdentityPool with advanced features such as Cognito Events and Push Sync.
 
 ```ts
-const advancedIdentityPool = await AWS.Cognito.IdentityPool("advancedIdentityPool", {
-  IdentityPoolName: "AdvancedAppIdentityPool",
+const AdvancedIdentityPool = await AWS.Cognito.IdentityPool("AdvancedIdentityPool", {
   AllowUnauthenticatedIdentities: false,
-  CognitoIdentityProviders: [
-    {
-      ProviderName: "cognito-idp.us-west-2.amazonaws.com/us-west-2_aBcDeFgHi",
-      ClientId: "1234567890abcdefg"
-    }
-  ],
+  IdentityPoolName: "MyAdvancedIdentityPool",
   CognitoEvents: {
-    onLogin: "arn:aws:lambda:us-west-2:123456789012:function:onLogin"
+    "PreSignUp": "arn:aws:lambda:us-east-1:123456789012:function:PreSignUpFunction"
   },
-  SupportedLoginProviders: {
-    "graph.facebook.com": "1234567890123456"
+  PushSync: {
+    ApplicationArns: ["arn:aws:sns:us-east-1:123456789012:app/GCM/MyApp"],
+    RoleArn: "arn:aws:iam::123456789012:role/Cognito_MyApp"
   }
 });
 ```
 
-## Using SAML Providers
+## Using Developer Provider Name
 
-Create an IdentityPool that includes SAML provider ARNs for federated authentication.
+Create an IdentityPool with a developer provider name for custom authentication.
 
 ```ts
-const samlIdentityPool = await AWS.Cognito.IdentityPool("samlIdentityPool", {
-  IdentityPoolName: "SAMLAppIdentityPool",
+const DeveloperIdentityPool = await AWS.Cognito.IdentityPool("DeveloperIdentityPool", {
   AllowUnauthenticatedIdentities: true,
-  SamlProviderARNs: [
-    "arn:aws:cognito:saml-provider/MySAMLProvider"
-  ]
+  IdentityPoolName: "MyDeveloperIdentityPool",
+  DeveloperProviderName: "my-developer-provider"
 });
 ```
 
-## Configuring Cognito Streams
+## Adding Tags
 
-Set up an IdentityPool to utilize Cognito Streams for real-time data processing.
+Configure an IdentityPool with tags for better resource management.
 
 ```ts
-const streamIdentityPool = await AWS.Cognito.IdentityPool("streamIdentityPool", {
-  IdentityPoolName: "StreamAppIdentityPool",
-  AllowUnauthenticatedIdentities: false,
-  CognitoStreams: {
-    RoleArn: "arn:aws:iam::123456789012:role/CognitoStreamRole",
-    StreamName: "CognitoStream",
-    StreamingStatus: "ENABLED"
-  }
+const TaggedIdentityPool = await AWS.Cognito.IdentityPool("TaggedIdentityPool", {
+  AllowUnauthenticatedIdentities: true,
+  IdentityPoolName: "MyTaggedIdentityPool",
+  IdentityPoolTags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Development" }
+  ]
 });
 ```

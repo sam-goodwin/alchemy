@@ -5,66 +5,68 @@ description: Learn how to create, update, and manage AWS MediaLive CloudWatchAla
 
 # CloudWatchAlarmTemplateGroup
 
-The CloudWatchAlarmTemplateGroup resource allows you to manage [AWS MediaLive CloudWatch Alarm Template Groups](https://docs.aws.amazon.com/medialive/latest/userguide/). This resource enables you to create and configure CloudWatch alarms for monitoring your MediaLive channels.
+The CloudWatchAlarmTemplateGroup resource lets you manage [AWS MediaLive CloudWatch Alarm Template Groups](https://docs.aws.amazon.com/medialive/latest/userguide/). This resource allows you to define groups of CloudWatch alarms that can be used for monitoring your AWS MediaLive resources.
 
 ## Minimal Example
 
-Create a basic CloudWatchAlarmTemplateGroup with required properties and one optional property.
+Create a basic CloudWatch Alarm Template Group with required properties and a common optional property for tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const alarmTemplateGroup = await AWS.MediaLive.CloudWatchAlarmTemplateGroup("basicAlarmTemplateGroup", {
-  name: "BasicAlarmTemplateGroup",
-  description: "This group contains alarms for basic monitoring",
-  tags: {
-    Environment: "Production",
-    Project: "MediaStreaming"
-  }
+const AlarmTemplateGroup = await AWS.MediaLive.CloudWatchAlarmTemplateGroup("BasicAlarmTemplateGroup", {
+  Name: "BasicAlarmGroup",
+  Description: "A basic alarm template group for monitoring MediaLive resources",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Media" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CloudWatchAlarmTemplateGroup with additional properties, such as tags for better organization.
+Configure a CloudWatch Alarm Template Group with additional properties, including a longer description.
 
 ```ts
-const advancedAlarmTemplateGroup = await AWS.MediaLive.CloudWatchAlarmTemplateGroup("advancedAlarmTemplateGroup", {
-  name: "AdvancedAlarmTemplateGroup",
-  description: "This group contains advanced monitoring alarms with specific tags",
-  tags: {
-    Environment: "Staging",
-    Department: "MediaServices",
-    Owner: "DevTeam"
-  },
-  adopt: true // Adopt existing resources if they already exist
+const AdvancedAlarmTemplateGroup = await AWS.MediaLive.CloudWatchAlarmTemplateGroup("AdvancedAlarmTemplateGroup", {
+  Name: "AdvancedAlarmGroup",
+  Description: "An advanced alarm template group for comprehensive monitoring of MediaLive applications",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Department", Value: "Engineering" }
+  ],
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Monitoring Specific Metrics
+## Use Case: Monitoring Live Stream Quality
 
-Create a CloudWatchAlarmTemplateGroup focused on monitoring specific MediaLive metrics.
+Create a CloudWatch Alarm Template Group specifically designed for monitoring the quality of live streams.
 
 ```ts
-const metricsAlarmTemplateGroup = await AWS.MediaLive.CloudWatchAlarmTemplateGroup("metricsAlarmTemplateGroup", {
-  name: "MetricsAlarmTemplateGroup",
-  description: "Group for monitoring specific MediaLive metrics",
-  tags: {
-    Environment: "Testing",
-    Owner: "QA"
-  }
+const LiveStreamQualityAlarmTemplateGroup = await AWS.MediaLive.CloudWatchAlarmTemplateGroup("LiveStreamQualityAlarms", {
+  Name: "LiveStreamQualityMonitoring",
+  Description: "Template group for alarms monitoring live stream quality metrics",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Project", Value: "LiveStream" }
+  ]
 });
-
-// Further configuration can be added here for specific metrics
 ```
 
-## Utilizing Existing Resources
+## Use Case: Automated Scaling Alarms
 
-Adopt an existing CloudWatchAlarmTemplateGroup if it already exists, which can be useful for managing resources across different environments.
+Set up a CloudWatch Alarm Template Group for automated scaling based on CPU utilization.
 
 ```ts
-const existingAlarmTemplateGroup = await AWS.MediaLive.CloudWatchAlarmTemplateGroup("existingAlarmTemplateGroup", {
-  name: "ExistingAlarmTemplateGroup",
-  adopt: true // This allows the resource to adopt if it exists
+const AutoScalingAlarmTemplateGroup = await AWS.MediaLive.CloudWatchAlarmTemplateGroup("AutoScalingAlarms", {
+  Name: "AutoScalingAlarms",
+  Description: "Alarm template group for auto-scaling based on CPU metrics",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Purpose", Value: "AutoScaling" }
+  ],
+  adopt: true // Allows adopting existing resources
 });
 ```

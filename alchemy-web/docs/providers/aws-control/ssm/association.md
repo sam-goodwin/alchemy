@@ -5,76 +5,79 @@ description: Learn how to create, update, and manage AWS SSM Associations using 
 
 # Association
 
-The Association resource lets you create, update, and manage [AWS SSM Associations](https://docs.aws.amazon.com/ssm/latest/userguide/) which define a set of actions to be performed on specified managed instances.
+The Association resource allows you to manage [AWS SSM Associations](https://docs.aws.amazon.com/ssm/latest/userguide/) for automating tasks on your Amazon EC2 instances and other managed instances.
 
 ## Minimal Example
 
-Create a basic SSM Association that specifies a document to be executed on a single instance.
+Create a basic SSM Association that targets an instance to run the `AWS-UpdateSSMAgent` document.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const association = await AWS.SSM.Association("basicAssociation", {
-  name: "AWS-RunShellScript",
-  instanceId: "i-0abcd1234efgh5678",
-  parameters: {
-    commands: ["echo 'Hello, World!'"]
-  }
+const SimpleAssociation = await AWS.SSM.Association("SimpleAssociation", {
+  Name: "AWS-UpdateSSMAgent",
+  InstanceId: "i-0123456789abcdef0", // Replace with your EC2 instance ID
+  Parameters: {
+    "UpdateLevel": ["latest"]
+  },
+  ScheduleExpression: "cron(0 0 * * ? *)" // Runs daily at midnight UTC
 });
 ```
 
 ## Advanced Configuration
 
-Configure an SSM Association with a schedule expression and additional parameters for enhanced functionality.
+Configure an association with additional parameters, multiple targets, and compliance settings.
 
 ```ts
-const scheduledAssociation = await AWS.SSM.Association("scheduledAssociation", {
-  name: "AWS-RunShellScript",
-  instanceId: "i-0abcd1234efgh5678",
-  parameters: {
-    commands: ["echo 'Scheduled Task Executed'"]
+const AdvancedAssociation = await AWS.SSM.Association("AdvancedAssociation", {
+  Name: "AWS-RunShellScript",
+  InstanceId: "i-abcdef0123456789", // Replace with your EC2 instance ID
+  Parameters: {
+    "commands": ["echo 'Hello, World!' > /tmp/hello.txt"],
+    "executionTimeout": ["3600"] // Timeout after 1 hour
   },
-  scheduleExpression: "cron(0 12 * * ? *)", // Every day at 12 PM UTC
-  complianceSeverity: "CRITICAL",
-  maxErrors: "1",
-  maxConcurrency: "50%"
+  Targets: [
+    {
+      Key: "InstanceIds",
+      Values: ["i-0123456789abcdef0", "i-abcdef0123456789"] // Multiple instance IDs
+    }
+  ],
+  ComplianceSeverity: "CRITICAL",
+  MaxConcurrency: "50%",
+  MaxErrors: "0",
+  WaitForSuccessTimeoutSeconds: 300 // Wait for 5 minutes
 });
 ```
 
-## Using Targets
+## Using Calendar Names
 
-Create an SSM Association that targets multiple instances based on specified criteria.
+Create an association that runs based on specified calendar names to control execution timing.
 
 ```ts
-const targetAssociation = await AWS.SSM.Association("targetAssociation", {
-  name: "AWS-RunShellScript",
-  targets: [
-    {
-      key: "tag:Environment",
-      values: ["Production"]
-    }
-  ],
-  parameters: {
-    commands: ["echo 'Executed on Production Instances'"]
+const CalendarAssociation = await AWS.SSM.Association("CalendarAssociation", {
+  Name: "AWS-RunCommand",
+  InstanceId: "i-0123456789abcdef0", // Replace with your EC2 instance ID
+  CalendarNames: ["MyScheduleCalendar"], // Use defined calendar names
+  DocumentVersion: "$LATEST",
+  Parameters: {
+    "commands": ["sudo yum update -y"]
   }
 });
 ```
 
-## Output Location Configuration
+## Sync Compliance Example
 
-Set up an SSM Association with an output location to store results of the command execution.
+Set up an association that enforces sync compliance with specific output locations.
 
 ```ts
-const outputLocationAssociation = await AWS.SSM.Association("outputLocationAssociation", {
-  name: "AWS-RunShellScript",
-  instanceId: "i-0abcd1234efgh5678",
-  parameters: {
-    commands: ["echo 'Output is being stored'"]
-  },
-  outputLocation: {
+const SyncComplianceAssociation = await AWS.SSM.Association("SyncComplianceAssociation", {
+  Name: "AWS-ConfigureWindowsUpdates",
+  InstanceId: "i-0123456789abcdef0", // Replace with your EC2 instance ID
+  SyncCompliance: "AUTO",
+  OutputLocation: {
     S3Location: {
-      outputS3BucketName: "my-ssm-output-bucket",
-      outputS3KeyPrefix: "ssm-output/"
+      OutputS3BucketName: "my-ssm-output-bucket", // Replace with your S3 bucket name
+      OutputS3KeyPrefix: "ssm-output/"
     }
   }
 });

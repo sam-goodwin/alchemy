@@ -5,73 +5,75 @@ description: Learn how to create, update, and manage AWS Athena WorkGroups using
 
 # WorkGroup
 
-The WorkGroup resource lets you manage [AWS Athena WorkGroups](https://docs.aws.amazon.com/athena/latest/userguide/) and their configurations for query execution and resource management.
+The WorkGroup resource lets you manage [AWS Athena WorkGroups](https://docs.aws.amazon.com/athena/latest/userguide/) which allow you to configure query execution and resource management for your Athena queries.
 
 ## Minimal Example
 
-Create a basic Athena WorkGroup with required properties and a common optional setting.
+Create a basic Athena WorkGroup with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const workGroup = await AWS.Athena.WorkGroup("primaryWorkGroup", {
-  name: "primary-workgroup",
-  description: "Primary WorkGroup for standard query executions",
-  recursiveDeleteOption: false
+const DefaultWorkGroup = await AWS.Athena.WorkGroup("DefaultWorkGroup", {
+  Name: "DefaultWorkGroup",
+  State: "ENABLED",
+  Description: "This is the default workgroup for Athena queries.",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a WorkGroup with advanced settings including custom WorkGroup configuration options.
+Configure an Athena WorkGroup with a recursive delete option and custom workgroup configuration.
 
 ```ts
-const advancedWorkGroup = await AWS.Athena.WorkGroup("advancedWorkGroup", {
-  name: "advanced-workgroup",
-  description: "Advanced WorkGroup with specific configurations",
-  recursiveDeleteOption: true,
-  workGroupConfiguration: {
-    resultConfiguration: {
-      outputLocation: "s3://my-athena-results-bucket/",
-      encryptionConfiguration: {
-        encryptionOption: "SSE_S3"
+const CustomWorkGroup = await AWS.Athena.WorkGroup("CustomWorkGroup", {
+  Name: "CustomWorkGroup",
+  State: "ENABLED",
+  RecursiveDeleteOption: true,
+  WorkGroupConfiguration: {
+    ResultConfiguration: {
+      OutputLocation: "s3://my-athena-results/",
+      EncryptionConfiguration: {
+        EncryptionOption: "SSE_S3"
       }
     },
-    enforceWorkGroupConfiguration: true,
-    requesterPays: false
-  }
-});
-```
-
-## Using Tags for Organization
-
-Create a WorkGroup that includes tags for better organization and management.
-
-```ts
-const taggedWorkGroup = await AWS.Athena.WorkGroup("taggedWorkGroup", {
-  name: "tagged-workgroup",
-  description: "WorkGroup with tagging for cost allocation",
-  tags: [
-    {
-      key: "Project",
-      value: "DataAnalytics"
-    },
-    {
-      key: "Environment",
-      value: "Production"
-    }
+    EnforceWorkGroupConfiguration: true,
+    PublishCloudWatchMetricsEnabled: true
+  },
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Project", Value: "Analytics" }
   ]
 });
 ```
 
-## Setting WorkGroup State
+## Query Execution Settings
 
-Create a WorkGroup with a specified state to manage its availability.
+Create a WorkGroup that uses specific query execution settings.
 
 ```ts
-const stateWorkGroup = await AWS.Athena.WorkGroup("stateWorkGroup", {
-  name: "state-workgroup",
-  description: "WorkGroup with set state",
-  state: "ENABLED" // Options are ENABLED or DISABLED
+const QueryExecutionWorkGroup = await AWS.Athena.WorkGroup("QueryExecutionWorkGroup", {
+  Name: "QueryExecutionWorkGroup",
+  State: "ENABLED",
+  WorkGroupConfiguration: {
+    ResultConfiguration: {
+      OutputLocation: "s3://my-athena-query-results/",
+      EncryptionConfiguration: {
+        EncryptionOption: "SSE_KMS",
+        KmsKey: "arn:aws:kms:us-west-2:123456789012:key/abcde123-4567-890a-bcde-fghijklmno"
+      }
+    },
+    EnforceWorkGroupConfiguration: true,
+    PublishCloudWatchMetricsEnabled: true,
+    RequesterPaysEnabled: false
+  },
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "DataScience" }
+  ]
 });
 ```

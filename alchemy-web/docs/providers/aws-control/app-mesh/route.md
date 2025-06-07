@@ -5,153 +5,41 @@ description: Learn how to create, update, and manage AWS AppMesh Routes using Al
 
 # Route
 
-The Route resource allows you to manage [AWS AppMesh Routes](https://docs.aws.amazon.com/appmesh/latest/userguide/) that define how traffic is routed between services in your mesh.
+The Route resource lets you create and manage [AWS AppMesh Routes](https://docs.aws.amazon.com/appmesh/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-appmesh-route.html
 
 ## Minimal Example
-
-Create a basic route with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicRoute = await AWS.AppMesh.Route("basicRoute", {
-  MeshName: "myMesh",
-  VirtualRouterName: "myVirtualRouter",
-  Spec: {
-    // Define route specification here
-    RouteType: "http",
-    HttpRoute: {
-      Match: {
-        Path: {
-          Exact: "/api"
-        }
-      },
-      Action: {
-        WeightedTargets: [{
-          VirtualNode: "myVirtualNode",
-          Weight: 1
-        }]
-      }
-    }
-  },
-  Tags: [{ Key: "Environment", Value: "Production" }]
+const route = await AWS.AppMesh.Route("route-example", {
+  MeshName: "route-mesh",
+  VirtualRouterName: "route-virtualrouter",
+  Spec: "example-spec",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a route with additional settings for traffic splitting and retry policies.
+Create a route with additional configuration:
 
 ```ts
-const advancedRoute = await AWS.AppMesh.Route("advancedRoute", {
-  MeshName: "myMesh",
-  VirtualRouterName: "myVirtualRouter",
-  Spec: {
-    RouteType: "http",
-    HttpRoute: {
-      Match: {
-        Path: {
-          Prefix: "/"
-        }
-      },
-      Action: {
-        WeightedTargets: [
-          {
-            VirtualNode: "myVirtualNodeA",
-            Weight: 1
-          },
-          {
-            VirtualNode: "myVirtualNodeB",
-            Weight: 2
-          }
-        ]
-      },
-      RetryPolicy: {
-        MaxRetries: 3,
-        Timeout: {
-          Value: 2,
-          Unit: "s"
-        },
-        StatusCodes: ["429", "500", "503"]
-      }
-    }
-  }
+import AWS from "alchemy/aws/control";
+
+const advancedRoute = await AWS.AppMesh.Route("advanced-route", {
+  MeshName: "route-mesh",
+  VirtualRouterName: "route-virtualrouter",
+  Spec: "example-spec",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
 
-## Traffic Routing with Header Matching
-
-Create a route that directs traffic based on specific HTTP headers.
-
-```ts
-const headerRoute = await AWS.AppMesh.Route("headerRoute", {
-  MeshName: "myMesh",
-  VirtualRouterName: "myVirtualRouter",
-  Spec: {
-    RouteType: "http",
-    HttpRoute: {
-      Match: {
-        Headers: [{
-          Name: "X-User-Type",
-          Match: {
-            Exact: "admin"
-          }
-        }]
-      },
-      Action: {
-        WeightedTargets: [{
-          VirtualNode: "adminVirtualNode",
-          Weight: 1
-        }]
-      }
-    }
-  }
-});
-```
-
-## Route for Different Paths
-
-Define multiple routes to handle different API paths for the same virtual router.
-
-```ts
-const userRoute = await AWS.AppMesh.Route("userRoute", {
-  MeshName: "myMesh",
-  VirtualRouterName: "myVirtualRouter",
-  Spec: {
-    RouteType: "http",
-    HttpRoute: {
-      Match: {
-        Path: {
-          Exact: "/users"
-        }
-      },
-      Action: {
-        WeightedTargets: [{
-          VirtualNode: "userVirtualNode",
-          Weight: 1
-        }]
-      }
-    }
-  }
-});
-
-const orderRoute = await AWS.AppMesh.Route("orderRoute", {
-  MeshName: "myMesh",
-  VirtualRouterName: "myVirtualRouter",
-  Spec: {
-    RouteType: "http",
-    HttpRoute: {
-      Match: {
-        Path: {
-          Exact: "/orders"
-        }
-      },
-      Action: {
-        WeightedTargets: [{
-          VirtualNode: "orderVirtualNode",
-          Weight: 1
-        }]
-      }
-    }
-  }
-});

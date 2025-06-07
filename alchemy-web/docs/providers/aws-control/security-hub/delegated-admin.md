@@ -5,54 +5,52 @@ description: Learn how to create, update, and manage AWS SecurityHub DelegatedAd
 
 # DelegatedAdmin
 
-The DelegatedAdmin resource allows you to manage [AWS SecurityHub DelegatedAdmins](https://docs.aws.amazon.com/securityhub/latest/userguide/) which enables account delegation of SecurityHub management.
+The DelegatedAdmin resource allows you to manage [AWS SecurityHub DelegatedAdmins](https://docs.aws.amazon.com/securityhub/latest/userguide/) within your AWS environment. This resource is essential for setting up and managing administrative access to Security Hub across multiple accounts.
 
 ## Minimal Example
 
-Create a basic DelegatedAdmin with a specified admin account ID.
+Create a basic DelegatedAdmin with the required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const delegatedAdmin = await AWS.SecurityHub.DelegatedAdmin("myDelegatedAdmin", {
-  AdminAccountId: "123456789012",
-  adopt: true // Adopts the existing resource if it already exists
+const BasicDelegatedAdmin = await AWS.SecurityHub.DelegatedAdmin("BasicDelegatedAdmin", {
+  AdminAccountId: "123456789012"
 });
 ```
 
 ## Advanced Configuration
 
-You can create a DelegatedAdmin with additional properties to customize its behavior.
+Configure a DelegatedAdmin with the option to adopt existing resources.
 
 ```ts
-const advancedDelegatedAdmin = await AWS.SecurityHub.DelegatedAdmin("advancedDelegatedAdmin", {
-  AdminAccountId: "210987654321",
-  adopt: false // Do not adopt an existing resource
+const AdvancedDelegatedAdmin = await AWS.SecurityHub.DelegatedAdmin("AdvancedDelegatedAdmin", {
+  AdminAccountId: "123456789012",
+  adopt: true // Allows adoption of existing resource if it already exists
 });
 ```
 
 ## Use Case: Updating an Existing DelegatedAdmin
 
-If you need to update an existing DelegatedAdmin, ensure you set the `adopt` property to true to avoid errors.
+If you need to update an existing DelegatedAdmin, you can specify the AdminAccountId to modify its properties.
 
 ```ts
-const existingDelegatedAdmin = await AWS.SecurityHub.DelegatedAdmin("existingDelegatedAdmin", {
-  AdminAccountId: "345678901234",
-  adopt: true // Adopt the existing resource
+const UpdateDelegatedAdmin = await AWS.SecurityHub.DelegatedAdmin("UpdateDelegatedAdmin", {
+  AdminAccountId: "098765432109",
+  adopt: true
 });
 ```
 
-## Use Case: Retrieving DelegatedAdmin Details
+## Use Case: Managing Multiple DelegatedAdmins
 
-While this example demonstrates creating a resource, you can also retrieve existing details through the ARN property.
+Manage multiple DelegatedAdmins by creating them with unique identifiers.
 
 ```ts
-const retrievedDelegatedAdmin = await AWS.SecurityHub.DelegatedAdmin("retrieveDelegatedAdmin", {
-  AdminAccountId: "456789012345",
-  adopt: true // Ensure you adopt if it exists
+const FirstDelegatedAdmin = await AWS.SecurityHub.DelegatedAdmin("FirstDelegatedAdmin", {
+  AdminAccountId: "123456789012"
 });
 
-// Access additional properties
-console.log(`ARN: ${retrievedDelegatedAdmin.Arn}`);
-console.log(`Creation Time: ${retrievedDelegatedAdmin.CreationTime}`);
+const SecondDelegatedAdmin = await AWS.SecurityHub.DelegatedAdmin("SecondDelegatedAdmin", {
+  AdminAccountId: "234567890123"
+});
 ```

@@ -5,81 +5,54 @@ description: Learn how to create, update, and manage AWS EC2 TransitGatewayMulti
 
 # TransitGatewayMulticastDomain
 
-The TransitGatewayMulticastDomain resource allows you to manage multicast domains within AWS EC2 Transit Gateways, enabling efficient multicast traffic routing across your VPCs. For more information, see the [AWS EC2 TransitGatewayMulticastDomains documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The TransitGatewayMulticastDomain resource allows you to manage [AWS EC2 Transit Gateway Multicast Domains](https://docs.aws.amazon.com/ec2/latest/userguide/). This resource facilitates the creation and management of multicast domains for routing traffic between multiple sources and destinations within a transit gateway.
 
 ## Minimal Example
 
-Create a basic Transit Gateway Multicast Domain with required properties:
+Create a basic Transit Gateway Multicast Domain with a specified Transit Gateway ID.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const multicastDomain = await AWS.EC2.TransitGatewayMulticastDomain("myMulticastDomain", {
-  TransitGatewayId: "tgw-0123456789abcdef0",
+const MulticastDomain = await AWS.EC2.TransitGatewayMulticastDomain("BasicMulticastDomain", {
+  TransitGatewayId: "tgw-0abcd1234efgh5678",
   Options: {
-    // Optional properties can be added here
+    Ipv6Support: "enable"
   },
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Project",
-      Value: "MulticastTraffic"
-    }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Owner", Value: "NetworkTeam" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Transit Gateway Multicast Domain with additional options for enhanced functionality:
+Configure a Transit Gateway Multicast Domain with additional options, including enabling IPv6 support and custom tags.
 
 ```ts
-const advancedMulticastDomain = await AWS.EC2.TransitGatewayMulticastDomain("advancedMulticastDomain", {
-  TransitGatewayId: "tgw-0123456789abcdef0",
+const AdvancedMulticastDomain = await AWS.EC2.TransitGatewayMulticastDomain("AdvancedMulticastDomain", {
+  TransitGatewayId: "tgw-0abcd1234efgh5678",
   Options: {
-    // Example of setting options - customize as needed
-    DnsSupport: "enable",
-    MulticastSupport: "enable"
+    Ipv6Support: "enable"
   },
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Staging"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Project", Value: "VideoStreaming" }
   ]
 });
 ```
 
-## Adopt Existing Resource
+## Adoption of Existing Resource
 
-If you want to adopt an existing Transit Gateway Multicast Domain instead of failing when it already exists, you can set the `adopt` property to true:
+Adopt an existing Transit Gateway Multicast Domain instead of creating a new one if it already exists.
 
 ```ts
-const adoptExistingDomain = await AWS.EC2.TransitGatewayMulticastDomain("adoptExistingDomain", {
-  TransitGatewayId: "tgw-0123456789abcdef0",
+const ExistingMulticastDomain = await AWS.EC2.TransitGatewayMulticastDomain("ExistingMulticastDomain", {
+  TransitGatewayId: "tgw-0abcd1234efgh5678",
+  Options: {
+    Ipv6Support: "disable"
+  },
   adopt: true
-});
-```
-
-## Resource with Custom Tags
-
-Create a Transit Gateway Multicast Domain and specify custom tags for better resource management:
-
-```ts
-const taggedMulticastDomain = await AWS.EC2.TransitGatewayMulticastDomain("taggedMulticastDomain", {
-  TransitGatewayId: "tgw-0123456789abcdef0",
-  Tags: [
-    {
-      Key: "Owner",
-      Value: "DevTeam"
-    },
-    {
-      Key: "CostCenter",
-      Value: "12345"
-    }
-  ]
 });
 ```

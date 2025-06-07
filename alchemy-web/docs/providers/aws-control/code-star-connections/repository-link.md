@@ -5,51 +5,49 @@ description: Learn how to create, update, and manage AWS CodeStarConnections Rep
 
 # RepositoryLink
 
-The RepositoryLink resource allows you to manage [AWS CodeStarConnections RepositoryLinks](https://docs.aws.amazon.com/codestarconnections/latest/userguide/) for linking your source code repositories to your AWS CodeStar projects.
+The RepositoryLink resource allows you to manage [AWS CodeStarConnections RepositoryLinks](https://docs.aws.amazon.com/codestarconnections/latest/userguide/) for integrating your repositories with AWS services.
 
 ## Minimal Example
 
-Create a basic RepositoryLink with the required properties.
+Create a basic RepositoryLink with required properties and one optional encryption key:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicRepositoryLink = await AWS.CodeStarConnections.RepositoryLink("BasicRepoLink", {
+const BasicRepositoryLink = await AWS.CodeStarConnections.RepositoryLink("BasicRepoLink", {
   OwnerId: "123456789012",
-  ConnectionArn: "arn:aws:codestar-connections:us-east-1:123456789012:connection/abcd1234-56ef-78gh-90ij-klmnopqrst",
-  RepositoryName: "MyAwesomeRepo",
-  Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "CodeStarDemo" }
-  ]
+  ConnectionArn: "arn:aws:codestar-connections:us-east-1:123456789012:connection/abcd1234-5678-90ef-ghij-klmnopqrst",
+  RepositoryName: "MyRepository",
+  EncryptionKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-123456abcdef",
+  Tags: [{ Key: "Environment", Value: "Development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Add an encryption key ARN for enhanced security when creating a RepositoryLink.
+Configure a RepositoryLink with additional settings including tags for better organization:
 
 ```ts
-const secureRepositoryLink = await AWS.CodeStarConnections.RepositoryLink("SecureRepoLink", {
+const AdvancedRepositoryLink = await AWS.CodeStarConnections.RepositoryLink("AdvancedRepoLink", {
   OwnerId: "123456789012",
-  ConnectionArn: "arn:aws:codestar-connections:us-east-1:123456789012:connection/abcd1234-56ef-78gh-90ij-klmnopqrst",
-  RepositoryName: "MySecureRepo",
-  EncryptionKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst",
+  ConnectionArn: "arn:aws:codestar-connections:us-west-2:123456789012:connection/xyz9876-5432-10ab-cdef-ghijklmnopqr",
+  RepositoryName: "AnotherRepo",
   Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Project", Value: "WebApp" },
+    { Key: "Team", Value: "Frontend" }
   ]
 });
 ```
 
-## Example with Existing Resource Adoption
+## Adopting Existing Resources
 
-Create a RepositoryLink that adopts an existing resource instead of failing if it already exists.
+If you want to adopt an existing RepositoryLink instead of failing when it already exists, set the adopt property to true:
 
 ```ts
-const adoptedRepositoryLink = await AWS.CodeStarConnections.RepositoryLink("AdoptedRepoLink", {
+const AdoptExistingRepositoryLink = await AWS.CodeStarConnections.RepositoryLink("AdoptRepoLink", {
   OwnerId: "123456789012",
-  ConnectionArn: "arn:aws:codestar-connections:us-east-1:123456789012:connection/abcd1234-56ef-78gh-90ij-klmnopqrst",
-  RepositoryName: "MyAdoptedRepo",
+  ConnectionArn: "arn:aws:codestar-connections:eu-central-1:123456789012:connection/abcd5678-1234-90ef-ghij-klmnopqrst",
+  RepositoryName: "ExistingRepo",
   adopt: true
 });
 ```

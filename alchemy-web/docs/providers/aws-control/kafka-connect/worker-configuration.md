@@ -5,85 +5,69 @@ description: Learn how to create, update, and manage AWS KafkaConnect WorkerConf
 
 # WorkerConfiguration
 
-The WorkerConfiguration resource lets you manage [AWS KafkaConnect WorkerConfigurations](https://docs.aws.amazon.com/kafkaconnect/latest/userguide/) and their settings.
+The WorkerConfiguration resource allows you to manage AWS KafkaConnect WorkerConfigurations, which are essential for defining the execution environment for your connectors. For more information, refer to the [AWS KafkaConnect WorkerConfigurations documentation](https://docs.aws.amazon.com/kafkaconnect/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic WorkerConfiguration with required properties and one optional property.
+Create a basic WorkerConfiguration with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const workerConfig = await AWS.KafkaConnect.WorkerConfiguration("basicWorkerConfig", {
-  PropertiesFileContent: `
-    bootstrap.servers=my-broker:9092
-    group.id=my-group
-  `,
-  Description: "Basic worker configuration for Kafka Connect",
-  Name: "basic-worker-configuration"
+const BasicWorkerConfiguration = await AWS.KafkaConnect.WorkerConfiguration("BasicWorkerConfig", {
+  PropertiesFileContent: JSON.stringify({
+    "bootstrap.servers": "my.kafka.broker:9092",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter"
+  }),
+  Name: "BasicWorkerConfig",
+  Description: "A basic worker configuration for Kafka Connect",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a WorkerConfiguration with additional properties such as tags for better organization.
+Configure a WorkerConfiguration with additional settings for enhanced functionality and performance.
 
 ```ts
-const advancedWorkerConfig = await AWS.KafkaConnect.WorkerConfiguration("advancedWorkerConfig", {
-  PropertiesFileContent: `
-    bootstrap.servers=my-broker:9092
-    group.id=my-group
-    key.converter=org.apache.kafka.connect.json.JsonConverter
-    value.converter=org.apache.kafka.connect.json.JsonConverter
-  `,
-  Description: "Advanced worker configuration with converters",
+const AdvancedWorkerConfiguration = await AWS.KafkaConnect.WorkerConfiguration("AdvancedWorkerConfig", {
+  PropertiesFileContent: JSON.stringify({
+    "bootstrap.servers": "my.kafka.broker:9092",
+    "group.id": "my-consumer-group",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "offset.flush.interval.ms": "10000"
+  }),
+  Name: "AdvancedWorkerConfig",
+  Description: "An advanced worker configuration with custom settings",
   Tags: [
     { Key: "Environment", Value: "Production" },
     { Key: "Team", Value: "DataEngineering" }
-  ],
-  Name: "advanced-worker-configuration"
+  ]
 });
 ```
 
-## Resource Adoption
+## Configuration with Custom Properties
 
-Create a WorkerConfiguration that adopts an existing resource instead of failing if the resource already exists.
-
-```ts
-const adoptWorkerConfig = await AWS.KafkaConnect.WorkerConfiguration("adoptWorkerConfig", {
-  PropertiesFileContent: `
-    bootstrap.servers=my-broker:9092
-    group.id=my-group
-  `,
-  Description: "Worker configuration that adopts existing resource",
-  Name: "adopted-worker-configuration",
-  adopt: true
-});
-``` 
-
-## Version Management
-
-Demonstrate how to handle version changes in your WorkerConfiguration.
+Demonstrate how to set up a WorkerConfiguration with unique properties tailored for a specific use case.
 
 ```ts
-const versionedWorkerConfig = await AWS.KafkaConnect.WorkerConfiguration("versionedWorkerConfig", {
-  PropertiesFileContent: `
-    bootstrap.servers=my-broker:9092
-    group.id=my-group
-    value.converter=org.apache.kafka.connect.avro.AvroConverter
-  `,
-  Description: "Worker configuration with Avro converter",
-  Name: "versioned-worker-configuration"
-});
-
-// Update the configuration to a new version
-const updatedWorkerConfig = await AWS.KafkaConnect.WorkerConfiguration("versionedWorkerConfig", {
-  PropertiesFileContent: `
-    bootstrap.servers=my-broker:9092
-    group.id=my-group
-    value.converter=org.apache.kafka.connect.json.JsonConverter
-  `,
-  Description: "Updated worker configuration with JSON converter",
-  Name: "versioned-worker-configuration"
+const CustomPropertiesWorkerConfiguration = await AWS.KafkaConnect.WorkerConfiguration("CustomPropertiesWorkerConfig", {
+  PropertiesFileContent: JSON.stringify({
+    "bootstrap.servers": "my.kafka.broker:9092",
+    "key.converter": "org.apache.kafka.connect.avro.AvroConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "schema.registry.url": "http://my.schema.registry:8081"
+  }),
+  Name: "CustomPropertiesWorkerConfig",
+  Description: "Worker configuration using Avro converter with schema registry",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```

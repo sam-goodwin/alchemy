@@ -5,64 +5,76 @@ description: Learn how to create, update, and manage AWS IoT ThingGroups using A
 
 # ThingGroup
 
-The ThingGroup resource allows you to manage [AWS IoT ThingGroups](https://docs.aws.amazon.com/iot/latest/userguide/) which are collections of AWS IoT Things. ThingGroups help you organize and manage your IoT devices easily.
+The ThingGroup resource lets you manage [AWS IoT ThingGroups](https://docs.aws.amazon.com/iot/latest/userguide/) for organizing and controlling IoT devices within a logical grouping.
 
 ## Minimal Example
 
-Create a basic ThingGroup with a name and optional parent group.
+Create a basic ThingGroup with a specified name and some tags for organization.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicThingGroup = await AWS.IoT.ThingGroup("basicThingGroup", {
-  ThingGroupName: "HomeDevices",
-  ParentGroupName: "Devices",
-  Tags: [{ Key: "Environment", Value: "Production" }]
+const BasicThingGroup = await AWS.IoT.ThingGroup("BasicThingGroup", {
+  ThingGroupName: "MyDeviceGroup",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "IoT" }
+  ],
+  adopt: true // This allows adoption of existing resources
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ThingGroup with properties for more complex use cases, such as setting custom properties.
+Configure a ThingGroup with additional properties such as a parent group and custom properties.
 
 ```ts
-const advancedThingGroup = await AWS.IoT.ThingGroup("advancedThingGroup", {
-  ThingGroupName: "OfficeDevices",
+const AdvancedThingGroup = await AWS.IoT.ThingGroup("AdvancedThingGroup", {
+  ThingGroupName: "AdvancedDeviceGroup",
+  ParentGroupName: "MyParentGroup",
   ThingGroupProperties: {
+    // Custom properties relevant to your use case
+    ThingGroupDescription: "This is an advanced device group.",
     AttributePayload: {
       Attributes: {
-        Department: "IT",
-        Location: "Main Office"
-      },
-      Merge: true
+        Location: "Warehouse 1",
+        Status: "Active"
+      }
     }
   },
   Tags: [
-    { Key: "Project", Value: "IoTDeployment" },
-    { Key: "Owner", Value: "TeamAlpha" }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Project", Value: "SmartHome" }
   ]
 });
 ```
 
-## Query String Usage
+## Using Query String for Filtering
 
-Create a ThingGroup that includes a query string to filter devices.
+Create a ThingGroup with a query string that filters things based on attributes.
 
 ```ts
-const queryStringThingGroup = await AWS.IoT.ThingGroup("queryStringThingGroup", {
+const FilteredThingGroup = await AWS.IoT.ThingGroup("FilteredThingGroup", {
   ThingGroupName: "FilteredDevices",
-  QueryString: "attribute.department = 'IT'",
-  Tags: [{ Key: "Status", Value: "Active" }]
+  QueryString: "attribute:Status = 'Active'",
+  Tags: [
+    { Key: "Environment", Value: "Testing" }
+  ]
 });
 ```
 
-## Adoption of Existing Resources
+## Updating an Existing ThingGroup
 
-Create a ThingGroup and adopt an existing resource if it already exists.
+Update an existing ThingGroup by modifying its properties such as adding new tags.
 
 ```ts
-const adoptedThingGroup = await AWS.IoT.ThingGroup("adoptedThingGroup", {
-  ThingGroupName: "LegacyDevices",
-  adopt: true // If true, adopts the existing resource instead of failing
+const UpdateThingGroup = await AWS.IoT.ThingGroup("UpdateThingGroup", {
+  ThingGroupName: "MyDeviceGroup", // Must match existing group
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "IoT" },
+    { Key: "Updated", Value: "Yes" } // Adding a new tag
+  ],
+  adopt: true // Adopt existing resource instead of failing
 });
 ```

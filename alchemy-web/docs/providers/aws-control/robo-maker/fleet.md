@@ -5,61 +5,50 @@ description: Learn how to create, update, and manage AWS RoboMaker Fleets using 
 
 # Fleet
 
-The Fleet resource lets you manage [AWS RoboMaker Fleets](https://docs.aws.amazon.com/robomaker/latest/userguide/) for deploying and running robotics applications in the cloud.
+The Fleet resource lets you manage [AWS RoboMaker Fleets](https://docs.aws.amazon.com/robomaker/latest/userguide/) which are collections of robot applications that can be deployed and managed together.
 
 ## Minimal Example
 
-Create a basic RoboMaker Fleet with a name and optional tags.
+Create a basic RoboMaker Fleet with a specified name and tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicFleet = await AWS.RoboMaker.Fleet("basicFleet", {
-  name: "MyRoboFleet",
-  tags: {
-    Environment: "Development",
-    Team: "Robotics"
-  }
+const MyFleet = await AWS.RoboMaker.Fleet("MyFleet", {
+  Name: "MyFirstFleet",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Robotics" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a RoboMaker Fleet with a name and set the `adopt` property to true, allowing it to adopt existing resources.
+Configure a fleet with an existing resource adoption and additional tags.
 
 ```ts
-const advancedFleet = await AWS.RoboMaker.Fleet("advancedFleet", {
-  name: "AdvancedRoboFleet",
-  adopt: true,
-  tags: {
-    Environment: "Production",
-    Project: "AutonomousVehicles"
-  }
+const AdvancedFleet = await AWS.RoboMaker.Fleet("AdvancedFleet", {
+  Name: "MyAdvancedFleet",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "DevOps" }
+  ],
+  adopt: true // Adopts existing fleet if it already exists
 });
 ```
 
-## Adoption of Existing Resources
+## Fleet Management and Updates
 
-Demonstrate how to create a fleet that adopts an already existing resource without failing.
-
-```ts
-const existingFleet = await AWS.RoboMaker.Fleet("existingFleet", {
-  name: "ExistingRoboFleet",
-  adopt: true
-});
-```
-
-## Fleet with Custom Tags
-
-Create a fleet while specifying custom tags for better resource management and tracking.
+Demonstrate how to update an existing fleet by modifying its name and tags.
 
 ```ts
-const taggedFleet = await AWS.RoboMaker.Fleet("taggedFleet", {
-  name: "TaggedRoboFleet",
-  tags: {
-    Environment: "Staging",
-    Owner: "DevTeam",
-    Version: "v1.0"
-  }
+const UpdatedFleet = await AWS.RoboMaker.Fleet("UpdatedFleet", {
+  Name: "MyUpdatedFleet",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Robotics" }
+  ],
+  adopt: true // Ensures existing resources are adopted
 });
 ```

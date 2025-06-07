@@ -5,67 +5,62 @@ description: Learn how to create, update, and manage AWS IoT CustomMetrics using
 
 # CustomMetric
 
-The CustomMetric resource allows you to manage [AWS IoT CustomMetrics](https://docs.aws.amazon.com/iot/latest/userguide/) for monitoring and analyzing IoT data. You can create and configure metrics to suit your IoT applications.
+The CustomMetric resource lets you create and manage custom metrics in AWS IoT, allowing for enhanced monitoring and analysis of device data. For more details, refer to the [AWS IoT CustomMetrics documentation](https://docs.aws.amazon.com/iot/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic CustomMetric with required properties and one optional property.
+Create a basic custom metric with required properties and one optional display name:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicMetric = await AWS.IoT.CustomMetric("basicMetric", {
+const MyCustomMetric = await AWS.IoT.CustomMetric("MyCustomMetric", {
   MetricName: "Temperature",
-  MetricType: "Custom",
-  DisplayName: "Temperature Sensor Metric"
+  MetricType: "Number",
+  DisplayName: "Temperature Sensor Reading"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CustomMetric with additional settings, including tags for better resource management.
+Configure a custom metric with additional tags for better organization and management:
 
 ```ts
-const advancedMetric = await AWS.IoT.CustomMetric("advancedMetric", {
+const AdvancedCustomMetric = await AWS.IoT.CustomMetric("AdvancedCustomMetric", {
   MetricName: "Humidity",
-  MetricType: "Custom",
-  DisplayName: "Humidity Sensor Metric",
+  MetricType: "Number",
+  DisplayName: "Humidity Level",
   Tags: [
-    { Key: "Environment", Value: "Greenhouse" },
-    { Key: "Location", Value: "North Wing" }
-  ],
-  adopt: true // Adopt existing resource if it already exists
-});
-```
-
-## Use Case: Monitoring Air Quality
-
-Create a CustomMetric specifically for monitoring air quality with multiple tags for categorization.
-
-```ts
-const airQualityMetric = await AWS.IoT.CustomMetric("airQualityMetric", {
-  MetricName: "AirQualityIndex",
-  MetricType: "Custom",
-  DisplayName: "Air Quality Index Metric",
-  Tags: [
-    { Key: "Type", Value: "Pollution" },
-    { Key: "Region", Value: "Urban" }
+    { Key: "Environment", Value: "production" },
+    { Key: "DeviceType", Value: "Sensor" }
   ]
 });
 ```
 
-## Use Case: Tracking Device Performance
+## Adoption of Existing Resource
 
-Set up a CustomMetric to track the performance of IoT devices in a smart home setting.
+Adopt an existing custom metric instead of creating a new one if it already exists:
 
 ```ts
-const devicePerformanceMetric = await AWS.IoT.CustomMetric("devicePerformanceMetric", {
-  MetricName: "DeviceUptime",
-  MetricType: "Custom",
-  DisplayName: "Device Uptime Metric",
+const AdoptedCustomMetric = await AWS.IoT.CustomMetric("AdoptedCustomMetric", {
+  MetricName: "WindSpeed",
+  MetricType: "Number",
+  adopt: true
+});
+```
+
+## Custom Metric with Detailed Properties
+
+Create a custom metric focusing on tracking device performance metrics:
+
+```ts
+const PerformanceMetric = await AWS.IoT.CustomMetric("PerformanceMetric", {
+  MetricName: "CPUUtilization",
+  MetricType: "Number",
+  DisplayName: "CPU Utilization Percentage",
   Tags: [
-    { Key: "Device", Value: "SmartThermostat" },
-    { Key: "Status", Value: "Active" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```

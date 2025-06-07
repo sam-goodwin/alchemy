@@ -5,84 +5,39 @@ description: Learn how to create, update, and manage AWS SageMaker Spaces using 
 
 # Space
 
-The Space resource lets you manage [AWS SageMaker Spaces](https://docs.aws.amazon.com/sagemaker/latest/userguide/) which provide a collaborative environment for data scientists and developers to share resources, tools, and workflows.
+The Space resource lets you create and manage [AWS SageMaker Spaces](https://docs.aws.amazon.com/sagemaker/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-sagemaker-space.html
 
 ## Minimal Example
-
-Create a basic SageMaker Space with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const sageMakerSpace = await AWS.SageMaker.Space("mySageMakerSpace", {
-  DomainId: "d-1234567890",
-  SpaceName: "dataScienceTeam",
-  SpaceDisplayName: "Data Science Team Space"
+const space = await AWS.SageMaker.Space("space-example", {
+  DomainId: "example-domainid",
+  SpaceName: "space-space",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SageMaker Space with advanced settings including space settings, sharing settings, and tags.
+Create a space with additional configuration:
 
 ```ts
-const advancedSageMakerSpace = await AWS.SageMaker.Space("advancedSageMakerSpace", {
-  DomainId: "d-1234567890",
-  SpaceName: "advancedDataScience",
-  SpaceDisplayName: "Advanced Data Science Space",
-  SpaceSettings: {
-    JupyterServerAppSettings: {
-      LifecycleConfigArns: [
-        "arn:aws:sagemaker:us-west-2:123456789012:lifecycle-config/myLifecycleConfig"
-      ]
-    }
+import AWS from "alchemy/aws/control";
+
+const advancedSpace = await AWS.SageMaker.Space("advanced-space", {
+  DomainId: "example-domainid",
+  SpaceName: "space-space",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  SpaceSharingSettings: {
-    ShareSpace: true
-  },
-  Tags: [
-    {
-      Key: "Team",
-      Value: "DataScience"
-    }
-  ]
 });
 ```
 
-## Custom Ownership Settings
-
-Create a SageMaker Space with specific ownership settings to control the access and management of the space.
-
-```ts
-const ownershipConfiguredSpace = await AWS.SageMaker.Space("ownershipConfiguredSpace", {
-  DomainId: "d-1234567890",
-  SpaceName: "ownershipControlledSpace",
-  OwnershipSettings: {
-    Owner: "user@example.com",
-    AllowExternalAccess: false
-  }
-});
-```
-
-## Space with Sharing Settings
-
-Set up a SageMaker Space that allows sharing with other users or groups.
-
-```ts
-const sharedSageMakerSpace = await AWS.SageMaker.Space("sharedSageMakerSpace", {
-  DomainId: "d-1234567890",
-  SpaceName: "sharedDataScience",
-  SpaceDisplayName: "Shared Data Science Space",
-  SpaceSharingSettings: {
-    ShareSpace: true,
-    SharedWith: [
-      {
-        UserId: "user1@example.com"
-      },
-      {
-        UserId: "user2@example.com"
-      }
-    ]
-  }
-});
-```

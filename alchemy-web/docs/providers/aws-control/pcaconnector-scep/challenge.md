@@ -5,64 +5,56 @@ description: Learn how to create, update, and manage AWS PCAConnectorSCEP Challe
 
 # Challenge
 
-The Challenge resource allows you to manage [AWS PCAConnectorSCEP Challenges](https://docs.aws.amazon.com/pcaconnectorscep/latest/userguide/) for certificate management tasks like authentication and device provisioning.
+The Challenge resource allows you to manage [AWS PCAConnectorSCEP Challenges](https://docs.aws.amazon.com/pcaconnectorscep/latest/userguide/) for certificate provisioning within AWS environments.
 
 ## Minimal Example
 
-Create a basic PCAConnectorSCEP Challenge with the required properties.
+This example demonstrates how to create a basic PCAConnectorSCEP Challenge with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const challenge = await AWS.PCAConnectorSCEP.Challenge("myChallenge", {
-  ConnectorArn: "arn:aws:pcaconnectorscep:us-east-1:123456789012:connector/my-connector",
-  Tags: {
-    Environment: "Development",
-    Project: "DeviceProvisioning"
-  }
+const basicChallenge = await AWS.PCAConnectorSCEP.Challenge("BasicChallenge", {
+  ConnectorArn: "arn:aws:pcaconnectorscep:us-east-1:123456789012:connector/myConnector",
+  Tags: [{ Key: "Environment", Value: "Development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Create a PCAConnectorSCEP Challenge while adopting an existing resource if it already exists.
+In this example, we create a Challenge with additional tags and the option to adopt an existing resource.
 
 ```ts
-const existingChallenge = await AWS.PCAConnectorSCEP.Challenge("existingChallenge", {
-  ConnectorArn: "arn:aws:pcaconnectorscep:us-east-1:123456789012:connector/my-connector",
-  Tags: {
-    Environment: "Production"
-  },
-  adopt: true // Adopt existing resource instead of failing
+const advancedChallenge = await AWS.PCAConnectorSCEP.Challenge("AdvancedChallenge", {
+  ConnectorArn: "arn:aws:pcaconnectorscep:us-east-1:123456789012:connector/myAdvancedConnector",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Security" }
+  ],
+  adopt: true
 });
 ```
 
-## Using Resource Tags
+## Handling Existing Resources
 
-Create a PCAConnectorSCEP Challenge with multiple tags for better resource identification.
+This example illustrates creating a Challenge while ensuring that existing resources are adopted instead of failing.
 
 ```ts
-const taggedChallenge = await AWS.PCAConnectorSCEP.Challenge("taggedChallenge", {
-  ConnectorArn: "arn:aws:pcaconnectorscep:us-east-1:123456789012:connector/my-connector",
-  Tags: {
-    Team: "Security",
-    Purpose: "Certificate Management",
-    Status: "Active"
-  }
+const existingResourceChallenge = await AWS.PCAConnectorSCEP.Challenge("ResourceChallenge", {
+  ConnectorArn: "arn:aws:pcaconnectorscep:us-east-1:123456789012:connector/myExistingConnector",
+  adopt: true
 });
 ```
 
-## Monitoring and Updates
+## Resource Lifecycle Management
 
-Create a PCAConnectorSCEP Challenge and monitor its creation time and last update time.
+Here, we demonstrate how to create a Challenge and manage its lifecycle.
 
 ```ts
-const monitoredChallenge = await AWS.PCAConnectorSCEP.Challenge("monitorChallenge", {
-  ConnectorArn: "arn:aws:pcaconnectorscep:us-east-1:123456789012:connector/my-connector"
+const lifecycleChallenge = await AWS.PCAConnectorSCEP.Challenge("LifecycleChallenge", {
+  ConnectorArn: "arn:aws:pcaconnectorscep:us-east-1:123456789012:connector/myLifecycleConnector",
+  Tags: [{ Key: "Environment", Value: "Testing" }]
 });
 
-// Accessing additional properties after creation
-console.log(`Challenge ARN: ${monitoredChallenge.Arn}`);
-console.log(`Created at: ${monitoredChallenge.CreationTime}`);
-console.log(`Last updated at: ${monitoredChallenge.LastUpdateTime}`);
+// Logic for updating the Challenge can be added here
 ```

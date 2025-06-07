@@ -5,58 +5,62 @@ description: Learn how to create, update, and manage AWS EC2 VPNGatewayRouteProp
 
 # VPNGatewayRoutePropagation
 
-The VPNGatewayRoutePropagation resource allows you to manage route propagation for a virtual private network (VPN) gateway in AWS. This resource is crucial for ensuring that routes from your VPN connection are properly propagated to your route tables. For more information, see the [AWS EC2 VPNGatewayRoutePropagations documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The VPNGatewayRoutePropagation resource allows you to manage route propagation for a Virtual Private Network (VPN) Gateway in AWS. This enables automatic updates of routing tables associated with your VPN gateway. For more detailed information, refer to the [AWS EC2 VPNGatewayRoutePropagations documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic VPN Gateway Route Propagation with required properties:
+Create a basic VPNGatewayRoutePropagation with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const vpnGatewayRoutePropagation = await AWS.EC2.VPNGatewayRoutePropagation("myVpnRoutePropagation", {
-  RouteTableIds: ["rtb-12345678", "rtb-87654321"],
-  VpnGatewayId: "vgw-abcdefgh",
-  adopt: true // If true, adopt existing resource instead of failing when resource already exists
+const VpnGatewayRoutePropagation = await AWS.EC2.VPNGatewayRoutePropagation("BasicRoutePropagation", {
+  RouteTableIds: ["rtb-0abcd1234efgh5678"], // Replace with your actual route table ID
+  VpnGatewayId: "vgw-0abcd1234efgh5678" // Replace with your actual VPN gateway ID
 });
 ```
 
 ## Advanced Configuration
 
-Set up a VPN Gateway Route Propagation with additional properties and configurations:
+Configure a VPNGatewayRoutePropagation with additional options.
 
 ```ts
-const advancedVpnGatewayRoutePropagation = await AWS.EC2.VPNGatewayRoutePropagation("advancedVpnRoutePropagation", {
-  RouteTableIds: ["rtb-12345678", "rtb-87654321"],
-  VpnGatewayId: "vgw-abcdefgh",
-  adopt: false // Default is false, will fail if resource already exists
+const AdvancedVpnGatewayRoutePropagation = await AWS.EC2.VPNGatewayRoutePropagation("AdvancedRoutePropagation", {
+  RouteTableIds: ["rtb-0abcd1234efgh5678"], // Route table ID
+  VpnGatewayId: "vgw-0abcd1234efgh5678", // VPN gateway ID
+  adopt: true // Enable adopting existing resource
 });
 ```
 
-## Propagation with Multiple Route Tables
+## Use Case: Multiple Route Tables
 
-You can propagate routes to multiple route tables simultaneously by specifying multiple IDs:
+Demonstrate how to propagate routes to multiple route tables.
 
 ```ts
-const multiRouteTablePropagation = await AWS.EC2.VPNGatewayRoutePropagation("multiRouteTablePropagation", {
+const MultiRouteTablePropagation = await AWS.EC2.VPNGatewayRoutePropagation("MultiRouteTablePropagation", {
   RouteTableIds: [
-    "rtb-12345678", 
-    "rtb-23456789", 
-    "rtb-34567890"
+    "rtb-0abcd1234efgh5678", // First route table ID
+    "rtb-0ijkl9012mnop3456"  // Second route table ID
   ],
-  VpnGatewayId: "vgw-ijklmnop",
-  adopt: true // Adopt existing resource
+  VpnGatewayId: "vgw-0abcd1234efgh5678" // VPN gateway ID
 });
 ```
 
-## Cleanup Example
+## Use Case: Route Propagation for High Availability
 
-Configure a cleanup process that removes the VPN Gateway Route Propagation when it's no longer needed:
+Set up route propagation for a high availability setup with a redundant VPN connection.
 
 ```ts
-const cleanupVpnGatewayRoutePropagation = await AWS.EC2.VPNGatewayRoutePropagation("cleanupVpnRoutePropagation", {
-  RouteTableIds: ["rtb-12345678"],
-  VpnGatewayId: "vgw-qrstuvwx",
-  adopt: false // Will not adopt existing resource, will fail if it exists
+const HighAvailabilityRoutePropagation = await AWS.EC2.VPNGatewayRoutePropagation("HighAvailabilityRoutePropagation", {
+  RouteTableIds: ["rtb-0abcd1234efgh5678"], // Route table ID
+  VpnGatewayId: "vgw-0abcd1234efgh5678", // Primary VPN gateway ID
+  adopt: false // Do not adopt existing resources
+});
+
+// Additional configuration for a redundant connection can be done here
+const RedundantVpnGatewayRoutePropagation = await AWS.EC2.VPNGatewayRoutePropagation("RedundantRoutePropagation", {
+  RouteTableIds: ["rtb-0ijkl9012mnop3456"], // Different route table ID for redundancy
+  VpnGatewayId: "vgw-1mnop9012qrst6789", // Redundant VPN gateway ID
+  adopt: false // Do not adopt existing resources
 });
 ```

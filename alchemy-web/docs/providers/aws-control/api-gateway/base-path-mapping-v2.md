@@ -5,58 +5,46 @@ description: Learn how to create, update, and manage AWS ApiGateway BasePathMapp
 
 # BasePathMappingV2
 
-The BasePathMappingV2 resource allows you to manage [AWS ApiGateway BasePathMappingV2s](https://docs.aws.amazon.com/apigateway/latest/userguide/) that define the mapping between a custom domain name and a specific API Gateway REST API.
+The BasePathMappingV2 resource allows you to define a base path mapping for an API Gateway, enabling you to route requests to your API correctly. For more information, visit the [AWS ApiGateway BasePathMappingV2s](https://docs.aws.amazon.com/apigateway/latest/userguide/) documentation.
 
 ## Minimal Example
 
-Create a basic BasePathMappingV2 linking a domain name to an API Gateway REST API:
+This example demonstrates how to create a basic base path mapping for an API Gateway with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basePathMapping = await AWS.ApiGateway.BasePathMappingV2("basicMapping", {
-  DomainNameArn: "arn:aws:apigateway:us-west-2::/domainnames/example.com",
-  RestApiId: "abcdefghij",
-  Stage: "prod", // Optional stage
-  BasePath: "v1" // Optional base path
+const BasicBasePathMapping = await AWS.ApiGateway.BasePathMappingV2("BasicMapping", {
+  DomainNameArn: "arn:aws:apigateway:us-east-1::/domainnames/example.com",
+  RestApiId: "abcd1234efgh5678",
+  Stage: "prod",
+  BasePath: "v1"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a BasePathMappingV2 for an API with an optional base path and adopt existing resources:
+In this example, we will configure a base path mapping with additional options including adopting an existing resource.
 
 ```ts
-const advancedBasePathMapping = await AWS.ApiGateway.BasePathMappingV2("advancedMapping", {
-  DomainNameArn: "arn:aws:apigateway:us-west-2::/domainnames/api.example.com",
-  RestApiId: "klmnopqrst",
-  Stage: "dev", // Optional stage
-  BasePath: "v2", // Optional base path
+const AdvancedBasePathMapping = await AWS.ApiGateway.BasePathMappingV2("AdvancedMapping", {
+  DomainNameArn: "arn:aws:apigateway:us-east-1::/domainnames/api.example.com",
+  RestApiId: "ijkl9012mnop3456",
+  Stage: "dev",
+  BasePath: "v2",
   adopt: true // Adopt existing resource if it exists
 });
 ```
 
-## Custom Base Path Example
+## Additional Use Case: Custom Base Path
 
-Create a BasePathMappingV2 that uses a custom base path to route requests effectively:
-
-```ts
-const customBasePathMapping = await AWS.ApiGateway.BasePathMappingV2("customMapping", {
-  DomainNameArn: "arn:aws:apigateway:us-west-2::/domainnames/api.example.com",
-  RestApiId: "uvwxyz1234",
-  BasePath: "api/v1", // Custom base path for API versioning
-  Stage: "prod" // Specify the production stage
-});
-```
-
-## Using a Stage Without a Base Path
-
-Set up a BasePathMappingV2 that uses the default base path and a specified stage only:
+This example shows how to set up a base path mapping with a custom base path for a specific API version.
 
 ```ts
-const defaultBasePathMapping = await AWS.ApiGateway.BasePathMappingV2("defaultMapping", {
-  DomainNameArn: "arn:aws:apigateway:us-west-2::/domainnames/example.com",
-  RestApiId: "mnopqrstuv",
-  Stage: "test" // Stage without a custom base path
+const CustomBasePathMapping = await AWS.ApiGateway.BasePathMappingV2("CustomMapping", {
+  DomainNameArn: "arn:aws:apigateway:us-east-1::/domainnames/custom.example.com",
+  RestApiId: "qrst7890uvwx1234",
+  Stage: "staging",
+  BasePath: "api/v2"
 });
 ```

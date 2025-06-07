@@ -5,49 +5,75 @@ description: Learn how to create, update, and manage AWS IoT ScheduledAudits usi
 
 # ScheduledAudit
 
-The ScheduledAudit resource allows you to manage [AWS IoT Scheduled Audits](https://docs.aws.amazon.com/iot/latest/userguide/) that help ensure your IoT devices comply with security best practices.
+The ScheduledAudit resource allows you to create and manage scheduled audits for your AWS IoT resources, ensuring compliance and security by regularly checking your IoT configurations. For more information, refer to the [AWS IoT ScheduledAudits documentation](https://docs.aws.amazon.com/iot/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic scheduled audit that runs weekly on Mondays.
+Create a basic ScheduledAudit with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const scheduledAudit = await AWS.IoT.ScheduledAudit("WeeklyDeviceAudit", {
-  DayOfWeek: "MONDAY",
-  TargetCheckNames: ["AWS_IOT_Things_Require_MFA", "AWS_IOT_Things_Authorized"],
+const BasicScheduledAudit = await AWS.IoT.ScheduledAudit("BasicScheduledAudit", {
+  TargetCheckNames: ["iot:CheckIoTPolicy", "iot:CheckDeviceCertificate"],
   Frequency: "WEEKLY",
-  ScheduledAuditName: "WeeklyDeviceAudit"
+  DayOfWeek: "MONDAY",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a scheduled audit to run on the first day of each month and include tags for better resource management.
+Configure a ScheduledAudit with additional options for a more complex scenario.
 
 ```ts
-const monthlyAudit = await AWS.IoT.ScheduledAudit("MonthlySecurityAudit", {
-  DayOfMonth: "1",
-  TargetCheckNames: ["AWS_IOT_Things_Require_MFA", "AWS_IOT_Things_Authorized"],
+const AdvancedScheduledAudit = await AWS.IoT.ScheduledAudit("AdvancedScheduledAudit", {
+  TargetCheckNames: [
+    "iot:CheckIoTPolicy",
+    "iot:CheckDeviceCertificate",
+    "iot:CheckCertificatesRevocation"
+  ],
   Frequency: "MONTHLY",
-  ScheduledAuditName: "MonthlySecurityAudit",
+  DayOfMonth: "15",
+  ScheduledAuditName: "MonthlyComplianceAudit",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Owner", Value: "SecurityTeam" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Owner", Value: "ComplianceTeam" }
   ]
 });
 ```
 
-## Custom Audit Frequency
+## Custom Audit Name
 
-Create a scheduled audit that runs daily to check specific compliance metrics.
+Define a ScheduledAudit with a specific audit name for easier identification.
 
 ```ts
-const dailyAudit = await AWS.IoT.ScheduledAudit("DailyComplianceCheck", {
-  DayOfWeek: "SUNDAY", // Not used for daily audits, but can be included
-  TargetCheckNames: ["AWS_IOT_Things_Require_MFA"],
+const CustomNamedScheduledAudit = await AWS.IoT.ScheduledAudit("CustomNamedScheduledAudit", {
+  TargetCheckNames: ["iot:CheckIoTPolicy"],
   Frequency: "DAILY",
-  ScheduledAuditName: "DailyComplianceCheck"
+  ScheduledAuditName: "DailyIoTPolicyAudit",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "DevOps" }
+  ]
+});
+```
+
+## Weekly Audit on Specific Day
+
+Set up a ScheduledAudit that runs on a specific day of the week.
+
+```ts
+const WeeklyAuditOnFriday = await AWS.IoT.ScheduledAudit("WeeklyAuditOnFriday", {
+  TargetCheckNames: ["iot:CheckDeviceCertificate"],
+  Frequency: "WEEKLY",
+  DayOfWeek: "FRIDAY",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "IoT" }
+  ]
 });
 ```

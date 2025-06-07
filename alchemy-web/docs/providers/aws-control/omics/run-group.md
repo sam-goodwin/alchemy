@@ -5,58 +5,69 @@ description: Learn how to create, update, and manage AWS Omics RunGroups using A
 
 # RunGroup
 
-The RunGroup resource allows you to manage AWS Omics RunGroups, which are essential for organizing and executing bioinformatics workflows. For more details, refer to the [AWS Omics RunGroups documentation](https://docs.aws.amazon.com/omics/latest/userguide/).
+The RunGroup resource lets you manage [AWS Omics RunGroups](https://docs.aws.amazon.com/omics/latest/userguide/) for running genomics workflows with specific resource configurations.
 
 ## Minimal Example
 
-Create a basic RunGroup with essential properties such as maximum runs and CPUs.
+Create a basic RunGroup with required properties and some common optional parameters.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicRunGroup = await AWS.Omics.RunGroup("basicRunGroup", {
-  maxRuns: 5,
-  maxCpus: 4,
-  name: "Basic Run Group"
+const basicRunGroup = await AWS.Omics.RunGroup("BasicRunGroup", {
+  Name: "GenomicsAnalysisGroup",
+  MaxDuration: 3600, // Duration in seconds
+  MaxCpus: 4, // Maximum number of CPUs
+  MaxGpus: 1 // Maximum number of GPUs
 });
 ```
 
 ## Advanced Configuration
 
-Configure a RunGroup with additional parameters like maximum GPUs and duration for more complex workflows.
+Configure a RunGroup with additional resource limits and tags for better management.
 
 ```ts
-const advancedRunGroup = await AWS.Omics.RunGroup("advancedRunGroup", {
-  maxRuns: 10,
-  maxCpus: 8,
-  maxGpus: 2,
-  maxDuration: 3600, // Max duration in seconds
-  name: "Advanced Run Group"
+const advancedRunGroup = await AWS.Omics.RunGroup("AdvancedRunGroup", {
+  Name: "AdvancedGenomicsGroup",
+  MaxDuration: 7200, // Duration in seconds
+  MaxCpus: 8, // Maximum number of CPUs
+  MaxGpus: 2, // Maximum number of GPUs
+  MaxRuns: 5, // Maximum number of concurrent runs
+  Tags: [
+    { Key: "Project", Value: "GenomicsResearch" },
+    { Key: "Environment", Value: "Production" }
+  ]
 });
 ```
 
-## Tagging for Resource Management
+## Using Adoption Feature
 
-Utilize tags to help manage and categorize your RunGroup resources effectively.
+Create a RunGroup that adopts an existing resource instead of failing if it already exists.
 
 ```ts
-const taggedRunGroup = await AWS.Omics.RunGroup("taggedRunGroup", {
-  maxRuns: 3,
-  tags: {
-    Environment: "Production",
-    Project: "GenomicAnalysis"
-  }
+const adoptedRunGroup = await AWS.Omics.RunGroup("AdoptedRunGroup", {
+  Name: "ExistingGenomicsGroup",
+  MaxDuration: 1800, // Duration in seconds
+  MaxCpus: 2, // Maximum number of CPUs
+  MaxGpus: 1, // Maximum number of GPUs
+  adopt: true // Adopt existing resource if it exists
 });
 ```
 
-## Adoption of Existing Resources
+## Example with Custom Resource Limits
 
-Adopt an existing RunGroup resource if it already exists in the environment, avoiding failure during creation.
+Define a RunGroup with custom resource limits to optimize performance for a specific workload.
 
 ```ts
-const adoptRunGroup = await AWS.Omics.RunGroup("adoptRunGroup", {
-  maxRuns: 7,
-  adopt: true, // Allows adopting existing resources
-  name: "Adopted Run Group"
+const customLimitsRunGroup = await AWS.Omics.RunGroup("CustomLimitsRunGroup", {
+  Name: "CustomResourceGroup",
+  MaxDuration: 5400, // Duration in seconds
+  MaxCpus: 16, // Maximum number of CPUs
+  MaxGpus: 4, // Maximum number of GPUs
+  MaxRuns: 10, // Maximum number of concurrent runs
+  Tags: [
+    { Key: "Application", Value: "GenomicsPipeline" },
+    { Key: "Owner", Value: "BioinformaticsTeam" }
+  ]
 });
 ```

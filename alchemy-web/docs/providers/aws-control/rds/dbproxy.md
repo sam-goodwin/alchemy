@@ -5,86 +5,78 @@ description: Learn how to create, update, and manage AWS RDS DBProxys using Alch
 
 # DBProxy
 
-The DBProxy resource lets you manage [AWS RDS DBProxys](https://docs.aws.amazon.com/rds/latest/userguide/) for improved application scalability and performance by pooling and sharing database connections.
+The DBProxy resource allows you to create and manage an Amazon RDS DB Proxy, which provides a connection pool and management to improve application scalability and availability. For more details, refer to the [AWS RDS DBProxys documentation](https://docs.aws.amazon.com/rds/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic DBProxy with required properties and one optional property.
+Create a basic RDS DB Proxy with required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbProxy = await AWS.RDS.DBProxy("myDbProxy", {
+const basicDBProxy = await AWS.RDS.DBProxy("BasicDBProxy", {
   DBProxyName: "my-db-proxy",
+  RoleArn: "arn:aws:iam::123456789012:role/my-db-proxy-role",
+  EngineFamily: "MYSQL",
+  VpcSubnetIds: ["subnet-0123456789abcdef0", "subnet-0abcdef1234567890"],
   Auth: [{
     AuthScheme: "SECRETS",
-    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:mysecret",
-    Username: "dbuser"
+    SecretArn: "arn:aws:secretsmanager:region:123456789012:secret:my-secret",
+    IAMAuth: "DISABLED"
   }],
-  VpcSubnetIds: ["subnet-0123456789abcdef0", "subnet-0abcdef0123456789"],
-  RoleArn: "arn:aws:iam::123456789012:role/myDbProxyRole"
+  VpcSecurityGroupIds: ["sg-0123456789abcdef0"],
+  IdleClientTimeout: 1800,
+  RequireTLS: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DBProxy with additional options for enhanced security and debugging.
+Configure an RDS DB Proxy with enhanced settings for debugging and logging.
 
 ```ts
-const advancedDbProxy = await AWS.RDS.DBProxy("advancedDbProxy", {
-  DBProxyName: "secure-db-proxy",
+const advancedDBProxy = await AWS.RDS.DBProxy("AdvancedDBProxy", {
+  DBProxyName: "my-advanced-db-proxy",
+  RoleArn: "arn:aws:iam::123456789012:role/my-advanced-db-proxy-role",
+  EngineFamily: "POSTGRESQL",
+  VpcSubnetIds: ["subnet-0abcdef1234567890"],
   Auth: [{
     AuthScheme: "SECRETS",
-    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:mysecret",
-    Username: "dbuser"
+    SecretArn: "arn:aws:secretsmanager:region:123456789012:secret:my-advanced-secret",
+    IAMAuth: "DISABLED"
   }],
-  VpcSubnetIds: ["subnet-0123456789abcdef0", "subnet-0abcdef0123456789"],
-  RoleArn: "arn:aws:iam::123456789012:role/myDbProxyRole",
-  RequireTLS: true,
-  IdleClientTimeout: 30,
   DebugLogging: true,
-  VpcSecurityGroupIds: ["sg-0123456789abcdef0"]
+  VpcSecurityGroupIds: ["sg-0123456789abcdef1"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
+  ]
 });
 ```
 
-## Connection Pooling Example
+## Using Multiple Authentication Methods
 
-Create a DBProxy configured specifically for connection pooling to optimize database interactions.
-
-```ts
-const connectionPoolingDbProxy = await AWS.RDS.DBProxy("connectionPoolingDbProxy", {
-  DBProxyName: "connection-pooling-proxy",
-  Auth: [{
-    AuthScheme: "SECRETS",
-    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:mysecret",
-    Username: "dbuser"
-  }],
-  VpcSubnetIds: ["subnet-0123456789abcdef0", "subnet-0abcdef0123456789"],
-  RoleArn: "arn:aws:iam::123456789012:role/myDbProxyRole",
-  RequireTLS: true,
-  IdleClientTimeout: 60,
-  VpcSecurityGroupIds: ["sg-0123456789abcdef0"]
-});
-```
-
-## Security Group Configuration
-
-Configure a DBProxy with specific security groups for enhanced network security.
+Set up an RDS DB Proxy that uses both IAM authentication and Secrets Manager.
 
 ```ts
-const secureDbProxy = await AWS.RDS.DBProxy("secureDbProxy", {
-  DBProxyName: "secure-db-proxy",
-  Auth: [{
-    AuthScheme: "SECRETS",
-    SecretArn: "arn:aws:secretsmanager:us-west-2:123456789012:secret:mysecret",
-    Username: "dbuser"
-  }],
-  VpcSubnetIds: ["subnet-0123456789abcdef0", "subnet-0abcdef0123456789"],
-  RoleArn: "arn:aws:iam::123456789012:role/myDbProxyRole",
-  VpcSecurityGroupIds: ["sg-0123456789abcdef0", "sg-0abcdef0123456789"],
-  Tags: [{
-    Key: "Environment",
-    Value: "Production"
-  }]
+const multiAuthDBProxy = await AWS.RDS.DBProxy("MultiAuthDBProxy", {
+  DBProxyName: "my-multi-auth-db-proxy",
+  RoleArn: "arn:aws:iam::123456789012:role/my-multi-auth-db-proxy-role",
+  EngineFamily: "MYSQL",
+  VpcSubnetIds: ["subnet-0123456789abcdef0"],
+  Auth: [
+    {
+      AuthScheme: "SECRETS",
+      SecretArn: "arn:aws:secretsmanager:region:123456789012:secret:my-secret",
+      IAMAuth: "DISABLED"
+    },
+    {
+      AuthScheme: "IAM",
+      IAMAuth: "ENABLED"
+    }
+  ],
+  DebugLogging: false,
+  VpcSecurityGroupIds: ["sg-0123456789abcdef2"],
+  IdleClientTimeout: 600
 });
 ```

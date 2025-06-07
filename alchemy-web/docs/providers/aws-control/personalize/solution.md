@@ -5,67 +5,62 @@ description: Learn how to create, update, and manage AWS Personalize Solutions u
 
 # Solution
 
-The Solution resource allows you to create and manage [AWS Personalize Solutions](https://docs.aws.amazon.com/personalize/latest/userguide/) that enable personalized recommendations using machine learning.
+The Solution resource allows you to manage [AWS Personalize Solutions](https://docs.aws.amazon.com/personalize/latest/userguide/) which are essential for building personalized user experiences by training machine learning models.
 
 ## Minimal Example
 
-Create a basic Personalize Solution using default settings and a specified dataset group.
+Create a basic AWS Personalize Solution with required properties and some common optional configurations.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSolution = await AWS.Personalize.Solution("basic-solution", {
-  name: "BasicPersonalizeSolution",
-  datasetGroupArn: "arn:aws:personalize:us-east-1:123456789012:dataset-group/my-dataset-group",
-  performAutoML: true,
-  performHPO: false
+const BasicSolution = await AWS.Personalize.Solution("BasicSolution", {
+  Name: "BasicRecommendationSolution",
+  DatasetGroupArn: "arn:aws:personalize:us-west-2:123456789012:dataset-group/ExampleDatasetGroup",
+  PerformAutoML: true,
+  RecipeArn: "arn:aws:personalize:us-west-2:123456789012:recipe/ExampleRecipe"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Personalize Solution with hyperparameter optimization and a specific recipe.
+Configure a more advanced solution with hyperparameter optimization and specific event types.
 
 ```ts
-const advancedSolution = await AWS.Personalize.Solution("advanced-solution", {
-  name: "AdvancedPersonalizeSolution",
-  datasetGroupArn: "arn:aws:personalize:us-east-1:123456789012:dataset-group/my-dataset-group",
-  performAutoML: false,
-  performHPO: true,
-  recipeArn: "arn:aws:personalize:::recipe/aws-hrnn"
-});
-```
-
-## Solution with Custom Event Type
-
-Create a Personalize Solution that includes a custom event type for user interactions.
-
-```ts
-const eventTypeSolution = await AWS.Personalize.Solution("event-type-solution", {
-  name: "EventTypePersonalizeSolution",
-  datasetGroupArn: "arn:aws:personalize:us-east-1:123456789012:dataset-group/my-dataset-group",
-  eventType: "user-click",
-  performAutoML: true
-});
-```
-
-## Solution Using a Specific Configuration
-
-Demonstrate how to create a Solution with a custom configuration.
-
-```ts
-const customConfigSolution = await AWS.Personalize.Solution("custom-config-solution", {
-  name: "CustomConfigPersonalizeSolution",
-  datasetGroupArn: "arn:aws:personalize:us-east-1:123456789012:dataset-group/my-dataset-group",
-  solutionConfig: {
-    algorithmHyperParameters: {
-      "numFactors": "64",
-      "regularization": "0.1"
-    },
-    featureTransforms: [{
-      featureName: "user-item-interactions",
-      transformType: "normalization"
-    }]
+const AdvancedSolution = await AWS.Personalize.Solution("AdvancedSolution", {
+  Name: "AdvancedRecommendationSolution",
+  DatasetGroupArn: "arn:aws:personalize:us-west-2:123456789012:dataset-group/ExampleDatasetGroup",
+  PerformHPO: true,
+  EventType: "example_event_type",
+  SolutionConfig: {
+    AlgorithmHyperParameters: {
+      numFactors: "64",
+      regularization: "0.1"
+    }
   }
+});
+```
+
+## Custom Solution with AutoML
+
+Create a solution that uses AutoML to automatically tune the model for optimal results.
+
+```ts
+const AutoMLSolution = await AWS.Personalize.Solution("AutoMLSolution", {
+  Name: "AutoMLRecommendationSolution",
+  DatasetGroupArn: "arn:aws:personalize:us-west-2:123456789012:dataset-group/ExampleDatasetGroup",
+  PerformAutoML: true
+});
+```
+
+## Solution with Recipe
+
+Define a solution that specifies a custom recipe for model training.
+
+```ts
+const RecipeSolution = await AWS.Personalize.Solution("RecipeSolution", {
+  Name: "RecipeBasedRecommendationSolution",
+  DatasetGroupArn: "arn:aws:personalize:us-west-2:123456789012:dataset-group/ExampleDatasetGroup",
+  RecipeArn: "arn:aws:personalize:us-west-2:123456789012:recipe/ExampleRecipe"
 });
 ```

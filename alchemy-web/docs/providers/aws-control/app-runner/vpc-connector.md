@@ -5,69 +5,55 @@ description: Learn how to create, update, and manage AWS AppRunner VpcConnectors
 
 # VpcConnector
 
-The VpcConnector resource allows you to manage [AWS AppRunner VpcConnectors](https://docs.aws.amazon.com/apprunner/latest/userguide/) that enable your AppRunner services to connect to your VPC resources securely.
+The VpcConnector resource allows you to connect your AWS AppRunner services to your Amazon Virtual Private Cloud (VPC) for enhanced security and access to private resources. For more details, refer to the [AWS AppRunner VpcConnectors documentation](https://docs.aws.amazon.com/apprunner/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic VpcConnector with required properties and a common optional property.
+This example demonstrates how to create a simple VpcConnector with essential properties such as subnets and security groups.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicVpcConnector = await AWS.AppRunner.VpcConnector("basicVpcConnector", {
-  Subnets: ["subnet-0abcdef1234567890", "subnet-0abcdef0987654321"],
-  SecurityGroups: ["sg-0abcdef1234567890"]
+const SimpleVpcConnector = await AWS.AppRunner.VpcConnector("SimpleVpcConnector", {
+  Subnets: ["subnet-0123456789abcdef0", "subnet-0abcdef1234567890"], // Specify your subnet IDs
+  SecurityGroups: ["sg-0123456789abcdef0"], // Specify your security group IDs
+  VpcConnectorName: "MyVpcConnector", // Optional: Name for the VPC connector
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "DevTeam" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VpcConnector with additional options such as tags and a custom name.
+This example illustrates how to configure a VpcConnector with additional options and multiple subnets for redundancy.
 
 ```ts
-const advancedVpcConnector = await AWS.AppRunner.VpcConnector("advancedVpcConnector", {
-  Subnets: ["subnet-0abcdef1234567890"],
-  SecurityGroups: ["sg-0abcdef1234567890"],
-  VpcConnectorName: "MyCustomVpcConnector",
+const AdvancedVpcConnector = await AWS.AppRunner.VpcConnector("AdvancedVpcConnector", {
+  Subnets: ["subnet-0123456789abcdef0", "subnet-0abcdef1234567890", "subnet-0fedcba9876543210"], // Multiple subnets for high availability
+  SecurityGroups: ["sg-0123456789abcdef0"], // Security group to control access
+  VpcConnectorName: "AdvancedVpcConnector", // Optional name for the VPC connector
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "WebApp" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Backend" }
+  ],
+  adopt: true // Optional: adopt existing resource if it already exists
+});
+```
+
+## Specific Use Case: Enhanced Security
+
+This example demonstrates how to configure a VpcConnector for a service that requires strict network security by utilizing specific subnets and security groups.
+
+```ts
+const SecureVpcConnector = await AWS.AppRunner.VpcConnector("SecureVpcConnector", {
+  Subnets: ["subnet-0987654321abcdef0"], // Use a specific private subnet
+  SecurityGroups: ["sg-0987654321abcdef0"], // Use a security group with strict rules
+  VpcConnectorName: "SecureVpcConnector", // Optional name
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Compliance", Value: "HIPAA" }
   ]
-});
-```
-
-## Adopt Existing Resource
-
-Create a VpcConnector that adopts an existing resource if it already exists.
-
-```ts
-const adoptedVpcConnector = await AWS.AppRunner.VpcConnector("adoptedVpcConnector", {
-  Subnets: ["subnet-0abcdef1234567890"],
-  SecurityGroups: ["sg-0abcdef1234567890"],
-  adopt: true
-});
-```
-
-## Using with AppRunner Service
-
-Demonstrate how to use the VpcConnector with an AppRunner service.
-
-```ts
-const vpcConnector = await AWS.AppRunner.VpcConnector("serviceVpcConnector", {
-  Subnets: ["subnet-0abcdef1234567890"],
-  SecurityGroups: ["sg-0abcdef1234567890"]
-});
-
-const appRunnerService = await AWS.AppRunner.Service("myAppRunnerService", {
-  ServiceName: "MyService",
-  Source: {
-    ImageRepository: {
-      ImageIdentifier: "my-docker-repo/my-image:latest",
-      ImageConfiguration: {
-        Port: "8080"
-      }
-    }
-  },
-  VpcConnector: vpcConnector.Arn // Referencing the VpcConnector
 });
 ```

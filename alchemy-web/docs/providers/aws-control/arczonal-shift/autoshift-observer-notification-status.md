@@ -5,54 +5,42 @@ description: Learn how to create, update, and manage AWS ARCZonalShift Autoshift
 
 # AutoshiftObserverNotificationStatus
 
-The AutoshiftObserverNotificationStatus resource allows you to manage the status of Auto Shift Observer notifications in the AWS ARC Zonal Shift service. This resource can be used to track the operational status of the shift notification process within your AWS environment. For more detailed information, refer to the [AWS ARCZonalShift AutoshiftObserverNotificationStatus documentation](https://docs.aws.amazon.com/arczonalshift/latest/userguide/).
+The AutoshiftObserverNotificationStatus resource allows you to manage the notification status for automatic shifts in AWS ARC Zonal Shift. For more detailed information, refer to the [AWS ARCZonalShift AutoshiftObserverNotificationStatus documentation](https://docs.aws.amazon.com/arczonalshift/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic Auto Shift Observer Notification Status with the required status property.
+This example demonstrates how to create a basic AutoshiftObserverNotificationStatus with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const notificationStatus = await AWS.ARCZonalShift.AutoshiftObserverNotificationStatus("basicNotificationStatus", {
+const NotificationStatus = await AWS.ARCZonalShift.AutoshiftObserverNotificationStatus("BasicNotificationStatus", {
   Status: "ACTIVE",
-  adopt: true // Set to true to adopt existing resources if they already exist
+  adopt: true // Optional: Adopt existing resource instead of failing
 });
 ```
 
 ## Advanced Configuration
 
-Configure an Auto Shift Observer Notification Status with a different status and enable resource adoption.
+In this example, we configure the AutoshiftObserverNotificationStatus with a different status value, showcasing a more advanced setup.
 
 ```ts
-const advancedNotificationStatus = await AWS.ARCZonalShift.AutoshiftObserverNotificationStatus("advancedNotificationStatus", {
-  Status: "PENDING",
-  adopt: true // Adopt existing resource instead of failing
+const AdvancedNotificationStatus = await AWS.ARCZonalShift.AutoshiftObserverNotificationStatus("AdvancedNotificationStatus", {
+  Status: "INACTIVE",
+  adopt: false // Optional: Do not adopt existing resource
 });
 ```
 
-## Status Update Example
+## Monitoring and Updates
 
-Update the status of an existing Auto Shift Observer Notification Status to a new state.
-
-```ts
-const updatedNotificationStatus = await AWS.ARCZonalShift.AutoshiftObserverNotificationStatus("updatedNotificationStatus", {
-  Status: "COMPLETED",
-  adopt: false // Do not adopt if resource already exists
-});
-```
-
-## Status with Time Information
-
-Create an Auto Shift Observer Notification Status and retrieve additional properties such as creation and last update times.
+This example shows how to create a notification status and monitor its creation time and last update time.
 
 ```ts
-const timeAwareNotificationStatus = await AWS.ARCZonalShift.AutoshiftObserverNotificationStatus("timeAwareNotificationStatus", {
-  Status: "ACTIVE",
-  adopt: true
+const MonitorNotificationStatus = await AWS.ARCZonalShift.AutoshiftObserverNotificationStatus("MonitorNotificationStatus", {
+  Status: "ACTIVE"
 });
 
-console.log(`ARN: ${timeAwareNotificationStatus.Arn}`);
-console.log(`Creation Time: ${timeAwareNotificationStatus.CreationTime}`);
-console.log(`Last Update Time: ${timeAwareNotificationStatus.LastUpdateTime}`);
+// Log creation and update times
+console.log(`Created at: ${MonitorNotificationStatus.CreationTime}`);
+console.log(`Last updated at: ${MonitorNotificationStatus.LastUpdateTime}`);
 ```

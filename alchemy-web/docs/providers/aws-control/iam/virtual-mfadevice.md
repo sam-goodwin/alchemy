@@ -5,87 +5,45 @@ description: Learn how to create, update, and manage AWS IAM VirtualMFADevices u
 
 # VirtualMFADevice
 
-The VirtualMFADevice resource allows you to create and manage [AWS IAM Virtual MFA Devices](https://docs.aws.amazon.com/iam/latest/userguide/). Virtual MFA devices provide an additional layer of security for your AWS resources by requiring a second form of authentication.
+The VirtualMFADevice resource allows you to create and manage [AWS IAM Virtual MFA Devices](https://docs.aws.amazon.com/iam/latest/userguide/). These devices can be used to enable multi-factor authentication (MFA) for AWS IAM users, enhancing security for your AWS accounts.
 
 ## Minimal Example
 
-Create a basic Virtual MFA Device for a specified user:
+Create a basic Virtual MFA Device with required properties and a common optional path.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const virtualMfaDevice = await AWS.IAM.VirtualMFADevice("myVirtualMfaDevice", {
-  VirtualMfaDeviceName: "MyVirtualMFADevice",
-  Users: ["user@example.com"],
-  Path: "/mfa/",
-  Tags: [
-    {
-      Key: "Purpose",
-      Value: "MFA for user authentication"
-    }
-  ]
+const BasicVirtualMFADevice = await AWS.IAM.VirtualMFADevice("BasicMFADevice", {
+  VirtualMfaDeviceName: "UserMFADevice",
+  Users: ["arn:aws:iam::123456789012:user/JohnDoe"],
+  Path: "/mfa/"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Virtual MFA Device with additional properties for more control:
+Configure a Virtual MFA Device with tags for better organization and management.
 
 ```ts
-const advancedMfaDevice = await AWS.IAM.VirtualMFADevice("advancedVirtualMfaDevice", {
-  VirtualMfaDeviceName: "AdvancedVirtualMFADevice",
-  Users: ["admin@example.com"],
-  Path: "/admin/mfa/",
+const TaggedVirtualMFADevice = await AWS.IAM.VirtualMFADevice("TaggedMFADevice", {
+  VirtualMfaDeviceName: "TaggedUserMFADevice",
+  Users: ["arn:aws:iam::123456789012:user/JaneDoe"],
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "SecurityLevel",
-      Value: "High"
-    }
-  ],
-  adopt: true // Adopt existing resource if it already exists
-});
-```
-
-## Use Case: Multiple Users
-
-Create a Virtual MFA Device for multiple users to enhance security in a team environment:
-
-```ts
-const teamMfaDevice = await AWS.IAM.VirtualMFADevice("teamVirtualMfaDevice", {
-  VirtualMfaDeviceName: "TeamVirtualMFADevice",
-  Users: [
-    "developer1@example.com",
-    "developer2@example.com",
-    "developer3@example.com"
-  ],
-  Path: "/team/mfa/",
-  Tags: [
-    {
-      Key: "Team",
-      Value: "Development"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Security" }
   ]
 });
 ```
 
-## Use Case: MFA Device with Specific Path
+## Adopting Existing Resources
 
-Create a Virtual MFA Device with a specific path to categorize it under a certain hierarchy:
+Adopt an existing Virtual MFA Device instead of failing if the resource already exists.
 
 ```ts
-const categorizedMfaDevice = await AWS.IAM.VirtualMFADevice("categorizedVirtualMfaDevice", {
-  VirtualMfaDeviceName: "CategorizedVirtualMFADevice",
-  Users: ["user@example.com"],
-  Path: "/specific/path/",
-  Tags: [
-    {
-      Key: "Category",
-      Value: "User Security"
-    }
-  ]
+const AdoptedVirtualMFADevice = await AWS.IAM.VirtualMFADevice("AdoptMFADevice", {
+  VirtualMfaDeviceName: "ExistingMFADevice",
+  Users: ["arn:aws:iam::123456789012:user/ExistingUser"],
+  adopt: true
 });
 ```

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun run:*)",
+      "Bash(bun:*)",
+      "Bash(bun build:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(jq:*)",
+      "Bash(sed:*)",
+      "Bash(timeout:*)",
+      "Bash(gtimeout:*)",
+      "Bash(rm:*)",
+      "Bash(awk:*)"
+    ],
+    "deny": []
+  }
+}

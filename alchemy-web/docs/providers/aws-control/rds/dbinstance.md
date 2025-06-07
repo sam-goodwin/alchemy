@@ -5,99 +5,90 @@ description: Learn how to create, update, and manage AWS RDS DBInstances using A
 
 # DBInstance
 
-The DBInstance resource lets you manage [AWS RDS DBInstances](https://docs.aws.amazon.com/rds/latest/userguide/) for relational databases, providing a scalable and reliable way to store and retrieve your data.
+The DBInstance resource allows you to provision and manage [AWS RDS DBInstances](https://docs.aws.amazon.com/rds/latest/userguide/) in your AWS environment.
 
 ## Minimal Example
 
-Create a basic RDS DBInstance with required properties and a couple of common optional settings.
+Create a basic RDS DBInstance with essential properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbInstance = await AWS.RDS.DBInstance("myDbInstance", {
-  DBInstanceIdentifier: "my-database",
+const MyDBInstance = await AWS.RDS.DBInstance("MyDBInstance", {
+  DBInstanceIdentifier: "mydbinstance",
   DBInstanceClass: "db.t3.micro",
   Engine: "mysql",
   AllocatedStorage: "20",
   MasterUsername: "admin",
-  MasterUserPassword: "password123",
-  StorageEncrypted: true,
-  VPCSecurityGroups: ["sg-0123456789abcdef0"]
+  MasterUserPassword: "SuperSecretPassword123",
+  VPCSecurityGroups: ["sg-0123456789abcdef0"],
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Database" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an RDS DBInstance with advanced options such as performance insights and automated backups.
+Configure an RDS DBInstance with additional options like Multi-AZ deployment and performance insights:
 
 ```ts
-const advancedDbInstance = await AWS.RDS.DBInstance("advancedDbInstance", {
-  DBInstanceIdentifier: "my-advanced-database",
-  DBInstanceClass: "db.t3.medium",
+const AdvancedDBInstance = await AWS.RDS.DBInstance("AdvancedDBInstance", {
+  DBInstanceIdentifier: "advanced-db-instance",
+  DBInstanceClass: "db.m5.large",
   Engine: "postgres",
+  AllocatedStorage: "100",
+  MasterUsername: "admin",
+  MasterUserPassword: "SuperSecretPassword123",
+  MultiAZ: true,
+  EnablePerformanceInsights: true,
+  PerformanceInsightsKMSKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
+  ]
+});
+```
+
+## Backup Configuration
+
+Set up an RDS DBInstance with custom backup configurations:
+
+```ts
+const BackupDBInstance = await AWS.RDS.DBInstance("BackupDBInstance", {
+  DBInstanceIdentifier: "backup-db-instance",
+  DBInstanceClass: "db.t3.medium",
+  Engine: "mysql",
   AllocatedStorage: "50",
   MasterUsername: "admin",
-  MasterUserPassword: "securePassword",
-  EnablePerformanceInsights: true,
-  PerformanceInsightsRetentionPeriod: 7,
-  BackupRetentionPeriod: 30,
-  MultiAZ: true,
+  MasterUserPassword: "SuperSecretPassword123",
+  BackupRetentionPeriod: 7,
+  PreferredBackupWindow: "02:00-02:30",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyProject" }
+    { Key: "Environment", Value: "testing" },
+    { Key: "Team", Value: "Backup" }
   ]
 });
 ```
 
-## Read Replica Configuration
+## Security Configuration
 
-Create an RDS Read Replica to scale read operations for your database.
+Create an RDS DBInstance with IAM database authentication and SSL settings:
 
 ```ts
-const readReplica = await AWS.RDS.DBInstance("myReadReplica", {
-  DBInstanceIdentifier: "my-db-read-replica",
-  SourceDBInstanceIdentifier: "my-database",
+const SecureDBInstance = await AWS.RDS.DBInstance("SecureDBInstance", {
+  DBInstanceIdentifier: "secure-db-instance",
   DBInstanceClass: "db.t3.medium",
-  AllocatedStorage: "20",
-  Tags: [
-    { Key: "Type", Value: "ReadReplica" },
-    { Key: "Project", Value: "MyProject" }
-  ]
-});
-```
-
-## Snapshot Restore
-
-Restore a DBInstance from an existing snapshot.
-
-```ts
-const restoredDbInstance = await AWS.RDS.DBInstance("restoredDbInstance", {
-  DBInstanceIdentifier: "my-restored-database",
-  DBSnapshotIdentifier: "my-database-snapshot",
-  DBInstanceClass: "db.t3.medium",
-  Tags: [
-    { Key: "RestoredFrom", Value: "my-database-snapshot" }
-  ]
-});
-``` 
-
-## Security Group Configuration
-
-Create a DBInstance with specific security group settings to control access.
-
-```ts
-const secureDbInstance = await AWS.RDS.DBInstance("secureDbInstance", {
-  DBInstanceIdentifier: "my-secure-database",
-  DBInstanceClass: "db.t3.micro",
   Engine: "mysql",
-  AllocatedStorage: "20",
+  AllocatedStorage: "50",
   MasterUsername: "admin",
-  MasterUserPassword: "superSecretPassword",
-  VPCSecurityGroups: ["sg-0a1b2c3d4e5f67890"], // Replace with your security group ID
-  PubliclyAccessible: false,
+  MasterUserPassword: "SuperSecretPassword123",
+  EnableIAMDatabaseAuthentication: true,
+  VPCSecurityGroups: ["sg-0123456789abcdef0"],
   Tags: [
-    { Key: "Access", Value: "Internal" },
-    { Key: "Environment", Value: "Development" }
+    { Key: "Environment", Value: "secure" },
+    { Key: "Team", Value: "Security" }
   ]
 });
 ```

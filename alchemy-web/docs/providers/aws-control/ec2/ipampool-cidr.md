@@ -5,61 +5,57 @@ description: Learn how to create, update, and manage AWS EC2 IPAMPoolCidrs using
 
 # IPAMPoolCidr
 
-The IPAMPoolCidr resource allows you to manage [AWS EC2 IPAMPoolCidrs](https://docs.aws.amazon.com/ec2/latest/userguide/) effectively by specifying CIDR blocks within an IP address management (IPAM) pool.
+The IPAMPoolCidr resource allows you to manage CIDR blocks within an IP address management (IPAM) pool in AWS. This resource can be used to allocate IP address ranges for your Amazon EC2 instances and other AWS services. For more information, refer to the [AWS EC2 IPAMPoolCidrs documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic IPAMPoolCidr with required properties and a common optional property.
+Create a basic IPAMPoolCidr with required properties and one optional property for the CIDR block.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const ipamPoolCidr = await AWS.EC2.IPAMPoolCidr("MyIPAMPoolCidr", {
+const BasicIPAMPoolCidr = await AWS.EC2.IPAMPoolCidr("BasicIPAMPoolCidr", {
   IpamPoolId: "ipam-pool-12345678",
-  Cidr: "10.0.0.0/24",
-  NetmaskLength: 24 // Optional: The length of the CIDR netmask
+  Cidr: "10.0.0.0/24" // Optional: Specify the CIDR block to use
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IPAMPoolCidr with adoption of existing resources.
+In this example, we specify the netmask length to configure a more refined CIDR allocation.
 
 ```ts
-const adoptExistingCidr = await AWS.EC2.IPAMPoolCidr("AdoptedIPAMPoolCidr", {
+const AdvancedIPAMPoolCidr = await AWS.EC2.IPAMPoolCidr("AdvancedIPAMPoolCidr", {
   IpamPoolId: "ipam-pool-87654321",
-  Cidr: "192.168.1.0/24",
-  NetmaskLength: 24,
-  adopt: true // Optional: Adopt existing resource instead of failing
+  Cidr: "192.168.1.0/24", // Optional: Specify the CIDR block to use
+  NetmaskLength: 24 // Optional: Specify the netmask length
 });
 ```
 
-## Unique Use Case: Multiple CIDRs
+## Adopting Existing Resources
 
-Create multiple IPAMPoolCidrs for different subnets within the same IPAM pool.
+This example demonstrates how to adopt an existing IPAMPoolCidr resource instead of failing when it already exists.
 
 ```ts
-const subnetA = await AWS.EC2.IPAMPoolCidr("SubnetA", {
+const AdoptExistingIPAMPoolCidr = await AWS.EC2.IPAMPoolCidr("AdoptExistingIPAMPoolCidr", {
   IpamPoolId: "ipam-pool-12345678",
-  Cidr: "10.0.1.0/24",
-  NetmaskLength: 24
-});
-
-const subnetB = await AWS.EC2.IPAMPoolCidr("SubnetB", {
-  IpamPoolId: "ipam-pool-12345678",
-  Cidr: "10.0.2.0/24",
-  NetmaskLength: 24
+  Cidr: "10.1.0.0/24",
+  adopt: true // Optional: Enables adoption of an existing resource
 });
 ```
 
-## Unique Use Case: Custom Netmask Length
+## Creating Multiple CIDRs
 
-Create an IPAMPoolCidr with a custom netmask length for more granular control.
+This example shows how to create multiple IPAMPoolCidrs by varying CIDR blocks for different use cases.
 
 ```ts
-const customNetmaskCidr = await AWS.EC2.IPAMPoolCidr("CustomNetmaskCidr", {
-  IpamPoolId: "ipam-pool-12345678",
-  Cidr: "172.16.0.0/20", // A larger CIDR block
-  NetmaskLength: 20 // Custom netmask length
+const ProductionIPAMPoolCidr = await AWS.EC2.IPAMPoolCidr("ProductionIPAMPoolCidr", {
+  IpamPoolId: "ipam-pool-prod",
+  Cidr: "10.2.0.0/24"
+});
+
+const StagingIPAMPoolCidr = await AWS.EC2.IPAMPoolCidr("StagingIPAMPoolCidr", {
+  IpamPoolId: "ipam-pool-staging",
+  Cidr: "10.3.0.0/24"
 });
 ```

@@ -5,56 +5,48 @@ description: Learn how to create, update, and manage AWS NetworkManager DirectCo
 
 # DirectConnectGatewayAttachment
 
-The DirectConnectGatewayAttachment resource allows you to manage Direct Connect gateway attachments within AWS Network Manager. This resource facilitates the connection of your on-premises networks to AWS through Direct Connect. For more information, refer to the [AWS NetworkManager DirectConnectGatewayAttachments documentation](https://docs.aws.amazon.com/networkmanager/latest/userguide/).
+The DirectConnectGatewayAttachment resource lets you create and manage [AWS NetworkManager DirectConnectGatewayAttachments](https://docs.aws.amazon.com/networkmanager/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-networkmanager-directconnectgatewayattachment.html
 
 ## Minimal Example
-
-Create a basic Direct Connect Gateway Attachment with required properties and a tag:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const directConnectAttachment = await AWS.NetworkManager.DirectConnectGatewayAttachment("basicAttachment", {
-  CoreNetworkId: "cn-12345678",
-  EdgeLocations: ["us-west-2", "us-east-1"],
-  DirectConnectGatewayArn: "arn:aws:directconnect:us-west-2:123456789012:direct-connect-gateway/my-gateway",
-  Tags: [{ Key: "Environment", Value: "Production" }]
-});
+const directconnectgatewayattachment = await AWS.NetworkManager.DirectConnectGatewayAttachment(
+  "directconnectgatewayattachment-example",
+  {
+    CoreNetworkId: "example-corenetworkid",
+    EdgeLocations: ["example-edgelocations-1"],
+    DirectConnectGatewayArn: "example-directconnectgatewayarn",
+    Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  }
+);
 ```
 
 ## Advanced Configuration
 
-Configure a Direct Connect Gateway Attachment with proposed segment changes and network functions:
+Create a directconnectgatewayattachment with additional configuration:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const advancedAttachment = await AWS.NetworkManager.DirectConnectGatewayAttachment("advancedAttachment", {
-  CoreNetworkId: "cn-87654321",
-  EdgeLocations: ["us-west-1", "us-east-1"],
-  DirectConnectGatewayArn: "arn:aws:directconnect:us-west-1:123456789012:direct-connect-gateway/my-advanced-gateway",
-  ProposedSegmentChange: {
-    SegmentName: "new-segment",
-    // Define additional properties as needed
-  },
-  ProposedNetworkFunctionGroupChange: {
-    // Define properties for network function group changes
-  },
-  Tags: [{ Key: "Project", Value: "NetworkUpgrade" }]
-});
+const advancedDirectConnectGatewayAttachment =
+  await AWS.NetworkManager.DirectConnectGatewayAttachment(
+    "advanced-directconnectgatewayattachment",
+    {
+      CoreNetworkId: "example-corenetworkid",
+      EdgeLocations: ["example-edgelocations-1"],
+      DirectConnectGatewayArn: "example-directconnectgatewayarn",
+      Tags: {
+        Environment: "production",
+        Team: "DevOps",
+        Project: "MyApp",
+        CostCenter: "Engineering",
+        ManagedBy: "Alchemy",
+      },
+    }
+  );
 ```
 
-## Adopt Existing Resource
-
-Adopt an existing Direct Connect Gateway Attachment instead of failing if it already exists:
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const adoptExistingAttachment = await AWS.NetworkManager.DirectConnectGatewayAttachment("adoptAttachment", {
-  CoreNetworkId: "cn-13579246",
-  EdgeLocations: ["us-east-1"],
-  DirectConnectGatewayArn: "arn:aws:directconnect:us-east-1:123456789012:direct-connect-gateway/my-existing-gateway",
-  adopt: true
-});
-```

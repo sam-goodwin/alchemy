@@ -5,90 +5,86 @@ description: Learn how to create, update, and manage AWS LookoutEquipment Infere
 
 # InferenceScheduler
 
-The InferenceScheduler resource allows you to manage [AWS LookoutEquipment InferenceSchedulers](https://docs.aws.amazon.com/lookoutequipment/latest/userguide/) that automate the process of running inference on your equipment data.
+The InferenceScheduler resource allows you to automate the scheduling of inference jobs for AWS LookoutEquipment, enabling you to analyze equipment data efficiently. For more information, refer to the [AWS LookoutEquipment InferenceSchedulers documentation](https://docs.aws.amazon.com/lookoutequipment/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic InferenceScheduler with required properties and common optional settings.
+Create a basic InferenceScheduler with required properties and a couple of optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const inferenceScheduler = await AWS.LookoutEquipment.InferenceScheduler("basicScheduler", {
-  InferenceSchedulerName: "BasicInferenceScheduler",
-  DataUploadFrequency: "PT5M", // Data will be uploaded every 5 minutes
-  ModelName: "MyEquipmentModel",
+const basicInferenceScheduler = await AWS.LookoutEquipment.InferenceScheduler("BasicScheduler", {
+  InferenceSchedulerName: "DailyEquipmentInference",
+  DataUploadFrequency: "PT1H", // Upload data every hour
+  ModelName: "EquipmentAnomalyModel",
   DataInputConfiguration: {
     S3InputConfiguration: {
-      Bucket: "my-input-bucket",
-      Prefix: "input-data/"
+      Bucket: "my-equipment-data-bucket",
+      Prefix: "data/"
     }
   },
   DataOutputConfiguration: {
     S3OutputConfiguration: {
-      Bucket: "my-output-bucket",
-      Prefix: "output-data/"
+      Bucket: "my-output-data-bucket",
+      Prefix: "output/"
     }
   },
-  RoleArn: "arn:aws:iam::123456789012:role/service-role/MyInferenceRole"
+  RoleArn: "arn:aws:iam::123456789012:role/MyLookoutRole"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an InferenceScheduler with additional options for data delay and encryption settings.
+Configure an InferenceScheduler with advanced settings, such as server-side encryption and data delay offset.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const advancedScheduler = await AWS.LookoutEquipment.InferenceScheduler("advancedScheduler", {
-  InferenceSchedulerName: "AdvancedInferenceScheduler",
-  DataUploadFrequency: "PT10M", // Data will be uploaded every 10 minutes
-  ModelName: "AdvancedEquipmentModel",
+const advancedInferenceScheduler = await AWS.LookoutEquipment.InferenceScheduler("AdvancedScheduler", {
+  InferenceSchedulerName: "WeeklyEquipmentInference",
+  DataUploadFrequency: "PT6H", // Upload data every six hours
+  ModelName: "AdvancedAnomalyDetectionModel",
   DataInputConfiguration: {
     S3InputConfiguration: {
-      Bucket: "my-input-bucket",
-      Prefix: "input-data/"
+      Bucket: "my-advanced-equipment-data-bucket",
+      Prefix: "advanced-data/"
     }
   },
   DataOutputConfiguration: {
     S3OutputConfiguration: {
-      Bucket: "my-output-bucket",
-      Prefix: "output-data/"
+      Bucket: "my-advanced-output-data-bucket",
+      Prefix: "advanced-output/"
     }
   },
-  ServerSideKmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/my-kms-key",
-  DataDelayOffsetInMinutes: 15, // Data will be delayed by 15 minutes
-  RoleArn: "arn:aws:iam::123456789012:role/service-role/MyAdvancedInferenceRole"
+  ServerSideKmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-kms-key",
+  DataDelayOffsetInMinutes: 10, // Delay data processing by 10 minutes
+  RoleArn: "arn:aws:iam::123456789012:role/MyAdvancedLookoutRole"
 });
 ```
 
-## Using Tags for Management
+## Scheduled Inference with Tags
 
-Create an InferenceScheduler with tags to help organize and manage resources.
+Create an InferenceScheduler that is tagged for easy identification and management.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const taggedScheduler = await AWS.LookoutEquipment.InferenceScheduler("taggedScheduler", {
-  InferenceSchedulerName: "TaggedInferenceScheduler",
-  DataUploadFrequency: "PT30M", // Data will be uploaded every 30 minutes
-  ModelName: "TaggedEquipmentModel",
+const taggedInferenceScheduler = await AWS.LookoutEquipment.InferenceScheduler("TaggedScheduler", {
+  InferenceSchedulerName: "MonthlyEquipmentInference",
+  DataUploadFrequency: "PT24H", // Upload data once a day
+  ModelName: "MonthlyAnomalyDetectionModel",
   DataInputConfiguration: {
     S3InputConfiguration: {
-      Bucket: "my-input-bucket",
-      Prefix: "input-data/"
+      Bucket: "my-tagged-equipment-data-bucket",
+      Prefix: "tagged-data/"
     }
   },
   DataOutputConfiguration: {
     S3OutputConfiguration: {
-      Bucket: "my-output-bucket",
-      Prefix: "output-data/"
+      Bucket: "my-tagged-output-data-bucket",
+      Prefix: "tagged-output/"
     }
   },
-  RoleArn: "arn:aws:iam::123456789012:role/service-role/MyTaggedInferenceRole",
+  RoleArn: "arn:aws:iam::123456789012:role/MyTaggedLookoutRole",
   Tags: [
-    { Key: "Environment", Value: "Production" },
+    { Key: "Environment", Value: "production" },
     { Key: "Team", Value: "DataScience" }
   ]
 });

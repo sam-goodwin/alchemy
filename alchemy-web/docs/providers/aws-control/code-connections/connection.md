@@ -5,61 +5,48 @@ description: Learn how to create, update, and manage AWS CodeConnections Connect
 
 # Connection
 
-The Connection resource allows you to manage [AWS CodeConnections Connections](https://docs.aws.amazon.com/codeconnections/latest/userguide/) that facilitate integrations between AWS services and external tools.
+The Connection resource lets you manage [AWS CodeConnections Connections](https://docs.aws.amazon.com/codeconnections/latest/userguide/) for integrating with various source control providers.
 
 ## Minimal Example
 
-Create a basic connection with the required properties and an optional host ARN.
+Create a basic connection with a name and optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicConnection = await AWS.CodeConnections.Connection("myBasicConnection", {
-  ConnectionName: "MyBasicConnection",
-  HostArn: "arn:aws:codeconnections:us-east-1:123456789012:host/my-host"
+const BasicConnection = await AWS.CodeConnections.Connection("BasicConnection", {
+  ConnectionName: "MyFirstConnection",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Engineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a connection with additional properties like provider type and tags.
+Configure a connection with additional properties like HostArn and ProviderType.
 
 ```ts
-const advancedConnection = await AWS.CodeConnections.Connection("myAdvancedConnection", {
+const AdvancedConnection = await AWS.CodeConnections.Connection("AdvancedConnection", {
   ConnectionName: "MyAdvancedConnection",
-  HostArn: "arn:aws:codeconnections:us-east-1:123456789012:host/my-host",
+  HostArn: "arn:aws:codestar-connections:us-east-1:123456789012:host/abcde12345",
   ProviderType: "GitHub",
   Tags: [
     { Key: "Environment", Value: "Production" },
     { Key: "Team", Value: "DevOps" }
-  ]
+  ],
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Adoption of Existing Resources
+## Using Existing Resources
 
-Create a connection that adopts an existing resource if it already exists.
+Adopt an existing connection resource without failing if it already exists.
 
 ```ts
-const adoptConnection = await AWS.CodeConnections.Connection("myAdoptedConnection", {
-  ConnectionName: "MyAdoptedConnection",
-  HostArn: "arn:aws:codeconnections:us-east-1:123456789012:host/my-host",
-  ProviderType: "GitLab",
+const ExistingConnection = await AWS.CodeConnections.Connection("ExistingConnection", {
+  ConnectionName: "MyExistingConnection",
   adopt: true
-});
-```
-
-## Updating a Connection
-
-Update an existing connection by specifying its name and new properties.
-
-```ts
-const updatedConnection = await AWS.CodeConnections.Connection("myUpdatedConnection", {
-  ConnectionName: "MyUpdatedConnection",
-  HostArn: "arn:aws:codeconnections:us-east-1:123456789012:host/my-updated-host",
-  ProviderType: "Bitbucket",
-  Tags: [
-    { Key: "Environment", Value: "Staging" }
-  ]
 });
 ```

@@ -5,78 +5,34 @@ description: Learn how to create, update, and manage AWS MediaConnect FlowOutput
 
 # FlowOutput
 
-The FlowOutput resource lets you manage [AWS MediaConnect FlowOutputs](https://docs.aws.amazon.com/mediaconnect/latest/userguide/) for delivering live video streams. This resource allows you to configure various output parameters such as destination, protocol, and encryption settings.
+The FlowOutput resource lets you create and manage [AWS MediaConnect FlowOutputs](https://docs.aws.amazon.com/mediaconnect/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-mediaconnect-flowoutput.html
 
 ## Minimal Example
-
-Create a basic FlowOutput with required properties and a common optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicFlowOutput = await AWS.MediaConnect.FlowOutput("basicFlowOutput", {
-  FlowArn: "arn:aws:mediaconnect:us-west-2:123456789012:flow:example-flow",
-  Protocol: "RTP",
-  Destination: "192.0.2.0:5000", // Example destination for RTP stream
-  Name: "MyBasicOutput"
+const flowoutput = await AWS.MediaConnect.FlowOutput("flowoutput-example", {
+  Protocol: "example-protocol",
+  FlowArn: "example-flowarn",
+  Description: "A flowoutput resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a FlowOutput with advanced options, including encryption and additional output settings:
+Create a flowoutput with additional configuration:
 
 ```ts
-const advancedFlowOutput = await AWS.MediaConnect.FlowOutput("advancedFlowOutput", {
-  FlowArn: "arn:aws:mediaconnect:us-west-2:123456789012:flow:example-flow",
-  Protocol: "RTP",
-  Destination: "203.0.113.0:6000", // Advanced destination for RTP stream
-  Encryption: {
-    Algorithm: "aes128", // Example encryption algorithm
-    RoleArn: "arn:aws:iam::123456789012:role/MediaConnectEncryptionRole",
-    KeyType: "static-key",
-    StaticKeyValue: "my-static-key-value" // Replace with your static key value
-  },
-  SmoothingLatency: 100, // Set smoothing latency to 100 ms
-  Name: "MyAdvancedOutput"
+import AWS from "alchemy/aws/control";
+
+const advancedFlowOutput = await AWS.MediaConnect.FlowOutput("advanced-flowoutput", {
+  Protocol: "example-protocol",
+  FlowArn: "example-flowarn",
+  Description: "A flowoutput resource managed by Alchemy",
+  Encryption: { Enabled: true, KmsKeyId: "alias/aws/s3" },
 });
 ```
 
-## Using Media Stream Output Configurations
-
-Create a FlowOutput with media stream output configurations for more complex use cases:
-
-```ts
-const mediaStreamOutputConfiguration = [{
-  MediaStreamName: "videoStream",
-  StreamId: "stream1",
-  // Additional configurations can go here
-}];
-
-const mediaStreamFlowOutput = await AWS.MediaConnect.FlowOutput("mediaStreamFlowOutput", {
-  FlowArn: "arn:aws:mediaconnect:us-west-2:123456789012:flow:example-flow",
-  Protocol: "RTP-FEC",
-  Destination: "198.51.100.0:7000", // Example destination for RTP-FEC
-  MediaStreamOutputConfigurations: mediaStreamOutputConfiguration,
-  Name: "MyMediaStreamOutput"
-});
-```
-
-## Setting Up with VPC Interface Attachment
-
-Configure a FlowOutput with a VPC Interface Attachment for secure network configuration:
-
-```ts
-const vpcInterfaceAttachment = {
-  VpcInterfaceName: "MyVpcInterface",
-  NetworkInterfaceId: "eni-abcdefgh", // Replace with your network interface ID
-};
-
-const vpcFlowOutput = await AWS.MediaConnect.FlowOutput("vpcFlowOutput", {
-  FlowArn: "arn:aws:mediaconnect:us-west-2:123456789012:flow:example-flow",
-  Protocol: "RTP",
-  Destination: "192.0.2.0:8000", // Secure VPC destination
-  VpcInterfaceAttachment: vpcInterfaceAttachment,
-  Name: "MyVpcFlowOutput"
-});
-```

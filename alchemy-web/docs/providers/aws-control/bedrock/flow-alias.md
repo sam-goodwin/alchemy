@@ -1,71 +1,47 @@
 ---
-title: Managing AWS Bedrock FlowAliases with Alchemy
-description: Learn how to create, update, and manage AWS Bedrock FlowAliases using Alchemy Cloud Control.
+title: Managing AWS Bedrock FlowAliass with Alchemy
+description: Learn how to create, update, and manage AWS Bedrock FlowAliass using Alchemy Cloud Control.
 ---
 
 # FlowAlias
 
-The FlowAlias resource lets you manage [AWS Bedrock FlowAliases](https://docs.aws.amazon.com/bedrock/latest/userguide/) for routing requests to various flows. This allows for flexible management of flow configurations.
+The FlowAlias resource lets you create and manage [AWS Bedrock FlowAliass](https://docs.aws.amazon.com/bedrock/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-bedrock-flowalias.html
 
 ## Minimal Example
-
-Create a basic FlowAlias with required properties and an optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const flowAlias = await AWS.Bedrock.FlowAlias("basicFlowAlias", {
-  flowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/my-flow",
-  routingConfiguration: [
-    {
-      flow: "myFlow",
-      weight: 1
-    }
-  ],
-  name: "BasicFlowAlias",
-  description: "This is a basic FlowAlias for demonstration purposes."
+const flowalias = await AWS.Bedrock.FlowAlias("flowalias-example", {
+  RoutingConfiguration: [],
+  FlowArn: "example-flowarn",
+  Name: "flowalias-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A flowalias resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a FlowAlias with multiple routing options and tags for better resource management.
+Create a flowalias with additional configuration:
 
 ```ts
-const advancedFlowAlias = await AWS.Bedrock.FlowAlias("advancedFlowAlias", {
-  flowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/advanced-flow",
-  routingConfiguration: [
-    {
-      flow: "primaryFlow",
-      weight: 70
-    },
-    {
-      flow: "secondaryFlow",
-      weight: 30
-    }
-  ],
-  name: "AdvancedFlowAlias",
-  tags: {
-    Environment: "Production",
-    Project: "AIModel"
-  }
+import AWS from "alchemy/aws/control";
+
+const advancedFlowAlias = await AWS.Bedrock.FlowAlias("advanced-flowalias", {
+  RoutingConfiguration: [],
+  FlowArn: "example-flowarn",
+  Name: "flowalias-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A flowalias resource managed by Alchemy",
 });
 ```
 
-## Adoption of Existing Resource
-
-Create a FlowAlias that adopts an existing resource instead of failing when it already exists.
-
-```ts
-const adoptedFlowAlias = await AWS.Bedrock.FlowAlias("adoptedFlowAlias", {
-  flowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/adopted-flow",
-  routingConfiguration: [
-    {
-      flow: "existingFlow",
-      weight: 100
-    }
-  ],
-  name: "AdoptedFlowAlias",
-  adopt: true // Setting adopt to true to use an existing resource
-});
-```

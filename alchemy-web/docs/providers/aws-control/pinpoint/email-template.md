@@ -5,69 +5,73 @@ description: Learn how to create, update, and manage AWS Pinpoint EmailTemplates
 
 # EmailTemplate
 
-The EmailTemplate resource lets you manage [AWS Pinpoint EmailTemplates](https://docs.aws.amazon.com/pinpoint/latest/userguide/) for sending targeted email communications to your users.
+The EmailTemplate resource allows you to create and manage email templates for AWS Pinpoint, enabling personalized email communication with your users. For more details, refer to the [AWS Pinpoint EmailTemplates documentation](https://docs.aws.amazon.com/pinpoint/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic email template with required properties and a common optional description.
+Create a basic email template with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const emailTemplate = await AWS.Pinpoint.EmailTemplate("welcomeEmailTemplate", {
-  TemplateName: "Welcome Email",
+const BasicEmailTemplate = await AWS.Pinpoint.EmailTemplate("BasicEmailTemplate", {
+  TemplateName: "WelcomeEmail",
   Subject: "Welcome to Our Service!",
-  HtmlPart: "<h1>Welcome!</h1><p>Thank you for joining us.</p>",
-  TextPart: "Welcome! Thank you for joining us."
+  HtmlPart: "<html><body><h1>Welcome!</h1><p>Thanks for joining us.</p></body></html>",
+  TextPart: "Welcome! Thanks for joining us."
 });
 ```
 
 ## Advanced Configuration
 
-Configure an email template with default substitutions and additional metadata.
+Configure an email template with additional options, including a description and default substitutions.
 
 ```ts
-const advancedEmailTemplate = await AWS.Pinpoint.EmailTemplate("advancedEmailTemplate", {
-  TemplateName: "Advanced Welcome Email",
-  Subject: "Welcome to Our Service!",
-  HtmlPart: "<h1>Welcome!</h1><p>Dear {{name}}, thank you for joining us.</p>",
-  TextPart: "Welcome! Dear {{name}}, thank you for joining us.",
-  TemplateDescription: "A detailed welcome email template.",
-  DefaultSubstitutions: JSON.stringify({ name: "User" }),
-  Tags: {
-    environment: "production",
-    team: "marketing"
-  }
-});
-```
-
-## Using Tags for Organization
-
-Create an email template with specific tags for better organization and management.
-
-```ts
-const taggedEmailTemplate = await AWS.Pinpoint.EmailTemplate("taggedEmailTemplate", {
-  TemplateName: "Promotional Offer",
+const AdvancedEmailTemplate = await AWS.Pinpoint.EmailTemplate("AdvancedEmailTemplate", {
+  TemplateName: "PromotionalEmail",
   Subject: "Exclusive Offer Just for You!",
-  HtmlPart: "<h1>Special Offer!</h1><p>Get 20% off your next purchase!</p>",
-  TextPart: "Special Offer! Get 20% off your next purchase!",
-  Tags: {
-    campaign: "holiday-promotion",
-    region: "us-west"
-  }
+  HtmlPart: "<html><body><h1>Special Promotion!</h1><p>Use code <strong>OFFER2023</strong> to get a discount!</p></body></html>",
+  TextPart: "Special Promotion! Use code OFFER2023 to get a discount!",
+  TemplateDescription: "A template for promotional emails.",
+  DefaultSubstitutions: JSON.stringify({
+    name: "User"
+  }),
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Region", Value: "us-east-1" }
+  ]
 });
 ```
 
-## Handling Existing Resources
+## Custom Default Substitutions
 
-Create an email template that adopts an existing resource if it already exists, preventing failures.
+Use default substitutions to personalize emails dynamically based on user data.
 
 ```ts
-const adoptEmailTemplate = await AWS.Pinpoint.EmailTemplate("adoptEmailTemplate", {
-  TemplateName: "Adopted Welcome Email",
-  Subject: "Welcome Back!",
-  HtmlPart: "<h1>Welcome Back!</h1><p>We're glad to see you again.</p>",
-  TextPart: "Welcome Back! We're glad to see you again.",
-  adopt: true // Set to true to adopt existing resource
+const PersonalizedEmailTemplate = await AWS.Pinpoint.EmailTemplate("PersonalizedEmailTemplate", {
+  TemplateName: "BirthdayEmail",
+  Subject: "Happy Birthday, {{name}}!",
+  HtmlPart: "<html><body><h1>Happy Birthday!</h1><p>Wishing you a fantastic day, {{name}}!</p></body></html>",
+  TextPart: "Happy Birthday, {{name}}! Wishing you a fantastic day!",
+  DefaultSubstitutions: JSON.stringify({
+    name: "John Doe"
+  })
+});
+```
+
+## Tagging for Organization
+
+Create an email template with specific tags for better management and organization.
+
+```ts
+const TaggedEmailTemplate = await AWS.Pinpoint.EmailTemplate("TaggedEmailTemplate", {
+  TemplateName: "FeedbackRequestEmail",
+  Subject: "We Value Your Feedback!",
+  HtmlPart: "<html><body><h1>Your Opinion Matters!</h1><p>Please let us know how we did.</p></body></html>",
+  TextPart: "Your Opinion Matters! Please let us know how we did.",
+  Tags: [
+    { Key: "Feedback", Value: "Customer" },
+    { Key: "Priority", Value: "High" }
+  ]
 });
 ```

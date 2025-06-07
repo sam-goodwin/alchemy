@@ -5,88 +5,93 @@ description: Learn how to create, update, and manage AWS GuardDuty Filters using
 
 # Filter
 
-The Filter resource lets you manage [AWS GuardDuty Filters](https://docs.aws.amazon.com/guardduty/latest/userguide/) that help in defining which findings should be included in the detection of threats. Filters allow you to take specific actions on the findings based on the defined criteria.
+The Filter resource lets you manage [AWS GuardDuty Filters](https://docs.aws.amazon.com/guardduty/latest/userguide/) to define which findings to include or exclude in your security alerts.
 
 ## Minimal Example
 
-Create a basic GuardDuty Filter with the required properties and one optional property.
+Create a basic GuardDuty filter with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const simpleFilter = await AWS.GuardDuty.Filter("simpleFilter", {
-  DetectorId: "12abcdef34gh567ijkl890mnopqrstu",
+const basicFilter = await AWS.GuardDuty.Filter("BasicFilter", {
+  DetectorId: "12abc34de5678f90123456789ab0cdef",
+  Name: "CriticalFindingsFilter",
   FindingCriteria: {
     Criterion: {
-      severity: {
-        Eq: ["HIGH"]
+      "severity": {
+        "Eq": ["HIGH", "CRITICAL"]
       }
     }
   },
-  Name: "HighSeverityFilter"
+  Description: "Filter for high and critical severity findings",
+  Rank: 1
 });
 ```
 
 ## Advanced Configuration
 
-Configure a filter with an action and a rank to prioritize it:
+Configure a filter to include tags for better organization and management:
 
 ```ts
-const advancedFilter = await AWS.GuardDuty.Filter("advancedFilter", {
-  DetectorId: "12abcdef34gh567ijkl890mnopqrstu",
+const taggedFilter = await AWS.GuardDuty.Filter("TaggedFilter", {
+  DetectorId: "12abc34de5678f90123456789ab0cdef",
+  Name: "FilteredByTags",
   FindingCriteria: {
     Criterion: {
-      severity: {
-        Eq: ["MEDIUM", "HIGH"]
-      },
-      type: {
-        Eq: ["UnauthorizedAccess:Root", "UnauthorizedAccess:AWSAccount"]
+      "resource.accessKeyDetails.userName": {
+        "Eq": ["admin"]
       }
     }
   },
-  Name: "MediumAndHighSeverityFilter",
-  Action: "NOOP",
-  Rank: 1
-});
-```
-
-## Tagging for Organization
-
-Create a filter with tags for better organization and management:
-
-```ts
-const taggedFilter = await AWS.GuardDuty.Filter("taggedFilter", {
-  DetectorId: "12abcdef34gh567ijkl890mnopqrstu",
-  FindingCriteria: {
-    Criterion: {
-      severity: {
-        Eq: ["LOW", "MEDIUM"]
-      }
-    }
-  },
-  Name: "LowAndMediumSeverityFilter",
+  Description: "Filter for findings related to admin access",
   Tags: [
-    { Key: "Environment", Value: "Production" },
+    { Key: "Environment", Value: "production" },
     { Key: "Team", Value: "Security" }
-  ]
+  ],
+  Rank: 2
 });
 ```
 
-## Adoption of Existing Filter
+## Adoption of Existing Resources
 
-Create a filter that adopts an existing one instead of failing if it exists:
+Use the adopt option to create a filter while adopting an existing resource:
 
 ```ts
-const adoptFilter = await AWS.GuardDuty.Filter("adoptFilter", {
-  DetectorId: "12abcdef34gh567ijkl890mnopqrstu",
+const existingFilter = await AWS.GuardDuty.Filter("ExistingFilter", {
+  DetectorId: "12abc34de5678f90123456789ab0cdef",
+  Name: "AdoptedFilter",
   FindingCriteria: {
     Criterion: {
-      severity: {
-        Eq: ["HIGH"]
+      "type": {
+        "Eq": ["UnauthorizedAccess:EC2/SSHBruteForce"]
       }
     }
   },
-  Name: "AdoptHighSeverityFilter",
+  Description: "Filter for SSH brute force attempts",
   adopt: true
+});
+``` 
+
+## Dynamic Filter Configuration
+
+Create a filter dynamically based on runtime parameters for flexibility:
+
+```ts
+const dynamicFilter = await AWS.GuardDuty.Filter("DynamicFilter", {
+  DetectorId: "12abc34de5678f90123456789ab0cdef",
+  Name: `DynamicFilter-${new Date().getTime()}`,
+  FindingCriteria: {
+    Criterion: {
+      "resource.type": {
+        "Eq": ["AWS::EC2::Instance"]
+      }
+    }
+  },
+  Description: "Filter for EC2 instance related findings",
+  Tags: [
+    { Key: "Project", Value: "SecurityEnhancement" }
+  ],
+  Rank: 3
 });
 ```

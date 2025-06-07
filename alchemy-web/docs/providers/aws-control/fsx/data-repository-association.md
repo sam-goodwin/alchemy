@@ -5,49 +5,47 @@ description: Learn how to create, update, and manage AWS FSx DataRepositoryAssoc
 
 # DataRepositoryAssociation
 
-The DataRepositoryAssociation resource allows you to manage associations between an FSx file system and an Amazon S3 data repository. For more details, refer to the [AWS FSx DataRepositoryAssociations documentation](https://docs.aws.amazon.com/fsx/latest/userguide/).
+The DataRepositoryAssociation resource lets you create and manage [AWS FSx DataRepositoryAssociations](https://docs.aws.amazon.com/fsx/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-fsx-datarepositoryassociation.html
 
 ## Minimal Example
-
-Create a basic DataRepositoryAssociation with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dataRepositoryAssociation = await AWS.FSx.DataRepositoryAssociation("basicAssociation", {
-  FileSystemPath: "/data",
-  DataRepositoryPath: "s3://my-data-repo/path",
-  FileSystemId: "fs-0123456789abcdef0",
-  BatchImportMetaDataOnCreate: true
-});
+const datarepositoryassociation = await AWS.FSx.DataRepositoryAssociation(
+  "datarepositoryassociation-example",
+  {
+    FileSystemPath: "example-filesystempath",
+    DataRepositoryPath: "example-datarepositorypath",
+    FileSystemId: "example-filesystemid",
+    Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  }
+);
 ```
 
 ## Advanced Configuration
 
-Configure a DataRepositoryAssociation with additional properties for chunk size and tags.
+Create a datarepositoryassociation with additional configuration:
 
 ```ts
-const advancedDataRepositoryAssociation = await AWS.FSx.DataRepositoryAssociation("advancedAssociation", {
-  FileSystemPath: "/data",
-  DataRepositoryPath: "s3://my-data-repo/advanced-path",
-  FileSystemId: "fs-0123456789abcdef0",
-  ImportedFileChunkSize: 1048576, // 1 MB
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DataSync" }
-  ]
-});
+import AWS from "alchemy/aws/control";
+
+const advancedDataRepositoryAssociation = await AWS.FSx.DataRepositoryAssociation(
+  "advanced-datarepositoryassociation",
+  {
+    FileSystemPath: "example-filesystempath",
+    DataRepositoryPath: "example-datarepositorypath",
+    FileSystemId: "example-filesystemid",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+  }
+);
 ```
 
-## Example with Adoption of Existing Resource
-
-Create a DataRepositoryAssociation that adopts an existing resource instead of failing if it already exists.
-
-```ts
-const adoptExistingAssociation = await AWS.FSx.DataRepositoryAssociation("existingAssociation", {
-  FileSystemPath: "/data",
-  DataRepositoryPath: "s3://my-data-repo/existing-path",
-  FileSystemId: "fs-0123456789abcdef0",
-  adopt: true
-});
-```

@@ -5,16 +5,16 @@ description: Learn how to create, update, and manage AWS ApiGateway Documentatio
 
 # DocumentationVersion
 
-The DocumentationVersion resource allows you to manage [AWS ApiGateway DocumentationVersions](https://docs.aws.amazon.com/apigateway/latest/userguide/) for your APIs, enabling you to document various stages of your API development.
+The DocumentationVersion resource allows you to manage [AWS ApiGateway DocumentationVersions](https://docs.aws.amazon.com/apigateway/latest/userguide/) which are used to represent a specific version of the API documentation.
 
 ## Minimal Example
 
-Create a basic DocumentationVersion for an API.
+Create a basic DocumentationVersion with required properties and an optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const documentationVersion = await AWS.ApiGateway.DocumentationVersion("apiDocumentationVersion", {
+const BasicDocumentationVersion = await AWS.ApiGateway.DocumentationVersion("BasicDocumentationVersion", {
   DocumentationVersion: "v1.0",
   RestApiId: "1234567890",
   Description: "Initial version of the API documentation"
@@ -23,38 +23,43 @@ const documentationVersion = await AWS.ApiGateway.DocumentationVersion("apiDocum
 
 ## Advanced Configuration
 
-Create a DocumentationVersion with an optional description and adopt existing resources.
+Configure a DocumentationVersion with additional properties like adopting an existing resource.
 
 ```ts
-const advancedDocumentationVersion = await AWS.ApiGateway.DocumentationVersion("advancedApiDocumentationVersion", {
+const AdvancedDocumentationVersion = await AWS.ApiGateway.DocumentationVersion("AdvancedDocumentationVersion", {
   DocumentationVersion: "v2.0",
   RestApiId: "0987654321",
-  Description: "Updated API documentation with additional endpoints",
+  Description: "Updated version of the API documentation",
   adopt: true
 });
 ```
 
-## Versioning for Staging
+## Multiple Versions Management
 
-Manage different versions of the API documentation for staging environments.
+Create multiple DocumentationVersions for different stages of the API.
 
 ```ts
-const stagingDocumentationVersion = await AWS.ApiGateway.DocumentationVersion("stagingApiDocumentationVersion", {
-  DocumentationVersion: "staging-v1.0",
-  RestApiId: "1122334455",
-  Description: "Staging version of the API documentation"
+const AlphaDocumentationVersion = await AWS.ApiGateway.DocumentationVersion("AlphaDocumentationVersion", {
+  DocumentationVersion: "v0.1",
+  RestApiId: "1234567890",
+  Description: "Alpha release of the API documentation"
+});
+
+const BetaDocumentationVersion = await AWS.ApiGateway.DocumentationVersion("BetaDocumentationVersion", {
+  DocumentationVersion: "v0.2",
+  RestApiId: "1234567890",
+  Description: "Beta release of the API documentation"
 });
 ```
 
-## Versioning for Production
+## Version Rollback
 
-Create a documentation version specifically for the production environment.
+Create a DocumentationVersion that allows for easy rollback to a previous state.
 
 ```ts
-const productionDocumentationVersion = await AWS.ApiGateway.DocumentationVersion("productionApiDocumentationVersion", {
-  DocumentationVersion: "prod-v1.0",
-  RestApiId: "5566778899",
-  Description: "Production version of the API documentation",
-  adopt: false // Do not adopt existing resources
+const RollbackDocumentationVersion = await AWS.ApiGateway.DocumentationVersion("RollbackDocumentationVersion", {
+  DocumentationVersion: "v0.1",
+  RestApiId: "1234567890",
+  Description: "Rolling back to the previous version of API documentation"
 });
 ```

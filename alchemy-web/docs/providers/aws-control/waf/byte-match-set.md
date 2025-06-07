@@ -5,26 +5,26 @@ description: Learn how to create, update, and manage AWS WAF ByteMatchSets using
 
 # ByteMatchSet
 
-The ByteMatchSet resource lets you manage [AWS WAF ByteMatchSets](https://docs.aws.amazon.com/waf/latest/userguide/) which are used to inspect web requests and match specific byte sequences.
+The ByteMatchSet resource lets you manage [AWS WAF ByteMatchSets](https://docs.aws.amazon.com/waf/latest/userguide/) which are used to inspect web requests for specific byte sequences.
 
 ## Minimal Example
 
-Create a basic ByteMatchSet with a name and one ByteMatchTuple.
+Create a basic ByteMatchSet with required properties and one optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicByteMatchSet = await AWS.WAF.ByteMatchSet("basicByteMatchSet", {
-  name: "MyByteMatchSet",
-  byteMatchTuples: [
+const BasicByteMatchSet = await AWS.WAF.ByteMatchSet("BasicByteMatchSet", {
+  Name: "MyByteMatchSet",
+  ByteMatchTuples: [
     {
-      fieldToMatch: {
-        type: "HEADER",
-        data: "User-Agent"
+      FieldToMatch: {
+        Type: "HEADER",
+        Data: "User-Agent"
       },
-      targetString: "BadBot",
-      textTransformation: "NONE",
-      positionalConstraint: "CONTAINS"
+      TargetString: "BadBot",
+      TextTransformation: "NONE",
+      PositionalConstraint: "CONTAINS"
     }
   ]
 });
@@ -32,81 +32,80 @@ const basicByteMatchSet = await AWS.WAF.ByteMatchSet("basicByteMatchSet", {
 
 ## Advanced Configuration
 
-Configure a ByteMatchSet with multiple ByteMatchTuples and different text transformations.
+Configure a ByteMatchSet with multiple byte match tuples for more complex filtering:
 
 ```ts
-const advancedByteMatchSet = await AWS.WAF.ByteMatchSet("advancedByteMatchSet", {
-  name: "AdvancedByteMatchSet",
-  byteMatchTuples: [
+const AdvancedByteMatchSet = await AWS.WAF.ByteMatchSet("AdvancedByteMatchSet", {
+  Name: "AdvancedByteMatchSet",
+  ByteMatchTuples: [
     {
-      fieldToMatch: {
-        type: "QUERY_STRING",
-        data: "session"
+      FieldToMatch: {
+        Type: "URI",
+        Data: "/api/v1/resource"
       },
-      targetString: "malicious",
-      textTransformation: "URL_DECODE",
-      positionalConstraint: "EXACTLY"
+      TargetString: "malicious",
+      TextTransformation: "NONE",
+      PositionalConstraint: "CONTAINS"
     },
     {
-      fieldToMatch: {
-        type: "BODY",
-        data: ""
+      FieldToMatch: {
+        Type: "QUERY_STRING",
+        Data: "id"
       },
-      targetString: "SELECT * FROM users",
-      textTransformation: "NONE",
-      positionalConstraint: "CONTAINS"
+      TargetString: "12345",
+      TextTransformation: "LOWERCASE",
+      PositionalConstraint: "EXACTLY"
     }
   ]
 });
 ```
 
-## Example with Adoption
+## Use Case: Protecting Specific URIs
 
-Create a ByteMatchSet while adopting an existing resource if it already exists.
+Create a ByteMatchSet specifically targeting a sensitive API endpoint:
 
 ```ts
-const adoptedByteMatchSet = await AWS.WAF.ByteMatchSet("adoptedByteMatchSet", {
-  name: "AdoptedByteMatchSet",
-  byteMatchTuples: [
+const ApiProtectionByteMatchSet = await AWS.WAF.ByteMatchSet("ApiProtectionByteMatchSet", {
+  Name: "ApiProtectionByteMatchSet",
+  ByteMatchTuples: [
     {
-      fieldToMatch: {
-        type: "URI",
-        data: ""
+      FieldToMatch: {
+        Type: "URI",
+        Data: "/api/v1/secure-data"
       },
-      targetString: "/admin",
-      textTransformation: "LOWERCASE",
-      positionalConstraint: "STARTS_WITH"
+      TargetString: "unauthorized-access",
+      TextTransformation: "NONE",
+      PositionalConstraint: "CONTAINS"
     }
-  ],
-  adopt: true // If true, adopt existing resource instead of failing
+  ]
 });
 ```
 
-## Example with Multiple Match Conditions
+## Use Case: Filtering User-Agent Headers
 
-Create a ByteMatchSet that includes multiple conditions to enhance security through pattern matching.
+Set up a ByteMatchSet to filter out requests from specific user agents:
 
 ```ts
-const multiConditionByteMatchSet = await AWS.WAF.ByteMatchSet("multiConditionByteMatchSet", {
-  name: "MultiConditionByteMatchSet",
-  byteMatchTuples: [
+const UserAgentFilteringByteMatchSet = await AWS.WAF.ByteMatchSet("UserAgentFilteringByteMatchSet", {
+  Name: "UserAgentFilteringByteMatchSet",
+  ByteMatchTuples: [
     {
-      fieldToMatch: {
-        type: "HEADER",
-        data: "Referer"
+      FieldToMatch: {
+        Type: "HEADER",
+        Data: "User-Agent"
       },
-      targetString: "malicious-site.com",
-      textTransformation: "NONE",
-      positionalConstraint: "CONTAINS"
+      TargetString: "curl",
+      TextTransformation: "NONE",
+      PositionalConstraint: "STARTS_WITH"
     },
     {
-      fieldToMatch: {
-        type: "BODY",
-        data: ""
+      FieldToMatch: {
+        Type: "HEADER",
+        Data: "User-Agent"
       },
-      targetString: "DROP TABLE",
-      textTransformation: "NONE",
-      positionalConstraint: "CONTAINS"
+      TargetString: "Postman",
+      TextTransformation: "NONE",
+      PositionalConstraint: "STARTS_WITH"
     }
   ]
 });

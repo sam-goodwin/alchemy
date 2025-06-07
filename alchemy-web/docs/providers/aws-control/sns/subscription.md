@@ -5,17 +5,17 @@ description: Learn how to create, update, and manage AWS SNS Subscriptions using
 
 # Subscription
 
-The Subscription resource lets you manage [AWS SNS Subscriptions](https://docs.aws.amazon.com/sns/latest/userguide/) for receiving messages from SNS topics. Subscriptions can be configured with various protocols to deliver messages to endpoints.
+The Subscription resource allows you to manage [AWS SNS Subscriptions](https://docs.aws.amazon.com/sns/latest/userguide/) for receiving messages from SNS topics. This resource provides a way to configure endpoints that will receive published messages.
 
 ## Minimal Example
 
-Create a basic SNS subscription to an existing topic with essential properties.
+Create a basic SNS subscription with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const snsSubscription = await AWS.SNS.Subscription("mySnsSubscription", {
-  TopicArn: "arn:aws:sns:us-east-1:123456789012:MyTopic",
+const BasicSubscription = await AWS.SNS.Subscription("BasicSubscription", {
+  TopicArn: "arn:aws:sns:us-west-2:123456789012:MyTopic",
   Protocol: "email",
   Endpoint: "user@example.com"
 });
@@ -23,54 +23,55 @@ const snsSubscription = await AWS.SNS.Subscription("mySnsSubscription", {
 
 ## Advanced Configuration
 
-Configure an SNS subscription with additional options such as message filtering and delivery policies.
+Configure a subscription with advanced settings such as a delivery policy and a raw message delivery option.
 
 ```ts
-const advancedSnsSubscription = await AWS.SNS.Subscription("advancedSnsSubscription", {
-  TopicArn: "arn:aws:sns:us-east-1:123456789012:MyTopic",
+const AdvancedSubscription = await AWS.SNS.Subscription("AdvancedSubscription", {
+  TopicArn: "arn:aws:sns:us-west-2:123456789012:MyTopic",
   Protocol: "https",
-  Endpoint: "https://example.com/notifications",
-  FilterPolicy: {
-    eventType: ["order_placed", "order_shipped"]
-  },
+  Endpoint: "https://example.com/receive",
+  RawMessageDelivery: true,
   DeliveryPolicy: {
     healthyRetryPolicy: {
       numRetries: 3,
       minDelayTarget: 20,
-      maxDelayTarget: 20,
+      maxDelayTarget: 200,
+      numMaxDelayRetries: 3,
       numNoDelayRetries: 0,
-      numMinDelayRetries: 0,
-      backoffFunction: "linear"
+      numMinDelayRetries: 0
     }
   }
 });
 ```
 
-## Raw Message Delivery
+## Filter Policy Configuration
 
-Create a subscription that delivers raw messages without JSON formatting.
+Set up a subscription with a filter policy to receive messages selectively based on attributes.
 
 ```ts
-const rawMessageSnsSubscription = await AWS.SNS.Subscription("rawMessageSubscription", {
-  TopicArn: "arn:aws:sns:us-east-1:123456789012:MyTopic",
+const FilteredSubscription = await AWS.SNS.Subscription("FilteredSubscription", {
+  TopicArn: "arn:aws:sns:us-west-2:123456789012:MyTopic",
   Protocol: "sqs",
-  Endpoint: "arn:aws:sqs:us-east-1:123456789012:MyQueue",
-  RawMessageDelivery: true
+  Endpoint: "arn:aws:sqs:us-west-2:123456789012:MyQueue",
+  FilterPolicy: {
+    store: ["example_corp"],
+    event: ["order_placed", "order_shipped"]
+  }
 });
 ```
 
-## Replay Policy
+## Redrive Policy Example
 
-Configure a subscription with a replay policy for message retention and replay capabilities.
+Create a subscription with a redrive policy to handle message failures.
 
 ```ts
-const replayPolicySnsSubscription = await AWS.SNS.Subscription("replayPolicySubscription", {
-  TopicArn: "arn:aws:sns:us-east-1:123456789012:MyTopic",
-  Protocol: "lambda",
-  Endpoint: "arn:aws:lambda:us-east-1:123456789012:function:myFunction",
-  ReplayPolicy: {
-    maxReplayDuration: "PT1H", // ISO 8601 duration format
-    maxReplayMessages: 100
-  }
+const RedriveSubscription = await AWS.SNS.Subscription("RedriveSubscription", {
+  TopicArn: "arn:aws:sns:us-west-2:123456789012:MyTopic",
+  Protocol: "sqs",
+  Endpoint: "arn:aws:sqs:us-west-2:123456789012:MyDeadLetterQueue",
+  RedrivePolicy: JSON.stringify({
+    deadLetterTargetArn: "arn:aws:sqs:us-west-2:123456789012:MyDeadLetterQueue",
+    maxReceiveCount: 5
+  })
 });
 ```

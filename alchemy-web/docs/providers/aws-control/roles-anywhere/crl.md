@@ -5,70 +5,62 @@ description: Learn how to create, update, and manage AWS RolesAnywhere CRLs usin
 
 # CRL
 
-The CRL (Certificate Revocation List) resource allows you to manage [AWS RolesAnywhere CRLs](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/) for validating certificate-based identities in AWS. This resource is essential for maintaining security by ensuring that revoked certificates are not used for authentication.
+The CRL resource allows you to manage [AWS RolesAnywhere Certificate Revocation Lists (CRLs)](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/). CRLs are critical for managing the certificates used to establish trust in your AWS roles.
 
 ## Minimal Example
 
-Create a basic CRL with the required properties along with some common optional settings.
+Create a simple CRL with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicCrl = await AWS.RolesAnywhere.CRL("basicCrl", {
-  name: "MyBasicCRL",
-  crlData: "MIIC...yourCrlDataHere...",
-  trustAnchorArn: "arn:aws:rolesanywhere:us-east-1:123456789012:trust-anchor/TA123456",
-  enabled: true
+const MyCRL = await AWS.RolesAnywhere.CRL("MyCRL", {
+  TrustAnchorArn: "arn:aws:rolesanywhere:us-west-2:123456789012:trust-anchor/MyTrustAnchor",
+  CrlData: "-----BEGIN CERTIFICATE-----\n...Your CRL Data...\n-----END CERTIFICATE-----",
+  Enabled: true,
+  Name: "MyFirstCRL"
 });
 ```
-
-This example demonstrates how to create a simple CRL with a name, CRL data, and associated trust anchor ARN, while enabling it for use.
 
 ## Advanced Configuration
 
-Configure a CRL with additional settings like tags and adoption of existing resources.
+Configure a CRL with tags for better resource management.
 
 ```ts
-const advancedCrl = await AWS.RolesAnywhere.CRL("advancedCrl", {
-  name: "MyAdvancedCRL",
-  crlData: "MIIC...yourCrlDataHere...",
-  trustAnchorArn: "arn:aws:rolesanywhere:us-east-1:123456789012:trust-anchor/TA123456",
-  enabled: true,
-  tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Security" }
-  ],
-  adopt: true
+const AdvancedCRL = await AWS.RolesAnywhere.CRL("AdvancedCRL", {
+  TrustAnchorArn: "arn:aws:rolesanywhere:us-west-2:123456789012:trust-anchor/MyTrustAnchor",
+  CrlData: "-----BEGIN CERTIFICATE-----\n...Your CRL Data...\n-----END CERTIFICATE-----",
+  Enabled: true,
+  Name: "AdvancedCRL",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
+  ]
 });
 ```
 
-In this example, we create an advanced CRL that includes tags for better organization and resource tracking, and we enable the adoption of an existing resource.
+## Enabling and Disabling CRL
 
-## Using a Disabled CRL
-
-Create a CRL that is disabled, which can be useful for testing or staging purposes.
+Demonstrate how to create a CRL and then disable it.
 
 ```ts
-const disabledCrl = await AWS.RolesAnywhere.CRL("disabledCrl", {
-  name: "MyDisabledCRL",
-  crlData: "MIIC...yourCrlDataHere...",
-  trustAnchorArn: "arn:aws:rolesanywhere:us-east-1:123456789012:trust-anchor/TA123456",
-  enabled: false
+const MyDisabledCRL = await AWS.RolesAnywhere.CRL("MyDisabledCRL", {
+  TrustAnchorArn: "arn:aws:rolesanywhere:us-west-2:123456789012:trust-anchor/MyTrustAnchor",
+  CrlData: "-----BEGIN CERTIFICATE-----\n...Your CRL Data...\n-----END CERTIFICATE-----",
+  Enabled: false,
+  Name: "MyDisabledCRL"
 });
 ```
-
-This example illustrates the creation of a CRL that is initially disabled, allowing for later enabling as needed.
 
 ## Updating an Existing CRL
 
-Demonstrate how to update an existing CRL's properties.
+Show how to update an existing CRL by enabling it and modifying its name.
 
 ```ts
-const updatedCrl = await AWS.RolesAnywhere.CRL("existingCrl", {
-  name: "MyUpdatedCRL",
-  crlData: "MIIC...newCrlDataHere...",
-  enabled: true
+const UpdateCRL = await AWS.RolesAnywhere.CRL("UpdateCRL", {
+  TrustAnchorArn: "arn:aws:rolesanywhere:us-west-2:123456789012:trust-anchor/MyTrustAnchor",
+  CrlData: "-----BEGIN CERTIFICATE-----\n...Your CRL Data...\n-----END CERTIFICATE-----",
+  Enabled: true,
+  Name: "UpdatedCRL"
 });
 ```
-
-This example shows how you can update the CRL data and enable the CRL, reflecting changes to improve security or compliance.

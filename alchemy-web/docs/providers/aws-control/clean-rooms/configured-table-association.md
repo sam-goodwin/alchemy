@@ -5,63 +5,51 @@ description: Learn how to create, update, and manage AWS CleanRooms ConfiguredTa
 
 # ConfiguredTableAssociation
 
-The ConfiguredTableAssociation resource allows you to manage associations between configured tables and memberships in AWS CleanRooms. This resource enables you to set analysis rules and manage access through IAM policies. For more information, refer to the [AWS CleanRooms ConfiguredTableAssociations documentation](https://docs.aws.amazon.com/cleanrooms/latest/userguide/).
+The ConfiguredTableAssociation resource lets you create and manage [AWS CleanRooms ConfiguredTableAssociations](https://docs.aws.amazon.com/cleanrooms/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cleanrooms-configuredtableassociation.html
 
 ## Minimal Example
-
-Create a basic ConfiguredTableAssociation with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicConfiguredTableAssociation = await AWS.CleanRooms.ConfiguredTableAssociation("basicAssociation", {
-  MembershipIdentifier: "membership-123456",
-  ConfiguredTableIdentifier: "configured-table-abc",
-  RoleArn: "arn:aws:iam::123456789012:role/CleanRoomsRole",
-  Name: "Basic Association",
-  Description: "This is a basic configured table association"
-});
+const configuredtableassociation = await AWS.CleanRooms.ConfiguredTableAssociation(
+  "configuredtableassociation-example",
+  {
+    MembershipIdentifier: "example-membershipidentifier",
+    ConfiguredTableIdentifier: "example-configuredtableidentifier",
+    RoleArn: "example-rolearn",
+    Name: "configuredtableassociation-",
+    Tags: { Environment: "production", ManagedBy: "Alchemy" },
+    Description: "A configuredtableassociation resource managed by Alchemy",
+  }
+);
 ```
 
 ## Advanced Configuration
 
-Configure a more advanced ConfiguredTableAssociation with analysis rules and tags:
+Create a configuredtableassociation with additional configuration:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const advancedConfiguredTableAssociation = await AWS.CleanRooms.ConfiguredTableAssociation("advancedAssociation", {
-  MembershipIdentifier: "membership-123456",
-  ConfiguredTableIdentifier: "configured-table-abc",
-  RoleArn: "arn:aws:iam::123456789012:role/CleanRoomsRole",
-  Name: "Advanced Association",
-  ConfiguredTableAssociationAnalysisRules: [
-    {
-      Rule: "allow",
-      Conditions: {
-        Filter: "age > 21"
-      }
-    }
-  ],
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DataAnalysis" }
-  ]
-});
+const advancedConfiguredTableAssociation = await AWS.CleanRooms.ConfiguredTableAssociation(
+  "advanced-configuredtableassociation",
+  {
+    MembershipIdentifier: "example-membershipidentifier",
+    ConfiguredTableIdentifier: "example-configuredtableidentifier",
+    RoleArn: "example-rolearn",
+    Name: "configuredtableassociation-",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+    Description: "A configuredtableassociation resource managed by Alchemy",
+  }
+);
 ```
 
-## Adoption of Existing Resources
-
-If you want to adopt an existing ConfiguredTableAssociation instead of failing when it already exists, you can set the adopt property:
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const adoptedConfiguredTableAssociation = await AWS.CleanRooms.ConfiguredTableAssociation("adoptedAssociation", {
-  MembershipIdentifier: "membership-123456",
-  ConfiguredTableIdentifier: "configured-table-abc",
-  RoleArn: "arn:aws:iam::123456789012:role/CleanRoomsRole",
-  Name: "Adopted Association",
-  adopt: true // This will adopt the existing resource
-});
-```

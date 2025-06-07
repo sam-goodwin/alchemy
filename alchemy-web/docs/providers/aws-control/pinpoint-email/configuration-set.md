@@ -5,70 +5,40 @@ description: Learn how to create, update, and manage AWS PinpointEmail Configura
 
 # ConfigurationSet
 
-The ConfigurationSet resource lets you manage [AWS PinpointEmail ConfigurationSets](https://docs.aws.amazon.com/pinpointemail/latest/userguide/) which are essential for controlling email sending settings and tracking options in Amazon Pinpoint.
+The ConfigurationSet resource lets you create and manage [AWS PinpointEmail ConfigurationSets](https://docs.aws.amazon.com/pinpointemail/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-pinpointemail-configurationset.html
 
 ## Minimal Example
-
-Create a basic ConfigurationSet with required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicConfigurationSet = await AWS.PinpointEmail.ConfigurationSet("basicConfigSet", {
-  Name: "MyBasicConfigurationSet",
-  SendingOptions: {
-    SendingEnabled: true
-  }
+const configurationset = await AWS.PinpointEmail.ConfigurationSet("configurationset-example", {
+  Name: "configurationset-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ConfigurationSet with advanced tracking and reputation options.
+Create a configurationset with additional configuration:
 
 ```ts
-const advancedConfigurationSet = await AWS.PinpointEmail.ConfigurationSet("advancedConfigSet", {
-  Name: "MyAdvancedConfigurationSet",
-  SendingOptions: {
-    SendingEnabled: true
-  },
-  TrackingOptions: {
-    CustomRedirectDomain: "tracking.example.com"
-  },
-  ReputationOptions: {
-    ReputationMetricsEnabled: true,
-    LastFreshStart: "2023-10-01T00:00:00Z"
+import AWS from "alchemy/aws/control";
+
+const advancedConfigurationSet = await AWS.PinpointEmail.ConfigurationSet(
+  "advanced-configurationset",
+  {
+    Name: "configurationset-",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
   }
-});
+);
 ```
 
-## Configuration with Delivery Options
-
-Create a ConfigurationSet that includes delivery options for better control over email sending.
-
-```ts
-const deliveryOptionsConfigurationSet = await AWS.PinpointEmail.ConfigurationSet("deliveryOptionsConfigSet", {
-  Name: "MyDeliveryOptionsConfigurationSet",
-  SendingOptions: {
-    SendingEnabled: true
-  },
-  DeliveryOptions: {
-    SendingPoolId: "mySendingPool",
-    TlsPolicy: "Require"
-  }
-});
-```
-
-## Configuration with Tags
-
-Add tags to a ConfigurationSet for resource management and identification.
-
-```ts
-const taggedConfigurationSet = await AWS.PinpointEmail.ConfigurationSet("taggedConfigSet", {
-  Name: "MyTaggedConfigurationSet",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "EmailCampaign" }
-  ]
-});
-```

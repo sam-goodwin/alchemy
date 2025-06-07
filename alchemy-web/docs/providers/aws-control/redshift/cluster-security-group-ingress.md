@@ -5,59 +5,58 @@ description: Learn how to create, update, and manage AWS Redshift ClusterSecurit
 
 # ClusterSecurityGroupIngress
 
-The ClusterSecurityGroupIngress resource allows you to manage ingress rules for Amazon Redshift cluster security groups. This resource is essential for controlling access to your Redshift clusters based on CIDR/IP address ranges or EC2 security groups. For more details, refer to the [AWS Redshift ClusterSecurityGroupIngresss documentation](https://docs.aws.amazon.com/redshift/latest/userguide/).
+The ClusterSecurityGroupIngress resource allows you to manage ingress rules for AWS Redshift Cluster Security Groups. This enables you to control access to your Redshift clusters by specifying which IP addresses or EC2 security groups can connect to your cluster. For more information, visit the [AWS Redshift ClusterSecurityGroupIngresss documentation](https://docs.aws.amazon.com/redshift/latest/userguide/).
 
 ## Minimal Example
 
-This example demonstrates how to create a basic ingress rule using a CIDR block to allow traffic from a specific IP range.
+Create a basic ClusterSecurityGroupIngress with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const ingressRule = await AWS.Redshift.ClusterSecurityGroupIngress("basicIngressRule", {
-  ClusterSecurityGroupName: "my-redshift-cluster-sg",
-  CIDRIP: "192.168.1.0/24" // Allow traffic from this CIDR range
+const SecurityGroupIngress = await AWS.Redshift.ClusterSecurityGroupIngress("MyClusterSecurityGroupIngress", {
+  ClusterSecurityGroupName: "MyClusterSecurityGroup",
+  CIDRIP: "192.168.1.0/24"
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we include both an EC2 security group and a CIDR block to manage access from multiple sources.
+Configure a ClusterSecurityGroupIngress with additional properties such as an EC2 security group and its owner ID.
 
 ```ts
-const advancedIngressRule = await AWS.Redshift.ClusterSecurityGroupIngress("advancedIngressRule", {
-  ClusterSecurityGroupName: "my-redshift-cluster-sg",
-  CIDRIP: "10.0.0.0/16", // Allow traffic from this CIDR range
-  EC2SecurityGroupName: "my-ec2-security-group",
-  EC2SecurityGroupOwnerId: "123456789012" // Owner ID of the EC2 security group
+const AdvancedSecurityGroupIngress = await AWS.Redshift.ClusterSecurityGroupIngress("AdvancedClusterSecurityGroupIngress", {
+  ClusterSecurityGroupName: "MyAdvancedClusterSecurityGroup",
+  EC2SecurityGroupName: "MyEC2SecurityGroup",
+  EC2SecurityGroupOwnerId: "123456789012"
 });
 ```
 
-## Use Case: Adopting Existing Resources
+## Using Existing Resources
 
-This example shows how to adopt an existing ingress rule instead of failing if the resource already exists.
+Adopt existing resources by setting the `adopt` flag to true, which will create a new resource only if it does not already exist.
 
 ```ts
-const adoptIngressRule = await AWS.Redshift.ClusterSecurityGroupIngress("adoptIngressRule", {
-  ClusterSecurityGroupName: "my-redshift-cluster-sg",
-  CIDRIP: "172.16.0.0/12", // Allow traffic from this CIDR range
-  adopt: true // Enable adoption of existing ingress rule
+const AdoptExistingSecurityGroupIngress = await AWS.Redshift.ClusterSecurityGroupIngress("ExistingSecurityGroupIngress", {
+  ClusterSecurityGroupName: "MyExistingClusterSecurityGroup",
+  CIDRIP: "10.0.0.0/16",
+  adopt: true
 });
 ```
 
-## Use Case: Combining Multiple Ingress Rules
+## Multiple Ingress Rules
 
-Here we create multiple ingress rules to allow access from various CIDR blocks and EC2 security groups.
+You can create multiple ingress rules for a single Cluster Security Group by invoking the resource multiple times.
 
 ```ts
-const ingressRule1 = await AWS.Redshift.ClusterSecurityGroupIngress("ingressRule1", {
-  ClusterSecurityGroupName: "my-redshift-cluster-sg",
-  CIDRIP: "203.0.113.0/24" // First ingress rule
+const IngressRule1 = await AWS.Redshift.ClusterSecurityGroupIngress("IngressRule1", {
+  ClusterSecurityGroupName: "MyMultiIngressClusterSecurityGroup",
+  CIDRIP: "172.16.0.0/12"
 });
 
-const ingressRule2 = await AWS.Redshift.ClusterSecurityGroupIngress("ingressRule2", {
-  ClusterSecurityGroupName: "my-redshift-cluster-sg",
-  EC2SecurityGroupName: "another-ec2-security-group",
-  EC2SecurityGroupOwnerId: "987654321098" // Second ingress rule
+const IngressRule2 = await AWS.Redshift.ClusterSecurityGroupIngress("IngressRule2", {
+  ClusterSecurityGroupName: "MyMultiIngressClusterSecurityGroup",
+  EC2SecurityGroupName: "AnotherEC2SecurityGroup",
+  EC2SecurityGroupOwnerId: "987654321098"
 });
 ```

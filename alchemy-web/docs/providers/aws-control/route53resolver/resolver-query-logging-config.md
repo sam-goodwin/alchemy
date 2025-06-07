@@ -5,44 +5,60 @@ description: Learn how to create, update, and manage AWS Route53Resolver Resolve
 
 # ResolverQueryLoggingConfig
 
-The ResolverQueryLoggingConfig resource lets you manage [AWS Route53Resolver Query Logging Configurations](https://docs.aws.amazon.com/route53resolver/latest/userguide/). This resource allows you to log DNS queries for your VPCs to a specified destination, enabling better monitoring and analysis of DNS activity.
+The `ResolverQueryLoggingConfig` resource allows you to manage query logging configurations for Amazon Route 53 Resolver, enabling you to capture DNS queries and send them to a specified destination. For more details, refer to the [AWS Route53Resolver ResolverQueryLoggingConfigs documentation](https://docs.aws.amazon.com/route53resolver/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic Resolver Query Logging Configuration with a destination ARN.
+Create a basic query logging configuration with required properties and a common optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const queryLoggingConfig = await AWS.Route53Resolver.ResolverQueryLoggingConfig("basicQueryLoggingConfig", {
-  destinationArn: "arn:aws:logs:us-east-1:123456789012:log-group:my-log-group",
-  name: "BasicLoggingConfig"
+const QueryLoggingConfig = await AWS.Route53Resolver.ResolverQueryLoggingConfig("BasicQueryLogConfig", {
+  DestinationArn: "arn:aws:logs:us-west-2:123456789012:log-group:my-log-group",
+  Name: "BasicQueryLog",
+  Tags: [
+    { Key: "Environment", Value: "development" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Resolver Query Logging Configuration with tags for better resource management.
+Configure a query logging setting with additional properties like multiple tags and a specific destination ARN.
 
 ```ts
-const advancedQueryLoggingConfig = await AWS.Route53Resolver.ResolverQueryLoggingConfig("advancedQueryLoggingConfig", {
-  destinationArn: "arn:aws:logs:us-east-1:123456789012:log-group:my-advanced-log-group",
-  tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DNSLogging" }
+const AdvancedQueryLoggingConfig = await AWS.Route53Resolver.ResolverQueryLoggingConfig("AdvancedQueryLogConfig", {
+  DestinationArn: "arn:aws:logs:us-west-2:123456789012:log-group:my-advanced-log-group",
+  Name: "AdvancedQueryLog",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Network" }
   ],
-  name: "AdvancedLoggingConfig"
+  adopt: true // Adopts existing resource if it already exists
 });
 ```
 
-## Adopting Existing Resources
+## Logging for Multiple Environments
 
-If you want to adopt an existing Resolver Query Logging Configuration instead of failing when it already exists, you can set the `adopt` property to true.
+Set up distinct logging configurations for different environments to segregate DNS query logs.
 
 ```ts
-const adoptedQueryLoggingConfig = await AWS.Route53Resolver.ResolverQueryLoggingConfig("adoptedQueryLoggingConfig", {
-  destinationArn: "arn:aws:logs:us-east-1:123456789012:log-group:existing-log-group",
-  adopt: true,
-  name: "AdoptedLoggingConfig"
+const DevQueryLoggingConfig = await AWS.Route53Resolver.ResolverQueryLoggingConfig("DevQueryLogConfig", {
+  DestinationArn: "arn:aws:logs:us-west-2:123456789012:log-group:dev-log-group",
+  Name: "DevelopmentQueryLog",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Project", Value: "Internal" }
+  ]
+});
+
+const ProdQueryLoggingConfig = await AWS.Route53Resolver.ResolverQueryLoggingConfig("ProdQueryLogConfig", {
+  DestinationArn: "arn:aws:logs:us-west-2:123456789012:log-group:prod-log-group",
+  Name: "ProductionQueryLog",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Project", Value: "Customer" }
+  ]
 });
 ```

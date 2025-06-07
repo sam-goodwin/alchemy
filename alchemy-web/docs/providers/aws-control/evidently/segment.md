@@ -5,47 +5,39 @@ description: Learn how to create, update, and manage AWS Evidently Segments usin
 
 # Segment
 
-The Segment resource lets you manage [AWS Evidently Segments](https://docs.aws.amazon.com/evidently/latest/userguide/) for targeting specific user groups in your experiments and feature launches.
+The Segment resource lets you create and manage [AWS Evidently Segments](https://docs.aws.amazon.com/evidently/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-evidently-segment.html
 
 ## Minimal Example
-
-Create a basic segment with a pattern and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const userSegment = await AWS.Evidently.Segment("user-segment", {
-  Name: "ActiveUsers",
-  Pattern: "{ \"type\": \"user\", \"active\": true }",
-  Description: "Segment for users who are currently active."
+const segment = await AWS.Evidently.Segment("segment-example", {
+  Name: "segment-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A segment resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a segment with tags for better organization and management.
+Create a segment with additional configuration:
 
 ```ts
-const taggedSegment = await AWS.Evidently.Segment("tagged-segment", {
-  Name: "VIPUsers",
-  Pattern: "{ \"type\": \"user\", \"status\": \"VIP\" }",
-  Description: "Segment for VIP users.",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "Marketing" }
-  ]
+import AWS from "alchemy/aws/control";
+
+const advancedSegment = await AWS.Evidently.Segment("advanced-segment", {
+  Name: "segment-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A segment resource managed by Alchemy",
 });
 ```
 
-## Adopting an Existing Segment
-
-Use the `adopt` property to adopt an existing segment instead of failing if it already exists.
-
-```ts
-const existingSegment = await AWS.Evidently.Segment("existing-segment", {
-  Name: "ExistingSegmentName",
-  Pattern: "{ \"type\": \"user\", \"existing\": true }",
-  Description: "This segment is adopted to avoid conflicts.",
-  adopt: true
-});
-```

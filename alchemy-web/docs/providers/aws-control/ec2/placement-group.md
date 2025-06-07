@@ -5,73 +5,61 @@ description: Learn how to create, update, and manage AWS EC2 PlacementGroups usi
 
 # PlacementGroup
 
-The PlacementGroup resource allows you to manage [AWS EC2 PlacementGroups](https://docs.aws.amazon.com/ec2/latest/userguide/) for your instances, enabling you to control how instances are placed in relation to each other to achieve better performance and resource utilization.
+The PlacementGroup resource allows you to manage [AWS EC2 Placement Groups](https://docs.aws.amazon.com/ec2/latest/userguide/) for deploying instances in specific configurations to optimize performance and reduce latency.
 
 ## Minimal Example
 
-Create a basic PlacementGroup with the default strategy:
+Create a basic Placement Group with a default strategy:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const placementGroup = await AWS.EC2.PlacementGroup("myPlacementGroup", {
+const basicPlacementGroup = await AWS.EC2.PlacementGroup("BasicPlacementGroup", {
   Strategy: "cluster",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Development"
-    }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a PlacementGroup with specific partition count and spread level for enhanced resource allocation:
+Configure a Placement Group with a spread strategy and a specific partition count:
 
 ```ts
-const advancedPlacementGroup = await AWS.EC2.PlacementGroup("advancedPlacementGroup", {
-  Strategy: "partition",
-  PartitionCount: 3,
+const advancedPlacementGroup = await AWS.EC2.PlacementGroup("AdvancedPlacementGroup", {
+  Strategy: "spread",
+  PartitionCount: 4,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Backend" }
+  ]
+});
+```
+
+## Adoption of Existing Resource
+
+If you want to adopt an existing Placement Group instead of failing when one already exists, you can do so by setting the adopt property:
+
+```ts
+const adoptedPlacementGroup = await AWS.EC2.PlacementGroup("AdoptedPlacementGroup", {
+  Strategy: "cluster",
+  adopt: true
+});
+```
+
+## Using Spread Level
+
+You can specify a spread level to control the placement of instances across different hardware:
+
+```ts
+const spreadLevelPlacementGroup = await AWS.EC2.PlacementGroup("SpreadLevelPlacementGroup", {
+  Strategy: "spread",
   SpreadLevel: "instance",
   Tags: [
-    {
-      Key: "Project",
-      Value: "WebApp"
-    }
-  ]
-});
-```
-
-## Creating a Spread Placement Group
-
-This example demonstrates creating a spread PlacementGroup which ensures that instances are placed across distinct hardware:
-
-```ts
-const spreadPlacementGroup = await AWS.EC2.PlacementGroup("spreadPlacementGroup", {
-  Strategy: "spread",
-  Tags: [
-    {
-      Key: "Application",
-      Value: "Microservices"
-    }
-  ]
-});
-```
-
-## Adoption of Existing Resources
-
-If you want to adopt an existing PlacementGroup instead of failing if it already exists, you can set the `adopt` property to true:
-
-```ts
-const adoptPlacementGroup = await AWS.EC2.PlacementGroup("adoptPlacementGroup", {
-  Strategy: "cluster",
-  adopt: true,
-  Tags: [
-    {
-      Key: "Status",
-      Value: "Adopted"
-    }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
   ]
 });
 ```

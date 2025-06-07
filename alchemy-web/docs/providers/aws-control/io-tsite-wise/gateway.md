@@ -5,71 +5,39 @@ description: Learn how to create, update, and manage AWS IoTSiteWise Gateways us
 
 # Gateway
 
-The Gateway resource lets you manage [AWS IoTSiteWise Gateways](https://docs.aws.amazon.com/iotsitewise/latest/userguide/) for connecting industrial devices and applications to AWS IoT SiteWise.
+The Gateway resource lets you create and manage [AWS IoTSiteWise Gateways](https://docs.aws.amazon.com/iotsitewise/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iotsitewise-gateway.html
 
 ## Minimal Example
-
-Create a basic IoT SiteWise Gateway with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const gateway = await AWS.IoTSiteWise.Gateway("myGateway", {
-  gatewayName: "MyGateway",
-  gatewayPlatform: {
-    greengrass: {
-      groupArn: "arn:aws:greengrass:us-east-1:123456789012:group/MyGreengrassGroup"
-    }
-  }
+const gateway = await AWS.IoTSiteWise.Gateway("gateway-example", {
+  GatewayName: "gateway-gateway",
+  GatewayPlatform: "example-gatewayplatform",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Gateway with capability summaries and tags to enhance its functionality.
+Create a gateway with additional configuration:
 
 ```ts
-const advancedGateway = await AWS.IoTSiteWise.Gateway("myAdvancedGateway", {
-  gatewayName: "AdvancedGateway",
-  gatewayPlatform: {
-    greengrass: {
-      groupArn: "arn:aws:greengrass:us-east-1:123456789012:group/MyGreengrassGroup"
-    }
+import AWS from "alchemy/aws/control";
+
+const advancedGateway = await AWS.IoTSiteWise.Gateway("advanced-gateway", {
+  GatewayName: "gateway-gateway",
+  GatewayPlatform: "example-gatewayplatform",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  gatewayCapabilitySummaries: [
-    {
-      capabilityNamespace: "AWS:IoTSiteWise:Model",
-      capabilityConfiguration: {
-        image: "my-iot-image",
-        modelId: "myModelId"
-      }
-    }
-  ],
-  tags: [
-    {
-      key: "Environment",
-      value: "Production"
-    },
-    {
-      key: "Owner",
-      value: "TeamA"
-    }
-  ]
 });
 ```
 
-## Adoption of Existing Resource
-
-If you want to adopt an existing gateway instead of failing when it already exists, set the `adopt` property.
-
-```ts
-const adoptedGateway = await AWS.IoTSiteWise.Gateway("existingGateway", {
-  gatewayName: "ExistingGateway",
-  gatewayPlatform: {
-    greengrass: {
-      groupArn: "arn:aws:greengrass:us-east-1:123456789012:group/MyGreengrassGroup"
-    }
-  },
-  adopt: true
-});
-```

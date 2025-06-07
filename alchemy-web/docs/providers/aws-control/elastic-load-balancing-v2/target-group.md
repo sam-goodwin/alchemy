@@ -5,102 +5,85 @@ description: Learn how to create, update, and manage AWS Application Load Balanc
 
 # TargetGroup
 
-The TargetGroup resource lets you manage [AWS Application Load Balancer TargetGroups](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/) and their configuration settings.
+The TargetGroup resource lets you manage [AWS Application Load Balancer TargetGroups](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/) to direct traffic to your application targets.
 
 ## Minimal Example
 
-Create a basic TargetGroup with required properties and a couple of common optional properties.
+Create a basic TargetGroup with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const targetGroup = await AWS.ElasticLoadBalancingV2.TargetGroup("myTargetGroup", {
-  name: "my-app-target-group",
-  port: 80,
-  protocol: "HTTP",
-  vpcId: "vpc-12345678",
-  healthCheckEnabled: true,
-  healthCheckPath: "/health",
-  healthyThresholdCount: 3,
-  unhealthyThresholdCount: 2
+const BasicTargetGroup = await AWS.ElasticLoadBalancingV2.TargetGroup("BasicTargetGroup", {
+  Name: "my-target-group",
+  Port: 80,
+  Protocol: "HTTP",
+  VpcId: "vpc-123abc45",
+  HealthCheckPath: "/health",
+  HealthCheckIntervalSeconds: 30,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TargetGroup with advanced settings, including health check configurations and target type.
+Configure a TargetGroup with advanced health check settings and attributes.
 
 ```ts
-const advancedTargetGroup = await AWS.ElasticLoadBalancingV2.TargetGroup("advancedTargetGroup", {
-  name: "my-advanced-app-target-group",
-  port: 8080,
-  protocol: "HTTP",
-  vpcId: "vpc-12345678",
-  healthCheckEnabled: true,
-  healthCheckPath: "/health",
-  healthCheckIntervalSeconds: 30,
-  healthCheckTimeoutSeconds: 5,
-  healthyThresholdCount: 5,
-  unhealthyThresholdCount: 2,
-  targets: [
-    {
-      id: "i-1234567890abcdef0",
-      port: 8080
-    }
-  ],
-  targetType: "instance"
+const AdvancedTargetGroup = await AWS.ElasticLoadBalancingV2.TargetGroup("AdvancedTargetGroup", {
+  Name: "my-advanced-target-group",
+  Port: 443,
+  Protocol: "HTTPS",
+  VpcId: "vpc-678def90",
+  HealthCheckPath: "/healthcheck",
+  HealthCheckIntervalSeconds: 15,
+  HealthCheckEnabled: true,
+  HealthCheckProtocol: "HTTP",
+  HealthCheckTimeoutSeconds: 5,
+  HealthyThresholdCount: 2,
+  UnhealthyThresholdCount: 3,
+  TargetGroupAttributes: [
+    { Key: "stickiness.enabled", Value: "true" },
+    { Key: "stickiness.type", Value: "lb_cookie" }
+  ]
 });
 ```
 
-## Using IP Address Type
+## Register Targets Example
 
-Create a TargetGroup that uses IP addresses as targets.
+Register specific targets (instances) to the TargetGroup for load balancing.
 
 ```ts
-const ipTargetGroup = await AWS.ElasticLoadBalancingV2.TargetGroup("ipTargetGroup", {
-  name: "my-ip-target-group",
-  port: 80,
-  protocol: "HTTP",
-  vpcId: "vpc-12345678",
-  ipAddressType: "ipv4",
-  targets: [
-    {
-      id: "192.0.2.1",
-      port: 80
-    },
-    {
-      id: "192.0.2.2",
-      port: 80
-    }
-  ],
-  healthCheckEnabled: true,
-  healthCheckPath: "/health"
+const RegisterTargets = await AWS.ElasticLoadBalancingV2.TargetGroup("RegisterTargets", {
+  Name: "my-target-group-register",
+  Port: 80,
+  Protocol: "HTTP",
+  VpcId: "vpc-123abc45",
+  Targets: [
+    { Id: "i-0123456789abcdef0", Port: 80 },
+    { Id: "i-0abcdef1234567890", Port: 80 }
+  ]
 });
 ```
 
-## Custom Target Group Attributes
+## Custom IP Address Type
 
-Configure a TargetGroup with custom attributes for stickiness and deregistration delay.
+Create a TargetGroup with a custom IP address type.
 
 ```ts
-const customAttributeTargetGroup = await AWS.ElasticLoadBalancingV2.TargetGroup("customAttrTargetGroup", {
-  name: "my-custom-attr-target-group",
-  port: 80,
-  protocol: "HTTP",
-  vpcId: "vpc-12345678",
-  targetGroupAttributes: [
-    {
-      key: "stickiness.enabled",
-      value: "true"
-    },
-    {
-      key: "stickiness.lb_cookie.duration_seconds",
-      value: "86400"
-    },
-    {
-      key: "deregistration_delay.timeout_seconds",
-      value: "300"
-    }
+const CustomIpAddressTypeTargetGroup = await AWS.ElasticLoadBalancingV2.TargetGroup("CustomIpAddressTypeTargetGroup", {
+  Name: "my-custom-ip-target-group",
+  Port: 8080,
+  Protocol: "HTTP",
+  VpcId: "vpc-0abcdef1234567890",
+  IpAddressType: "ipv4",
+  HealthCheckPath: "/healthcheck",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
   ]
 });
 ```

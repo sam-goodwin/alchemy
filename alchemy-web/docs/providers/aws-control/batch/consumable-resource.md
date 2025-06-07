@@ -5,68 +5,53 @@ description: Learn how to create, update, and manage AWS Batch ConsumableResourc
 
 # ConsumableResource
 
-The ConsumableResource resource lets you manage [AWS Batch Consumable Resources](https://docs.aws.amazon.com/batch/latest/userguide/) which represent a finite quantity of resources available for job execution in AWS Batch.
+The ConsumableResource resource lets you manage [AWS Batch ConsumableResources](https://docs.aws.amazon.com/batch/latest/userguide/) for defining consumable resources in your batch jobs.
 
 ## Minimal Example
 
-Create a consumable resource with required properties and an optional tag.
+Create a basic consumable resource with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const consumableResource = await AWS.Batch.ConsumableResource("myConsumableResource", {
+const BasicConsumableResource = await AWS.Batch.ConsumableResource("BasicConsumableResource", {
   TotalQuantity: 100,
-  ResourceType: "SLOTS",
-  ConsumableResourceName: "compute-optimized-resources",
-  Tags: {
-    Environment: "Production"
-  }
+  ResourceType: "VCPU",
+  Tags: [
+    { Key: "Environment", Value: "production" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a consumable resource with additional properties such as tags.
+Configure a consumable resource with additional properties such as a custom resource name and multiple tags.
 
 ```ts
-const advancedConsumableResource = await AWS.Batch.ConsumableResource("advancedResource", {
+const AdvancedConsumableResource = await AWS.Batch.ConsumableResource("AdvancedConsumableResource", {
   TotalQuantity: 200,
-  ResourceType: "MEMORY",
-  ConsumableResourceName: "high-memory-resources",
-  Tags: {
-    Department: "Engineering",
-    CostCenter: "12345"
-  },
-  adopt: true // Will adopt existing resource if it already exists
+  ConsumableResourceName: "CustomVCPUResource",
+  ResourceType: "VCPU",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataScience" }
+  ],
+  adopt: true
 });
 ```
 
-## Resource Adoption
+## Using Tags for Management
 
-Demonstrate how to adopt an existing consumable resource rather than creating a new one.
+Create a consumable resource focused on resource organization using tags for easier management.
 
 ```ts
-const adoptedResource = await AWS.Batch.ConsumableResource("adoptedResource", {
+const TaggedConsumableResource = await AWS.Batch.ConsumableResource("TaggedConsumableResource", {
   TotalQuantity: 150,
-  ResourceType: "CPUS",
-  ConsumableResourceName: "adopted-cpu-resources",
-  adopt: true // Enables adoption of an existing resource
-});
-```
-
-## Custom Resource Configuration
-
-Create a consumable resource with a specific configuration for batch processing needs.
-
-```ts
-const customResource = await AWS.Batch.ConsumableResource("customBatchResource", {
-  TotalQuantity: 75,
-  ResourceType: "GPUS",
-  ConsumableResourceName: "gpu-resources",
-  Tags: {
-    Project: "AI-Research",
-    Owner: "DataScienceTeam"
-  },
-  adopt: false // Will fail if resource already exists
+  ResourceType: "Memory",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Project", Value: "MachineLearning" },
+    { Key: "Owner", Value: "AI_Team" }
+  ]
 });
 ```

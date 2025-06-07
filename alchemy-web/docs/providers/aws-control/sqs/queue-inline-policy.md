@@ -5,24 +5,26 @@ description: Learn how to create, update, and manage AWS SQS QueueInlinePolicys 
 
 # QueueInlinePolicy
 
-The QueueInlinePolicy resource allows you to attach inline IAM policies to Amazon SQS queues, providing fine-grained access control for the queue. For more information, refer to the [AWS SQS QueueInlinePolicys documentation](https://docs.aws.amazon.com/sqs/latest/userguide/).
+The QueueInlinePolicy resource allows you to manage inline policies for AWS SQS Queues. This resource helps in defining specific permissions for actions on SQS queues using IAM policy documents. For more details, refer to the [AWS SQS QueueInlinePolicys documentation](https://docs.aws.amazon.com/sqs/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic inline policy for an SQS queue that allows sending messages:
+Create a basic inline policy for an SQS queue with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const queueInlinePolicy = await AWS.SQS.QueueInlinePolicy("basicPolicy", {
+const InlinePolicy = await AWS.SQS.QueueInlinePolicy("MyQueueInlinePolicy", {
   PolicyDocument: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Action: "SQS:SendMessage",
+        Action: "sqs:SendMessage",
         Resource: "arn:aws:sqs:us-west-2:123456789012:MyQueue",
-        Principal: "*"
+        Principal: {
+          Service: "lambda.amazonaws.com"
+        }
       }
     ]
   },
@@ -32,49 +34,23 @@ const queueInlinePolicy = await AWS.SQS.QueueInlinePolicy("basicPolicy", {
 
 ## Advanced Configuration
 
-Attach a more complex inline policy that allows multiple actions on the SQS queue:
+Define a more complex inline policy with multiple actions and conditions.
 
 ```ts
-const advancedPolicy = await AWS.SQS.QueueInlinePolicy("advancedPolicy", {
+const AdvancedInlinePolicy = await AWS.SQS.QueueInlinePolicy("MyAdvancedQueueInlinePolicy", {
   PolicyDocument: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
         Action: [
-          "SQS:SendMessage",
-          "SQS:ReceiveMessage",
-          "SQS:DeleteMessage"
+          "sqs:SendMessage",
+          "sqs:ReceiveMessage"
         ],
         Resource: "arn:aws:sqs:us-west-2:123456789012:MyQueue",
-        Principal: {
-          AWS: "arn:aws:iam::123456789012:user/MyUser"
-        }
-      }
-    ]
-  },
-  Queue: "MyQueue",
-  adopt: true // Adopt existing resource if it already exists
-});
-```
-
-## Policy with Conditions
-
-Demonstrate how to add conditions to the policy for additional security:
-
-```ts
-const conditionalPolicy = await AWS.SQS.QueueInlinePolicy("conditionalPolicy", {
-  PolicyDocument: {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: "SQS:SendMessage",
-        Resource: "arn:aws:sqs:us-west-2:123456789012:MyQueue",
-        Principal: "*",
         Condition: {
           "StringEquals": {
-            "aws:SourceAccount": "123456789012"
+            "aws:SourceArn": "arn:aws:lambda:us-west-2:123456789012:function:MyLambdaFunction"
           }
         }
       }
@@ -84,43 +60,36 @@ const conditionalPolicy = await AWS.SQS.QueueInlinePolicy("conditionalPolicy", {
 });
 ```
 
-## Multi-Queue Management
+## Binding a Queue to Multiple Services
 
-Create inline policies for multiple SQS queues in a single deployment:
+You can associate an inline policy with multiple AWS services by defining different permissions within a single policy document.
 
 ```ts
-const firstQueuePolicy = await AWS.SQS.QueueInlinePolicy("firstQueuePolicy", {
-  PolicyDocument: {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: "SQS:SendMessage",
-        Resource: "arn:aws:sqs:us-west-2:123456789012:FirstQueue",
-        Principal: "*"
-      }
-    ]
-  },
-  Queue: "FirstQueue"
-});
-
-const secondQueuePolicy = await AWS.SQS.QueueInlinePolicy("secondQueuePolicy", {
+const MultiServiceInlinePolicy = await AWS.SQS.QueueInlinePolicy("MyMultiServiceQueueInlinePolicy", {
   PolicyDocument: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
         Action: [
-          "SQS:ReceiveMessage",
-          "SQS:DeleteMessage"
+          "sqs:SendMessage",
+          "sqs:DeleteMessage"
         ],
-        Resource: "arn:aws:sqs:us-west-2:123456789012:SecondQueue",
+        Resource: "arn:aws:sqs:us-west-2:123456789012:MyQueue",
         Principal: {
-          AWS: "arn:aws:iam::123456789012:user/AnotherUser"
+          Service: "ec2.amazonaws.com"
+        }
+      },
+      {
+        Effect: "Allow",
+        Action: "sqs:ReceiveMessage",
+        Resource: "arn:aws:sqs:us-west-2:123456789012:MyQueue",
+        Principal: {
+          Service: "lambda.amazonaws.com"
         }
       }
     ]
   },
-  Queue: "SecondQueue"
+  Queue: "MyQueue"
 });
 ```

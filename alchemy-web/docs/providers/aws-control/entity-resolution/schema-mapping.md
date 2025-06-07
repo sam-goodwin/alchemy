@@ -5,57 +5,41 @@ description: Learn how to create, update, and manage AWS EntityResolution Schema
 
 # SchemaMapping
 
-The SchemaMapping resource allows you to create and manage AWS EntityResolution SchemaMappings, which define how input fields are mapped to a specific schema. For more details, visit the [AWS EntityResolution SchemaMappings documentation](https://docs.aws.amazon.com/entityresolution/latest/userguide/).
+The SchemaMapping resource lets you create and manage [AWS EntityResolution SchemaMappings](https://docs.aws.amazon.com/entityresolution/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-entityresolution-schemamapping.html
 
 ## Minimal Example
-
-Create a basic SchemaMapping with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSchemaMapping = await AWS.EntityResolution.SchemaMapping("basicSchemaMapping", {
-  SchemaName: "CustomerData",
-  MappedInputFields: [
-    { InputField: "customerId", OutputField: "id" },
-    { InputField: "customerName", OutputField: "name" }
-  ],
-  Description: "Basic mapping for customer data"
+const schemamapping = await AWS.EntityResolution.SchemaMapping("schemamapping-example", {
+  MappedInputFields: [],
+  SchemaName: "schemamapping-schema",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A schemamapping resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SchemaMapping with additional tags and an optional description:
+Create a schemamapping with additional configuration:
 
 ```ts
-const advancedSchemaMapping = await AWS.EntityResolution.SchemaMapping("advancedSchemaMapping", {
-  SchemaName: "OrderData",
-  MappedInputFields: [
-    { InputField: "orderId", OutputField: "id" },
-    { InputField: "orderAmount", OutputField: "amount" },
-    { InputField: "orderDate", OutputField: "date" }
-  ],
-  Description: "Advanced mapping for order data",
-  Tags: [
-    { Key: "Project", Value: "ECommerce" },
-    { Key: "Environment", Value: "Production" }
-  ]
+import AWS from "alchemy/aws/control";
+
+const advancedSchemaMapping = await AWS.EntityResolution.SchemaMapping("advanced-schemamapping", {
+  MappedInputFields: [],
+  SchemaName: "schemamapping-schema",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A schemamapping resource managed by Alchemy",
 });
 ```
 
-## Adopting Existing Resources
-
-Create a SchemaMapping that adopts an existing resource if it already exists:
-
-```ts
-const adoptSchemaMapping = await AWS.EntityResolution.SchemaMapping("adoptSchemaMapping", {
-  SchemaName: "ProductData",
-  MappedInputFields: [
-    { InputField: "productId", OutputField: "id" },
-    { InputField: "productName", OutputField: "name" },
-    { InputField: "productCategory", OutputField: "category" }
-  ],
-  adopt: true
-});
-```

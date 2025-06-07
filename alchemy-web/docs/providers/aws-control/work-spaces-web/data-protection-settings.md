@@ -5,66 +5,43 @@ description: Learn how to create, update, and manage AWS WorkSpacesWeb DataProte
 
 # DataProtectionSettings
 
-The DataProtectionSettings resource allows you to configure data protection settings for AWS WorkSpaces Web, including redaction configurations and encrypted data management. For more details, refer to the [AWS WorkSpacesWeb DataProtectionSettings documentation](https://docs.aws.amazon.com/workspacesweb/latest/userguide/).
+The DataProtectionSettings resource lets you create and manage [AWS WorkSpacesWeb DataProtectionSettingss](https://docs.aws.amazon.com/workspacesweb/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-workspacesweb-dataprotectionsettings.html
 
 ## Minimal Example
-
-Create a basic DataProtectionSettings resource with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDataProtectionSettings = await AWS.WorkSpacesWeb.DataProtectionSettings("basicDataProtection", {
-  Description: "Basic data protection settings for the WorkSpaces Web application",
-  CustomerManagedKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
-  DisplayName: "Basic Data Protection"
-});
+const dataprotectionsettings = await AWS.WorkSpacesWeb.DataProtectionSettings(
+  "dataprotectionsettings-example",
+  {
+    Tags: { Environment: "production", ManagedBy: "Alchemy" },
+    Description: "A dataprotectionsettings resource managed by Alchemy",
+  }
+);
 ```
 
 ## Advanced Configuration
 
-Configure DataProtectionSettings with inline redaction and additional encryption context.
+Create a dataprotectionsettings with additional configuration:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const advancedDataProtectionSettings = await AWS.WorkSpacesWeb.DataProtectionSettings("advancedDataProtection", {
-  Description: "Advanced data protection settings with inline redaction",
-  CustomerManagedKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
-  InlineRedactionConfiguration: {
-    Redaction: {
-      RedactionType: "PII",
-      RedactionString: "[REDACTED]"
-    }
-  },
-  AdditionalEncryptionContext: {
-    "Project": "WorkSpacesWeb",
-    "Environment": "Production"
-  },
-  DisplayName: "Advanced Data Protection"
-});
-```
-
-## Tagging Resources
-
-Create DataProtectionSettings with tags for better resource management.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const taggedDataProtectionSettings = await AWS.WorkSpacesWeb.DataProtectionSettings("taggedDataProtection", {
-  Description: "Data protection settings with tags for environment management",
-  CustomerManagedKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Development"
+const advancedDataProtectionSettings = await AWS.WorkSpacesWeb.DataProtectionSettings(
+  "advanced-dataprotectionsettings",
+  {
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
     },
-    {
-      Key: "Owner",
-      Value: "DevTeam"
-    }
-  ],
-  DisplayName: "Tagged Data Protection"
-});
+    Description: "A dataprotectionsettings resource managed by Alchemy",
+  }
+);
 ```
+

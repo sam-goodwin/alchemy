@@ -5,68 +5,47 @@ description: Learn how to create, update, and manage AWS IoT BillingGroups using
 
 # BillingGroup
 
-The BillingGroup resource lets you manage [AWS IoT BillingGroups](https://docs.aws.amazon.com/iot/latest/userguide/) that allow you to group billing for multiple devices. This is essential for tracking costs associated with your IoT devices efficiently.
+The BillingGroup resource lets you manage [AWS IoT BillingGroups](https://docs.aws.amazon.com/iot/latest/userguide/) for grouping billing accounts and managing costs effectively.
 
 ## Minimal Example
 
-Create a basic BillingGroup with a specified name and tags.
+Create a basic BillingGroup with a name and an optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const billingGroup = await AWS.IoT.BillingGroup("myBillingGroup", {
-  BillingGroupName: "MyBillingGroup",
+const BasicBillingGroup = await AWS.IoT.BillingGroup("BasicBillingGroup", {
+  BillingGroupName: "BasicBillingGroup",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "IoTIntegration" }
+    { Key: "Environment", Value: "development" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a BillingGroup with additional properties and billing group properties.
+Configure a BillingGroup with additional properties including billing group properties.
 
 ```ts
-const advancedBillingGroup = await AWS.IoT.BillingGroup("advancedBillingGroup", {
+const AdvancedBillingGroup = await AWS.IoT.BillingGroup("AdvancedBillingGroup", {
   BillingGroupName: "AdvancedBillingGroup",
   BillingGroupProperties: {
-    BillingGroupArn: "arn:aws:iot:us-west-2:123456789012:billinggroup/AdvancedBillingGroup"
+    // Define specific properties for the billing group
   },
   Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Team", Value: "Development" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Finance" }
   ]
 });
 ```
 
-## Adoption of Existing Resource
+## Existing Resource Adoption
 
-Adopt an existing BillingGroup if it already exists to avoid failures.
+Adopt an existing BillingGroup if it already exists.
 
 ```ts
-const adoptBillingGroup = await AWS.IoT.BillingGroup("adoptedBillingGroup", {
+const AdoptedBillingGroup = await AWS.IoT.BillingGroup("AdoptedBillingGroup", {
   BillingGroupName: "ExistingBillingGroup",
-  adopt: true // This will adopt the existing resource instead of failing
-});
-```
-
-## Creating Multiple BillingGroups
-
-Create multiple BillingGroups to manage different environments.
-
-```ts
-const productionBillingGroup = await AWS.IoT.BillingGroup("prodBillingGroup", {
-  BillingGroupName: "ProductionBillingGroup",
-  Tags: [
-    { Key: "Environment", Value: "Production" }
-  ]
-});
-
-const stagingBillingGroup = await AWS.IoT.BillingGroup("stagingBillingGroup", {
-  BillingGroupName: "StagingBillingGroup",
-  Tags: [
-    { Key: "Environment", Value: "Staging" }
-  ]
+  adopt: true // Set to true to adopt the resource if it exists
 });
 ```

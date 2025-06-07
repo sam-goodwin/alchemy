@@ -5,56 +5,53 @@ description: Learn how to create, update, and manage AWS Pinpoint SMSChannels us
 
 # SMSChannel
 
-The SMSChannel resource allows you to manage SMS messaging capabilities in [AWS Pinpoint](https://docs.aws.amazon.com/pinpoint/latest/userguide/). This includes configuring settings for sending messages via SMS to your users.
+The SMSChannel resource allows you to manage SMS messaging settings for your AWS Pinpoint applications. For more detailed information, visit the [AWS Pinpoint SMSChannels documentation](https://docs.aws.amazon.com/pinpoint/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic SMSChannel with required properties and one optional property:
+This example demonstrates how to create a basic SMS channel with the required `ApplicationId` property and an optional `Enabled` property to turn on the channel.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const smsChannel = await AWS.Pinpoint.SMSChannel("mySmsChannel", {
-  ApplicationId: "myPinpointApplicationId",
-  Enabled: true // Optional: Enable the SMS channel
+const SmsChannel = await AWS.Pinpoint.SMSChannel("MySmsChannel", {
+  ApplicationId: "1234567890abcdefg",
+  Enabled: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure an SMSChannel with additional properties such as SenderId and ShortCode:
+Here’s how to configure an SMS channel with additional parameters like `ShortCode` and `SenderId` for enhanced functionality.
 
 ```ts
-const advancedSmsChannel = await AWS.Pinpoint.SMSChannel("advancedSmsChannel", {
-  ApplicationId: "myPinpointApplicationId",
+const AdvancedSmsChannel = await AWS.Pinpoint.SMSChannel("MyAdvancedSmsChannel", {
+  ApplicationId: "1234567890abcdefg",
   Enabled: true,
-  SenderId: "MyBrand", // Optional: Specify a brand name for SMS
-  ShortCode: "12345" // Optional: Specify a short code for SMS
+  ShortCode: "12345",
+  SenderId: "MySender"
 });
 ```
 
-## Integration with Existing Resources
+## Adopt Existing Resource
 
-Adopt an existing SMSChannel instead of failing if it already exists:
+Use this example to adopt an existing SMS channel instead of creating a new one, which is useful in scenarios where the resource already exists.
 
 ```ts
-const adoptSmsChannel = await AWS.Pinpoint.SMSChannel("existingSmsChannel", {
-  ApplicationId: "myPinpointApplicationId",
+const AdoptedSmsChannel = await AWS.Pinpoint.SMSChannel("MyAdoptedSmsChannel", {
+  ApplicationId: "1234567890abcdefg",
   Enabled: true,
-  adopt: true // Optional: Adopt existing resource
+  adopt: true
 });
 ```
 
-## Conditional Configuration
+## Disabling the SMS Channel
 
-Create an SMSChannel with conditional settings based on a feature flag:
+This example shows how to disable an existing SMS channel by setting the `Enabled` property to `false`.
 
 ```ts
-const isSmsEnabled = true; // Example feature flag
-
-const conditionalSmsChannel = await AWS.Pinpoint.SMSChannel("conditionalSmsChannel", {
-  ApplicationId: "myPinpointApplicationId",
-  Enabled: isSmsEnabled, // Enable SMS channel based on feature flag
-  SenderId: isSmsEnabled ? "MyBrand" : undefined // Optionally set SenderId
+const DisabledSmsChannel = await AWS.Pinpoint.SMSChannel("MyDisabledSmsChannel", {
+  ApplicationId: "1234567890abcdefg",
+  Enabled: false
 });
 ```

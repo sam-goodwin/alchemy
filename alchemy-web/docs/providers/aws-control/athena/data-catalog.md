@@ -5,64 +5,68 @@ description: Learn how to create, update, and manage AWS Athena DataCatalogs usi
 
 # DataCatalog
 
-The DataCatalog resource lets you manage [AWS Athena DataCatalogs](https://docs.aws.amazon.com/athena/latest/userguide/) for organizing and storing metadata about your data sources.
+The DataCatalog resource lets you manage [AWS Athena DataCatalogs](https://docs.aws.amazon.com/athena/latest/userguide/) for querying your data in Amazon S3 using SQL. This resource is essential for organizing and managing your datasets.
 
 ## Minimal Example
 
-Create a basic DataCatalog with required properties and a description:
+Create a basic DataCatalog with required properties and a few common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDataCatalog = await AWS.Athena.DataCatalog("basicDataCatalog", {
-  Name: "myDataCatalog",
-  Type: "GLUE",  // Assuming usage of AWS Glue as the catalog type
-  Description: "A catalog for storing metadata of my datasets"
+const DefaultDataCatalog = await AWS.Athena.DataCatalog("DefaultDataCatalog", {
+  Name: "MyDataCatalog",
+  Type: "GLUE",
+  Status: "ENABLED",
+  Description: "A DataCatalog for storing my data assets."
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DataCatalog with additional options for parameters and tags:
+Configure a DataCatalog with additional parameters and tags for better management.
 
 ```ts
-const advancedDataCatalog = await AWS.Athena.DataCatalog("advancedDataCatalog", {
-  Name: "advancedDataCatalog",
+const AdvancedDataCatalog = await AWS.Athena.DataCatalog("AdvancedDataCatalog", {
+  Name: "AdvancedDataCatalog",
   Type: "GLUE",
-  Description: "A catalog with advanced configuration",
+  Status: "ENABLED",
+  Description: "This DataCatalog contains advanced configurations.",
   Parameters: {
-    "catalogId": "123456789012",
-    "compressionType": "GZIP"
+    "parquet.compression": "SNAPPY",
+    "storage.location": "s3://my-bucket/data-catalog/"
   },
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DataAnalytics" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Owner", Value: "DataTeam" }
   ]
 });
 ```
 
-## Connection Type Example
+## Error Handling
 
-Create a DataCatalog with a specified connection type:
+Demonstrate how to handle errors when creating a DataCatalog.
 
 ```ts
-const connectionDataCatalog = await AWS.Athena.DataCatalog("connectionDataCatalog", {
-  Name: "connectionDataCatalog",
-  Type: "GLUE",
-  Description: "Catalog with a connection type",
-  ConnectionType: "JDBC"
-});
+try {
+  const ErrorDataCatalog = await AWS.Athena.DataCatalog("ErrorDataCatalog", {
+    Name: "ErrorDataCatalog",
+    Type: "GLUE",
+    Status: "INVALID_STATUS", // This will cause an error
+  });
+} catch (error) {
+  console.error("Error creating DataCatalog:", error);
+}
 ```
 
-## Error Handling Example
+## Adoption of Existing Resource
 
-Manage error states for a DataCatalog:
+Show how to adopt an existing DataCatalog instead of failing on creation.
 
 ```ts
-const errorHandlingDataCatalog = await AWS.Athena.DataCatalog("errorHandlingDataCatalog", {
-  Name: "errorHandlingDataCatalog",
+const AdoptedDataCatalog = await AWS.Athena.DataCatalog("AdoptedDataCatalog", {
+  Name: "ExistingDataCatalog",
   Type: "GLUE",
-  Description: "Catalog with error handling",
-  Error: "No connection available"
+  adopt: true // Attempts to adopt an existing catalog if it already exists
 });
 ```

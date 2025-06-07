@@ -5,75 +5,80 @@ description: Learn how to create, update, and manage AWS DocDBElastic Clusters u
 
 # Cluster
 
-The Cluster resource lets you manage [AWS DocDBElastic Clusters](https://docs.aws.amazon.com/docdbelastic/latest/userguide/) for scalable and flexible document database solutions.
+The Cluster resource lets you manage [AWS DocDBElastic Clusters](https://docs.aws.amazon.com/docdbelastic/latest/userguide/) and their configuration settings.
+
+## Resource Documentation
+
+This resource enables you to create and configure scalable and managed document databases with Amazon DocumentDB (with MongoDB compatibility), allowing for seamless scaling and management of database clusters.
 
 ## Minimal Example
 
-Create a basic DocDBElastic Cluster with required properties and a couple of optional settings.
+Create a basic DocDBElastic Cluster with required properties and a couple of common optional configurations.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const docDBCluster = await AWS.DocDBElastic.Cluster("myDocDBCluster", {
-  clusterName: "my-cluster",
-  shardCount: 2,
-  shardCapacity: 256,
-  adminUserName: "admin",
-  adminUserPassword: "ComplexPassword123!",
-  preferredBackupWindow: "03:00-03:30",
-  preferredMaintenanceWindow: "sun:05:00-sun:06:00"
+const basicCluster = await AWS.DocDBElastic.Cluster("basicCluster", {
+  AdminUserName: "admin",
+  AdminUserPassword: "securePassword123!",
+  ShardCount: 2,
+  ShardCapacity: 64,
+  PreferredMaintenanceWindow: "sun:05:00-sun:06:00",
+  BackupRetentionPeriod: 7,
+  AuthType: "PASSWORD",
+  ClusterName: "BasicCluster",
+  SubnetIds: ["subnet-12345678", "subnet-87654321"],
+  VpcSecurityGroupIds: ["sg-0123456789abcdef0"]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DocDBElastic Cluster with advanced settings including KMS key for encryption and VPC security groups.
+Configure a DocDBElastic Cluster with additional security and advanced settings.
 
 ```ts
-const advancedDocDBCluster = await AWS.DocDBElastic.Cluster("advancedDocDBCluster", {
-  clusterName: "advanced-cluster",
-  shardCount: 3,
-  shardCapacity: 512,
-  adminUserName: "adminUser",
-  adminUserPassword: "AnotherComplexPassword456!",
-  kmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-5678-90ef-gh12-ijklmnopqrst",
-  vpcSecurityGroupIds: ["sg-0abc12345def67890"],
-  subnetIds: ["subnet-0abc12345def67890", "subnet-0def12345abc67890"],
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Project", value: "DocDBElastic" }
+const advancedCluster = await AWS.DocDBElastic.Cluster("advancedCluster", {
+  AdminUserName: "admin",
+  AdminUserPassword: "strongPassword456!",
+  ShardCount: 3,
+  ShardCapacity: 128,
+  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
+  PreferredMaintenanceWindow: "sat:03:00-sat:04:00",
+  BackupRetentionPeriod: 14,
+  AuthType: "PASSWORD",
+  ClusterName: "AdvancedCluster",
+  SubnetIds: ["subnet-11111111", "subnet-22222222"],
+  VpcSecurityGroupIds: ["sg-abcdefabcdefabcd"],
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Database" }
   ]
 });
 ```
 
-## Cluster with Custom Sharding
+## Multi-Region Deployment
 
-Create a cluster optimized with custom sharding settings for better performance.
-
-```ts
-const customShardDocDBCluster = await AWS.DocDBElastic.Cluster("customShardDocDBCluster", {
-  clusterName: "custom-shard-cluster",
-  shardCount: 4,
-  shardCapacity: 128,
-  adminUserName: "customAdmin",
-  adminUserPassword: "HighlySecurePassword789!",
-  shardInstanceCount: 4,
-  preferredBackupWindow: "02:00-02:30",
-  preferredMaintenanceWindow: "sat:04:00-sat:05:00"
-});
-```
-
-## Adopt Existing Resource
-
-Create a cluster while adopting an existing resource if one is already present.
+Demonstrate how to create a cluster that spans multiple availability zones for high availability.
 
 ```ts
-const adoptedDocDBCluster = await AWS.DocDBElastic.Cluster("adoptedDocDBCluster", {
-  clusterName: "existing-cluster",
-  shardCount: 2,
-  shardCapacity: 256,
-  adminUserName: "adminUser",
-  adminUserPassword: "PasswordForAdoption123!",
-  adopt: true // Enables adopting an existing cluster
+const multiRegionCluster = await AWS.DocDBElastic.Cluster("multiRegionCluster", {
+  AdminUserName: "admin",
+  AdminUserPassword: "veryStrongPassword789!",
+  ShardCount: 4,
+  ShardCapacity: 256,
+  PreferredMaintenanceWindow: "mon:02:00-mon:03:00",
+  BackupRetentionPeriod: 30,
+  AuthType: "PASSWORD",
+  ClusterName: "MultiRegionCluster",
+  SubnetIds: [
+    "subnet-abcde123",
+    "subnet-abcde456",
+    "subnet-abcde789"
+  ],
+  VpcSecurityGroupIds: ["sg-abcdef1234567890"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```

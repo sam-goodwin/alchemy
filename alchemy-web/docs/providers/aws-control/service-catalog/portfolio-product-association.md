@@ -5,57 +5,55 @@ description: Learn how to create, update, and manage AWS ServiceCatalog Portfoli
 
 # PortfolioProductAssociation
 
-The PortfolioProductAssociation resource allows you to associate a product with a portfolio in AWS Service Catalog. This resource is crucial for managing access to products within portfolios. For more information, refer to the [AWS ServiceCatalog PortfolioProductAssociations documentation](https://docs.aws.amazon.com/servicecatalog/latest/userguide/).
+The PortfolioProductAssociation resource allows you to associate a product with a portfolio in AWS Service Catalog. This enables you to manage products effectively within your portfolios. For more detailed information, refer to the [AWS ServiceCatalog PortfolioProductAssociations documentation](https://docs.aws.amazon.com/servicecatalog/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic association between a portfolio and a product with required properties.
+Create a basic association of a product with a portfolio using required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const portfolioProductAssociation = await AWS.ServiceCatalog.PortfolioProductAssociation("basicAssociation", {
-  PortfolioId: "portfolio-12345",
-  ProductId: "product-67890",
-  SourcePortfolioId: "source-portfolio-12345", // optional
-  AcceptLanguage: "en" // optional
+const PortfolioProductAssociation = await AWS.ServiceCatalog.PortfolioProductAssociation("MyPortfolioProductAssociation", {
+  PortfolioId: "portfolio-12345678",
+  ProductId: "product-87654321",
+  SourcePortfolioId: "source-portfolio-12345678"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an association while adopting an existing resource to avoid failure if it already exists.
+Configure an association with multiple options, including accept language for localization.
 
 ```ts
-const advancedPortfolioProductAssociation = await AWS.ServiceCatalog.PortfolioProductAssociation("advancedAssociation", {
-  PortfolioId: "portfolio-54321",
-  ProductId: "product-09876",
-  SourcePortfolioId: "source-portfolio-54321", // optional
-  AcceptLanguage: "fr", // optional
-  adopt: true // adopt existing resource
+const AdvancedPortfolioProductAssociation = await AWS.ServiceCatalog.PortfolioProductAssociation("AdvancedPortfolioProductAssociation", {
+  PortfolioId: "portfolio-12345678",
+  ProductId: "product-87654321",
+  SourcePortfolioId: "source-portfolio-12345678",
+  AcceptLanguage: "en"
 });
 ```
 
 ## Adoption of Existing Resource
 
-Use the adopt option to ensure that the association will succeed even if the resource already exists.
+Adopt an existing resource if it already exists instead of failing the operation.
 
 ```ts
-const adoptedPortfolioProductAssociation = await AWS.ServiceCatalog.PortfolioProductAssociation("adoptedAssociation", {
-  PortfolioId: "portfolio-11111",
-  ProductId: "product-22222",
-  adopt: true // true to adopt existing resource
+const AdoptExistingPortfolioProductAssociation = await AWS.ServiceCatalog.PortfolioProductAssociation("AdoptExistingPortfolioProductAssociation", {
+  PortfolioId: "portfolio-12345678",
+  ProductId: "product-87654321",
+  SourcePortfolioId: "source-portfolio-12345678",
+  adopt: true
 });
 ```
 
-## Multi-language Support
+## Association without Source Portfolio
 
-Create an association while specifying a different language for the operation.
+Create an association without specifying a source portfolio, which may be useful in certain scenarios.
 
 ```ts
-const multilingualPortfolioProductAssociation = await AWS.ServiceCatalog.PortfolioProductAssociation("multilingualAssociation", {
-  PortfolioId: "portfolio-99999",
-  ProductId: "product-88888",
-  AcceptLanguage: "es" // Spanish
+const NoSourcePortfolioAssociation = await AWS.ServiceCatalog.PortfolioProductAssociation("NoSourcePortfolioAssociation", {
+  PortfolioId: "portfolio-12345678",
+  ProductId: "product-87654321"
 });
 ```

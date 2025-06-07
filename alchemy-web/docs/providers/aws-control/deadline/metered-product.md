@@ -5,53 +5,48 @@ description: Learn how to create, update, and manage AWS Deadline MeteredProduct
 
 # MeteredProduct
 
-The MeteredProduct resource allows you to manage [AWS Deadline MeteredProducts](https://docs.aws.amazon.com/deadline/latest/userguide/) for licensing and tracking usage in your AWS infrastructure.
+The MeteredProduct resource lets you manage [AWS Deadline MeteredProducts](https://docs.aws.amazon.com/deadline/latest/userguide/) and their configurations.
 
 ## Minimal Example
 
-Create a basic MeteredProduct with required properties and one optional property:
+Create a basic MeteredProduct with required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const meteredProduct = await AWS.Deadline.MeteredProduct("myMeteredProduct", {
-  LicenseEndpointId: "license-endpoint-12345",
-  ProductId: "product-67890"
+const BasicMeteredProduct = await AWS.Deadline.MeteredProduct("BasicMeteredProduct", {
+  LicenseEndpointId: "endpoint-1234",
+  ProductId: "product-5678"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a MeteredProduct with additional optional properties such as adopting an existing resource:
+Configure a MeteredProduct with adoption of existing resources:
 
 ```ts
-const advancedMeteredProduct = await AWS.Deadline.MeteredProduct("advancedMeteredProduct", {
-  LicenseEndpointId: "license-endpoint-54321",
-  ProductId: "product-09876",
-  adopt: true // Adopts the existing MeteredProduct instead of failing
+import AWS from "alchemy/aws/control";
+
+const AdvancedMeteredProduct = await AWS.Deadline.MeteredProduct("AdvancedMeteredProduct", {
+  LicenseEndpointId: "endpoint-4321",
+  ProductId: "product-8765",
+  adopt: true // Adopt existing resource if it exists
 });
 ```
 
-## Usage Tracking
+## Creating with Additional Attributes
 
-Create a MeteredProduct designed for usage tracking with specific identifiers:
-
-```ts
-const usageTrackingMeteredProduct = await AWS.Deadline.MeteredProduct("usageTrackingProduct", {
-  LicenseEndpointId: "license-endpoint-11111",
-  ProductId: "product-22222",
-  adopt: false // This will throw an error if the resource already exists
-});
-```
-
-## Resource Management
-
-Manage your MeteredProduct over time by updating its properties:
+Demonstrate creating a MeteredProduct while capturing additional attributes like ARN and creation time:
 
 ```ts
-const updatedMeteredProduct = await AWS.Deadline.MeteredProduct("updatedMeteredProduct", {
-  LicenseEndpointId: "license-endpoint-33333",
-  ProductId: "product-44444",
-  adopt: true // Ensure it adopts if it exists
+import AWS from "alchemy/aws/control";
+
+const DetailedMeteredProduct = await AWS.Deadline.MeteredProduct("DetailedMeteredProduct", {
+  LicenseEndpointId: "endpoint-9999",
+  ProductId: "product-0001"
 });
+
+// Access additional properties
+const { Arn, CreationTime, LastUpdateTime } = DetailedMeteredProduct;
+console.log(`ARN: ${Arn}, Created At: ${CreationTime}, Last Updated At: ${LastUpdateTime}`);
 ```

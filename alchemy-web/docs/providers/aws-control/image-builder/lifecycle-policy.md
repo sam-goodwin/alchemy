@@ -5,104 +5,47 @@ description: Learn how to create, update, and manage AWS ImageBuilder LifecycleP
 
 # LifecyclePolicy
 
-The LifecyclePolicy resource lets you manage the lifecycle policies for AWS ImageBuilder, automating the creation, retention, and deletion of Amazon Machine Images (AMIs). For more detailed information, refer to the [AWS ImageBuilder LifecyclePolicys documentation](https://docs.aws.amazon.com/imagebuilder/latest/userguide/).
+The LifecyclePolicy resource lets you create and manage [AWS ImageBuilder LifecyclePolicys](https://docs.aws.amazon.com/imagebuilder/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-imagebuilder-lifecyclepolicy.html
 
 ## Minimal Example
-
-Create a basic lifecycle policy with required properties and one optional status.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const lifecyclePolicy = await AWS.ImageBuilder.LifecyclePolicy("basicLifecyclePolicy", {
-  resourceType: "image",
-  policyDetails: [
-    {
-      policy: [
-        {
-          action: "retain",
-          imageDigest: "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-          description: "Retain the latest image"
-        }
-      ]
-    }
-  ],
-  executionRole: "arn:aws:iam::123456789012:role/ImageBuilder-Execution-Role",
-  resourceSelection: {
-    resourceType: "image",
-    tags: {
-      Environment: "production"
-    }
-  },
-  name: "BasicLifecyclePolicy"
+const lifecyclepolicy = await AWS.ImageBuilder.LifecyclePolicy("lifecyclepolicy-example", {
+  ResourceType: "example-resourcetype",
+  PolicyDetails: [],
+  ExecutionRole: "example-executionrole",
+  ResourceSelection: "example-resourceselection",
+  Name: "lifecyclepolicy-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A lifecyclepolicy resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a lifecycle policy with detailed policy settings and custom tags.
+Create a lifecyclepolicy with additional configuration:
 
 ```ts
-const advancedLifecyclePolicy = await AWS.ImageBuilder.LifecyclePolicy("advancedLifecyclePolicy", {
-  resourceType: "image",
-  policyDetails: [
-    {
-      policy: [
-        {
-          action: "expire",
-          imageDigest: "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-          description: "Expire images older than 30 days"
-        },
-        {
-          action: "retain",
-          imageDigest: "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-          description: "Retain the latest image"
-        }
-      ]
-    }
-  ],
-  executionRole: "arn:aws:iam::123456789012:role/ImageBuilder-Execution-Role",
-  resourceSelection: {
-    resourceType: "image",
-    tags: {
-      Environment: "testing"
-    }
+import AWS from "alchemy/aws/control";
+
+const advancedLifecyclePolicy = await AWS.ImageBuilder.LifecyclePolicy("advanced-lifecyclepolicy", {
+  ResourceType: "example-resourcetype",
+  PolicyDetails: [],
+  ExecutionRole: "example-executionrole",
+  ResourceSelection: "example-resourceselection",
+  Name: "lifecyclepolicy-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  tags: {
-    Project: "ImageBuilder",
-    Owner: "dev-team"
-  },
-  status: "ENABLED",
-  name: "AdvancedLifecyclePolicy"
+  Description: "A lifecyclepolicy resource managed by Alchemy",
 });
 ```
 
-## Resource Adoption
-
-Create a policy that adopts an existing resource if it already exists.
-
-```ts
-const adoptLifecyclePolicy = await AWS.ImageBuilder.LifecyclePolicy("adoptLifecyclePolicy", {
-  resourceType: "image",
-  policyDetails: [
-    {
-      policy: [
-        {
-          action: "retain",
-          imageDigest: "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-          description: "Retain the latest image"
-        }
-      ]
-    }
-  ],
-  executionRole: "arn:aws:iam::123456789012:role/ImageBuilder-Execution-Role",
-  resourceSelection: {
-    resourceType: "image",
-    tags: {
-      Environment: "development"
-    }
-  },
-  name: "AdoptLifecyclePolicy",
-  adopt: true
-});
-```

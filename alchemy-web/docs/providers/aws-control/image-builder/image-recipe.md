@@ -5,95 +5,45 @@ description: Learn how to create, update, and manage AWS ImageBuilder ImageRecip
 
 # ImageRecipe
 
-The ImageRecipe resource allows you to define and manage [AWS ImageBuilder ImageRecipes](https://docs.aws.amazon.com/imagebuilder/latest/userguide/) which specify how to create images using various components and configurations.
+The ImageRecipe resource lets you create and manage [AWS ImageBuilder ImageRecipes](https://docs.aws.amazon.com/imagebuilder/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-imagebuilder-imagerecipe.html
 
 ## Minimal Example
-
-Create a basic image recipe with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicImageRecipe = await AWS.ImageBuilder.ImageRecipe("basicImageRecipe", {
-  name: "MyBasicImageRecipe",
-  parentImage: "arn:aws:imagebuilder:us-west-2:123456789012:image/my-base-image",
-  version: "1.0.0",
-  components: [
-    {
-      componentArn: "arn:aws:imagebuilder:us-west-2:123456789012:component/my-component"
-    }
-  ],
-  workingDirectory: "/var/imagebuilder"
+const imagerecipe = await AWS.ImageBuilder.ImageRecipe("imagerecipe-example", {
+  Components: [],
+  ParentImage: "example-parentimage",
+  Version: "example-version",
+  Name: "imagerecipe-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A imagerecipe resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an image recipe with additional instance configuration and block device mappings.
+Create a imagerecipe with additional configuration:
 
 ```ts
-const advancedImageRecipe = await AWS.ImageBuilder.ImageRecipe("advancedImageRecipe", {
-  name: "MyAdvancedImageRecipe",
-  parentImage: "arn:aws:imagebuilder:us-west-2:123456789012:image/my-base-image",
-  version: "1.0.1",
-  components: [
-    {
-      componentArn: "arn:aws:imagebuilder:us-west-2:123456789012:component/my-component"
-    }
-  ],
-  blockDeviceMappings: [
-    {
-      deviceName: "/dev/xvda",
-      ebs: {
-        volumeSize: 30,
-        deleteOnTermination: true,
-        encrypted: false
-      }
-    }
-  ],
-  additionalInstanceConfiguration: {
-    userDataOverride: "IyEvYmluL2Jhc2gKc3VsdCAiSGVsbG8sIFdvcmxkISI="
-  }
+import AWS from "alchemy/aws/control";
+
+const advancedImageRecipe = await AWS.ImageBuilder.ImageRecipe("advanced-imagerecipe", {
+  Components: [],
+  ParentImage: "example-parentimage",
+  Version: "example-version",
+  Name: "imagerecipe-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A imagerecipe resource managed by Alchemy",
 });
 ```
 
-## Custom Tags
-
-Create an image recipe with custom tags for better resource management and identification.
-
-```ts
-const taggedImageRecipe = await AWS.ImageBuilder.ImageRecipe("taggedImageRecipe", {
-  name: "MyTaggedImageRecipe",
-  parentImage: "arn:aws:imagebuilder:us-west-2:123456789012:image/my-base-image",
-  version: "1.0.2",
-  components: [
-    {
-      componentArn: "arn:aws:imagebuilder:us-west-2:123456789012:component/my-component"
-    }
-  ],
-  tags: {
-    Project: "MyProject",
-    Environment: "Development"
-  }
-});
-```
-
-## Combining Components
-
-Demonstrate how to combine multiple components into a single image recipe.
-
-```ts
-const combinedComponentsImageRecipe = await AWS.ImageBuilder.ImageRecipe("combinedComponentsImageRecipe", {
-  name: "MyCombinedImageRecipe",
-  parentImage: "arn:aws:imagebuilder:us-west-2:123456789012:image/my-base-image",
-  version: "1.0.3",
-  components: [
-    {
-      componentArn: "arn:aws:imagebuilder:us-west-2:123456789012:component/my-component-1"
-    },
-    {
-      componentArn: "arn:aws:imagebuilder:us-west-2:123456789012:component/my-component-2"
-    }
-  ]
-});
-```

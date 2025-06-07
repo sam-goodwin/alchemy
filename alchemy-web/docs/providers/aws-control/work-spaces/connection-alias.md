@@ -1,53 +1,62 @@
 ---
-title: Managing AWS WorkSpaces ConnectionAliass with Alchemy
-description: Learn how to create, update, and manage AWS WorkSpaces ConnectionAliass using Alchemy Cloud Control.
+title: Managing AWS WorkSpaces ConnectionAliases with Alchemy
+description: Learn how to create, update, and manage AWS WorkSpaces ConnectionAliases using Alchemy Cloud Control.
 ---
 
 # ConnectionAlias
 
-The ConnectionAlias resource allows you to manage [AWS WorkSpaces ConnectionAliases](https://docs.aws.amazon.com/workspaces/latest/userguide/) which are used for associating a connection string with your WorkSpaces environment.
+The ConnectionAlias resource allows you to manage [AWS WorkSpaces ConnectionAliases](https://docs.aws.amazon.com/workspaces/latest/userguide/) for your WorkSpaces environment, enabling you to seamlessly connect to your WorkSpaces.
 
 ## Minimal Example
 
-Create a basic ConnectionAlias with the required connection string.
+Create a basic ConnectionAlias with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicConnectionAlias = await AWS.WorkSpaces.ConnectionAlias("basic-connection-alias", {
-  ConnectionString: "ws-1234567890abcdef",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Engineering" }
-  ]
+const basicConnectionAlias = await AWS.WorkSpaces.ConnectionAlias("BasicConnectionAlias", {
+  ConnectionString: "ws://example-workspace-connection.com",
+  Tags: [{ Key: "Environment", Value: "development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ConnectionAlias with adoption of existing resources.
+Configure a ConnectionAlias with additional properties, including tags for better organization.
 
 ```ts
-const advancedConnectionAlias = await AWS.WorkSpaces.ConnectionAlias("advanced-connection-alias", {
-  ConnectionString: "ws-abcdef1234567890",
+const advancedConnectionAlias = await AWS.WorkSpaces.ConnectionAlias("AdvancedConnectionAlias", {
+  ConnectionString: "ws://secure-workspace-connection.com",
   Tags: [
-    { Key: "Project", Value: "ProjectX" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Engineering" }
   ],
-  adopt: true // Adopt existing resource if it already exists
+  adopt: true // Adopts existing resource if it already exists
 });
 ```
 
-## Using ConnectionAlias in WorkSpaces Configuration
+## Existing Resource Adoption
 
-Create a WorkSpaces configuration that utilizes the ConnectionAlias.
+This example demonstrates how to adopt an existing ConnectionAlias without creating a new one.
 
 ```ts
-const workSpacesConfig = await AWS.WorkSpaces.ConnectionAlias("workspaces-config", {
-  ConnectionString: "ws-0987654321fedcba",
+const existingConnectionAlias = await AWS.WorkSpaces.ConnectionAlias("ExistingConnectionAlias", {
+  ConnectionString: "ws://existing-workspace-connection.com",
+  adopt: true // This will adopt the existing resource
+});
+```
+
+## Tagging for Better Management
+
+This example shows how to create a ConnectionAlias with multiple tags for enhanced resource management.
+
+```ts
+const taggedConnectionAlias = await AWS.WorkSpaces.ConnectionAlias("TaggedConnectionAlias", {
+  ConnectionString: "ws://tagged-workspace-connection.com",
   Tags: [
-    { Key: "UseCase", Value: "Testing" },
-    { Key: "Owner", Value: "DevTeam" }
-  ],
-  adopt: false // Create new resource, do not adopt
+    { Key: "Project", Value: "ProjectA" },
+    { Key: "Owner", Value: "JohnDoe" },
+    { Key: "Status", Value: "active" }
+  ]
 });
 ```

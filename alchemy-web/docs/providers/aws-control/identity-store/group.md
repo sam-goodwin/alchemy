@@ -5,60 +5,33 @@ description: Learn how to create, update, and manage AWS IdentityStore Groups us
 
 # Group
 
-The Group resource lets you manage [AWS IdentityStore Groups](https://docs.aws.amazon.com/identitystore/latest/userguide/) for organizing users and managing their permissions within your AWS environment.
+The Group resource lets you create and manage [AWS IdentityStore Groups](https://docs.aws.amazon.com/identitystore/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-identitystore-group.html
 
 ## Minimal Example
-
-Create a basic IdentityStore group with a display name and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicGroup = await AWS.IdentityStore.Group("basicGroup", {
-  DisplayName: "Developers",
-  Description: "Group for all application developers",
-  IdentityStoreId: "identitystore-1234567890"
+const group = await AWS.IdentityStore.Group("group-example", {
+  DisplayName: "group-display",
+  IdentityStoreId: "example-identitystoreid",
+  Description: "A group resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IdentityStore group with additional properties such as adopting an existing resource:
+Create a group with additional configuration:
 
 ```ts
-const advancedGroup = await AWS.IdentityStore.Group("advancedGroup", {
-  DisplayName: "Admins",
-  Description: "Group for administrative users",
-  IdentityStoreId: "identitystore-1234567890",
-  adopt: true // Adopts the existing group if it already exists
+import AWS from "alchemy/aws/control";
+
+const advancedGroup = await AWS.IdentityStore.Group("advanced-group", {
+  DisplayName: "group-display",
+  IdentityStoreId: "example-identitystoreid",
+  Description: "A group resource managed by Alchemy",
 });
 ```
 
-## Use Case: Group for Project Team
-
-Create a group specifically for a project team with a detailed description:
-
-```ts
-const projectTeamGroup = await AWS.IdentityStore.Group("projectTeamGroup", {
-  DisplayName: "Project Alpha Team",
-  Description: "Group for the Alpha project team members",
-  IdentityStoreId: "identitystore-1234567890"
-});
-```
-
-## Use Case: Dynamic Group Management
-
-Create a group and manage it dynamically through updates:
-
-```ts
-const dynamicGroup = await AWS.IdentityStore.Group("dynamicGroup", {
-  DisplayName: "Dynamic Group",
-  IdentityStoreId: "identitystore-1234567890"
-});
-
-// Later update the group description
-await AWS.IdentityStore.Group("dynamicGroup", {
-  Description: "Updated description for dynamic group",
-  IdentityStoreId: "identitystore-1234567890"
-});
-```

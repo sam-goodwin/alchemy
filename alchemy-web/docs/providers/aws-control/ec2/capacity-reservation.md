@@ -5,69 +5,81 @@ description: Learn how to create, update, and manage AWS EC2 CapacityReservation
 
 # CapacityReservation
 
-The CapacityReservation resource allows you to manage [AWS EC2 CapacityReservations](https://docs.aws.amazon.com/ec2/latest/userguide/) which provide dedicated capacity for EC2 instances in specific Availability Zones.
+The CapacityReservation resource lets you manage [AWS EC2 Capacity Reservations](https://docs.aws.amazon.com/ec2/latest/userguide/) for reserving capacity for your Amazon EC2 instances in a specific Availability Zone.
 
 ## Minimal Example
 
-Create a basic EC2 CapacityReservation with essential properties.
+Create a basic capacity reservation with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const capacityReservation = await AWS.EC2.CapacityReservation("myCapacityReservation", {
-  instanceCount: 5,
-  instanceType: "t3.medium",
-  instancePlatform: "Linux/UNIX",
-  availabilityZone: "us-west-2a"
+const BasicCapacityReservation = await AWS.EC2.CapacityReservation("BasicCapacityReservation", {
+  InstanceCount: 5,
+  InstanceType: "t3.medium",
+  InstancePlatform: "Linux/UNIX",
+  AvailabilityZone: "us-west-2a",
+  EbsOptimized: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EC2 CapacityReservation with additional options like EBS optimization and tagging.
+Configure a capacity reservation with additional optional properties for better control and tagging.
 
 ```ts
-const advancedCapacityReservation = await AWS.EC2.CapacityReservation("advancedCapacityReservation", {
-  instanceCount: 10,
-  instanceType: "m5.large",
-  instancePlatform: "Linux/UNIX",
-  availabilityZone: "us-west-2b",
-  ebsOptimized: true,
-  tagSpecifications: [{
-    resourceType: "capacity-reservation",
-    tags: {
-      Name: "AdvancedCapacityReservation",
-      Environment: "Production"
+const AdvancedCapacityReservation = await AWS.EC2.CapacityReservation("AdvancedCapacityReservation", {
+  InstanceCount: 10,
+  InstanceType: "m5.large",
+  InstancePlatform: "Linux/UNIX",
+  AvailabilityZone: "us-east-1b",
+  Tenancy: "dedicated",
+  TagSpecifications: [
+    {
+      ResourceType: "capacity-reservation",
+      Tags: [
+        { Key: "Environment", Value: "production" },
+        { Key: "Team", Value: "DevOps" }
+      ]
     }
-  }]
+  ]
 });
 ```
 
-## Specifying End Dates
+## Example with End Date Configuration
 
-Create a CapacityReservation with a specified end date and billing owner ID.
+Create a capacity reservation that specifies an end date for the reservation.
 
 ```ts
-const timedCapacityReservation = await AWS.EC2.CapacityReservation("timedCapacityReservation", {
-  instanceCount: 20,
-  instanceType: "c5.xlarge",
-  instancePlatform: "Linux/UNIX",
-  availabilityZone: "us-east-1a",
-  endDate: "2024-12-31T23:59:59Z",
-  unusedReservationBillingOwnerId: "123456789012"
+const TimedCapacityReservation = await AWS.EC2.CapacityReservation("TimedCapacityReservation", {
+  InstanceCount: 3,
+  InstanceType: "c5.xlarge",
+  InstancePlatform: "Linux/UNIX",
+  AvailabilityZone: "eu-central-1a",
+  EndDateType: "limited",
+  EndDate: new Date("2024-12-31T23:59:59Z").toISOString()
 });
 ```
 
-## Using Placement Groups
+## Example with Outpost Configuration
 
-Configure a CapacityReservation to use a specific placement group.
+Create a capacity reservation for an Outpost with specific configurations.
 
 ```ts
-const placementGroupCapacityReservation = await AWS.EC2.CapacityReservation("placementGroupCapacityReservation", {
-  instanceCount: 6,
-  instanceType: "r5.2xlarge",
-  instancePlatform: "Linux/UNIX",
-  availabilityZone: "us-east-1b",
-  placementGroupArn: "arn:aws:ec2:us-east-1:123456789012:placement-group/myPlacementGroup"
+const OutpostCapacityReservation = await AWS.EC2.CapacityReservation("OutpostCapacityReservation", {
+  InstanceCount: 2,
+  InstanceType: "r5.large",
+  InstancePlatform: "Linux/UNIX",
+  AvailabilityZone: "us-west-2a",
+  OutPostArn: "arn:aws:outposts:us-west-2:123456789012:outpost/op-abcdefgh",
+  TagSpecifications: [
+    {
+      ResourceType: "capacity-reservation",
+      Tags: [
+        { Key: "Environment", Value: "staging" },
+        { Key: "Project", Value: "Migration" }
+      ]
+    }
+  ]
 });
 ```

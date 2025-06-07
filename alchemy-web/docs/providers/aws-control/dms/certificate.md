@@ -5,57 +5,53 @@ description: Learn how to create, update, and manage AWS DMS Certificates using 
 
 # Certificate
 
-The Certificate resource lets you manage [AWS DMS Certificates](https://docs.aws.amazon.com/dms/latest/userguide/) used for SSL/TLS encryption in AWS Database Migration Service (DMS).
+The Certificate resource allows you to manage [AWS DMS Certificates](https://docs.aws.amazon.com/dms/latest/userguide/) for secure database migration. This resource is essential for ensuring that data transfers between databases are encrypted using SSL.
 
 ## Minimal Example
 
-Create a basic DMS Certificate with essential properties.
+Create a basic AWS DMS Certificate with required properties and one optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dmsCertificate = await AWS.DMS.Certificate("myDmsCertificate", {
-  CertificateIdentifier: "my-dms-cert",
-  CertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...YourCertData...\n-----END CERTIFICATE-----",
-  adopt: false
+const DmsCertificate = await AWS.DMS.Certificate("MyDmsCertificate", {
+  CertificateIdentifier: "dms-cert-01",
+  CertificatePem: "-----BEGIN CERTIFICATE-----\nMIID....\n-----END CERTIFICATE-----"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DMS Certificate with a wallet for enhanced security.
+Configure an AWS DMS Certificate with additional options, such as providing a certificate wallet:
 
 ```ts
-const secureDmsCertificate = await AWS.DMS.Certificate("secureDmsCertificate", {
-  CertificateIdentifier: "secure-dms-cert",
-  CertificateWallet: "s3://my-bucket/wallets/my-wallet.zip",
-  adopt: false
+const AdvancedDmsCertificate = await AWS.DMS.Certificate("AdvancedDmsCertificate", {
+  CertificateIdentifier: "dms-cert-advanced",
+  CertificatePem: "-----BEGIN CERTIFICATE-----\nMIID....\n-----END CERTIFICATE-----",
+  CertificateWallet: "wallet.zip"
 });
 ```
 
-## Using Existing Certificates
+## Using Existing Certificate
 
-Adopt an existing DMS Certificate instead of creating a new one.
+Adopt an existing AWS DMS Certificate without failing if it already exists:
 
 ```ts
-const existingDmsCertificate = await AWS.DMS.Certificate("adoptExistingCertificate", {
+const ExistingDmsCertificate = await AWS.DMS.Certificate("ExistingDmsCertificate", {
   CertificateIdentifier: "existing-cert-id",
   adopt: true
 });
 ```
 
-## Retrieving Certificate Details
+## Handling Certificate Wallets
 
-Create a DMS Certificate and retrieve its ARN and creation time.
+Create a certificate using a certificate wallet:
 
 ```ts
-const detailedDmsCertificate = await AWS.DMS.Certificate("detailedDmsCertificate", {
-  CertificateIdentifier: "detailed-cert",
-  CertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...YourCertData...\n-----END CERTIFICATE-----",
-  adopt: false
+const WalletDmsCertificate = await AWS.DMS.Certificate("WalletDmsCertificate", {
+  CertificateIdentifier: "dms-cert-wallet",
+  CertificateWallet: "path/to/certificate-wallet.zip"
 });
-
-// Accessing properties after creation
-console.log(`ARN: ${detailedDmsCertificate.Arn}`);
-console.log(`Created At: ${detailedDmsCertificate.CreationTime}`);
 ```
+
+These examples illustrate the versatility of the AWS DMS Certificate resource, allowing you to configure certificates for secure database migrations effectively.

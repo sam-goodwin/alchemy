@@ -5,83 +5,41 @@ description: Learn how to create, update, and manage AWS Location APIKeys using 
 
 # APIKey
 
-The APIKey resource allows you to manage [AWS Location APIKeys](https://docs.aws.amazon.com/location/latest/userguide/), which are used to authenticate requests made to the AWS Location Service.
+The APIKey resource lets you create and manage [AWS Location APIKeys](https://docs.aws.amazon.com/location/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-location-apikey.html
 
 ## Minimal Example
-
-Create a basic APIKey with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicApiKey = await AWS.Location.APIKey("basicApiKey", {
-  KeyName: "MyLocationApiKey",
-  Description: "API Key for accessing AWS Location Service",
-  Restrictions: {
-    // Define restrictions as necessary
-    // For demonstration purposes, we'll leave this empty
-  },
-  Tags: [
-    {
-      Key: "Project",
-      Value: "LocationService"
-    }
-  ]
+const apikey = await AWS.Location.APIKey("apikey-example", {
+  KeyName: "apikey-key",
+  Restrictions: "example-restrictions",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A apikey resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an APIKey with no expiry and forced updates.
+Create a apikey with additional configuration:
 
 ```ts
-const advancedApiKey = await AWS.Location.APIKey("advancedApiKey", {
-  KeyName: "AdvancedLocationApiKey",
-  Description: "Advanced API Key with no expiry and forced update",
-  NoExpiry: true,
-  ForceUpdate: true,
-  Restrictions: {
-    // Add specific restrictions as necessary
+import AWS from "alchemy/aws/control";
+
+const advancedAPIKey = await AWS.Location.APIKey("advanced-apikey", {
+  KeyName: "apikey-key",
+  Restrictions: "example-restrictions",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Team",
-      Value: "GeoServices"
-    }
-  ]
+  Description: "A apikey resource managed by Alchemy",
 });
 ```
 
-## Force Deletion Example
-
-Create an APIKey with the option to force delete.
-
-```ts
-const forceDeleteApiKey = await AWS.Location.APIKey("forceDeleteApiKey", {
-  KeyName: "ForceDeleteApiKey",
-  Description: "API Key that can be force deleted",
-  ForceDelete: true,
-  Restrictions: {
-    // Define restrictions as necessary
-  }
-});
-```
-
-## Expiration Example
-
-Create an APIKey with a specific expiration time.
-
-```ts
-const expirationApiKey = await AWS.Location.APIKey("expirationApiKey", {
-  KeyName: "ExpirationLocationApiKey",
-  Description: "API Key that expires after a set time",
-  ExpireTime: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
-  Restrictions: {
-    // Add any necessary restrictions
-  }
-});
-```

@@ -5,85 +5,41 @@ description: Learn how to create, update, and manage AWS MediaStore Containers u
 
 # Container
 
-The Container resource allows you to manage [AWS MediaStore Containers](https://docs.aws.amazon.com/mediastore/latest/userguide/) which are used to store and retrieve media assets for streaming.
+The Container resource lets you create and manage [AWS MediaStore Containers](https://docs.aws.amazon.com/mediastore/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-mediastore-container.html
 
 ## Minimal Example
-
-Create a simple MediaStore container with a name and basic access logging enabled.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const mediaStoreContainer = await AWS.MediaStore.Container("myMediaStoreContainer", {
-  ContainerName: "my-media-container",
-  AccessLoggingEnabled: true // Enables access logging for the container
+const container = await AWS.MediaStore.Container("container-example", {
+  ContainerName: "container-container",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a MediaStore container with a custom lifecycle policy and CORS rules.
+Create a container with additional configuration:
 
 ```ts
-const advancedMediaStoreContainer = await AWS.MediaStore.Container("advancedMediaStoreContainer", {
-  ContainerName: "advanced-media-container",
-  LifecyclePolicy: JSON.stringify({
-    Rules: [
-      {
-        ExpirationInDays: 30,
-        Status: "Enabled"
-      }
-    ]
-  }),
-  CorsPolicy: [
-    {
-      AllowedHeaders: ["*"],
-      AllowedMethods: ["GET", "PUT"],
-      AllowedOrigins: ["https://mywebsite.com"],
-      ExposeHeaders: ["ETag"],
-      MaxAgeSeconds: 3000
-    }
-  ]
-});
-```
+import AWS from "alchemy/aws/control";
 
-## Custom Policy Settings
-
-Create a MediaStore container with a detailed policy for managing access permissions.
-
-```ts
-const policyMediaStoreContainer = await AWS.MediaStore.Container("policyMediaStoreContainer", {
-  ContainerName: "policy-media-container",
-  Policy: JSON.stringify({
+const advancedContainer = await AWS.MediaStore.Container("advanced-container", {
+  ContainerName: "container-container",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Policy: {
     Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Principal: "*",
-        Action: "mediastore:GetObject",
-        Resource: "arn:aws:mediastore:us-east-1:123456789012:container/my-media-container/*"
-      }
-    ]
-  })
+    Statement: [{ Effect: "Allow", Action: ["s3:GetObject"], Resource: "*" }],
+  },
 });
 ```
 
-## Metric Policy Configuration
-
-Set up a MediaStore container with a metric policy for monitoring metrics.
-
-```ts
-const metricPolicyMediaStoreContainer = await AWS.MediaStore.Container("metricPolicyMediaStoreContainer", {
-  ContainerName: "metric-policy-container",
-  MetricPolicy: {
-    ContainerLevelMetrics: "ALL",
-    MetricPolicy: [
-      {
-        MetricName: "IncomingBytes",
-        Period: 60,
-        Statistics: ["Sum", "Average"]
-      }
-    ]
-  }
-});
-```

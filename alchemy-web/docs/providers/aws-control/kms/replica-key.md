@@ -5,16 +5,16 @@ description: Learn how to create, update, and manage AWS KMS ReplicaKeys using A
 
 # ReplicaKey
 
-The ReplicaKey resource allows you to create and manage [AWS KMS ReplicaKeys](https://docs.aws.amazon.com/kms/latest/userguide/) for enhancing data protection across AWS Regions. ReplicaKeys enable you to replicate your primary keys to other AWS Regions seamlessly.
+The ReplicaKey resource allows you to create and manage [AWS KMS ReplicaKeys](https://docs.aws.amazon.com/kms/latest/userguide/) for cross-region key replication, enhancing your data security and availability.
 
 ## Minimal Example
 
-Create a basic ReplicaKey with required properties and a common optional description.
+Create a basic KMS ReplicaKey with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicReplicaKey = await AWS.KMS.ReplicaKey("basicReplicaKey", {
+const MyReplicaKey = await AWS.KMS.ReplicaKey("MyReplicaKey", {
   KeyPolicy: {
     Version: "2012-10-17",
     Statement: [
@@ -23,22 +23,22 @@ const basicReplicaKey = await AWS.KMS.ReplicaKey("basicReplicaKey", {
         Principal: {
           AWS: "arn:aws:iam::123456789012:role/MyKMSRole"
         },
-        Action: "kms:*",
+        Action: "kms:Decrypt",
         Resource: "*"
       }
     ]
   },
-  PrimaryKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234abcd5678",
-  Description: "Basic ReplicaKey for cross-region replication"
+  PrimaryKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234567890ab",
+  Description: "Replica key for critical data encryption"
 });
 ```
 
 ## Advanced Configuration
 
-Create a ReplicaKey with more advanced settings, including enabling the key and specifying a pending window.
+Configure a KMS ReplicaKey with additional options, including enabling the key and setting tags.
 
 ```ts
-const advancedReplicaKey = await AWS.KMS.ReplicaKey("advancedReplicaKey", {
+const AdvancedReplicaKey = await AWS.KMS.ReplicaKey("AdvancedReplicaKey", {
   KeyPolicy: {
     Version: "2012-10-17",
     Statement: [
@@ -47,29 +47,26 @@ const advancedReplicaKey = await AWS.KMS.ReplicaKey("advancedReplicaKey", {
         Principal: {
           AWS: "arn:aws:iam::123456789012:role/MyKMSRole"
         },
-        Action: "kms:*",
+        Action: "kms:Decrypt",
         Resource: "*"
       }
     ]
   },
-  PrimaryKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234abcd5678",
+  PrimaryKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234567890ab",
   Enabled: true,
-  PendingWindowInDays: 7,
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Application", Value: "FinanceApp" }
   ]
 });
 ```
 
-## Adoption of Existing Keys
+## Setting Pending Window
 
-If you want to adopt an existing ReplicaKey instead of failing, you can set the `adopt` property to true.
+Create a KMS ReplicaKey with a specified pending window, allowing for a delay in key replication.
 
 ```ts
-const adoptedReplicaKey = await AWS.KMS.ReplicaKey("adoptedReplicaKey", {
+const PendingWindowReplicaKey = await AWS.KMS.ReplicaKey("PendingWindowReplicaKey", {
   KeyPolicy: {
     Version: "2012-10-17",
     Statement: [
@@ -78,13 +75,12 @@ const adoptedReplicaKey = await AWS.KMS.ReplicaKey("adoptedReplicaKey", {
         Principal: {
           AWS: "arn:aws:iam::123456789012:role/MyKMSRole"
         },
-        Action: "kms:*",
+        Action: "kms:Decrypt",
         Resource: "*"
       }
     ]
   },
-  PrimaryKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234abcd5678",
-  Enabled: true,
-  adopt: true
+  PrimaryKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234567890ab",
+  PendingWindowInDays: 7
 });
 ```

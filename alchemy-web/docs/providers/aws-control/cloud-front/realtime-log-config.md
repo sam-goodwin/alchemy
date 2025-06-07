@@ -5,72 +5,84 @@ description: Learn how to create, update, and manage AWS CloudFront RealtimeLogC
 
 # RealtimeLogConfig
 
-The RealtimeLogConfig resource lets you manage [AWS CloudFront Realtime Log Configurations](https://docs.aws.amazon.com/cloudfront/latest/userguide/) for real-time logging of data as it is delivered through CloudFront.
+The RealtimeLogConfig resource allows you to create and manage [AWS CloudFront Realtime Log Configurations](https://docs.aws.amazon.com/cloudfront/latest/userguide/). This resource enables you to collect and stream logs in real-time from CloudFront distributions to your specified endpoints.
 
 ## Minimal Example
 
-Create a basic RealtimeLogConfig with the required properties and a sampling rate.
+Create a basic RealtimeLogConfig with required fields and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const realTimeLogConfig = await AWS.CloudFront.RealtimeLogConfig("basic-realtime-log-config", {
-  name: "my-realtime-log-config",
-  fields: ["timestamp", "c-ip", "cs-method", "cs-uri-stem"],
-  endPoints: [{
-    StreamType: "Kinesis",
-    KinesisStreamConfig: {
-      StreamARN: "arn:aws:kinesis:us-east-1:123456789012:stream/my-stream",
-      RoleARN: "arn:aws:iam::123456789012:role/my-role"
+const basicRealtimeLogConfig = await AWS.CloudFront.RealtimeLogConfig("BasicLogConfig", {
+  Name: "BasicRealtimeLogConfig",
+  Fields: ["date", "time", "c-ip", "cs-method", "cs-uri-stem"],
+  EndPoints: [
+    {
+      StreamType: "EventStream",
+      KinesisStreamConfig: {
+        RoleArn: "arn:aws:iam::123456789012:role/CloudFrontKinesisRole",
+        StreamArn: "arn:aws:kinesis:us-west-2:123456789012:stream/CloudFrontLogs"
+      }
     }
-  }],
-  samplingRate: 10 // Log every 10th request
+  ],
+  SamplingRate: 1
 });
 ```
 
 ## Advanced Configuration
 
-Configure a RealtimeLogConfig with multiple endpoints and a higher sampling rate for more granular logging.
+Configure a RealtimeLogConfig with multiple endpoints and additional properties.
 
 ```ts
-const advancedLogConfig = await AWS.CloudFront.RealtimeLogConfig("advanced-realtime-log-config", {
-  name: "my-advanced-realtime-log-config",
-  fields: ["timestamp", "c-ip", "cs-method", "cs-uri-stem", "sc-status"],
-  endPoints: [{
-    StreamType: "Kinesis",
-    KinesisStreamConfig: {
-      StreamARN: "arn:aws:kinesis:us-east-1:123456789012:stream/my-stream",
-      RoleARN: "arn:aws:iam::123456789012:role/my-role"
+const advancedRealtimeLogConfig = await AWS.CloudFront.RealtimeLogConfig("AdvancedLogConfig", {
+  Name: "AdvancedRealtimeLogConfig",
+  Fields: ["date", "time", "c-ip", "cs-method", "cs-uri-stem", "x-edge-result-type"],
+  EndPoints: [
+    {
+      StreamType: "EventStream",
+      KinesisStreamConfig: {
+        RoleArn: "arn:aws:iam::123456789012:role/CloudFrontKinesisRole",
+        StreamArn: "arn:aws:kinesis:us-west-2:123456789012:stream/CloudFrontLogs"
+      }
     },
-    Name: "my-kinesis-endpoint"
-  }, {
-    StreamType: "Firehose",
-    FirehoseStreamConfig: {
-      DeliveryStreamARN: "arn:aws:firehose:us-east-1:123456789012:deliverystream/my-firehose",
-      RoleARN: "arn:aws:iam::123456789012:role/my-firehose-role"
-    },
-    Name: "my-firehose-endpoint"
-  }],
-  samplingRate: 5 // Log every 5th request
+    {
+      StreamType: "EventStream",
+      KinesisStreamConfig: {
+        RoleArn: "arn:aws:iam::123456789012:role/CloudFrontKinesisRole",
+        StreamArn: "arn:aws:kinesis:us-west-2:123456789012:stream/AnotherCloudFrontLogs"
+      }
+    }
+  ],
+  SamplingRate: 10,
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Custom Adoption
+## Stream to Multiple Endpoints
 
-If you want to adopt an existing RealtimeLogConfig rather than fail when it already exists, you can set the `adopt` property.
+This example demonstrates how to configure a RealtimeLogConfig to stream logs to multiple Kinesis streams.
 
 ```ts
-const adoptExistingLogConfig = await AWS.CloudFront.RealtimeLogConfig("existing-realtime-log-config", {
-  name: "existing-log-config",
-  fields: ["timestamp", "c-ip"],
-  endPoints: [{
-    StreamType: "Kinesis",
-    KinesisStreamConfig: {
-      StreamARN: "arn:aws:kinesis:us-east-1:123456789012:stream/my-existing-stream",
-      RoleARN: "arn:aws:iam::123456789012:role/my-existing-role"
+const multiEndpointLogConfig = await AWS.CloudFront.RealtimeLogConfig("MultiEndpointLogConfig", {
+  Name: "MultiEndpointRealtimeLogConfig",
+  Fields: ["date", "time", "c-ip", "cs-method", "cs-uri-stem"],
+  EndPoints: [
+    {
+      StreamType: "EventStream",
+      KinesisStreamConfig: {
+        RoleArn: "arn:aws:iam::123456789012:role/CloudFrontKinesisRole",
+        StreamArn: "arn:aws:kinesis:us-west-2:123456789012:stream/CloudFrontLogs1"
+      }
+    },
+    {
+      StreamType: "EventStream",
+      KinesisStreamConfig: {
+        RoleArn: "arn:aws:iam::123456789012:role/CloudFrontKinesisRole",
+        StreamArn: "arn:aws:kinesis:us-west-2:123456789012:stream/CloudFrontLogs2"
+      }
     }
-  }],
-  samplingRate: 1, // Log every request
-  adopt: true // Adopt existing resource
+  ],
+  SamplingRate: 5
 });
 ```

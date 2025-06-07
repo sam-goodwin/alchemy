@@ -5,63 +5,67 @@ description: Learn how to create, update, and manage AWS RoboMaker Robots using 
 
 # Robot
 
-The Robot resource allows you to create and manage [AWS RoboMaker Robots](https://docs.aws.amazon.com/robomaker/latest/userguide/). RoboMaker provides a platform for developing, testing, and deploying robotics applications at scale.
+The Robot resource allows you to create and manage [AWS RoboMaker Robots](https://docs.aws.amazon.com/robomaker/latest/userguide/) for simulation and deployment of robotic applications.
 
 ## Minimal Example
 
-Create a basic Robot with required properties and a common optional property.
+Create a basic RoboMaker Robot with essential properties such as architecture and Greengrass group ID.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const myRobot = await AWS.RoboMaker.Robot("myFirstRobot", {
+const BasicRobot = await AWS.RoboMaker.Robot("BasicRobot", {
   Architecture: "X86_64",
-  GreengrassGroupId: "myGreengrassGroup",
-  Fleet: "myRobotFleet", // Optional: Specify the fleet this robot belongs to
-  Name: "MyRobot"
+  GreengrassGroupId: "my-greengrass-group",
+  Fleet: "my-robot-fleet", // Optional property
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Robotics" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Robot with additional properties, including tags for better management.
+Create a RoboMaker Robot with additional configurations including a specific fleet and a name.
 
 ```ts
-const advancedRobot = await AWS.RoboMaker.Robot("advancedRobot", {
+const AdvancedRobot = await AWS.RoboMaker.Robot("AdvancedRobot", {
   Architecture: "ARM64",
-  GreengrassGroupId: "myAdvancedGreengrassGroup",
-  Tags: {
-    Environment: "Production",
-    Owner: "RobotTeam"
-  },
-  Name: "AdvancedRobot"
+  GreengrassGroupId: "my-greengrass-group",
+  Fleet: "my-robot-fleet",
+  Name: "AdvancedRobotInstance", // Optional property
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Robotics" }
+  ]
 });
 ```
 
-## Adoption of Existing Resource
+## Using Existing Resources
 
-Create a Robot that adopts an existing resource if it already exists.
+Configure a RoboMaker Robot to adopt an existing resource if it already exists.
 
 ```ts
-const adoptedRobot = await AWS.RoboMaker.Robot("existingRobot", {
+const AdoptExistingRobot = await AWS.RoboMaker.Robot("AdoptExistingRobot", {
   Architecture: "X86_64",
-  GreengrassGroupId: "myGreengrassGroup",
-  adopt: true // Attempt to adopt existing resource
+  GreengrassGroupId: "my-greengrass-group",
+  Fleet: "my-robot-fleet",
+  adopt: true // Adopt existing resource
 });
 ```
 
-## Updating a Robot
+## Adding Tags for Management
 
-Update an existing Robot's properties, such as adding tags.
+Create a RoboMaker Robot while adding tags for better resource management.
 
 ```ts
-const updatedRobot = await AWS.RoboMaker.Robot("updateRobot", {
+const TaggedRobot = await AWS.RoboMaker.Robot("TaggedRobot", {
   Architecture: "X86_64",
-  GreengrassGroupId: "myGreengrassGroup",
-  Tags: {
-    Project: "RoboProject",
-    Status: "Active"
-  },
-  Name: "UpdatedRobot"
+  GreengrassGroupId: "my-greengrass-group",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Owner", Value: "Alice" }
+  ]
 });
 ```

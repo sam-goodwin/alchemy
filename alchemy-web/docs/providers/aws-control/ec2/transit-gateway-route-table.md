@@ -5,65 +5,59 @@ description: Learn how to create, update, and manage AWS EC2 TransitGatewayRoute
 
 # TransitGatewayRouteTable
 
-The TransitGatewayRouteTable resource allows you to manage [AWS EC2 Transit Gateway Route Tables](https://docs.aws.amazon.com/ec2/latest/userguide/) which are essential for controlling the routing of traffic between your VPCs and on-premises networks.
+The TransitGatewayRouteTable resource allows you to manage [AWS EC2 Transit Gateway Route Tables](https://docs.aws.amazon.com/ec2/latest/userguide/) which are used to control traffic routing between VPCs and on-premises networks.
 
 ## Minimal Example
 
-This example demonstrates how to create a basic Transit Gateway Route Table with required properties and one optional tag.
+Create a basic Transit Gateway Route Table with required properties and a tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const transitGatewayRouteTable = await AWS.EC2.TransitGatewayRouteTable("myTransitGatewayRouteTable", {
-  TransitGatewayId: "tgw-0abcd1234efgh5678", // Specify your Transit Gateway ID
+const TransitGatewayRouteTable = await AWS.EC2.TransitGatewayRouteTable("MyRouteTable", {
+  TransitGatewayId: "tgw-0abcd1234efgh5678",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "production" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we adopt an existing Transit Gateway Route Table if it already exists, while also adding multiple tags for better resource organization.
+Configure a Transit Gateway Route Table with multiple tags for better resource management.
 
 ```ts
-const advancedTransitGatewayRouteTable = await AWS.EC2.TransitGatewayRouteTable("advancedTransitGatewayRouteTable", {
-  TransitGatewayId: "tgw-0abcd1234efgh5678", // Specify your Transit Gateway ID
+const AdvancedTransitGatewayRouteTable = await AWS.EC2.TransitGatewayRouteTable("AdvancedRouteTable", {
+  TransitGatewayId: "tgw-0abcd1234efgh5678",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Staging"
-    },
-    {
-      Key: "Project",
-      Value: "CloudMigration"
-    }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "NetworkOps" }
   ],
-  adopt: true // Set to true to adopt existing resource
+  adopt: true // If true, adopts existing resource instead of failing when resource already exists
 });
 ```
 
-## Custom Route Table Management
+## Adoption of Existing Resources
 
-Here’s how to create a Transit Gateway Route Table tailored for specific routing requirements by adding relevant tags.
+Adopt an existing Transit Gateway Route Table instead of creating a new one.
 
 ```ts
-const customTransitGatewayRouteTable = await AWS.EC2.TransitGatewayRouteTable("customTransitGatewayRouteTable", {
-  TransitGatewayId: "tgw-0abcd1234efgh5678", // Specify your Transit Gateway ID
-  Tags: [
-    {
-      Key: "Department",
-      Value: "Engineering"
-    },
-    {
-      Key: "Owner",
-      Value: "TeamA"
-    }
-  ]
+const ExistingTransitGatewayRouteTable = await AWS.EC2.TransitGatewayRouteTable("ExistingRouteTable", {
+  TransitGatewayId: "tgw-0abcd1234efgh5678",
+  adopt: true // Adopt existing resource
 });
 ```
 
-This example allows for better management and tracking of resources by tagging them with department and ownership information.
+## Inspecting Route Table Properties
+
+You can also access properties like ARN and creation time after creating a Transit Gateway Route Table.
+
+```ts
+const CreatedTransitGatewayRouteTable = await AWS.EC2.TransitGatewayRouteTable("CreatedRouteTable", {
+  TransitGatewayId: "tgw-0abcd1234efgh5678"
+});
+
+// Accessing properties
+console.log(`ARN: ${CreatedTransitGatewayRouteTable.Arn}`);
+console.log(`Created At: ${CreatedTransitGatewayRouteTable.CreationTime}`);
+```

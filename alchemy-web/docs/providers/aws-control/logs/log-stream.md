@@ -5,51 +5,54 @@ description: Learn how to create, update, and manage AWS Logs LogStreams using A
 
 # LogStream
 
-The LogStream resource allows you to manage [AWS Logs LogStreams](https://docs.aws.amazon.com/logs/latest/userguide/) which are used to collect log events from your applications and services. LogStreams are associated with a LogGroup and are crucial for organizing and processing log data.
+The LogStream resource lets you manage [AWS Logs LogStreams](https://docs.aws.amazon.com/logs/latest/userguide/) for collecting and processing log data within specified log groups.
 
 ## Minimal Example
 
-Create a basic LogStream associated with a LogGroup.
+Create a basic LogStream within a specified LogGroup with a defined name.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicLogStream = await AWS.Logs.LogStream("basicLogStream", {
-  LogGroupName: "ApplicationLogs",
-  LogStreamName: "InitialLogStream" // Optional: Default name
+const logStream = await AWS.Logs.LogStream("MyLogStream", {
+  LogGroupName: "MyLogGroup",
+  LogStreamName: "MyStream",
+  adopt: true // Adopt existing resource instead of failing
 });
 ```
 
 ## Advanced Configuration
 
-Configure a LogStream with adoption of an existing resource.
+Configure a LogStream with specific properties for better management.
 
 ```ts
-const adoptedLogStream = await AWS.Logs.LogStream("adoptedLogStream", {
-  LogGroupName: "ApplicationLogs",
-  LogStreamName: "ExistingLogStream", // Optional: Adopt an existing log stream
-  adopt: true // Set to true to adopt an existing resource
+const advancedLogStream = await AWS.Logs.LogStream("AdvancedLogStream", {
+  LogGroupName: "AdvancedLogGroup",
+  LogStreamName: "AdvancedStream",
+  adopt: false // Do not adopt existing resource
 });
 ```
 
-## Adding a New LogStream
+## Using with AWS IAM Policies
 
-Create a new LogStream for a different service within the same LogGroup.
-
-```ts
-const serviceLogStream = await AWS.Logs.LogStream("serviceLogStream", {
-  LogGroupName: "ApplicationLogs",
-  LogStreamName: "ServiceLogStream" // Optional: Name for new service log stream
-});
-```
-
-## Updating LogStream Properties
-
-Update the LogStream name for better identification.
+Example of creating a LogStream with IAM policies for fine-grained access control.
 
 ```ts
-const updatedLogStream = await AWS.Logs.LogStream("updatedLogStream", {
-  LogGroupName: "ApplicationLogs",
-  LogStreamName: "UpdatedLogStreamName" // Changing the name for clarity
+const logStreamWithPolicy = await AWS.Logs.LogStream("LogStreamWithPolicy", {
+  LogGroupName: "PolicyLogGroup",
+  LogStreamName: "PolicyStream",
+  adopt: true
 });
+
+// Attach IAM policy to allow writing logs to the LogStream
+const iamPolicy = {
+  Version: "2012-10-17",
+  Statement: [
+    {
+      Effect: "Allow",
+      Action: "logs:PutLogEvents",
+      Resource: `arn:aws:logs:us-east-1:123456789012:log-group:${logStreamWithPolicy.LogGroupName}:log-stream:${logStreamWithPolicy.LogStreamName}`
+    }
+  ]
+};
 ```

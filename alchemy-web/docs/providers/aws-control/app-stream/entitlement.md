@@ -5,57 +5,37 @@ description: Learn how to create, update, and manage AWS AppStream Entitlements 
 
 # Entitlement
 
-The Entitlement resource lets you manage [AWS AppStream Entitlements](https://docs.aws.amazon.com/appstream/latest/userguide/) which define the visibility of applications for users in a specified stack.
+The Entitlement resource lets you create and manage [AWS AppStream Entitlements](https://docs.aws.amazon.com/appstream/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-appstream-entitlement.html
 
 ## Minimal Example
-
-Create a basic entitlement with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicEntitlement = await AWS.AppStream.Entitlement("basic-entitlement", {
-  AppVisibility: "ALL",  // Make the application visible to all users
-  Description: "Basic entitlement for all users",
-  Attributes: [
-    { Name: "Department", Value: "Engineering" }
-  ],
-  StackName: "EngineeringStack",
-  Name: "EngineeringApps"
+const entitlement = await AWS.AppStream.Entitlement("entitlement-example", {
+  AppVisibility: "example-appvisibility",
+  Attributes: [],
+  StackName: "entitlement-stack",
+  Name: "entitlement-",
+  Description: "A entitlement resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an entitlement with more complex attributes and visibility.
+Create a entitlement with additional configuration:
 
 ```ts
+import AWS from "alchemy/aws/control";
+
 const advancedEntitlement = await AWS.AppStream.Entitlement("advanced-entitlement", {
-  AppVisibility: "SPECIFIC",  // Make the application visible to specific users
-  Description: "Advanced entitlement for specific user roles",
-  Attributes: [
-    { Name: "Role", Value: "Admin" },
-    { Name: "Location", Value: "US-West" }
-  ],
-  StackName: "AdminStack",
-  Name: "AdminApps",
-  adopt: true  // Adopt existing resource if it already exists
+  AppVisibility: "example-appvisibility",
+  Attributes: [],
+  StackName: "entitlement-stack",
+  Name: "entitlement-",
+  Description: "A entitlement resource managed by Alchemy",
 });
 ```
 
-## Specific Use Case: Role-Based Access
-
-Create an entitlement specifically for different roles within the organization.
-
-```ts
-const roleBasedEntitlement = await AWS.AppStream.Entitlement("role-based-entitlement", {
-  AppVisibility: "SPECIFIC",  // Limit visibility to certain roles
-  Description: "Entitlement for roles within the organization",
-  Attributes: [
-    { Name: "Role", Value: "HR" },
-    { Name: "Role", Value: "Finance" }
-  ],
-  StackName: "HRFinanceStack",
-  Name: "HRFinanceApps"
-});
-```

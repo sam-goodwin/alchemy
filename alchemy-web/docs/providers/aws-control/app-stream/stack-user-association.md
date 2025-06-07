@@ -5,63 +5,47 @@ description: Learn how to create, update, and manage AWS AppStream StackUserAsso
 
 # StackUserAssociation
 
-The StackUserAssociation resource allows you to manage user associations with AppStream stacks, enabling users to access applications and resources. For more information, refer to the [AWS AppStream StackUserAssociations documentation](https://docs.aws.amazon.com/appstream/latest/userguide/).
+The StackUserAssociation resource lets you manage [AWS AppStream StackUserAssociations](https://docs.aws.amazon.com/appstream/latest/userguide/) to associate users with specific AppStream stacks.
 
 ## Minimal Example
 
-Create a basic user association with required properties and one optional property for email notification.
+Create a basic StackUserAssociation with the required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const userAssociation = await AWS.AppStream.StackUserAssociation("basicUserAssociation", {
-  UserName: "john.doe",
-  StackName: "MarketingStack",
-  AuthenticationType: "USERPOOL",
-  SendEmailNotification: true // Optional: Send email notification to the user
+const minimalStackUserAssociation = await AWS.AppStream.StackUserAssociation("MinimalStackUserAssociation", {
+  UserName: "john.doe@example.com",
+  StackName: "DevStack",
+  AuthenticationType: "SAML",
+  SendEmailNotification: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure a user association with the option to adopt existing resources if they already exist.
+Configure a StackUserAssociation with additional options, such as email notifications.
 
 ```ts
-const advancedUserAssociation = await AWS.AppStream.StackUserAssociation("advancedUserAssociation", {
-  UserName: "jane.smith",
-  StackName: "SalesStack",
+const advancedStackUserAssociation = await AWS.AppStream.StackUserAssociation("AdvancedStackUserAssociation", {
+  UserName: "jane.doe@example.com",
+  StackName: "TestStack",
+  AuthenticationType: "API",
+  SendEmailNotification: true,
+  adopt: true
+});
+```
+
+## Adoption of Existing Resource
+
+If you want to adopt an existing StackUserAssociation instead of creating a new one, you can set the `adopt` property to `true`.
+
+```ts
+const adoptExistingStackUserAssociation = await AWS.AppStream.StackUserAssociation("AdoptExistingStackUserAssociation", {
+  UserName: "existing.user@example.com",
+  StackName: "ProductionStack",
   AuthenticationType: "SAML",
-  adopt: true // Optional: Adopt existing resource instead of failing
-});
-```
-
-## Email Notification Disabled
-
-Create a user association without sending an email notification.
-
-```ts
-const noEmailUserAssociation = await AWS.AppStream.StackUserAssociation("noEmailUserAssociation", {
-  UserName: "alice.brown",
-  StackName: "DevOpsStack",
-  AuthenticationType: "USERPOOL",
-  SendEmailNotification: false // Email notification disabled
-});
-```
-
-## User Association with Different Authentication Types
-
-Demonstrate how to create user associations with different authentication types.
-
-```ts
-const samlUserAssociation = await AWS.AppStream.StackUserAssociation("samlUserAssociation", {
-  UserName: "bob.johnson",
-  StackName: "EngineeringStack",
-  AuthenticationType: "SAML"
-});
-
-const userPoolUserAssociation = await AWS.AppStream.StackUserAssociation("userPoolUserAssociation", {
-  UserName: "carol.white",
-  StackName: "HRStack",
-  AuthenticationType: "USERPOOL"
+  SendEmailNotification: false,
+  adopt: true
 });
 ```

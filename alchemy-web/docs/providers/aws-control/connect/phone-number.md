@@ -5,61 +5,55 @@ description: Learn how to create, update, and manage AWS Connect PhoneNumbers us
 
 # PhoneNumber
 
-The PhoneNumber resource allows you to manage [AWS Connect PhoneNumbers](https://docs.aws.amazon.com/connect/latest/userguide/) for your Amazon Connect instances, enabling you to assign phone numbers to your contact center for handling communications.
+The PhoneNumber resource allows you to manage [AWS Connect PhoneNumbers](https://docs.aws.amazon.com/connect/latest/userguide/) for your contact center, enabling you to configure phone number types, descriptions, and associated attributes.
 
 ## Minimal Example
 
-Create a basic phone number with required properties and a common optional property.
+Create a basic PhoneNumber with required properties and a couple of optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPhoneNumber = await AWS.Connect.PhoneNumber("basicPhoneNumber", {
-  TargetArn: "arn:aws:connect:us-west-2:123456789012:instance/abcdefgh-ijkl-mnop-qrst-uvwxyz123456",
+const BasicPhoneNumber = await AWS.Connect.PhoneNumber("BasicPhoneNumber", {
+  TargetArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234",
   Type: "TOLL_FREE",
-  Description: "Basic toll-free number for customer support"
+  Description: "Toll-free number for customer support",
+  CountryCode: "US",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Support" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a phone number with additional optional settings such as prefix and country code.
+Configure a PhoneNumber with additional attributes for enhanced functionality.
 
 ```ts
-const advancedPhoneNumber = await AWS.Connect.PhoneNumber("advancedPhoneNumber", {
-  TargetArn: "arn:aws:connect:us-west-2:123456789012:instance/abcdefgh-ijkl-mnop-qrst-uvwxyz123456",
-  Type: "DIRECT_DIAL",
-  Description: "Direct dial number for sales department",
+const AdvancedPhoneNumber = await AWS.Connect.PhoneNumber("AdvancedPhoneNumber", {
+  TargetArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234",
+  Type: "LOCAL",
+  Description: "Local number for regional support",
   Prefix: "+1",
-  CountryCode: "US"
-});
-```
-
-## Adoption of Existing Phone Number
-
-Adopt an existing phone number instead of failing when it already exists.
-
-```ts
-const adoptExistingPhoneNumber = await AWS.Connect.PhoneNumber("adoptExistingPhoneNumber", {
-  TargetArn: "arn:aws:connect:us-west-2:123456789012:instance/abcdefgh-ijkl-mnop-qrst-uvwxyz123456",
-  Type: "TOLL_FREE",
-  Description: "Adopting existing toll-free number",
-  adopt: true
-});
-```
-
-## Using Tags for Organization
-
-Create a phone number with tags for better resource organization.
-
-```ts
-const taggedPhoneNumber = await AWS.Connect.PhoneNumber("taggedPhoneNumber", {
-  TargetArn: "arn:aws:connect:us-west-2:123456789012:instance/abcdefgh-ijkl-mnop-qrst-uvwxyz123456",
-  Type: "DIRECT_DIAL",
-  Description: "Tagged number for marketing team",
+  CountryCode: "US",
+  SourcePhoneNumberArn: "arn:aws:connect:us-west-2:123456789012:phonenumber/xyz9876",
   Tags: [
-    { Key: "Department", Value: "Marketing" },
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Sales" }
   ]
+});
+```
+
+## Adoption of Existing Resource
+
+If you want to adopt an existing PhoneNumber instead of failing when it already exists, you can set the adopt property to true.
+
+```ts
+const AdoptedPhoneNumber = await AWS.Connect.PhoneNumber("AdoptedPhoneNumber", {
+  TargetArn: "arn:aws:connect:us-west-2:123456789012:instance/abcd1234",
+  Type: "TOLL_FREE",
+  Description: "Adopting an existing toll-free number",
+  adopt: true
 });
 ```

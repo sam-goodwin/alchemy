@@ -5,69 +5,80 @@ description: Learn how to create, update, and manage AWS WorkSpacesWeb Portals u
 
 # Portal
 
-The Portal resource lets you manage [AWS WorkSpacesWeb Portals](https://docs.aws.amazon.com/workspacesweb/latest/userguide/) which provide secure access to web applications. 
+The Portal resource lets you manage [AWS WorkSpacesWeb Portals](https://docs.aws.amazon.com/workspacesweb/latest/userguide/) which provide users access to web applications and resources in a secure manner.
 
 ## Minimal Example
 
-Create a basic WorkSpacesWeb Portal with default settings and common optional properties.
+Create a basic WorkSpacesWeb Portal with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const workspacesWebPortal = await AWS.WorkSpacesWeb.Portal("basic-portal", {
-  TrustStoreArn: "arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-abcd-1234-abcd-1234abcd1234",
-  BrowserSettingsArn: "arn:aws:workspacesweb:us-east-1:123456789012:browser-settings/default",
+const basicPortal = await AWS.WorkSpacesWeb.Portal("BasicPortal", {
+  TrustStoreArn: "arn:aws:acm:us-west-2:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+  BrowserSettingsArn: "arn:aws:workspaces-web:us-west-2:123456789012:browser-settings/12345678",
   DisplayName: "Basic WorkSpacesWeb Portal",
-  MaxConcurrentSessions: 50
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Owner", Value: "DevTeam" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a WorkSpacesWeb Portal with more advanced properties including network settings and data protection.
+Configure a WorkSpacesWeb Portal with additional security settings and logging options.
 
 ```ts
-const advancedWorkspacesWebPortal = await AWS.WorkSpacesWeb.Portal("advanced-portal", {
-  TrustStoreArn: "arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-abcd-1234-abcd-1234abcd1234",
-  BrowserSettingsArn: "arn:aws:workspacesweb:us-east-1:123456789012:browser-settings/advanced",
-  NetworkSettingsArn: "arn:aws:workspacesweb:us-east-1:123456789012:network-settings/default",
-  DataProtectionSettingsArn: "arn:aws:workspacesweb:us-east-1:123456789012:data-protection-settings/default",
-  DisplayName: "Advanced WorkSpacesWeb Portal",
+const advancedPortal = await AWS.WorkSpacesWeb.Portal("AdvancedPortal", {
+  TrustStoreArn: "arn:aws:acm:us-west-2:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+  BrowserSettingsArn: "arn:aws:workspaces-web:us-west-2:123456789012:browser-settings/87654321",
+  UserAccessLoggingSettingsArn: "arn:aws:workspaces-web:us-west-2:123456789012:user-access-logging-settings/87654321",
+  IpAccessSettingsArn: "arn:aws:workspaces-web:us-west-2:123456789012:ip-access-settings/12345678",
   InstanceType: "t3.medium",
-  MaxConcurrentSessions: 100,
+  MaxConcurrentSessions: 50,
   Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "WebAccess" }
+    { Key: "Owner", Value: "OpsTeam" }
   ]
 });
 ```
 
-## Custom Encryption and Logging Settings
+## Custom Encryption Configuration
 
-Create a portal with custom encryption and user access logging features.
+Set up a portal that uses custom encryption keys for enhanced security.
 
 ```ts
-const secureWorkspacesWebPortal = await AWS.WorkSpacesWeb.Portal("secure-portal", {
-  TrustStoreArn: "arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-abcd-1234-abcd-1234abcd1234",
-  UserAccessLoggingSettingsArn: "arn:aws:workspacesweb:us-east-1:123456789012:user-access-logging-settings/default",
-  CustomerManagedKey: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234abcd1234",
+const securePortal = await AWS.WorkSpacesWeb.Portal("SecurePortal", {
+  TrustStoreArn: "arn:aws:acm:us-west-2:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+  BrowserSettingsArn: "arn:aws:workspaces-web:us-west-2:123456789012:browser-settings/13572468",
+  CustomerManagedKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-ab12-cd34-ef56-abcdef123456",
   AdditionalEncryptionContext: {
-    "Project": "WebAccess",
+    "Project": "WebAppProject",
     "Environment": "Production"
   },
-  DisplayName: "Secure WorkSpacesWeb Portal"
+  DisplayName: "Secure WorkSpacesWeb Portal",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Project", Value: "WebApp" }
+  ]
 });
-``` 
+```
 
-## IP Access Settings
+## Networking Configuration
 
-Set up a WorkSpacesWeb Portal with specific IP access settings to restrict access.
+Create a WorkSpacesWeb Portal with specific networking settings.
 
 ```ts
-const ipRestrictedWorkspacesWebPortal = await AWS.WorkSpacesWeb.Portal("ip-restricted-portal", {
-  TrustStoreArn: "arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-abcd-1234-abcd-1234abcd1234",
-  IpAccessSettingsArn: "arn:aws:workspacesweb:us-east-1:123456789012:ip-access-settings/default",
-  DisplayName: "IP Restricted WorkSpacesWeb Portal",
-  MaxConcurrentSessions: 25
+const networkConfiguredPortal = await AWS.WorkSpacesWeb.Portal("NetworkConfiguredPortal", {
+  TrustStoreArn: "arn:aws:acm:us-west-2:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+  BrowserSettingsArn: "arn:aws:workspaces-web:us-west-2:123456789012:browser-settings/24681357",
+  NetworkSettingsArn: "arn:aws:workspaces-web:us-west-2:123456789012:network-settings/abcdef12",
+  InstanceType: "t3.large",
+  MaxConcurrentSessions: 100,
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Department", Value: "Engineering" }
+  ]
 });
 ```

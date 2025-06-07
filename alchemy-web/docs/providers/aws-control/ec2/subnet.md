@@ -5,16 +5,16 @@ description: Learn how to create, update, and manage AWS EC2 Subnets using Alche
 
 # Subnet
 
-The Subnet resource lets you manage [AWS EC2 Subnets](https://docs.aws.amazon.com/ec2/latest/userguide/) within a Virtual Private Cloud (VPC). Subnets are a range of IP addresses in your VPC that help segment your network.
+The Subnet resource lets you manage [AWS EC2 Subnets](https://docs.aws.amazon.com/ec2/latest/userguide/) and their configuration settings.
 
 ## Minimal Example
 
-Create a basic subnet within a specified VPC with a CIDR block.
+Create a basic subnet with required properties and one optional property for enabling public IP assignment on launch.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSubnet = await AWS.EC2.Subnet("basicSubnet", {
+const MySubnet = await AWS.EC2.Subnet("MyFirstSubnet", {
   VpcId: "vpc-0abcd1234efgh5678",
   CidrBlock: "10.0.1.0/24",
   MapPublicIpOnLaunch: true
@@ -23,42 +23,51 @@ const basicSubnet = await AWS.EC2.Subnet("basicSubnet", {
 
 ## Advanced Configuration
 
-Configure a subnet with additional options such as IPv6 support and DNS settings.
+Configure a subnet with additional options like IPv6 support and tags for better management.
 
 ```ts
-const advancedSubnet = await AWS.EC2.Subnet("advancedSubnet", {
+const AdvancedSubnet = await AWS.EC2.Subnet("MyAdvancedSubnet", {
   VpcId: "vpc-0abcd1234efgh5678",
   CidrBlock: "10.0.2.0/24",
-  EnableDns64: true,
   AssignIpv6AddressOnCreation: true,
-  Ipv6CidrBlock: "2001:db8:abcd:0012::/64"
-});
-```
-
-## Subnet with Tags
-
-Create a subnet and apply tags for better resource management.
-
-```ts
-const taggedSubnet = await AWS.EC2.Subnet("taggedSubnet", {
-  VpcId: "vpc-0abcd1234efgh5678",
-  CidrBlock: "10.0.3.0/24",
+  Ipv6CidrBlock: "2001:0db8:1234:5678::/64",
   Tags: [
-    { Key: "Name", Value: "MyTaggedSubnet" },
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Subnet in a Specific Availability Zone
+## Private Subnet Configuration
 
-Create a subnet in a specific availability zone for redundancy.
+Create a private subnet that does not assign public IP addresses and has DNS settings configured.
 
 ```ts
-const azSubnet = await AWS.EC2.Subnet("azSubnet", {
+const PrivateSubnet = await AWS.EC2.Subnet("MyPrivateSubnet", {
+  VpcId: "vpc-0abcd1234efgh5678",
+  CidrBlock: "10.0.3.0/24",
+  MapPublicIpOnLaunch: false,
+  EnableDns64: true,
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Backend" }
+  ]
+});
+```
+
+## Subnet with IPv6 and Tags
+
+Demonstrate how to create a subnet with both IPv4 and IPv6 configurations along with tagging.
+
+```ts
+const DualStackSubnet = await AWS.EC2.Subnet("MyDualStackSubnet", {
   VpcId: "vpc-0abcd1234efgh5678",
   CidrBlock: "10.0.4.0/24",
-  AvailabilityZone: "us-west-2a",
-  MapPublicIpOnLaunch: false
+  AssignIpv6AddressOnCreation: true,
+  Ipv6CidrBlock: "2001:0db8:1234:5679::/64",
+  Tags: [
+    { Key: "Purpose", Value: "Web Server" },
+    { Key: "Owner", Value: "Alice" }
+  ]
 });
 ```

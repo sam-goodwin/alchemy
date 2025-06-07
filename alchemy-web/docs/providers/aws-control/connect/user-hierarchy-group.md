@@ -5,64 +5,65 @@ description: Learn how to create, update, and manage AWS Connect UserHierarchyGr
 
 # UserHierarchyGroup
 
-The UserHierarchyGroup resource lets you manage [AWS Connect UserHierarchyGroups](https://docs.aws.amazon.com/connect/latest/userguide/) for organizing users within contact centers.
+The UserHierarchyGroup resource lets you manage [AWS Connect UserHierarchyGroups](https://docs.aws.amazon.com/connect/latest/userguide/) that define the grouping of users within your Amazon Connect instance. This resource allows you to structure your users and optimize their experience within the contact center.
 
 ## Minimal Example
 
-Create a basic UserHierarchyGroup with required properties and a common optional property.
+Create a basic UserHierarchyGroup with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const userHierarchyGroup = await AWS.Connect.UserHierarchyGroup("basicUserGroup", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-abcd-1234-abcd-1234abcd5678",
-  Name: "Support Team",
-  ParentGroupArn: "arn:aws:connect:us-east-1:123456789012:usermanagement:abcd1234-abcd-1234-abcd-1234abcd5678",
+const BasicUserHierarchyGroup = await AWS.Connect.UserHierarchyGroup("BasicHierarchyGroup", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abc123def456",
+  Name: "Basic Support Team",
   Tags: [
-    { Key: "Department", Value: "Support" },
-    { Key: "Location", Value: "Remote" }
+    { Key: "Environment", Value: "production" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a UserHierarchyGroup with additional properties such as tags for detailed categorization.
+Configure a UserHierarchyGroup with a parent group and multiple tags.
 
 ```ts
-const advancedUserHierarchyGroup = await AWS.Connect.UserHierarchyGroup("advancedUserGroup", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-abcd-1234-abcd-1234abcd5678",
-  Name: "Sales Team",
+const AdvancedUserHierarchyGroup = await AWS.Connect.UserHierarchyGroup("AdvancedHierarchyGroup", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abc123def456",
+  ParentGroupArn: "arn:aws:connect:us-east-1:123456789012:user-hierarchy-group/parent-group",
+  Name: "Advanced Support Team",
   Tags: [
-    { Key: "Department", Value: "Sales" },
-    { Key: "Region", Value: "North America" }
-  ],
-  adopt: true // Adopt existing resource if it already exists
-});
-```
-
-## Hierarchical Structure Example
-
-Create a UserHierarchyGroup that builds out a sub-group within an existing hierarchy.
-
-```ts
-const managementGroup = await AWS.Connect.UserHierarchyGroup("managementGroup", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-abcd-1234-abcd-1234abcd5678",
-  Name: "Management Team",
-  ParentGroupArn: "arn:aws:connect:us-east-1:123456789012:usermanagement:abcd1234-abcd-1234-abcd-1234abcd5678",
-  Tags: [
-    { Key: "Role", Value: "Management" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Support" }
   ]
 });
 ```
 
-## Group without Parent Example
+## Adoption of Existing Resource
 
-Create a UserHierarchyGroup without specifying a parent, making it a top-level group.
+Create a UserHierarchyGroup while adopting an existing resource if it already exists.
 
 ```ts
-const topLevelGroup = await AWS.Connect.UserHierarchyGroup("topLevelGroup", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-abcd-1234-abcd-1234abcd5678",
-  Name: "Top Level Group"
+const AdoptedUserHierarchyGroup = await AWS.Connect.UserHierarchyGroup("AdoptedHierarchyGroup", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abc123def456",
+  Name: "Adopted Support Team",
+  adopt: true
+});
+```
+
+## Hierarchical Structure
+
+Define a UserHierarchyGroup within a more complex hierarchy with multiple nested groups.
+
+```ts
+const ParentUserHierarchyGroup = await AWS.Connect.UserHierarchyGroup("ParentHierarchyGroup", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abc123def456",
+  Name: "Parent Support Team"
+});
+
+const ChildUserHierarchyGroup = await AWS.Connect.UserHierarchyGroup("ChildHierarchyGroup", {
+  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abc123def456",
+  ParentGroupArn: ParentUserHierarchyGroup.Arn,
+  Name: "Child Support Team"
 });
 ```

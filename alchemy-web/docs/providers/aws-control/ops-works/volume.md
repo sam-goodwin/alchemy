@@ -5,57 +5,44 @@ description: Learn how to create, update, and manage AWS OpsWorks Volumes using 
 
 # Volume
 
-The Volume resource lets you manage [AWS OpsWorks Volumes](https://docs.aws.amazon.com/opsworks/latest/userguide/) for your applications, providing persistent storage options for your instances.
+The Volume resource allows you to manage [AWS OpsWorks Volumes](https://docs.aws.amazon.com/opsworks/latest/userguide/) that can be attached to instances in your OpsWorks stacks.
 
 ## Minimal Example
 
-Create a basic OpsWorks Volume with required properties and a mount point.
+Create a basic OpsWorks Volume with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const volume = await AWS.OpsWorks.Volume("myVolume", {
-  Ec2VolumeId: "vol-0abcdef1234567890",
-  MountPoint: "/mnt/mydata",
-  StackId: "stack-0abcdef1234567890"
+const basicVolume = await AWS.OpsWorks.Volume("BasicVolume", {
+  Ec2VolumeId: "vol-1234567890abcdef0",
+  MountPoint: "/mnt/data",
+  StackId: "stack-abc123"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an OpsWorks Volume with additional options such as a name.
+Configure a volume with additional settings such as a name.
 
 ```ts
-const advancedVolume = await AWS.OpsWorks.Volume("advancedVolume", {
-  Ec2VolumeId: "vol-0abcdef0987654321",
-  MountPoint: "/mnt/advanceddata",
-  Name: "AdvancedVolume",
-  StackId: "stack-1abcdef1234567890"
+const advancedVolume = await AWS.OpsWorks.Volume("AdvancedVolume", {
+  Ec2VolumeId: "vol-0987654321fedcba0",
+  MountPoint: "/mnt/app-data",
+  Name: "AppDataVolume",
+  StackId: "stack-abc123"
 });
 ```
 
 ## Adoption of Existing Resources
 
-Use the `adopt` property to adopt an existing volume instead of failing if it already exists.
+If you want to adopt an existing volume instead of failing when it already exists, you can set the `adopt` property to true.
 
 ```ts
-const adoptedVolume = await AWS.OpsWorks.Volume("adoptedVolume", {
-  Ec2VolumeId: "vol-0abcdef2345678901",
-  MountPoint: "/mnt/adopteddata",
-  StackId: "stack-2abcdef1234567890",
+const existingVolume = await AWS.OpsWorks.Volume("ExistingVolume", {
+  Ec2VolumeId: "vol-1122334455667788",
+  MountPoint: "/mnt/existing-data",
+  StackId: "stack-abc123",
   adopt: true
-});
-```
-
-## Updating Volume Properties
-
-Demonstrate how to update an existing volume's properties.
-
-```ts
-const updatedVolume = await AWS.OpsWorks.Volume("updatedVolume", {
-  Ec2VolumeId: "vol-0abcdef3456789012",
-  MountPoint: "/mnt/updateddata",
-  Name: "UpdatedVolume",
-  StackId: "stack-3abcdef1234567890"
 });
 ```

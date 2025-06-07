@@ -32,6 +32,7 @@
     "@redwoodjs/sdk": "^0.0.80",
     "@types/bun": "latest",
     "@types/node": "latest",
+    "@typescript/vfs": "^1.6.1",
     "@vitest/ui": "^3.1.4",
     "aws4fetch": "^1.0.20",
     "braintrust": "*",

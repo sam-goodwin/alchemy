@@ -1,41 +1,21 @@
 ---
-title: Managing AWS Pinpoint ApplicationSettingss with Alchemy
-description: Learn how to create, update, and manage AWS Pinpoint ApplicationSettingss using Alchemy Cloud Control.
+title: Managing AWS Pinpoint ApplicationSettings with Alchemy
+description: Learn how to create, update, and manage AWS Pinpoint ApplicationSettings using Alchemy Cloud Control.
 ---
 
 # ApplicationSettings
 
-The ApplicationSettings resource allows you to manage the settings for an [AWS Pinpoint application](https://docs.aws.amazon.com/pinpoint/latest/userguide/). This includes configuring limits, enabling CloudWatch metrics, and setting quiet times for campaigns.
+The ApplicationSettings resource lets you manage the settings for an AWS Pinpoint application, including campaign hooks, limits, and quiet time configurations. For more information, visit the [AWS Pinpoint ApplicationSettings documentation](https://docs.aws.amazon.com/pinpoint/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic ApplicationSettings resource with required properties and one optional property.
+Create a basic application settings configuration with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const appSettings = await AWS.Pinpoint.ApplicationSettings("myAppSettings", {
-  ApplicationId: "abcdefg1234567",
-  QuietTime: {
-    Start: "22:00",
-    End: "06:00"
-  }
-});
-```
-
-## Advanced Configuration
-
-Configure ApplicationSettings with additional options such as CloudWatch metrics and campaign hooks.
-
-```ts
-const advancedAppSettings = await AWS.Pinpoint.ApplicationSettings("advancedAppSettings", {
-  ApplicationId: "abcdefg1234567",
-  CloudWatchMetricsEnabled: true,
-  CampaignHook: {
-    LambdaFunctionName: "myCampaignHookFunction",
-    Mode: "FILTER",
-    WebUrl: "https://my-webhook-url.com"
-  },
+const BasicAppSettings = await AWS.Pinpoint.ApplicationSettings("BasicAppSettings", {
+  ApplicationId: "my-pinpoint-app-id",
   Limits: {
     Daily: 1000,
     Total: 5000
@@ -43,30 +23,55 @@ const advancedAppSettings = await AWS.Pinpoint.ApplicationSettings("advancedAppS
 });
 ```
 
-## Setting Campaign Limits
+## Advanced Configuration
 
-In this example, we set specific limits for campaigns within the application settings.
+Configure application settings with additional options like campaign hooks and CloudWatch metrics.
 
 ```ts
-const limitAppSettings = await AWS.Pinpoint.ApplicationSettings("limitAppSettings", {
-  ApplicationId: "abcdefg1234567",
+const AdvancedAppSettings = await AWS.Pinpoint.ApplicationSettings("AdvancedAppSettings", {
+  ApplicationId: "my-pinpoint-app-id",
   Limits: {
-    Daily: 500,
-    Total: 2000
+    Daily: 2000,
+    Total: 10000
+  },
+  CampaignHook: {
+    LambdaFunctionName: "myCampaignHookFunction",
+    Mode: "FILTER",
+    WebUrl: "https://example.com/campaign-hook"
+  },
+  CloudWatchMetricsEnabled: true
+});
+```
+
+## Quiet Time Configuration
+
+Set up application settings with a specific quiet time configuration.
+
+```ts
+const QuietTimeAppSettings = await AWS.Pinpoint.ApplicationSettings("QuietTimeAppSettings", {
+  ApplicationId: "my-pinpoint-app-id",
+  QuietTime: {
+    Start: "22:00",
+    End: "07:00"
+  },
+  Limits: {
+    Daily: 1500,
+    Total: 7500
   }
 });
 ```
 
-## Configuring Quiet Time
+## Adoption of Existing Resources
 
-This example demonstrates how to configure a quiet time for campaigns to avoid sending messages during specific hours.
+Create application settings that will adopt existing resources if they already exist.
 
 ```ts
-const quietTimeSettings = await AWS.Pinpoint.ApplicationSettings("quietTimeSettings", {
-  ApplicationId: "abcdefg1234567",
-  QuietTime: {
-    Start: "23:00",
-    End: "07:00"
-  }
+const AdoptExistingAppSettings = await AWS.Pinpoint.ApplicationSettings("AdoptExistingAppSettings", {
+  ApplicationId: "my-pinpoint-app-id",
+  Limits: {
+    Daily: 2500,
+    Total: 12500
+  },
+  adopt: true
 });
 ```

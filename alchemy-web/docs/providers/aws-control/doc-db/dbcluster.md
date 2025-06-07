@@ -5,70 +5,99 @@ description: Learn how to create, update, and manage AWS DocDB DBClusters using 
 
 # DBCluster
 
-The DBCluster resource allows you to create and manage [AWS DocumentDB (with MongoDB compatibility) DBClusters](https://docs.aws.amazon.com/docdb/latest/userguide/), providing a scalable and highly available database solution.
+The DBCluster resource lets you manage [AWS DocumentDB (with MongoDB compatibility) DBClusters](https://docs.aws.amazon.com/docdb/latest/userguide/) including configurations for backup, security, and performance.
 
 ## Minimal Example
 
-Create a basic DBCluster with required properties and a common optional setting for storage encryption.
+Create a basic DocumentDB cluster with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const docDBCluster = await AWS.DocDB.DBCluster("myDocDBCluster", {
+const basicDBCluster = await AWS.DocDB.DBCluster("BasicDBCluster", {
   DBClusterIdentifier: "my-docdb-cluster",
-  MasterUsername: "adminUser",
+  MasterUsername: "admin",
   MasterUserPassword: "securePassword123!",
-  StorageEncrypted: true,
   VpcSecurityGroupIds: ["sg-0123456789abcdef0"],
-  DBSubnetGroupName: "my-docdb-subnet-group"
+  DBSubnetGroupName: "my-docdb-subnet-group",
+  EngineVersion: "4.0",
+  StorageEncrypted: true,
+  BackupRetentionPeriod: 7,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DBCluster with advanced settings such as backup retention period and maintenance windows.
+Configure a DocumentDB cluster with additional options for scaling and security.
 
 ```ts
-const advancedDocDBCluster = await AWS.DocDB.DBCluster("advancedDocDBCluster", {
-  DBClusterIdentifier: "advanced-docdb-cluster",
-  MasterUsername: "adminUser",
+import AWS from "alchemy/aws/control";
+
+const advancedDBCluster = await AWS.DocDB.DBCluster("AdvancedDBCluster", {
+  DBClusterIdentifier: "my-advanced-docdb-cluster",
+  MasterUsername: "admin",
   MasterUserPassword: "anotherSecurePassword456!",
-  StorageEncrypted: true,
-  BackupRetentionPeriod: 7,
-  PreferredBackupWindow: "03:00-03:30",
-  PreferredMaintenanceWindow: "sun:05:00-sun:05:30",
   VpcSecurityGroupIds: ["sg-0123456789abcdef0"],
-  DBSubnetGroupName: "my-docdb-subnet-group"
+  DBSubnetGroupName: "my-docdb-subnet-group",
+  EngineVersion: "4.0",
+  StorageEncrypted: true,
+  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrstuv",
+  EnableCloudwatchLogsExports: ["audit", "profiler"],
+  PreferredBackupWindow: "06:00-06:30",
+  PreferredMaintenanceWindow: "sun:06:00-sun:06:30",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DataTeam" }
+  ]
 });
 ```
 
-## Restoring from Snapshot
+## Restoring from a Snapshot
 
-This example demonstrates how to restore a DBCluster from a snapshot.
+Create a DBCluster by restoring from a specific snapshot to recover data.
 
 ```ts
-const restoredDocDBCluster = await AWS.DocDB.DBCluster("restoredDocDBCluster", {
-  DBClusterIdentifier: "restored-docdb-cluster",
+import AWS from "alchemy/aws/control";
+
+const restoredDBCluster = await AWS.DocDB.DBCluster("RestoredDBCluster", {
+  DBClusterIdentifier: "my-restored-docdb-cluster",
   SnapshotIdentifier: "my-snapshot-id",
   VpcSecurityGroupIds: ["sg-0123456789abcdef0"],
-  DBSubnetGroupName: "my-docdb-subnet-group"
+  DBSubnetGroupName: "my-docdb-subnet-group",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "RecoveryTeam" }
+  ]
 });
 ```
 
-## Using Serverless Configuration
+## Serverless Configuration
 
-Create a DBCluster using serverless V2 scaling configuration for optimal resource management.
+Set up a serverless DocumentDB cluster with automatic scaling configurations.
 
 ```ts
-const serverlessDocDBCluster = await AWS.DocDB.DBCluster("serverlessDocDBCluster", {
-  DBClusterIdentifier: "serverless-docdb-cluster",
-  MasterUsername: "adminUser",
+import AWS from "alchemy/aws/control";
+
+const serverlessDBCluster = await AWS.DocDB.DBCluster("ServerlessDBCluster", {
+  DBClusterIdentifier: "my-serverless-docdb-cluster",
+  MasterUsername: "admin",
   MasterUserPassword: "securePassword789!",
+  VpcSecurityGroupIds: ["sg-0123456789abcdef0"],
+  DBSubnetGroupName: "my-docdb-subnet-group",
+  EngineVersion: "4.0",
   ServerlessV2ScalingConfiguration: {
     MinCapacity: 2,
     MaxCapacity: 8
   },
-  VpcSecurityGroupIds: ["sg-0123456789abcdef0"],
-  DBSubnetGroupName: "my-docdb-subnet-group"
+  Tags: [
+    { Key: "Environment", Value: "test" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
-```
+``` 
+
+This documentation provides essential configurations and examples for managing AWS DocumentDB DBClusters using Alchemy. Adjust parameters as needed to fit your specific use cases.

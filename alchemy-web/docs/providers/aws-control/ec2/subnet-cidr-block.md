@@ -5,53 +5,46 @@ description: Learn how to create, update, and manage AWS EC2 SubnetCidrBlocks us
 
 # SubnetCidrBlock
 
-The SubnetCidrBlock resource lets you manage [AWS EC2 Subnet CIDR Blocks](https://docs.aws.amazon.com/ec2/latest/userguide/) associated with your VPC subnets. This resource allows you to add IPv6 CIDR blocks to existing subnets for enhanced network configuration.
+The SubnetCidrBlock resource allows you to manage [AWS EC2 Subnet CIDR Blocks](https://docs.aws.amazon.com/ec2/latest/userguide/) for your virtual private cloud (VPC). This resource enables you to allocate and configure IPv6 CIDR blocks for your existing subnets.
 
 ## Minimal Example
 
-This example demonstrates how to create a SubnetCidrBlock with the required properties and one optional property.
+Create a basic SubnetCidrBlock with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const subnetCidrBlock = await AWS.EC2.SubnetCidrBlock("mySubnetCidrBlock", {
-  SubnetId: "subnet-01a2b3c4d5e6f7g8",
-  Ipv6CidrBlock: "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+const BasicSubnetCidrBlock = await AWS.EC2.SubnetCidrBlock("BasicSubnetCidrBlock", {
+  SubnetId: "subnet-12345678",
+  Ipv6CidrBlock: "2001:db8::/64",
+  Ipv6NetmaskLength: 64
 });
 ```
 
 ## Advanced Configuration
 
-This example shows how to create a SubnetCidrBlock with additional advanced properties, including IPv6 netmask length and IPAM pool ID.
+Configure a SubnetCidrBlock with additional options such as an IPAM pool ID and adoption feature.
 
 ```ts
-const advancedSubnetCidrBlock = await AWS.EC2.SubnetCidrBlock("advancedSubnetCidrBlock", {
-  SubnetId: "subnet-01a2b3c4d5e6f7g8",
-  Ipv6CidrBlock: "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+const AdvancedSubnetCidrBlock = await AWS.EC2.SubnetCidrBlock("AdvancedSubnetCidrBlock", {
+  SubnetId: "subnet-87654321",
+  Ipv6CidrBlock: "2001:db8:abcd:0012::/64",
   Ipv6NetmaskLength: 64,
-  Ipv6IpamPoolId: "ipam-pool-0123456789abcdef0"
-});
-```
-
-## Adopting Existing Resource
-
-This example demonstrates how to adopt an existing SubnetCidrBlock instead of failing if it already exists.
-
-```ts
-const existingSubnetCidrBlock = await AWS.EC2.SubnetCidrBlock("existingSubnetCidrBlock", {
-  SubnetId: "subnet-01a2b3c4d5e6f7g8",
-  Ipv6CidrBlock: "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+  Ipv6IpamPoolId: "ipam-pool-abcdefg",
   adopt: true
 });
 ```
 
-## Updating Subnet CIDR Block
+## Adoption of Existing Subnet CIDR Block
 
-This example illustrates how to update an existing SubnetCidrBlock by changing the IPv6 CIDR block.
+If you need to adopt an existing Subnet CIDR Block without failing, you can set the `adopt` property to `true`.
 
 ```ts
-const updatedSubnetCidrBlock = await AWS.EC2.SubnetCidrBlock("updateSubnetCidrBlock", {
-  SubnetId: "subnet-01a2b3c4d5e6f7g8",
-  Ipv6CidrBlock: "2001:0db8:85a3:0000:0000:8a2e:0370:1234"
+const AdoptExistingSubnetCidrBlock = await AWS.EC2.SubnetCidrBlock("AdoptExistingSubnetCidrBlock", {
+  SubnetId: "subnet-11223344",
+  Ipv6CidrBlock: "2001:db8:abcd:0013::/64",
+  adopt: true
 });
 ```
+
+This will allow your configuration to succeed even if the CIDR block already exists.

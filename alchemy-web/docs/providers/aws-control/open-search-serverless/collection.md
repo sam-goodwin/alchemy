@@ -5,63 +5,39 @@ description: Learn how to create, update, and manage AWS OpenSearchServerless Co
 
 # Collection
 
-The Collection resource allows you to create and manage [AWS OpenSearchServerless Collections](https://docs.aws.amazon.com/opensearchserverless/latest/userguide/), which are designed to help you efficiently manage your search workloads without the overhead of traditional OpenSearch clusters.
+The Collection resource lets you create and manage [AWS OpenSearchServerless Collections](https://docs.aws.amazon.com/opensearchserverless/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-opensearchserverless-collection.html
 
 ## Minimal Example
-
-Create a basic OpenSearchServerless Collection with required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicCollection = await AWS.OpenSearchServerless.Collection("basic-collection", {
-  name: "my-basic-collection",
-  type: "search", // Specify the type of collection
-  description: "A basic collection for search operations"
+const collection = await AWS.OpenSearchServerless.Collection("collection-example", {
+  Name: "collection-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A collection resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a collection with standby replicas and tags for better management:
+Create a collection with additional configuration:
 
 ```ts
+import AWS from "alchemy/aws/control";
+
 const advancedCollection = await AWS.OpenSearchServerless.Collection("advanced-collection", {
-  name: "my-advanced-collection",
-  type: "search",
-  description: "An advanced collection with standby replicas and tags",
-  standbyReplicas: "2", // Setting standby replicas for high availability
-  tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "Search" }
-  ]
+  Name: "collection-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A collection resource managed by Alchemy",
 });
 ```
 
-## Adoption of Existing Resource
-
-Create a collection that adopts an existing resource instead of failing if it already exists:
-
-```ts
-const adoptedCollection = await AWS.OpenSearchServerless.Collection("adopted-collection", {
-  name: "my-existing-collection",
-  adopt: true // Adopt existing resource
-});
-```
-
-## Monitoring and Updates
-
-Create a collection and monitor its creation and update times:
-
-```ts
-const monitoredCollection = await AWS.OpenSearchServerless.Collection("monitored-collection", {
-  name: "my-monitored-collection",
-  type: "search",
-  description: "A collection to monitor creation and updates"
-});
-
-// Use the ARN and timestamps for monitoring
-console.log(`Collection ARN: ${monitoredCollection.Arn}`);
-console.log(`Created At: ${monitoredCollection.CreationTime}`);
-console.log(`Last Updated At: ${monitoredCollection.LastUpdateTime}`);
-```

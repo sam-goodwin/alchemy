@@ -5,47 +5,58 @@ description: Learn how to create, update, and manage AWS Detective MemberInvitat
 
 # MemberInvitation
 
-The MemberInvitation resource allows you to manage [AWS Detective MemberInvitations](https://docs.aws.amazon.com/detective/latest/userguide/) for inviting members to your AWS Detective graph.
+The MemberInvitation resource lets you manage [AWS Detective MemberInvitations](https://docs.aws.amazon.com/detective/latest/userguide/) for inviting new member accounts to your AWS Detective graph.
 
 ## Minimal Example
 
-Create a basic member invitation with required properties and one optional property.
+Create a basic member invitation with required properties and one optional message.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const memberInvitation = await AWS.Detective.MemberInvitation("inviteMember", {
+const memberInvitation = await AWS.Detective.MemberInvitation("BasicMemberInvitation", {
   MemberId: "123456789012",
-  GraphArn: "arn:aws:detective:us-west-2:123456789012:graph:abcd1234-5678-90ef-ghij-klmnopqrstuv",
-  MemberEmailAddress: "member@example.com",
-  Message: "You are invited to join the Detective graph."
+  Message: "You are invited to join the AWS Detective graph.",
+  GraphArn: "arn:aws:detective:us-west-2:123456789012:graph:abcdefgh-ijkl-mnop-qrst-uvwxyz123456",
+  MemberEmailAddress: "newmember@example.com"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a member invitation with email notification disabled.
+Configure a member invitation with email notifications disabled.
 
 ```ts
-const advancedMemberInvitation = await AWS.Detective.MemberInvitation("advancedInviteMember", {
-  MemberId: "098765432109",
-  GraphArn: "arn:aws:detective:us-west-2:123456789012:graph:wxyz1234-5678-90ef-ghij-klmnopqrstuv",
-  MemberEmailAddress: "advanced-member@example.com",
-  Message: "You have been invited to join the Detective graph.",
+const advancedMemberInvitation = await AWS.Detective.MemberInvitation("AdvancedMemberInvitation", {
+  MemberId: "987654321098",
+  GraphArn: "arn:aws:detective:us-west-2:123456789012:graph:abcdefgh-ijkl-mnop-qrst-uvwxyz123456",
+  MemberEmailAddress: "anothermember@example.com",
   DisableEmailNotification: true
 });
 ```
 
-## Adoption of Existing Resources
+## Adoption of Existing Resource
 
-Create a member invitation while adopting an existing member if it already exists.
+Create a member invitation that adopts an existing resource if it already exists.
 
 ```ts
-const adoptExistingMemberInvitation = await AWS.Detective.MemberInvitation("adoptInviteMember", {
-  MemberId: "112233445566",
-  GraphArn: "arn:aws:detective:us-west-2:123456789012:graph:mnop1234-5678-90ef-ghij-klmnopqrstuv",
-  MemberEmailAddress: "adoptive-member@example.com",
-  Message: "Invitation to join the Detective graph, adopting existing resource.",
+const adoptedMemberInvitation = await AWS.Detective.MemberInvitation("AdoptedMemberInvitation", {
+  MemberId: "555555555555",
+  GraphArn: "arn:aws:detective:us-west-2:123456789012:graph:abcdefgh-ijkl-mnop-qrst-uvwxyz123456",
+  MemberEmailAddress: "adoptedmember@example.com",
   adopt: true
+});
+```
+
+## Example with Custom Message
+
+Send a member invitation with a customized message to the new member.
+
+```ts
+const customMessageMemberInvitation = await AWS.Detective.MemberInvitation("CustomMessageMemberInvitation", {
+  MemberId: "444444444444",
+  Message: "Welcome! Please join our AWS Detective graph for enhanced security insights.",
+  GraphArn: "arn:aws:detective:us-west-2:123456789012:graph:abcdefgh-ijkl-mnop-qrst-uvwxyz123456",
+  MemberEmailAddress: "custommessage@example.com"
 });
 ```

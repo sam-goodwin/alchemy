@@ -5,45 +5,57 @@ description: Learn how to create, update, and manage AWS AppSync DomainNames usi
 
 # DomainName
 
-The DomainName resource lets you manage [AWS AppSync DomainNames](https://docs.aws.amazon.com/appsync/latest/userguide/) for your applications. This resource allows you to define a custom domain for your AppSync API, enabling better branding and easier access for clients.
+The DomainName resource lets you manage [AWS AppSync DomainNames](https://docs.aws.amazon.com/appsync/latest/userguide/) for your GraphQL APIs, enabling you to configure custom domains for your applications.
 
 ## Minimal Example
 
-Create a basic AppSync DomainName with required properties and a common optional description.
+Create a basic AppSync DomainName with a description and a certificate ARN.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const domainName = await AWS.AppSync.DomainName("myDomainName", {
+const AppSyncDomain = await AWS.AppSync.DomainName("MyDomainName", {
   DomainName: "api.myapp.com",
-  CertificateArn: "arn:aws:acm:us-west-2:123456789012:certificate/abcd1234-5678-90ef-ghij-klmnopqrstuv",
-  Description: "My AppSync API custom domain"
+  CertificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-efgh-5678-ijkl-90mn1234opqr",
+  Description: "My custom AppSync domain name"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AppSync DomainName with tags for better resource management and organization.
+Configure a DomainName with tags for better resource management.
 
 ```ts
-const taggedDomainName = await AWS.AppSync.DomainName("taggedDomainName", {
-  DomainName: "api.myapp.com",
-  CertificateArn: "arn:aws:acm:us-west-2:123456789012:certificate/abcd1234-5678-90ef-ghij-klmnopqrstuv",
+const TaggedAppSyncDomain = await AWS.AppSync.DomainName("TaggedDomainName", {
+  DomainName: "api.taggedapp.com",
+  CertificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-efgh-5678-ijkl-90mn1234opqr",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyApp" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Adopt Existing Resource
+## Adoption of Existing Resources
 
-If you want to adopt an existing AppSync DomainName instead of failing when the resource already exists, you can set the `adopt` property to true.
+Adopt an existing AppSync DomainName by setting the `adopt` property to true.
 
 ```ts
-const adoptExistingDomainName = await AWS.AppSync.DomainName("existingDomain", {
-  DomainName: "api.myapp.com",
-  CertificateArn: "arn:aws:acm:us-west-2:123456789012:certificate/abcd1234-5678-90ef-ghij-klmnopqrstuv",
+const ExistingAppSyncDomain = await AWS.AppSync.DomainName("AdoptedDomainName", {
+  DomainName: "api.existingapp.com",
+  CertificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-efgh-5678-ijkl-90mn1234opqr",
   adopt: true
+});
+```
+
+## Updating an Existing DomainName
+
+Update the description of an existing DomainName.
+
+```ts
+const UpdatedAppSyncDomain = await AWS.AppSync.DomainName("UpdatedDomainName", {
+  DomainName: "api.updatedapp.com",
+  CertificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-efgh-5678-ijkl-90mn1234opqr",
+  Description: "Updated description for the custom AppSync domain name"
 });
 ```

@@ -5,56 +5,18 @@ description: Learn how to create, update, and manage AWS ServiceDiscovery Instan
 
 # Instance
 
-The Instance resource lets you manage [AWS ServiceDiscovery Instances](https://docs.aws.amazon.com/servicediscovery/latest/userguide/) for service discovery and health checking of your applications.
+The Instance resource lets you create and manage [AWS ServiceDiscovery Instances](https://docs.aws.amazon.com/servicediscovery/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-servicediscovery-instance.html
 
 ## Minimal Example
-
-Create a basic ServiceDiscovery Instance with required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const serviceDiscoveryInstance = await AWS.ServiceDiscovery.Instance("myServiceDiscoveryInstance", {
-  InstanceAttributes: {
-    "AWS_INSTANCE_IPV4": "192.0.2.1",
-    "AWS_INSTANCE_PORT": "80"
-  },
-  ServiceId: "srv-12345678", // Replace with your actual service ID
-  InstanceId: "instance-001", // Optional: unique instance ID
-  adopt: true // Optional: adopt existing resource if it exists
+const instance = await AWS.ServiceDiscovery.Instance("instance-example", {
+  InstanceAttributes: {},
+  ServiceId: "example-serviceid",
 });
 ```
 
-## Advanced Configuration
-
-Configure an instance with additional attributes for detailed service information:
-
-```ts
-const advancedServiceDiscoveryInstance = await AWS.ServiceDiscovery.Instance("myAdvancedServiceDiscoveryInstance", {
-  InstanceAttributes: {
-    "AWS_INSTANCE_IPV4": "192.0.2.2",
-    "AWS_INSTANCE_PORT": "8080",
-    "AWS_INSTANCE_NAME": "myAppInstance",
-    "AWS_INSTANCE_HEALTH_STATUS": "Healthy"
-  },
-  ServiceId: "srv-87654321", // Replace with your actual service ID
-  InstanceId: "instance-002" // Optional: unique instance ID
-});
-```
-
-## Using with Auto-Discovery
-
-Integrate ServiceDiscovery Instance with auto-discovery capabilities:
-
-```ts
-const autoDiscoveryInstance = await AWS.ServiceDiscovery.Instance("myAutoDiscoveryInstance", {
-  InstanceAttributes: {
-    "AWS_INSTANCE_IPV4": "192.0.2.3",
-    "AWS_INSTANCE_PORT": "443",
-    "AWS_INSTANCE_NAME": "secureAppInstance"
-  },
-  ServiceId: "srv-11223344", // Replace with your actual service ID
-  InstanceId: "instance-003", // Optional: unique instance ID
-  adopt: true // Optional: adopt existing resource if it exists
-});
-```

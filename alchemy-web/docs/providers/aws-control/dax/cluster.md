@@ -5,70 +5,63 @@ description: Learn how to create, update, and manage AWS DAX Clusters using Alch
 
 # Cluster
 
-The Cluster resource lets you manage [AWS DAX Clusters](https://docs.aws.amazon.com/dax/latest/userguide/) for caching DynamoDB queries to improve performance and reduce response times.
+The Cluster resource lets you manage [AWS DAX Clusters](https://docs.aws.amazon.com/dax/latest/userguide/) for fast in-memory caching for DynamoDB. It allows you to configure various properties such as node type, replication factor, and security settings.
 
 ## Minimal Example
 
-Create a basic DAX cluster with required properties and a couple of optional settings like description and parameter group name.
+Create a basic DAX cluster with required properties and a couple of optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const daxCluster = await AWS.DAX.Cluster("myDaxCluster", {
+const MyDaxCluster = await AWS.DAX.Cluster("MyDaxCluster", {
   ReplicationFactor: 3,
-  IAMRoleARN: "arn:aws:iam::123456789012:role/DAXRole",
-  Description: "My DAX Cluster for caching DynamoDB queries",
-  ParameterGroupName: "default.dax1.0"
+  IAMRoleARN: "arn:aws:iam::123456789012:role/DAXAccessRole",
+  NodeType: "dax.r4.large",
+  Description: "My DAX cluster for caching DynamoDB data",
+  SubnetGroupName: "MyDaxSubnetGroup",
+  SecurityGroupIds: ["sg-0123456789abcdef0"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DAX cluster with advanced options including availability zones, security groups, and a maintenance window.
+Configure a DAX cluster with advanced settings for maintenance and encryption.
 
 ```ts
-const advancedDaxCluster = await AWS.DAX.Cluster("advancedDaxCluster", {
+const AdvancedDaxCluster = await AWS.DAX.Cluster("AdvancedDaxCluster", {
   ReplicationFactor: 3,
-  IAMRoleARN: "arn:aws:iam::123456789012:role/DAXRole",
-  AvailabilityZones: ["us-west-2a", "us-west-2b"],
-  SecurityGroupIds: ["sg-0abcd1234efgh5678"],
-  PreferredMaintenanceWindow: "sun:05:00-sun:06:00",
-  ClusterName: "AdvancedDAXCluster"
-});
-```
-
-## Enhanced Security Settings
-
-Configure a DAX cluster with server-side encryption enabled for enhanced security.
-
-```ts
-const secureDaxCluster = await AWS.DAX.Cluster("secureDaxCluster", {
-  ReplicationFactor: 3,
-  IAMRoleARN: "arn:aws:iam::123456789012:role/DAXRole",
+  IAMRoleARN: "arn:aws:iam::123456789012:role/DAXAccessRole",
+  NodeType: "dax.r4.large",
+  PreferredMaintenanceWindow: "sun:23:00-sun:23:30",
   SSESpecification: {
     SSEEnabled: true
   },
-  Description: "Secure DAX Cluster with encryption"
+  ClusterEndpointEncryptionType: "SERVER_SIDE_ENCRYPTION",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Development" }
+  ]
 });
 ```
 
-## Specific Use Case: Custom Tags
+## Custom Notification Settings
 
-Create a DAX cluster with custom tags for better resource management.
+Set up a DAX cluster with custom notification settings for monitoring.
 
 ```ts
-const taggedDaxCluster = await AWS.DAX.Cluster("taggedDaxCluster", {
-  ReplicationFactor: 3,
-  IAMRoleARN: "arn:aws:iam::123456789012:role/DAXRole",
+const NotificationDaxCluster = await AWS.DAX.Cluster("NotificationDaxCluster", {
+  ReplicationFactor: 2,
+  IAMRoleARN: "arn:aws:iam::123456789012:role/DAXAccessRole",
+  NodeType: "dax.r4.large",
+  NotificationTopicARN: "arn:aws:sns:us-west-2:123456789012:MyDaxNotifications",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Project",
-      Value: "E-commerce"
-    }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "QA" }
   ]
 });
 ```

@@ -5,85 +5,86 @@ description: Learn how to create, update, and manage AWS Redshift Clusters using
 
 # Cluster
 
-The Cluster resource lets you manage [AWS Redshift Clusters](https://docs.aws.amazon.com/redshift/latest/userguide/) which are designed for data warehousing and analytics. You can create and configure clusters with various properties including node type, number of nodes, and security settings.
+The Cluster resource lets you manage [AWS Redshift Clusters](https://docs.aws.amazon.com/redshift/latest/userguide/) and their configuration settings.
 
 ## Minimal Example
 
-Create a basic AWS Redshift Cluster with required properties and a few common optional ones.
+Create a basic AWS Redshift Cluster with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const redshiftCluster = await AWS.Redshift.Cluster("myRedshiftCluster", {
-  nodeType: "dc2.large",
-  clusterType: "single-node",
-  dbName: "analyticsdb",
-  masterUsername: "admin",
-  masterUserPassword: "SecurePass123!",
-  port: 5439,
-  tags: [
-    {
-      Key: "Environment",
-      Value: "Development"
-    }
+const redshiftCluster = await AWS.Redshift.Cluster("BasicRedshiftCluster", {
+  NodeType: "dc2.large",
+  MasterUsername: "admin",
+  MasterUserPassword: "securePassword123",
+  DBName: "mydatabase",
+  ClusterType: "single-node",
+  Port: 5439,
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DataEngineering" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Redshift Cluster with additional settings for enhanced security and maintenance.
+Configure an AWS Redshift Cluster with advanced options such as multi-AZ deployment, encryption, and IAM roles.
 
 ```ts
-const advancedRedshiftCluster = await AWS.Redshift.Cluster("advancedRedshiftCluster", {
-  nodeType: "dc2.8xlarge",
-  clusterType: "multi-node",
-  dbName: "productiondb",
-  masterUsername: "admin",
-  masterUserPassword: "SecurePass123!",
-  port: 5439,
-  multiAZ: true,
-  encrypted: true,
-  automatedSnapshotRetentionPeriod: 7,
-  preferredMaintenanceWindow: "sun:06:00-sun:06:30",
-  iamRoles: ["arn:aws:iam::123456789012:role/MyRedshiftRole"],
-  clusterParameterGroupName: "default.redshift-1.0",
-  vpcSecurityGroupIds: ["sg-0123456789abcdef0"]
+const advancedRedshiftCluster = await AWS.Redshift.Cluster("AdvancedRedshiftCluster", {
+  NodeType: "dc2.large",
+  MasterUsername: "admin",
+  MasterUserPassword: "securePassword123",
+  DBName: "mydatabase",
+  ClusterType: "multi-node",
+  NumberOfNodes: 2,
+  Encrypted: true,
+  IamRoles: ["arn:aws:iam::123456789012:role/MyRedshiftRole"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataAnalytics" }
+  ]
 });
 ```
 
-## Using Snapshot Copy
+## Snapshot Configuration
 
-Create a cluster that uses snapshot copy for disaster recovery.
+Create a cluster with snapshot settings to manage backups effectively.
 
 ```ts
-const snapshotCopyCluster = await AWS.Redshift.Cluster("snapshotCopyCluster", {
-  nodeType: "dc2.large",
-  clusterType: "single-node",
-  dbName: "backupdb",
-  masterUsername: "admin",
-  masterUserPassword: "SecurePass123!",
-  port: 5439,
-  snapshotCopyRetentionPeriod: 30,
-  snapshotCopyManual: true,
-  destinationRegion: "us-west-2"
+const snapshotRedshiftCluster = await AWS.Redshift.Cluster("SnapshotRedshiftCluster", {
+  NodeType: "dc2.large",
+  MasterUsername: "admin",
+  MasterUserPassword: "securePassword123",
+  DBName: "mydatabase",
+  ClusterType: "single-node",
+  AutomatedSnapshotRetentionPeriod: 7,
+  SnapshotCopyRetentionPeriod: 30,
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```
 
-## Defer Maintenance
+## Network Configuration
 
-Configure a Redshift Cluster with deferred maintenance settings.
+Set up a Redshift Cluster with specific VPC security group IDs and subnet group for networking.
 
 ```ts
-const maintenanceCluster = await AWS.Redshift.Cluster("maintenanceCluster", {
-  nodeType: "dc2.large",
-  clusterType: "single-node",
-  dbName: "maintenanceDB",
-  masterUsername: "admin",
-  masterUserPassword: "SecurePass123!",
-  port: 5439,
-  deferMaintenance: true,
-  deferMaintenanceStartTime: "2023-11-01T00:00:00Z",
-  deferMaintenanceDuration: 30 // Duration in minutes
+const networkConfiguredCluster = await AWS.Redshift.Cluster("NetworkConfiguredCluster", {
+  NodeType: "dc2.large",
+  MasterUsername: "admin",
+  MasterUserPassword: "securePassword123",
+  DBName: "mydatabase",
+  ClusterType: "single-node",
+  VpcSecurityGroupIds: ["sg-0123456789abcdef0"],
+  ClusterSubnetGroupName: "my-subnet-group",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "NetworkOps" }
+  ]
 });
 ```

@@ -5,18 +5,18 @@ description: Learn how to create, update, and manage AWS ApiGateway UsagePlans u
 
 # UsagePlan
 
-The UsagePlan resource lets you manage [AWS ApiGateway UsagePlans](https://docs.aws.amazon.com/apigateway/latest/userguide/) which define a set of limits on how the APIs can be accessed.
+The UsagePlan resource lets you manage [AWS ApiGateway UsagePlans](https://docs.aws.amazon.com/apigateway/latest/userguide/) that define the usage limits and access for different API consumers.
 
 ## Minimal Example
 
-Create a basic usage plan with a name and description, along with some throttling settings.
+Create a basic UsagePlan with a name and description, along with a simple throttle configuration.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicUsagePlan = await AWS.ApiGateway.UsagePlan("basicUsagePlan", {
-  UsagePlanName: "BasicUsagePlan",
-  Description: "A basic usage plan for limited API access",
+const BasicUsagePlan = await AWS.ApiGateway.UsagePlan("BasicUsagePlan", {
+  UsagePlanName: "BasicPlan",
+  Description: "A basic usage plan for limited API access.",
   Throttle: {
     BurstLimit: 100,
     RateLimit: 50
@@ -26,25 +26,20 @@ const basicUsagePlan = await AWS.ApiGateway.UsagePlan("basicUsagePlan", {
 
 ## Advanced Configuration
 
-Configure an advanced usage plan that includes quota settings and multiple API stages.
+Configure a UsagePlan with quota limits and tags for better management and tracking.
 
 ```ts
-const advancedUsagePlan = await AWS.ApiGateway.UsagePlan("advancedUsagePlan", {
-  UsagePlanName: "AdvancedUsagePlan",
-  Description: "An advanced usage plan with quotas and multiple stages",
+const AdvancedUsagePlan = await AWS.ApiGateway.UsagePlan("AdvancedUsagePlan", {
+  UsagePlanName: "AdvancedPlan",
+  Description: "An advanced usage plan with quota limits.",
   Quota: {
     Limit: 1000,
-    Period: "MONTH"
+    Period: "MONTH",
+    Offset: 0
   },
-  ApiStages: [
-    {
-      ApiId: "1234567890",
-      Stage: "prod"
-    },
-    {
-      ApiId: "0987654321",
-      Stage: "dev"
-    }
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "API-Development" }
   ],
   Throttle: {
     BurstLimit: 200,
@@ -53,43 +48,39 @@ const advancedUsagePlan = await AWS.ApiGateway.UsagePlan("advancedUsagePlan", {
 });
 ```
 
-## Usage Plan with Tags
+## Integrating with API Stages
 
-Create a usage plan that includes tags for better organization and tracking.
+Create a UsagePlan that integrates with specific API stages to control access for different environments.
 
 ```ts
-const taggedUsagePlan = await AWS.ApiGateway.UsagePlan("taggedUsagePlan", {
-  UsagePlanName: "TaggedUsagePlan",
-  Description: "A usage plan with tags for identification",
-  Tags: [
+const StagedUsagePlan = await AWS.ApiGateway.UsagePlan("StagedUsagePlan", {
+  UsagePlanName: "StagedPlan",
+  Description: "Usage plan linked to specific API stages.",
+  ApiStages: [
     {
-      Key: "Environment",
-      Value: "Production"
+      ApiId: "abc123xyz",
+      Stage: "prod"
     },
     {
-      Key: "Project",
-      Value: "API Development"
+      ApiId: "abc123xyz",
+      Stage: "dev"
     }
   ],
   Throttle: {
-    BurstLimit: 50,
-    RateLimit: 25
+    BurstLimit: 300,
+    RateLimit: 150
   }
 });
 ```
 
-## Usage Plan with Adoption
+## Adoption of Existing Resources
 
-Create a usage plan that adopts an existing resource instead of failing if it already exists.
+If you want to adopt an existing UsagePlan if it already exists, you can set the adopt property to true.
 
 ```ts
-const adoptedUsagePlan = await AWS.ApiGateway.UsagePlan("adoptedUsagePlan", {
-  UsagePlanName: "ExistingUsagePlan",
-  Description: "An existing usage plan that should be adopted",
+const AdoptExistingPlan = await AWS.ApiGateway.UsagePlan("AdoptExistingPlan", {
+  UsagePlanName: "PreExistingPlan",
   adopt: true,
-  Throttle: {
-    BurstLimit: 150,
-    RateLimit: 75
-  }
+  Description: "This plan will adopt the existing usage plan if it exists."
 });
 ```

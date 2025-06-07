@@ -5,73 +5,70 @@ description: Learn how to create, update, and manage AWS ApiGateway ApiKeys usin
 
 # ApiKey
 
-The ApiKey resource lets you manage [AWS ApiGateway ApiKeys](https://docs.aws.amazon.com/apigateway/latest/userguide/) to control access to your APIs. This resource enables you to create, update, and delete API keys as well as manage their stage keys and other properties.
+The ApiKey resource allows you to manage [AWS ApiGateway ApiKeys](https://docs.aws.amazon.com/apigateway/latest/userguide/) for controlling access to your APIs.
 
 ## Minimal Example
 
-Create a basic API key with a description and enabled status:
+Create a basic ApiKey with a description and enable it:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const apiKey = await AWS.ApiGateway.ApiKey("myApiKey", {
-  name: "MyFirstApiKey",
-  description: "This is my first API key for accessing the API.",
-  enabled: true
+const basicApiKey = await AWS.ApiGateway.ApiKey("BasicApiKey", {
+  Name: "BasicApi",
+  Description: "A basic API key for accessing the API.",
+  Enabled: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure an API key with a customer ID and distinct ID generation:
+Configure an ApiKey with specific tags and a customer ID for better tracking:
 
 ```ts
-const advancedApiKey = await AWS.ApiGateway.ApiKey("myAdvancedApiKey", {
-  name: "MyAdvancedApiKey",
-  description: "An advanced API key configuration.",
-  enabled: true,
-  customerId: "customer-12345",
-  generateDistinctId: true,
-  tags: [
-    { key: "environment", value: "production" },
-    { key: "team", value: "backend" }
+const advancedApiKey = await AWS.ApiGateway.ApiKey("AdvancedApiKey", {
+  Name: "AdvancedApi",
+  Description: "An advanced API key with customer tracking.",
+  Enabled: true,
+  CustomerId: "1234567890",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "API Team" }
   ]
 });
 ```
 
-## Binding to Stages
+## Stage Key Configuration
 
-Create an API key and bind it to specific stages of an API:
+Create an ApiKey linked to specific stages of an API:
 
 ```ts
-const stageKeys = [
-  {
-    restApiId: "api-123456",
-    stageName: "prod"
-  },
-  {
-    restApiId: "api-123456",
-    stageName: "dev"
-  }
-];
-
-const stageBoundApiKey = await AWS.ApiGateway.ApiKey("myStageBoundApiKey", {
-  name: "MyStageBoundApiKey",
-  description: "API key bound to specific stages.",
-  enabled: true,
-  stageKeys: stageKeys
+const stageKeyApiKey = await AWS.ApiGateway.ApiKey("StageKeyApiKey", {
+  Name: "StageKeyApi",
+  Description: "An API key linked to specific stages.",
+  Enabled: true,
+  StageKeys: [
+    {
+      RestApiId: "abcdef1234",
+      StageName: "prod"
+    },
+    {
+      RestApiId: "abcdef1234",
+      StageName: "dev"
+    }
+  ]
 });
 ```
 
-## Custom Key Value
+## Generate Distinct ID
 
-Create an API key with a specific key value:
+Create an ApiKey while allowing the system to generate a distinct ID:
 
 ```ts
-const customValueApiKey = await AWS.ApiGateway.ApiKey("myCustomValueApiKey", {
-  name: "MyCustomValueApiKey",
-  description: "API key with a custom value.",
-  value: "customKeyValue123",
-  enabled: true
+const generatedDistinctIdApiKey = await AWS.ApiGateway.ApiKey("GeneratedDistinctIdApiKey", {
+  Name: "GeneratedDistinctIdApi",
+  Description: "An API key that generates a distinct ID.",
+  GenerateDistinctId: true,
+  Enabled: true
 });
 ```

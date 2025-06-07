@@ -5,46 +5,62 @@ description: Learn how to create, update, and manage AWS Lightsail LoadBalancerT
 
 # LoadBalancerTlsCertificate
 
-The LoadBalancerTlsCertificate resource allows you to manage TLS certificates for your AWS Lightsail load balancers, enabling secure communication over HTTPS. For more information, see the [AWS Lightsail LoadBalancerTlsCertificates documentation](https://docs.aws.amazon.com/lightsail/latest/userguide/).
+The LoadBalancerTlsCertificate resource allows you to create and manage TLS certificates for your AWS Lightsail load balancers. These certificates enable secure connections to your applications. For more information, visit the [AWS Lightsail LoadBalancerTlsCertificates documentation](https://docs.aws.amazon.com/lightsail/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic TLS certificate for a load balancer with required properties and one optional property.
+Create a basic TLS certificate for a load balancer with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const tlsCertificate = await AWS.Lightsail.LoadBalancerTlsCertificate("myTlsCertificate", {
-  LoadBalancerName: "my-load-balancer",
+const basicTlsCertificate = await AWS.Lightsail.LoadBalancerTlsCertificate("BasicTlsCertificate", {
+  LoadBalancerName: "MyLoadBalancer",
   CertificateDomainName: "example.com",
-  CertificateName: "example-cert",
+  CertificateName: "MyCertificate",
   IsAttached: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TLS certificate with additional properties such as alternative names and HTTPS redirection.
+Configure a TLS certificate with additional options such as alternative names and HTTPS redirection.
 
 ```ts
-const advancedTlsCertificate = await AWS.Lightsail.LoadBalancerTlsCertificate("advancedTlsCertificate", {
-  LoadBalancerName: "my-load-balancer",
+const advancedTlsCertificate = await AWS.Lightsail.LoadBalancerTlsCertificate("AdvancedTlsCertificate", {
+  LoadBalancerName: "MyLoadBalancer",
   CertificateDomainName: "example.com",
+  CertificateName: "MyAdvancedCertificate",
   CertificateAlternativeNames: ["www.example.com", "api.example.com"],
   HttpsRedirectionEnabled: true,
-  CertificateName: "example-advanced-cert"
+  IsAttached: true
 });
 ```
 
-## Reuse Existing Certificate
+## Adoption of Existing Certificate
 
-Create a TLS certificate while adopting an existing resource if it already exists.
+Adopt an existing TLS certificate instead of creating a new one if it already exists.
 
 ```ts
-const adoptExistingTlsCertificate = await AWS.Lightsail.LoadBalancerTlsCertificate("adoptTlsCertificate", {
-  LoadBalancerName: "my-load-balancer",
-  CertificateDomainName: "existing-cert.example.com",
-  CertificateName: "existing-cert",
-  adopt: true
+const adoptedTlsCertificate = await AWS.Lightsail.LoadBalancerTlsCertificate("AdoptedTlsCertificate", {
+  LoadBalancerName: "MyLoadBalancer",
+  CertificateDomainName: "example.com",
+  CertificateName: "MyAdoptedCertificate",
+  IsAttached: true,
+  adopt: true // Adopt existing resource
+});
+```
+
+## Certificate Without HTTP Redirection
+
+Create a TLS certificate without enabling HTTP redirection.
+
+```ts
+const noRedirectionTlsCertificate = await AWS.Lightsail.LoadBalancerTlsCertificate("NoRedirectionTlsCertificate", {
+  LoadBalancerName: "MyLoadBalancer",
+  CertificateDomainName: "example.com",
+  CertificateName: "MyNoRedirectionCertificate",
+  IsAttached: false,
+  HttpsRedirectionEnabled: false
 });
 ```

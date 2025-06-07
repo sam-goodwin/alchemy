@@ -9,109 +9,90 @@ The Function resource lets you manage [AWS Lambda Functions](https://docs.aws.am
 
 ## Minimal Example
 
-Create a basic Lambda function with required properties and a common optional property for memory size.
+Create a basic AWS Lambda function with required properties and a few optional ones:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicLambdaFunction = await AWS.Lambda.Function("basicLambda", {
-  FunctionName: "basicLambdaFunction",
-  Handler: "index.handler",
-  Runtime: "nodejs14.x",
-  Role: "arn:aws:iam::123456789012:role/execution_role",
+const MyLambdaFunction = await AWS.Lambda.Function("MyFunction", {
   Code: {
-    ZipFile: "exports.handler = async (event) => { return 'Hello, World!'; };"
+    ZipFile: "exports.handler = async (event) => { return 'Hello from Lambda!'; };"
   },
-  MemorySize: 128
+  Handler: "index.handler",
+  Role: "arn:aws:iam::123456789012:role/service-role/MyLambdaRole",
+  Runtime: "nodejs14.x",
+  MemorySize: 128,
+  Timeout: 3
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Lambda function with a VPC configuration and environment variables for enhanced security and functionality.
+Configure a Lambda function with additional settings such as VPC configuration and environment variables:
 
 ```ts
-const advancedLambdaFunction = await AWS.Lambda.Function("advancedLambda", {
-  FunctionName: "advancedLambdaFunction",
-  Handler: "index.handler",
-  Runtime: "nodejs14.x",
-  Role: "arn:aws:iam::123456789012:role/execution_role",
+const AdvancedLambdaFunction = await AWS.Lambda.Function("AdvancedFunction", {
   Code: {
-    ZipFile: "exports.handler = async (event) => { return 'Advanced Lambda!'; };"
+    ZipFile: "exports.handler = async (event) => { return 'Advanced Function!'; };"
   },
+  Handler: "index.handler",
+  Role: "arn:aws:iam::123456789012:role/service-role/MyLambdaRole",
+  Runtime: "nodejs14.x",
+  MemorySize: 256,
+  Timeout: 5,
   VpcConfig: {
-    SubnetIds: ["subnet-0bb1c79de3EXAMPLE"],
-    SecurityGroupIds: ["sg-0c9f7b1c8eEXAMPLE"]
+    SecurityGroupIds: ["sg-0123456789abcdef0"],
+    SubnetIds: ["subnet-0123456789abcdef0", "subnet-0123456789abcdef1"]
   },
   Environment: {
     Variables: {
-      ENVIRONMENT: "production",
-      API_URL: "https://api.example.com"
+      STAGE: "production",
+      DB_CONNECTION: "jdbc:mysql://mydb.example.com:3306/mydatabase"
     }
   },
-  Timeout: 10
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
-## Function with Dead Letter Queue
+## Using Layers
 
-This example demonstrates how to configure a Lambda function with a dead letter queue for handling errors.
+Demonstrate how to include Lambda layers for additional functionality:
 
 ```ts
-const lambdaWithDLQ = await AWS.Lambda.Function("lambdaWithDLQ", {
-  FunctionName: "lambdaWithDLQFunction",
+const LayeredLambdaFunction = await AWS.Lambda.Function("LayeredFunction", {
+  Code: {
+    ZipFile: "exports.handler = async (event) => { return 'Function with Layers!'; };"
+  },
   Handler: "index.handler",
+  Role: "arn:aws:iam::123456789012:role/service-role/MyLambdaRole",
   Runtime: "nodejs14.x",
-  Role: "arn:aws:iam::123456789012:role/execution_role",
+  Layers: [
+    "arn:aws:lambda:us-east-1:123456789012:layer:MyLayer:1"
+  ],
+  MemorySize: 128,
+  Timeout: 3
+});
+```
+
+## Setting Up Dead Letter Queues
+
+Configure a dead letter queue (DLQ) for error handling:
+
+```ts
+const DLQLambdaFunction = await AWS.Lambda.Function("DLQFunction", {
   Code: {
     ZipFile: "exports.handler = async (event) => { throw new Error('Error!'); };"
   },
+  Handler: "index.handler",
+  Role: "arn:aws:iam::123456789012:role/service-role/MyLambdaRole",
+  Runtime: "nodejs14.x",
   DeadLetterConfig: {
-    TargetArn: "arn:aws:sqs:us-west-2:123456789012:dead-letter-queue"
-  },
-  MemorySize: 256,
-  Timeout: 15
-});
-```
-
-## Function with Layers
-
-This example shows how to add a Lambda layer for shared libraries.
-
-```ts
-const lambdaWithLayer = await AWS.Lambda.Function("lambdaWithLayer", {
-  FunctionName: "lambdaWithLayerFunction",
-  Handler: "index.handler",
-  Runtime: "nodejs14.x",
-  Role: "arn:aws:iam::123456789012:role/execution_role",
-  Code: {
-    ZipFile: "exports.handler = async (event) => { return 'Using layers!'; };"
-  },
-  Layers: [
-    "arn:aws:lambda:us-west-2:123456789012:layer:my-layer:1"
-  ],
-  MemorySize: 128,
-  Timeout: 5
-});
-``` 
-
-## Function with Tracing Configuration
-
-This example configures the Lambda function to enable AWS X-Ray tracing for monitoring.
-
-```ts
-const lambdaWithTracing = await AWS.Lambda.Function("lambdaWithTracing", {
-  FunctionName: "lambdaWithTracingFunction",
-  Handler: "index.handler",
-  Runtime: "nodejs14.x",
-  Role: "arn:aws:iam::123456789012:role/execution_role",
-  Code: {
-    ZipFile: "exports.handler = async (event) => { return 'Tracing enabled!'; };"
-  },
-  TracingConfig: {
-    Mode: "Active"
+    TargetArn: "arn:aws:sqs:us-east-1:123456789012:MyDeadLetterQueue"
   },
   MemorySize: 128,
-  Timeout: 10
+  Timeout: 3
 });
 ```

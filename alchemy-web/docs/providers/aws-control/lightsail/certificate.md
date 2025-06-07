@@ -5,46 +5,76 @@ description: Learn how to create, update, and manage AWS Lightsail Certificates 
 
 # Certificate
 
-The Certificate resource allows you to create and manage [AWS Lightsail Certificates](https://docs.aws.amazon.com/lightsail/latest/userguide/) for your domains, enabling secure HTTPS connections.
+The Certificate resource lets you manage [AWS Lightsail Certificates](https://docs.aws.amazon.com/lightsail/latest/userguide/) for securing your domains with SSL/TLS encryption.
 
 ## Minimal Example
 
-Create a basic Lightsail Certificate with required properties and a common optional property for subject alternative names.
+Create a basic Lightsail certificate with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const certificate = await AWS.Lightsail.Certificate("myCertificate", {
+const lightsailCertificate = await AWS.Lightsail.Certificate("MyCertificate", {
   DomainName: "mywebsite.com",
+  CertificateName: "MyWebsiteCertificate",
   SubjectAlternativeNames: ["www.mywebsite.com"],
-  CertificateName: "MyWebsiteSSL"
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Lightsail Certificate with additional tags for better resource management.
+Configure a certificate with additional tags to help manage resources effectively.
 
 ```ts
-const advancedCertificate = await AWS.Lightsail.Certificate("advancedCertificate", {
-  DomainName: "mysecuredomain.com",
-  SubjectAlternativeNames: ["www.mysecuredomain.com", "api.mysecuredomain.com"],
-  CertificateName: "MySecureDomainSSL",
+const advancedCertificate = await AWS.Lightsail.Certificate("AdvancedCertificate", {
+  DomainName: "secure.mywebsite.com",
+  CertificateName: "SecureMyWebsiteCertificate",
+  SubjectAlternativeNames: ["api.mywebsite.com", "blog.mywebsite.com"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "Website" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Project", Value: "WebsiteSecurity" }
+  ],
+  adopt: true // Adopt existing resource if it already exists
+});
+```
+
+## Managing Multiple Domains
+
+Create a certificate that supports multiple subdomains.
+
+```ts
+const multiDomainCertificate = await AWS.Lightsail.Certificate("MultiDomainCertificate", {
+  DomainName: "example.com",
+  CertificateName: "ExampleCertificate",
+  SubjectAlternativeNames: [
+    "www.example.com",
+    "shop.example.com",
+    "blog.example.com"
+  ],
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "WebTeam" }
   ]
 });
 ```
 
-## Resource Adoption
+## Updating an Existing Certificate
 
-This example demonstrates how to adopt an existing Lightsail Certificate instead of failing if the resource already exists.
+Example of updating an existing certificate to add new subject alternative names.
 
 ```ts
-const adoptCertificate = await AWS.Lightsail.Certificate("adoptedCertificate", {
-  DomainName: "adopted-domain.com",
-  CertificateName: "AdoptedDomainSSL",
-  adopt: true // Enables adopting an existing resource
+const updatedCertificate = await AWS.Lightsail.Certificate("UpdatedCertificate", {
+  DomainName: "mywebsite.com",
+  CertificateName: "MyWebsiteCertificate",
+  SubjectAlternativeNames: ["www.mywebsite.com", "new.mywebsite.com"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ],
+  adopt: true // Adopt existing resource if it already exists
 });
 ```

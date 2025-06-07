@@ -5,77 +5,45 @@ description: Learn how to create, update, and manage AWS Transfer Agreements usi
 
 # Agreement
 
-The Agreement resource lets you manage [AWS Transfer Agreements](https://docs.aws.amazon.com/transfer/latest/userguide/) for secure file transfer between your organization and external partners. This resource facilitates the establishment of agreements that define how data transfer should occur.
+The Agreement resource lets you create and manage [AWS Transfer Agreements](https://docs.aws.amazon.com/transfer/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-transfer-agreement.html
 
 ## Minimal Example
-
-Create a basic transfer agreement with the required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAgreement = await AWS.Transfer.Agreement("basic-agreement", {
-  ServerId: "s-1234567890abcdef0",
-  AccessRole: "arn:aws:iam::123456789012:role/MyTransferAccessRole",
-  PartnerProfileId: "partner-profile-123",
-  LocalProfileId: "local-profile-456",
-  Status: "ACTIVE" // Indicates that the agreement is currently active
+const agreement = await AWS.Transfer.Agreement("agreement-example", {
+  ServerId: "example-serverid",
+  AccessRole: "example-accessrole",
+  PartnerProfileId: "example-partnerprofileid",
+  LocalProfileId: "example-localprofileid",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A agreement resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a transfer agreement with additional optional properties for more nuanced control.
+Create a agreement with additional configuration:
 
 ```ts
+import AWS from "alchemy/aws/control";
+
 const advancedAgreement = await AWS.Transfer.Agreement("advanced-agreement", {
-  ServerId: "s-0987654321abcdef0",
-  AccessRole: "arn:aws:iam::123456789012:role/MyAdvancedTransferAccessRole",
-  PartnerProfileId: "partner-profile-789",
-  LocalProfileId: "local-profile-012",
-  Description: "This agreement allows secure file transfer with enhanced logging.",
-  EnforceMessageSigning: "true",
-  PreserveFilename: "true",
-  Tags: [
-    {
-      Key: "Project",
-      Value: "DataTransfer"
-    },
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
-  ]
+  ServerId: "example-serverid",
+  AccessRole: "example-accessrole",
+  PartnerProfileId: "example-partnerprofileid",
+  LocalProfileId: "example-localprofileid",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A agreement resource managed by Alchemy",
 });
 ```
 
-## Custom Directory Configuration
-
-Create a transfer agreement with custom directory settings for specific file structure requirements.
-
-```ts
-const customDirectoryAgreement = await AWS.Transfer.Agreement("custom-directory-agreement", {
-  ServerId: "s-1122334455abcdef0",
-  AccessRole: "arn:aws:iam::123456789012:role/MyCustomDirectoryRole",
-  PartnerProfileId: "partner-profile-345",
-  LocalProfileId: "local-profile-678",
-  CustomDirectories: {
-    Directory1: "/data/inbound",
-    Directory2: "/data/outbound"
-  }
-});
-```
-
-## Adoption of Existing Resource
-
-Set up a transfer agreement that adopts an existing resource instead of failing when a resource already exists.
-
-```ts
-const adoptExistingAgreement = await AWS.Transfer.Agreement("existing-agreement", {
-  ServerId: "s-9876543210abcdef0",
-  AccessRole: "arn:aws:iam::123456789012:role/MyExistingAgreementRole",
-  PartnerProfileId: "partner-profile-012",
-  LocalProfileId: "local-profile-345",
-  adopt: true // Allow adoption of existing agreements
-});
-```

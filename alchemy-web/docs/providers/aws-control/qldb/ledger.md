@@ -5,71 +5,62 @@ description: Learn how to create, update, and manage AWS QLDB Ledgers using Alch
 
 # Ledger
 
-The Ledger resource lets you manage [AWS QLDB Ledgers](https://docs.aws.amazon.com/qldb/latest/userguide/) for immutable and cryptographically verifiable transaction logs.
+The Ledger resource allows you to manage [AWS QLDB Ledgers](https://docs.aws.amazon.com/qldb/latest/userguide/) for maintaining a transparent, immutable, and cryptographically verifiable transaction log.
 
 ## Minimal Example
 
-Create a basic QLDB Ledger with required properties and one optional tag.
+Create a basic QLDB ledger with required properties and common optional settings like deletion protection and tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const simpleLedger = await AWS.QLDB.Ledger("simpleLedger", {
+const BasicLedger = await AWS.QLDB.Ledger("BasicLedger", {
   PermissionsMode: "ALLOW_ALL",
+  DeletionProtection: true,
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Development"
-    }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Data" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ledger with deletion protection and a KMS key for enhanced security.
+Configure a ledger with a specific KMS key for encryption and additional tags.
 
 ```ts
-const secureLedger = await AWS.QLDB.Ledger("secureLedger", {
+const AdvancedLedger = await AWS.QLDB.Ledger("AdvancedLedger", {
   PermissionsMode: "ALLOW_ALL",
-  DeletionProtection: true,
-  KmsKey: "arn:aws:kms:us-east-1:123456789012:key/abcd-1234-abcd-1234-abcd1234abcd",
+  KmsKey: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-123456789abc",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Finance" }
   ]
 });
 ```
 
-## Adoption of Existing Ledger
+## Adoption of Existing Resources
 
-Adopt an existing QLDB Ledger if it already exists without failing the operation.
+Create a ledger that adopts an existing resource instead of failing if the resource already exists.
 
 ```ts
-const adoptedLedger = await AWS.QLDB.Ledger("existingLedger", {
+const ExistingLedger = await AWS.QLDB.Ledger("ExistingLedger", {
   PermissionsMode: "ALLOW_ALL",
   adopt: true
 });
 ```
 
-## Example with Detailed Tags
+## Using KMS for Data Protection
 
-Create a ledger and add multiple tags for better organization and billing.
+Set up a ledger with a KMS key for enhanced security and data protection.
 
 ```ts
-const taggedLedger = await AWS.QLDB.Ledger("taggedLedger", {
+const SecureLedger = await AWS.QLDB.Ledger("SecureLedger", {
   PermissionsMode: "ALLOW_ALL",
+  KmsKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-abcd-1234-abcd-123456789abc",
   Tags: [
-    {
-      Key: "Project",
-      Value: "Finance"
-    },
-    {
-      Key: "Owner",
-      Value: "Alice"
-    }
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Operations" }
   ]
 });
 ```

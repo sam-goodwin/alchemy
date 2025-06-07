@@ -5,63 +5,45 @@ description: Learn how to create, update, and manage AWS CleanRooms ConfiguredTa
 
 # ConfiguredTable
 
-The ConfiguredTable resource lets you manage [AWS CleanRooms ConfiguredTables](https://docs.aws.amazon.com/cleanrooms/latest/userguide/) that facilitate collaborative data analysis while ensuring data privacy and compliance.
+The ConfiguredTable resource lets you create and manage [AWS CleanRooms ConfiguredTables](https://docs.aws.amazon.com/cleanrooms/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cleanrooms-configuredtable.html
 
 ## Minimal Example
-
-Create a basic ConfiguredTable with required properties and a couple of optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicConfiguredTable = await AWS.CleanRooms.ConfiguredTable("basicConfiguredTable", {
-  Name: "SalesDataAnalysis",
-  AnalysisMethod: "SQL",
-  AllowedColumns: ["CustomerID", "OrderDate", "SalesAmount"],
-  SelectedAnalysisMethods: ["AVG", "SUM"]
+const configuredtable = await AWS.CleanRooms.ConfiguredTable("configuredtable-example", {
+  AnalysisMethod: "example-analysismethod",
+  TableReference: "example-tablereference",
+  AllowedColumns: ["example-allowedcolumns-1"],
+  Name: "configuredtable-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A configuredtable resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a more advanced ConfiguredTable with detailed analysis rules and tagging.
+Create a configuredtable with additional configuration:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const advancedConfiguredTable = await AWS.CleanRooms.ConfiguredTable("advancedConfiguredTable", {
-  Name: "AdvancedSalesData",
-  AnalysisMethod: "SQL",
-  AllowedColumns: ["CustomerID", "OrderDate", "SalesAmount", "ProductID"],
-  AnalysisRules: [
-    {
-      RuleName: "SalesAmountLimit",
-      RuleCondition: "SalesAmount > 1000"
-    }
-  ],
-  Tags: [
-    { Key: "Department", Value: "Sales" },
-    { Key: "Region", Value: "North America" }
-  ]
-});
-```
-
-## Example with Description and Adoption
-
-Create a ConfiguredTable that includes a description and adopts an existing resource if found.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const describedConfiguredTable = await AWS.CleanRooms.ConfiguredTable("describedConfiguredTable", {
-  Name: "CustomerLifetimeValue",
-  AnalysisMethod: "SQL",
-  TableReference: {
-    TableName: "CustomerData",
-    DatabaseName: "SalesDB"
+const advancedConfiguredTable = await AWS.CleanRooms.ConfiguredTable("advanced-configuredtable", {
+  AnalysisMethod: "example-analysismethod",
+  TableReference: "example-tablereference",
+  AllowedColumns: ["example-allowedcolumns-1"],
+  Name: "configuredtable-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Description: "ConfiguredTable for analyzing customer lifetime value.",
-  AllowedColumns: ["CustomerID", "TotalSpent"],
-  adopt: true
+  Description: "A configuredtable resource managed by Alchemy",
 });
 ```
+

@@ -5,81 +5,56 @@ description: Learn how to create, update, and manage AWS QuickSight Folders usin
 
 # Folder
 
-The Folder resource lets you manage [AWS QuickSight Folders](https://docs.aws.amazon.com/quicksight/latest/userguide/) for organizing dashboards and analyses efficiently.
+The Folder resource lets you manage [AWS QuickSight Folders](https://docs.aws.amazon.com/quicksight/latest/userguide/) for organizing your analyses, dashboards, and datasets within QuickSight.
 
 ## Minimal Example
 
-Create a basic QuickSight Folder with essential properties:
+Create a basic QuickSight folder with a name and specify the parent folder ARN.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const quickSightFolder = await AWS.QuickSight.Folder("myQuickSightFolder", {
-  AwsAccountId: "123456789012",
-  FolderId: "folder-1",
-  Name: "Sales Dashboards",
-  FolderType: "TOP_LEVEL",
-  SharingModel: "OWNER_ONLY"
+const QuickSightFolder = await AWS.QuickSight.Folder("MyQuickSightFolder", {
+  Name: "Sales Reports",
+  ParentFolderArn: "arn:aws:quicksight:us-east-1:123456789012:folder/ParentFolder",
+  FolderType: "CUSTOM",
+  Tags: [
+    { Key: "Department", Value: "Sales" },
+    { Key: "Project", Value: "Quarterly Review" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a QuickSight Folder with permissions and tags for better management:
+Configure a QuickSight folder with sharing model and permissions for team collaboration.
 
 ```ts
-const advancedQuickSightFolder = await AWS.QuickSight.Folder("myAdvancedQuickSightFolder", {
-  AwsAccountId: "123456789012",
-  FolderId: "folder-2",
-  Name: "Marketing Insights",
-  FolderType: "TOP_LEVEL",
-  SharingModel: "PUBLIC",
+const TeamFolder = await AWS.QuickSight.Folder("TeamReportsFolder", {
+  Name: "Team Reports",
+  ParentFolderArn: "arn:aws:quicksight:us-east-1:123456789012:folder/ParentFolder",
+  FolderType: "CUSTOM",
+  SharingModel: "SHAREABLE",
   Permissions: [
     {
-      Principal: "arn:aws:quicksight:us-east-1:123456789012:user/default/user1",
-      Actions: [
-        "quicksight:DescribeFolder",
-        "quicksight:UpdateFolder"
-      ]
+      Principal: "arn:aws:quicksight:us-east-1:123456789012:group/Analysts",
+      Actions: ["quicksight:DescribeFolder", "quicksight:UpdateFolder"]
     }
   ],
   Tags: [
-    {
-      Key: "Department",
-      Value: "Marketing"
-    },
-    {
-      Key: "Project",
-      Value: "Q4 Campaign"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Analytics" }
   ]
 });
 ```
 
-## Creating Subfolders
+## Adoption of Existing Resources
 
-Demonstrate how to create a subfolder within an existing folder:
-
-```ts
-const subFolder = await AWS.QuickSight.Folder("mySubFolder", {
-  AwsAccountId: "123456789012",
-  FolderId: "subfolder-1",
-  Name: "Q4 Campaign Analysis",
-  ParentFolderArn: "arn:aws:quicksight:us-east-1:123456789012:folder/folder-2",
-  FolderType: "SUB_FOLDER",
-  SharingModel: "OWNER_ONLY"
-});
-```
-
-## Adopting Existing Folders
-
-Adopt an existing QuickSight Folder instead of failing if it already exists:
+Adopt an existing QuickSight folder to manage it without creating a new one.
 
 ```ts
-const adoptExistingFolder = await AWS.QuickSight.Folder("myAdoptedFolder", {
-  AwsAccountId: "123456789012",
-  FolderId: "folder-3",
-  Name: "Adopted Folder",
+const ExistingFolder = await AWS.QuickSight.Folder("ExistingReportsFolder", {
+  FolderId: "existing-folder-id",
   adopt: true
 });
 ```

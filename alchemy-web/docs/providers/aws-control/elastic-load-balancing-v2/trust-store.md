@@ -5,63 +5,52 @@ description: Learn how to create, update, and manage AWS Application Load Balanc
 
 # TrustStore
 
-The TrustStore resource lets you manage [AWS Application Load Balancer TrustStores](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/) for securely storing CA certificates. 
+The TrustStore resource allows you to manage [AWS Application Load Balancer TrustStores](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/) which are used to manage certificate authorities for HTTPS connections.
 
 ## Minimal Example
 
-Create a basic TrustStore with a CA certificate bundle stored in S3:
+Create a basic TrustStore with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicTrustStore = await AWS.ElasticLoadBalancingV2.TrustStore("basicTrustStore", {
-  Name: "basic-trust-store",
-  CaCertificatesBundleS3Bucket: "my-certificates-bucket",
-  CaCertificatesBundleS3Key: "path/to/certificates-bundle.zip"
+const BasicTrustStore = await AWS.ElasticLoadBalancingV2.TrustStore("BasicTrustStore", {
+  Name: "MyTrustStore",
+  CaCertificatesBundleS3Bucket: "my-truststore-bucket",
+  CaCertificatesBundleS3Key: "certificates/my-certificates.pem",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TrustStore with additional properties including tags and versioning for the CA certificate bundle:
+Configure a TrustStore with additional properties such as object versioning.
 
 ```ts
-const advancedTrustStore = await AWS.ElasticLoadBalancingV2.TrustStore("advancedTrustStore", {
-  Name: "advanced-trust-store",
-  CaCertificatesBundleS3Bucket: "my-certificates-bucket",
-  CaCertificatesBundleS3Key: "path/to/certificates-bundle.zip",
+const AdvancedTrustStore = await AWS.ElasticLoadBalancingV2.TrustStore("AdvancedTrustStore", {
+  Name: "MyAdvancedTrustStore",
+  CaCertificatesBundleS3Bucket: "my-truststore-bucket",
+  CaCertificatesBundleS3Key: "certificates/my-certificates-v2.pem",
   CaCertificatesBundleS3ObjectVersion: "1234567890abcdef",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "IT" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
 ## Resource Adoption Example
 
-Create a TrustStore resource while adopting an existing one if it already exists:
+Use the adopt feature to manage an existing TrustStore without failing if it already exists.
 
 ```ts
-const adoptTrustStore = await AWS.ElasticLoadBalancingV2.TrustStore("adoptTrustStore", {
-  Name: "existing-trust-store",
-  CaCertificatesBundleS3Bucket: "my-certificates-bucket",
-  CaCertificatesBundleS3Key: "path/to/certificates-bundle.zip",
-  adopt: true // Adopt the existing resource if it already exists
-});
-```
-
-## Additional Use Case: Updating a TrustStore
-
-Update the CA certificate bundle of an existing TrustStore:
-
-```ts
-const updateTrustStore = await AWS.ElasticLoadBalancingV2.TrustStore("updateTrustStore", {
-  Name: "existing-trust-store",
-  CaCertificatesBundleS3Bucket: "my-certificates-bucket",
-  CaCertificatesBundleS3Key: "new/path/to/certificates-bundle.zip",
-  Tags: [
-    { Key: "UpdatedBy", Value: "admin@example.com" }
-  ]
+const AdoptedTrustStore = await AWS.ElasticLoadBalancingV2.TrustStore("AdoptedTrustStore", {
+  Name: "MyExistingTrustStore",
+  CaCertificatesBundleS3Bucket: "my-existing-bucket",
+  CaCertificatesBundleS3Key: "certificates/my-existing-certificates.pem",
+  adopt: true
 });
 ```

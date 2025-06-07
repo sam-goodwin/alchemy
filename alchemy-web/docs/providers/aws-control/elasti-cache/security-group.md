@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS ElastiCache SecurityGro
 
 # SecurityGroup
 
-The SecurityGroup resource lets you manage [AWS ElastiCache SecurityGroups](https://docs.aws.amazon.com/elasticache/latest/userguide/) for controlling access to your ElastiCache clusters.
+The SecurityGroup resource allows you to manage [AWS ElastiCache SecurityGroups](https://docs.aws.amazon.com/elasticache/latest/userguide/) which are used to control access to ElastiCache clusters.
 
 ## Minimal Example
 
@@ -14,47 +14,60 @@ Create a basic ElastiCache SecurityGroup with a description and tags.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSecurityGroup = await AWS.ElastiCache.SecurityGroup("basicSecurityGroup", {
-  Description: "Basic Security Group for ElastiCache",
+const BasicSecurityGroup = await AWS.ElastiCache.SecurityGroup("basic-security-group", {
+  Description: "Basic security group for ElastiCache",
   Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "SampleProject" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Backend" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SecurityGroup with existing resource adoption.
+Configure an ElastiCache SecurityGroup with optional properties, including a description and adopting an existing resource.
 
 ```ts
-const advancedSecurityGroup = await AWS.ElastiCache.SecurityGroup("advancedSecurityGroup", {
-  Description: "Advanced Security Group for ElastiCache with adoption",
+const AdvancedSecurityGroup = await AWS.ElastiCache.SecurityGroup("advanced-security-group", {
+  Description: "Advanced security group for production ElastiCache",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "CriticalProject" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Data Services" }
   ],
   adopt: true
 });
 ```
 
-## Security Group with Custom Properties
+## Security Group for Multiple Subnets
 
-Create a SecurityGroup with a specific description and without tags.
+Create a SecurityGroup that allows access from a specific CIDR block for a multi-subnet setup.
 
 ```ts
-const customSecurityGroup = await AWS.ElastiCache.SecurityGroup("customSecurityGroup", {
-  Description: "Custom Security Group for specific use cases"
+const MultiSubnetSecurityGroup = await AWS.ElastiCache.SecurityGroup("multi-subnet-security-group", {
+  Description: "Security group allowing access from specific CIDR blocks",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
+  ],
+  adopt: false
 });
+
+// Note: Additional configuration for inbound rules should be done in the associated VPC settings.
 ```
 
-## Security Group Adoption
+## Security Group with Specific Inbound Rules
 
-Demonstrate how to adopt an existing SecurityGroup.
+While the SecurityGroup resource itself does not directly configure inbound rules, you can associate it with an existing VPC and configure inbound rules as required.
 
 ```ts
-const existingSecurityGroup = await AWS.ElastiCache.SecurityGroup("existingSecurityGroup", {
-  Description: "Adopting an existing Security Group",
-  adopt: true
+const SecurityGroupWithRules = await AWS.ElastiCache.SecurityGroup("security-group-with-rules", {
+  Description: "Security group with specific inbound rules",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
+  ],
+  adopt: false
 });
+
+// Inbound rules for this SecurityGroup should be defined in the VPC security group settings.
 ```

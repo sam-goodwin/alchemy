@@ -5,71 +5,81 @@ description: Learn how to create, update, and manage AWS Glue DevEndpoints using
 
 # DevEndpoint
 
-The DevEndpoint resource allows you to create and manage AWS Glue DevEndpoints, which are used to develop and test ETL scripts in AWS Glue. For more information, see the [AWS Glue DevEndpoints documentation](https://docs.aws.amazon.com/glue/latest/userguide/).
+The DevEndpoint resource lets you create and manage [AWS Glue DevEndpoints](https://docs.aws.amazon.com/glue/latest/userguide/) which provide an environment for developing, testing, and debugging your ETL scripts.
 
 ## Minimal Example
 
-Create a basic Glue DevEndpoint with required properties and common optional settings.
+Create a basic DevEndpoint with required properties and a few common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const devEndpoint = await AWS.Glue.DevEndpoint("myDevEndpoint", {
-  roleArn: "arn:aws:iam::123456789012:role/MyGlueRole",
-  numberOfNodes: 2,
-  workerType: "G.1X",
-  subnetId: "subnet-0abcdef1234567890",
-  securityGroupIds: ["sg-0abcdef1234567890"]
+const basicDevEndpoint = await AWS.Glue.DevEndpoint("BasicDevEndpoint", {
+  RoleArn: "arn:aws:iam::123456789012:role/AWSGlueServiceRole",
+  SubnetId: "subnet-0abcd1234efgh5678",
+  SecurityGroupIds: ["sg-0abcd1234efgh5678"],
+  NumberOfNodes: 2,
+  GlueVersion: "2.0",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DevEndpoint with additional options, including extra JARs and Python libraries.
+Configure a DevEndpoint with advanced settings including custom Python libraries and extra JARs.
 
 ```ts
-const advancedDevEndpoint = await AWS.Glue.DevEndpoint("advancedDevEndpoint", {
-  roleArn: "arn:aws:iam::123456789012:role/MyGlueRole",
-  numberOfWorkers: 5,
-  glueVersion: "2.0",
-  extraJarsS3Path: "s3://my-glue-libs/my-additional-jars.jar",
-  extraPythonLibsS3Path: "s3://my-glue-libs/my-additional-libs.zip",
-  publicKeys: ["ssh-rsa AAAAB3..."],
-  tags: {
-    Project: "ETL",
-    Environment: "Development"
-  }
+const advancedDevEndpoint = await AWS.Glue.DevEndpoint("AdvancedDevEndpoint", {
+  RoleArn: "arn:aws:iam::123456789012:role/AWSGlueServiceRole",
+  SubnetId: "subnet-0abcd1234efgh5678",
+  SecurityGroupIds: ["sg-0abcd1234efgh5678"],
+  ExtraJarsS3Path: "s3://my-bucket/jars/custom-library.jar",
+  ExtraPythonLibsS3Path: "s3://my-bucket/libs/custom-python-lib.zip",
+  PublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAr...",
+  NumberOfWorkers: 5,
+  WorkerType: "G.2X",
+  GlueVersion: "2.0",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "ETL" }
+  ]
 });
 ```
 
-## Using Custom Arguments
+## Custom Security Configuration
 
-Demonstrate how to pass custom arguments to the DevEndpoint for specific configurations.
+Set up a DevEndpoint with a specific security configuration and multiple public keys.
 
 ```ts
-const customArgsDevEndpoint = await AWS.Glue.DevEndpoint("customArgsDevEndpoint", {
-  roleArn: "arn:aws:iam::123456789012:role/MyGlueRole",
-  arguments: {
-    "--key1": "value1",
-    "--key2": "value2"
-  },
-  numberOfNodes: 3,
-  subnetId: "subnet-0abcdef1234567890",
-  securityGroupIds: ["sg-0abcdef1234567890"]
+const secureDevEndpoint = await AWS.Glue.DevEndpoint("SecureDevEndpoint", {
+  RoleArn: "arn:aws:iam::123456789012:role/AWSGlueServiceRole",
+  SubnetId: "subnet-0abcd1234efgh5678",
+  SecurityGroupIds: ["sg-0abcd1234efgh5678"],
+  SecurityConfiguration: "mySecurityConfig",
+  PublicKeys: [
+    "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAr...",
+    "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAr..."
+  ],
+  GlueVersion: "3.0",
+  Tags: [
+    { Key: "Environment", Value: "testing" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```
 
-## Security Configuration
+## Using Existing Resources
 
-Create a DevEndpoint with a specific security configuration, including custom security groups.
+If you want to adopt an existing DevEndpoint without creating a new one, you can do so by setting the adopt property to true.
 
 ```ts
-const secureDevEndpoint = await AWS.Glue.DevEndpoint("secureDevEndpoint", {
-  roleArn: "arn:aws:iam::123456789012:role/MyGlueRole",
-  securityConfiguration: "mySecurityConfig",
-  securityGroupIds: ["sg-0abcdef1234567890"],
-  subnetId: "subnet-0abcdef1234567890",
-  numberOfNodes: 2,
-  endpointName: "secure-endpoint"
+const existingDevEndpoint = await AWS.Glue.DevEndpoint("ExistingDevEndpoint", {
+  RoleArn: "arn:aws:iam::123456789012:role/AWSGlueServiceRole",
+  SubnetId: "subnet-0abcd1234efgh5678",
+  SecurityGroupIds: ["sg-0abcd1234efgh5678"],
+  adopt: true
 });
 ```

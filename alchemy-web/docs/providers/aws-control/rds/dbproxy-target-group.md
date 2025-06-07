@@ -5,67 +5,64 @@ description: Learn how to create, update, and manage AWS RDS DBProxyTargetGroups
 
 # DBProxyTargetGroup
 
-The DBProxyTargetGroup resource allows you to manage an Amazon RDS DB Proxy target group, which is a collection of RDS database instances that the proxy can connect to. For further details, refer to the official AWS documentation: [AWS RDS DBProxyTargetGroups](https://docs.aws.amazon.com/rds/latest/userguide/).
+The DBProxyTargetGroup resource lets you manage [AWS RDS DBProxy Target Groups](https://docs.aws.amazon.com/rds/latest/userguide/) for use with your database proxy. This resource allows you to define the target group for your DBProxy, which can include multiple DB instances or clusters.
 
 ## Minimal Example
 
-Create a basic DB Proxy target group with required properties and one optional property.
+Create a basic DBProxyTargetGroup with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbProxyTargetGroup = await AWS.RDS.DBProxyTargetGroup("myDbProxyTargetGroup", {
-  DBProxyName: "myDbProxy",
-  TargetGroupName: "myTargetGroup",
-  DBInstanceIdentifiers: ["db-instance-1", "db-instance-2"]
+const targetGroup = await AWS.RDS.DBProxyTargetGroup("MyDBProxyTargetGroup", {
+  DBProxyName: "MyDBProxy",
+  TargetGroupName: "MyTargetGroup",
+  DBInstanceIdentifiers: ["instance-1", "instance-2"]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DB Proxy target group with connection pool settings for better performance.
+Configure a DBProxyTargetGroup with connection pool settings to optimize database connections.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const connectionPoolTargetGroup = await AWS.RDS.DBProxyTargetGroup("poolTargetGroup", {
-  DBProxyName: "myDbProxy",
-  TargetGroupName: "myPoolTargetGroup",
-  DBInstanceIdentifiers: ["db-instance-1", "db-instance-2"],
+const advancedTargetGroup = await AWS.RDS.DBProxyTargetGroup("AdvancedDBProxyTargetGroup", {
+  DBProxyName: "MyAdvancedDBProxy",
+  TargetGroupName: "AdvancedTargetGroup",
+  DBInstanceIdentifiers: ["instance-1"],
   ConnectionPoolConfigurationInfo: {
-    MaxConnectionsPercent: 50,
+    MaxConnectionsPercent: 100,
     MaxIdleConnectionsPercent: 50,
     ConnectionBorrowTimeout: 120,
-    InitQuery: "SELECT 1"
+    SessionPinningFilters: ["EXCLUDE_VARIABLE_SETS"]
   }
 });
 ```
 
-## Using with DB Clusters
+## Using DBClusterIdentifiers
 
-Create a DB Proxy target group that targets a specific RDS DB cluster.
+You can also define a target group using DB cluster identifiers instead of DB instance identifiers.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const dbClusterTargetGroup = await AWS.RDS.DBProxyTargetGroup("clusterTargetGroup", {
-  DBProxyName: "myDbProxy",
-  TargetGroupName: "myClusterTargetGroup",
-  DBClusterIdentifiers: ["my-db-cluster"],
-  DBInstanceIdentifiers: ["db-instance-1"]
+const clusterTargetGroup = await AWS.RDS.DBProxyTargetGroup("ClusterDBProxyTargetGroup", {
+  DBProxyName: "MyClusterDBProxy",
+  TargetGroupName: "ClusterTargetGroup",
+  DBClusterIdentifiers: ["cluster-1"],
+  ConnectionPoolConfigurationInfo: {
+    MaxConnectionsPercent: 70,
+    MaxIdleConnectionsPercent: 30
+  }
 });
 ```
 
-## Adopt Existing Resource
+## Adopting Existing Resources
 
-Adopt an existing DB Proxy target group if it already exists.
+If you want to adopt an existing target group instead of creating a new one, you can set the `adopt` property to true.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const adoptExistingTargetGroup = await AWS.RDS.DBProxyTargetGroup("existingTargetGroup", {
-  DBProxyName: "myDbProxy",
-  TargetGroupName: "myExistingTargetGroup",
+const adoptTargetGroup = await AWS.RDS.DBProxyTargetGroup("AdoptDBProxyTargetGroup", {
+  DBProxyName: "MyDBProxy",
+  TargetGroupName: "ExistingTargetGroup",
   adopt: true
 });
 ```

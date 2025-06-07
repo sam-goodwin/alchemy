@@ -5,64 +5,54 @@ description: Learn how to create, update, and manage AWS CodeGuruReviewer Reposi
 
 # RepositoryAssociation
 
-The RepositoryAssociation resource allows you to manage [AWS CodeGuruReviewer RepositoryAssociations](https://docs.aws.amazon.com/codegurureviewer/latest/userguide/) that link your repositories to CodeGuru Reviewer for automated code reviews.
+The RepositoryAssociation resource lets you manage [AWS CodeGuruReviewer RepositoryAssociations](https://docs.aws.amazon.com/codegurureviewer/latest/userguide/) for integrating version control systems with AWS CodeGuru Reviewer.
 
 ## Minimal Example
 
-Create a basic repository association with the required properties and a common optional property.
+This example demonstrates how to create a basic RepositoryAssociation with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const repositoryAssociation = await AWS.CodeGuruReviewer.RepositoryAssociation("basicRepoAssociation", {
+const BasicRepositoryAssociation = await AWS.CodeGuruReviewer.RepositoryAssociation("BasicRepoAssoc", {
   Type: "GitHub",
+  Owner: "my-github-organization",
   Name: "my-repo",
-  Owner: "my-github-user",
-  ConnectionArn: "arn:aws:codestar-connections:us-east-1:123456789012:connection/abcd1234-56ef-78gh-90ij-klmnopqrstuvwxyz"
+  ConnectionArn: "arn:aws:codestar-connections:us-west-2:123456789012:connection/abcd1234-ab12-ab12-ab12-abcd1234abcd",
+  Tags: [
+    { Key: "Environment", Value: "development" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a repository association with additional settings, such as tags for better management.
+In this example, we configure a RepositoryAssociation with additional properties, including a bucket name.
 
 ```ts
-const advancedRepoAssociation = await AWS.CodeGuruReviewer.RepositoryAssociation("advancedRepoAssociation", {
+const AdvancedRepositoryAssociation = await AWS.CodeGuruReviewer.RepositoryAssociation("AdvancedRepoAssoc", {
   Type: "GitHub",
-  Name: "advanced-repo",
-  Owner: "my-github-user",
-  ConnectionArn: "arn:aws:codestar-connections:us-east-1:123456789012:connection/abcd1234-56ef-78gh-90ij-klmnopqrstuvwxyz",
+  Owner: "my-github-organization",
+  Name: "my-repo",
+  ConnectionArn: "arn:aws:codestar-connections:us-west-2:123456789012:connection/abcd1234-ab12-ab12-ab12-abcd1234abcd",
+  BucketName: "codeguru-reviewer-bucket",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "CodeReview" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "CodeGuru" }
   ]
 });
 ```
 
-## Adopting Existing Resources
+## Using Adopt Option
 
-Create a repository association while adopting an existing resource if it already exists.
+This example illustrates how to use the adopt option to associate with an existing repository without failing.
 
 ```ts
-const adoptRepoAssociation = await AWS.CodeGuruReviewer.RepositoryAssociation("adoptExistingRepo", {
+const AdoptRepositoryAssociation = await AWS.CodeGuruReviewer.RepositoryAssociation("AdoptRepoAssoc", {
   Type: "GitHub",
+  Owner: "my-github-organization",
   Name: "existing-repo",
-  Owner: "my-github-user",
-  ConnectionArn: "arn:aws:codestar-connections:us-east-1:123456789012:connection/abcd1234-56ef-78gh-90ij-klmnopqrstuvwxyz",
+  ConnectionArn: "arn:aws:codestar-connections:us-west-2:123456789012:connection/abcd1234-ab12-ab12-ab12-abcd1234abcd",
   adopt: true
-});
-```
-
-## Using S3 for Artifacts
-
-Create an association that uses an S3 bucket for storing review artifacts.
-
-```ts
-const s3RepoAssociation = await AWS.CodeGuruReviewer.RepositoryAssociation("s3RepoAssociation", {
-  Type: "GitHub",
-  Name: "s3-repo",
-  Owner: "my-github-user",
-  ConnectionArn: "arn:aws:codestar-connections:us-east-1:123456789012:connection/abcd1234-56ef-78gh-90ij-klmnopqrstuvwxyz",
-  BucketName: "my-codeguru-bucket"
 });
 ```

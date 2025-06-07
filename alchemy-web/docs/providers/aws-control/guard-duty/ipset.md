@@ -5,63 +5,64 @@ description: Learn how to create, update, and manage AWS GuardDuty IPSets using 
 
 # IPSet
 
-The IPSet resource lets you manage [AWS GuardDuty IPSets](https://docs.aws.amazon.com/guardduty/latest/userguide/) for threat detection in your AWS environment.
+The IPSet resource allows you to manage [AWS GuardDuty IPSets](https://docs.aws.amazon.com/guardduty/latest/userguide/) for defining lists of IP addresses that GuardDuty uses to identify potential threats.
 
 ## Minimal Example
 
-Create a basic IPSet with required properties and one common optional property.
+Create a basic IPSet with required properties and one optional tag:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const ipSet = await AWS.GuardDuty.IPSet("myIpSet", {
+const basicIPSet = await AWS.GuardDuty.IPSet("BasicIPSet", {
   Format: "TXT",
-  Location: "https://my-bucket.s3.amazonaws.com/my-ipset.txt",
+  Location: "s3://my-ip-set-bucket/ipset.txt",
   Activate: true,
-  DetectorId: "12abcdef34abcdef56789abcdef01234"
+  Tags: [{ Key: "Environment", Value: "production" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IPSet with tags for resource management.
+Configure an IPSet with additional properties, including a specified Detector ID:
 
 ```ts
-const taggedIpSet = await AWS.GuardDuty.IPSet("taggedIpSet", {
+const advancedIPSet = await AWS.GuardDuty.IPSet("AdvancedIPSet", {
   Format: "TXT",
-  Location: "https://my-bucket.s3.amazonaws.com/my-tagged-ipset.txt",
-  Activate: true,
-  DetectorId: "12abcdef34abcdef56789abcdef01234",
+  Location: "s3://my-ip-set-bucket/advanced-ipset.txt",
+  Activate: false,
+  DetectorId: "abcd1234efgh5678ijkl9012mnop3456qrst",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "Security" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Security" }
   ]
 });
 ```
 
-## Example with Existing Resource Adoption
+## Using Existing Resource
 
-Create an IPSet that adopts an existing resource instead of failing if it already exists.
+Adopt an existing IPSet instead of failing if it already exists:
 
 ```ts
-const adoptedIpSet = await AWS.GuardDuty.IPSet("adoptedIpSet", {
+const adoptedIPSet = await AWS.GuardDuty.IPSet("AdoptedIPSet", {
   Format: "TXT",
-  Location: "https://my-bucket.s3.amazonaws.com/my-adopted-ipset.txt",
+  Location: "s3://my-ip-set-bucket/adopted-ipset.txt",
   Activate: true,
-  DetectorId: "12abcdef34abcdef56789abcdef01234",
   adopt: true
 });
 ```
 
-## Example with Different Formats
+## Example with Custom IP Format
 
-Create an IPSet with a different format and custom location.
+Create an IPSet with a custom format and specific CIDR blocks:
 
 ```ts
-const jsonIpSet = await AWS.GuardDuty.IPSet("jsonIpSet", {
-  Format: "JSON",
-  Location: "https://my-bucket.s3.amazonaws.com/my-json-ipset.json",
-  Activate: false,
-  DetectorId: "12abcdef34abcdef56789abcdef01234"
+const customIPSet = await AWS.GuardDuty.IPSet("CustomIPSet", {
+  Format: "TXT",
+  Location: "s3://my-ip-set-bucket/custom-ipset.txt",
+  Activate: true,
+  Tags: [{ Key: "Purpose", Value: "Testing" }]
 });
 ```
+
+This example assumes the provided file in S3 contains valid IP addresses formatted as expected by GuardDuty.

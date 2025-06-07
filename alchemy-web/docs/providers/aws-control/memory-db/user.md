@@ -5,66 +5,60 @@ description: Learn how to create, update, and manage AWS MemoryDB Users using Al
 
 # User
 
-The User resource lets you manage [AWS MemoryDB Users](https://docs.aws.amazon.com/memorydb/latest/userguide/), which are essential for controlling access to your MemoryDB clusters.
+The User resource lets you manage [AWS MemoryDB Users](https://docs.aws.amazon.com/memorydb/latest/userguide/) including authentication modes and access permissions.
 
 ## Minimal Example
 
-Create a basic MemoryDB user with required properties and an optional access string.
+Create a basic MemoryDB user with required properties and one optional property for access string.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const memoryDbUser = await AWS.MemoryDB.User("memoryDbUser", {
-  UserName: "memoryUser1",
-  AccessString: "on ~* +@all"
+const memoryDBUser = await AWS.MemoryDB.User("default-user", {
+  UserName: "adminUser",
+  AccessString: "on ~* +@all" // Grants the user access to all commands
 });
 ```
 
 ## Advanced Configuration
 
-Configure a MemoryDB user with authentication mode and tags for better management.
+Configure a MemoryDB user with an authentication mode and tags for better management.
 
 ```ts
-const advancedMemoryDbUser = await AWS.MemoryDB.User("advancedMemoryDbUser", {
-  UserName: "memoryUser2",
-  AccessString: "on ~* +@all",
+const advancedMemoryDBUser = await AWS.MemoryDB.User("advanced-user", {
+  UserName: "secureUser",
   AuthenticationMode: {
-    Type: "password",
-    Passwords: ["SecurePassword123!"]
+    Passwords: ["SecurePassword123"]
   },
+  AccessString: "on ~* +@all", // Grants the user access to all commands
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Engineering" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
   ]
 });
 ```
 
-## User with Multiple Authentication Methods
+## User with Multiple Passwords
 
-Create a MemoryDB user with multiple authentication methods for enhanced security.
+Create a MemoryDB user that utilizes multiple passwords for authentication.
 
 ```ts
-const multiAuthMemoryDbUser = await AWS.MemoryDB.User("multiAuthMemoryDbUser", {
-  UserName: "memoryUser3",
-  AccessString: "on ~* +@all",
+const multiPasswordUser = await AWS.MemoryDB.User("multi-password-user", {
+  UserName: "multiAuthUser",
   AuthenticationMode: {
-    Type: "iam",
-    Passwords: ["AnotherSecurePassword456!"]
+    Passwords: ["FirstPassword123", "SecondPassword456"]
   },
-  Tags: [
-    { Key: "Project", Value: "MemoryDBMigration" }
-  ]
+  AccessString: "on ~* +@all"
 });
 ```
 
-## Adoption of Existing User Resource
+## User with No Access
 
-Adopt an existing MemoryDB user instead of failing when the resource already exists.
+Create a MemoryDB user with no access to any commands, useful for specific security scenarios.
 
 ```ts
-const adoptExistingMemoryDbUser = await AWS.MemoryDB.User("existingUser", {
-  UserName: "existingUser1",
-  AccessString: "on ~* +@all",
-  adopt: true
+const noAccessUser = await AWS.MemoryDB.User("no-access-user", {
+  UserName: "restrictedUser",
+  AccessString: "off" // No access to any commands
 });
 ```

@@ -5,100 +5,45 @@ description: Learn how to create, update, and manage AWS FraudDetector EventType
 
 # EventType
 
-The EventType resource allows you to define and manage event types in AWS FraudDetector. This resource is essential for creating rules and detecting fraudulent activities based on various events. For more information, refer to the [AWS FraudDetector EventTypes documentation](https://docs.aws.amazon.com/frauddetector/latest/userguide/).
+The EventType resource lets you create and manage [AWS FraudDetector EventTypes](https://docs.aws.amazon.com/frauddetector/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-frauddetector-eventtype.html
 
 ## Minimal Example
-
-Create a basic EventType with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicEventType = await AWS.FraudDetector.EventType("basicEventType", {
-  Name: "UserSignUp",
-  Description: "Event type for user sign-up",
-  EntityTypes: [
-    { Name: "User" }
-  ],
-  Labels: [
-    { Name: "SignUp" }
-  ],
-  EventVariables: [
-    { Name: "UserEmail" },
-    { Name: "UserIP" }
-  ]
+const eventtype = await AWS.FraudDetector.EventType("eventtype-example", {
+  EntityTypes: [],
+  Labels: [],
+  EventVariables: [],
+  Name: "eventtype-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A eventtype resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EventType with additional properties, including tags for better organization.
+Create a eventtype with additional configuration:
 
 ```ts
-const advancedEventType = await AWS.FraudDetector.EventType("advancedEventType", {
-  Name: "Transaction",
-  Description: "Event type for transactions",
-  EntityTypes: [
-    { Name: "Account" },
-    { Name: "Transaction" }
-  ],
-  Labels: [
-    { Name: "Payment" },
-    { Name: "Purchase" }
-  ],
-  EventVariables: [
-    { Name: "TransactionAmount" },
-    { Name: "PaymentMethod" },
-    { Name: "UserLocation" }
-  ],
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "FraudDetection" }
-  ]
+import AWS from "alchemy/aws/control";
+
+const advancedEventType = await AWS.FraudDetector.EventType("advanced-eventtype", {
+  EntityTypes: [],
+  Labels: [],
+  EventVariables: [],
+  Name: "eventtype-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A eventtype resource managed by Alchemy",
 });
 ```
 
-## Custom Event Variables
-
-Define an EventType with specific event variables tailored for a fraud detection scenario.
-
-```ts
-const fraudDetectionEventType = await AWS.FraudDetector.EventType("fraudDetectionEventType", {
-  Name: "SuspiciousLogin",
-  EntityTypes: [
-    { Name: "User" }
-  ],
-  Labels: [
-    { Name: "Suspicious" }
-  ],
-  EventVariables: [
-    { Name: "LoginTime" },
-    { Name: "UserAgent" },
-    { Name: "FailedLoginAttempts" }
-  ]
-});
-```
-
-## Using Tags for Organization
-
-Create an EventType with tags that help categorize your event types for better management.
-
-```ts
-const taggedEventType = await AWS.FraudDetector.EventType("taggedEventType", {
-  Name: "AccountUpdate",
-  EntityTypes: [
-    { Name: "User" }
-  ],
-  Labels: [
-    { Name: "AccountChange" }
-  ],
-  EventVariables: [
-    { Name: "UpdateTime" },
-    { Name: "UpdatedField" }
-  ],
-  Tags: [
-    { Key: "Project", Value: "UserManagement" },
-    { Key: "Priority", Value: "High" }
-  ]
-});
-```

@@ -5,64 +5,66 @@ description: Learn how to create, update, and manage AWS Scheduler ScheduleGroup
 
 # ScheduleGroup
 
-The ScheduleGroup resource lets you manage [AWS Scheduler ScheduleGroups](https://docs.aws.amazon.com/scheduler/latest/userguide/) for organizing and controlling scheduled tasks.
+The ScheduleGroup resource allows you to manage [AWS Scheduler ScheduleGroups](https://docs.aws.amazon.com/scheduler/latest/userguide/) to organize and manage your scheduled tasks.
 
 ## Minimal Example
 
-Create a basic ScheduleGroup with a name and tags.
+Create a basic schedule group with a name and tags:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicScheduleGroup = await AWS.Scheduler.ScheduleGroup("basicScheduleGroup", {
-  name: "MyFirstScheduleGroup",
-  tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "SchedulerDemo" }
+const BasicScheduleGroup = await AWS.Scheduler.ScheduleGroup("BasicScheduleGroup", {
+  Name: "DailyTasks",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ScheduleGroup with additional properties like adopting existing resources.
+Configure a schedule group to adopt an existing resource if it already exists:
 
 ```ts
-const advancedScheduleGroup = await AWS.Scheduler.ScheduleGroup("advancedScheduleGroup", {
-  name: "MyAdvancedScheduleGroup",
-  tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "SchedulerDemo" }
+const AdvancedScheduleGroup = await AWS.Scheduler.ScheduleGroup("AdvancedScheduleGroup", {
+  Name: "WeeklyTasks",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
   ],
-  adopt: true // This will adopt an existing resource if it already exists
+  adopt: true
 });
 ```
 
-## Using ScheduleGroup with Multiple Tags
+## Custom Naming and Tagging
 
-Create a ScheduleGroup that utilizes multiple tags for better organization.
+Create a schedule group with a unique name and multiple tags:
 
 ```ts
-const taggedScheduleGroup = await AWS.Scheduler.ScheduleGroup("taggedScheduleGroup", {
-  name: "MyTaggedScheduleGroup",
-  tags: [
-    { Key: "Department", Value: "Engineering" },
-    { Key: "Owner", Value: "Alice" },
-    { Key: "Status", Value: "Active" }
+const CustomNamedScheduleGroup = await AWS.Scheduler.ScheduleGroup("CustomNamedScheduleGroup", {
+  Name: "MonthlyCleanup",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Operations" },
+    { Key: "Project", Value: "CleanupTool" }
   ]
 });
 ```
 
-## Create a ScheduleGroup with Specific Names
+## Using the ARN after Creation
 
-Demonstrate creating multiple ScheduleGroups with distinct names for different environments.
+Example of accessing the ARN of a schedule group after it has been created:
 
 ```ts
-const devScheduleGroup = await AWS.Scheduler.ScheduleGroup("devScheduleGroup", {
-  name: "DevelopmentSchedulerGroup"
+const ScheduleGroupWithARN = await AWS.Scheduler.ScheduleGroup("ScheduleGroupWithARN", {
+  Name: "YearlyReview",
+  Tags: [
+    { Key: "Environment", Value: "production" }
+  ]
 });
 
-const prodScheduleGroup = await AWS.Scheduler.ScheduleGroup("prodScheduleGroup", {
-  name: "ProductionSchedulerGroup"
-});
+// Accessing the ARN of the created schedule group
+console.log(`Schedule Group ARN: ${ScheduleGroupWithARN.Arn}`);
 ```

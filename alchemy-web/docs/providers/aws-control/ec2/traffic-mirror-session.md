@@ -5,68 +5,48 @@ description: Learn how to create, update, and manage AWS EC2 TrafficMirrorSessio
 
 # TrafficMirrorSession
 
-The TrafficMirrorSession resource allows you to create, update, and manage Traffic Mirror sessions in Amazon EC2. Traffic Mirror sessions enable you to duplicate and inspect network traffic in real-time, facilitating monitoring and security analysis. For more details, refer to the [AWS EC2 TrafficMirrorSessions documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The TrafficMirrorSession resource lets you create and manage [AWS EC2 TrafficMirrorSessions](https://docs.aws.amazon.com/ec2/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-trafficmirrorsession.html
 
 ## Minimal Example
-
-Create a basic TrafficMirrorSession with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicTrafficMirrorSession = await AWS.EC2.TrafficMirrorSession("basicTrafficMirrorSession", {
-  TrafficMirrorTargetId: "target-12345678",
+const trafficmirrorsession = await AWS.EC2.TrafficMirrorSession("trafficmirrorsession-example", {
+  TrafficMirrorTargetId: "example-trafficmirrortargetid",
   SessionNumber: 1,
-  NetworkInterfaceId: "eni-abcdefgh",
-  TrafficMirrorFilterId: "filter-12345678",
-  Description: "Basic Traffic Mirror Session for monitoring"
+  NetworkInterfaceId: "example-networkinterfaceid",
+  TrafficMirrorFilterId: "example-trafficmirrorfilterid",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A trafficmirrorsession resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TrafficMirrorSession with additional optional properties for enhanced functionality.
+Create a trafficmirrorsession with additional configuration:
 
 ```ts
-const advancedTrafficMirrorSession = await AWS.EC2.TrafficMirrorSession("advancedTrafficMirrorSession", {
-  TrafficMirrorTargetId: "target-87654321",
-  SessionNumber: 2,
-  NetworkInterfaceId: "eni-hgfedcba",
-  TrafficMirrorFilterId: "filter-87654321",
-  Description: "Advanced Traffic Mirror Session with custom settings",
-  PacketLength: 128, // Set packet length to 128 bytes
-  VirtualNetworkId: 100 // Specify a virtual network ID
-});
+import AWS from "alchemy/aws/control";
+
+const advancedTrafficMirrorSession = await AWS.EC2.TrafficMirrorSession(
+  "advanced-trafficmirrorsession",
+  {
+    TrafficMirrorTargetId: "example-trafficmirrortargetid",
+    SessionNumber: 1,
+    NetworkInterfaceId: "example-networkinterfaceid",
+    TrafficMirrorFilterId: "example-trafficmirrorfilterid",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+    Description: "A trafficmirrorsession resource managed by Alchemy",
+  }
+);
 ```
 
-## Session with Tags
-
-Create a TrafficMirrorSession that includes tags for better resource management.
-
-```ts
-const taggedTrafficMirrorSession = await AWS.EC2.TrafficMirrorSession("taggedTrafficMirrorSession", {
-  TrafficMirrorTargetId: "target-34567890",
-  SessionNumber: 3,
-  NetworkInterfaceId: "eni-ijklmnop",
-  TrafficMirrorFilterId: "filter-34567890",
-  Description: "Traffic Mirror Session with tags",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Owner", Value: "TeamA" }
-  ]
-});
-```
-
-## Adopting Existing Resources
-
-Create a TrafficMirrorSession that adopts an existing resource instead of failing.
-
-```ts
-const adoptTrafficMirrorSession = await AWS.EC2.TrafficMirrorSession("adoptTrafficMirrorSession", {
-  TrafficMirrorTargetId: "target-12345678",
-  SessionNumber: 4,
-  NetworkInterfaceId: "eni-stuvwxyz",
-  TrafficMirrorFilterId: "filter-12345678",
-  adopt: true // Adopt existing resource if it exists
-});
-```

@@ -5,61 +5,59 @@ description: Learn how to create, update, and manage AWS CloudFormation Macros u
 
 # Macro
 
-The Macro resource lets you create and manage [AWS CloudFormation Macros](https://docs.aws.amazon.com/cloudformation/latest/userguide/) that enable you to perform custom processing on CloudFormation templates. Macros can be used to transform templates before they are processed into stacks.
+The Macro resource lets you define [AWS CloudFormation Macros](https://docs.aws.amazon.com/cloudformation/latest/userguide/) to perform custom processing on CloudFormation templates. Macros enable you to extend CloudFormation's functionality by transforming the template content before it is processed.
 
 ## Minimal Example
 
-Create a basic macro with a function name and a log group name.
+Create a basic CloudFormation Macro with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const cloudFormationMacro = await AWS.CloudFormation.Macro("MyMacro", {
-  Name: "MyCustomMacro",
-  FunctionName: "arn:aws:lambda:us-west-2:123456789012:function:MyLambdaFunction",
-  LogGroupName: "/aws/lambda/MyCustomMacroLogs",
-  Description: "This macro performs custom transformations on CloudFormation templates."
+const BasicMacro = await AWS.CloudFormation.Macro("BasicMacroId", {
+  Name: "MySampleMacro",
+  FunctionName: "MyLambdaFunction",
+  Description: "This macro processes CloudFormation templates to add custom resources."
 });
 ```
 
 ## Advanced Configuration
 
-Configure a macro with additional logging role ARN and adoption property.
+Configure a Macro with logging enabled to monitor its execution:
 
 ```ts
-const advancedCloudFormationMacro = await AWS.CloudFormation.Macro("AdvancedMacro", {
-  Name: "AdvancedCustomMacro",
-  FunctionName: "arn:aws:lambda:us-west-2:123456789012:function:AdvancedLambdaFunction",
-  LogGroupName: "/aws/lambda/AdvancedCustomMacroLogs",
-  LogRoleARN: "arn:aws:iam::123456789012:role/MyLoggingRole",
-  Description: "An advanced macro with specific logging configurations.",
-  adopt: true // Allow adoption of existing resources
+const AdvancedMacro = await AWS.CloudFormation.Macro("AdvancedMacroId", {
+  Name: "AdvancedSampleMacro",
+  FunctionName: "MyAdvancedLambdaFunction",
+  Description: "This macro enhances templates with additional resources and features.",
+  LogGroupName: "/aws/cloudformation/macros",
+  LogRoleARN: "arn:aws:iam::123456789012:role/MyMacroLoggingRole"
 });
 ```
 
-## Using with Existing Resources
+## Adoption of Existing Resources
 
-Create a macro that adopts existing resources without failing if they already exist.
+Create a Macro that adopts an existing resource if it already exists:
 
 ```ts
-const adoptiveCloudFormationMacro = await AWS.CloudFormation.Macro("AdoptiveMacro", {
-  Name: "AdoptiveCustomMacro",
-  FunctionName: "arn:aws:lambda:us-west-2:123456789012:function:AdoptiveLambdaFunction",
-  Description: "This macro adopts existing resources.",
-  adopt: true
+const AdoptedMacro = await AWS.CloudFormation.Macro("AdoptedMacroId", {
+  Name: "AdoptedMacro",
+  FunctionName: "MyAdoptedFunction",
+  adopt: true, // This will adopt the existing Macro resource if it exists
+  Description: "This macro will adopt any pre-existing resources."
 });
 ```
 
-## Detailed Logging Configuration
+## Custom Logging Configuration
 
-Set up a macro with detailed logging configurations for better visibility.
+Set up a Macro with a specific logging configuration to capture detailed logs:
 
 ```ts
-const detailedLoggingMacro = await AWS.CloudFormation.Macro("LoggingMacro", {
-  Name: "DetailedLoggingCustomMacro",
-  FunctionName: "arn:aws:lambda:us-west-2:123456789012:function:LoggingLambdaFunction",
-  LogGroupName: "/aws/lambda/DetailedLoggingMacroLogs",
-  LogRoleARN: "arn:aws:iam::123456789012:role/LoggingRole",
-  Description: "This macro provides detailed logging for transformations."
+const LoggingMacro = await AWS.CloudFormation.Macro("LoggingMacroId", {
+  Name: "LoggingMacro",
+  FunctionName: "MyLoggingLambdaFunction",
+  Description: "This macro logs all transformations for audit purposes.",
+  LogGroupName: "/aws/cloudformation/custom-macro-logs",
+  LogRoleARN: "arn:aws:iam::123456789012:role/LoggingRole"
 });
 ```

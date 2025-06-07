@@ -5,44 +5,61 @@ description: Learn how to create, update, and manage AWS FraudDetector Outcomes 
 
 # Outcome
 
-The Outcome resource lets you manage [AWS FraudDetector Outcomes](https://docs.aws.amazon.com/frauddetector/latest/userguide/) that define the results of fraud detection predictions. These outcomes can be used to take actions based on the predictions made by the FraudDetector.
+The Outcome resource lets you manage [AWS FraudDetector Outcomes](https://docs.aws.amazon.com/frauddetector/latest/userguide/) which are used to define the result of a fraud detection model, such as whether a transaction is considered fraudulent or legitimate.
 
 ## Minimal Example
 
-Create a basic Outcome with a name and description.
+Create a basic Outcome resource with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const fraudOutcome = await AWS.FraudDetector.Outcome("fraudOutcome", {
+const fraudOutcome = await AWS.FraudDetector.Outcome("FraudOutcome", {
   Name: "HighRiskTransaction",
-  Description: "Outcome for transactions deemed high risk."
+  Description: "Outcome for high risk transactions",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "FraudDetection" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an Outcome with additional tags for better resource categorization.
+Define an Outcome with additional details such as tags for improved resource management.
 
 ```ts
-const taggedOutcome = await AWS.FraudDetector.Outcome("taggedOutcome", {
-  Name: "LowRiskTransaction",
-  Description: "Outcome for transactions deemed low risk.",
+const advancedOutcome = await AWS.FraudDetector.Outcome("AdvancedFraudOutcome", {
+  Name: "ModerateRiskTransaction",
+  Description: "Outcome for moderate risk transactions",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Application", Value: "FraudDetection" }
-  ]
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "FraudDetection" }
+  ],
+  adopt: true // Adopts existing resource if it already exists
 });
 ```
 
-## Adoption of Existing Resource
+## Custom Behavior for Multiple Outcomes
 
-Create an Outcome that adopts an existing resource instead of failing if it already exists.
+Create multiple Outcomes to handle different fraud detection scenarios effectively.
 
 ```ts
-const existingOutcome = await AWS.FraudDetector.Outcome("existingOutcome", {
-  Name: "ExistingTransactionOutcome",
-  Description: "Outcome for transactions that already exist.",
-  adopt: true
+const lowRiskOutcome = await AWS.FraudDetector.Outcome("LowRiskOutcome", {
+  Name: "LowRiskTransaction",
+  Description: "Outcome for low risk transactions",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "FraudDetection" }
+  ]
+});
+
+const highRiskOutcome = await AWS.FraudDetector.Outcome("HighRiskOutcome", {
+  Name: "HighRiskTransaction",
+  Description: "Outcome for high risk transactions",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "FraudDetection" }
+  ]
 });
 ```

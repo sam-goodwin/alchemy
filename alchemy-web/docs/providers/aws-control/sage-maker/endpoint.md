@@ -5,72 +5,37 @@ description: Learn how to create, update, and manage AWS SageMaker Endpoints usi
 
 # Endpoint
 
-The Endpoint resource lets you manage [AWS SageMaker Endpoints](https://docs.aws.amazon.com/sagemaker/latest/userguide/) for deploying machine learning models. Endpoints provide a way to host your model for real-time inference, allowing applications to make predictions based on input data.
+The Endpoint resource lets you create and manage [AWS SageMaker Endpoints](https://docs.aws.amazon.com/sagemaker/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-sagemaker-endpoint.html
 
 ## Minimal Example
-
-Create a basic SageMaker Endpoint with required properties and some common optional configurations.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const sageMakerEndpoint = await AWS.SageMaker.Endpoint("mySageMakerEndpoint", {
-  EndpointConfigName: "myEndpointConfig",
-  RetainAllVariantProperties: true
+const endpoint = await AWS.SageMaker.Endpoint("endpoint-example", {
+  EndpointConfigName: "endpoint-endpointconfig",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SageMaker Endpoint with a deployment configuration and tags for better management.
+Create a endpoint with additional configuration:
 
 ```ts
-const advancedSageMakerEndpoint = await AWS.SageMaker.Endpoint("advancedSageMakerEndpoint", {
-  EndpointConfigName: "myAdvancedEndpointConfig",
-  DeploymentConfig: {
-    AutoRollbackConfiguration: {
-      Alarms: [
-        {
-          AlarmName: "EndpointErrorAlarm",
-          AlarmType: "ERROR"
-        }
-      ]
-    }
+import AWS from "alchemy/aws/control";
+
+const advancedEndpoint = await AWS.SageMaker.Endpoint("advanced-endpoint", {
+  EndpointConfigName: "endpoint-endpointconfig",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Project",
-      Value: "AIModelDeployment"
-    }
-  ]
 });
 ```
 
-## Excluding Variant Properties
-
-Create a SageMaker Endpoint while excluding specific variant properties from the deployment.
-
-```ts
-const variantExclusionEndpoint = await AWS.SageMaker.Endpoint("variantExclusionEndpoint", {
-  EndpointConfigName: "myVariantExclusionConfig",
-  ExcludeRetainedVariantProperties: [
-    { VariantName: "LowPriorityVariant" }
-  ],
-  RetainDeploymentConfig: false
-});
-```
-
-## Adoption of Existing Resource
-
-Adopt an existing SageMaker Endpoint if it already exists, preventing failure due to duplication.
-
-```ts
-const adoptExistingEndpoint = await AWS.SageMaker.Endpoint("adoptExistingEndpoint", {
-  EndpointConfigName: "myExistingEndpointConfig",
-  adopt: true
-});
-```

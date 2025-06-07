@@ -5,43 +5,40 @@ description: Learn how to create, update, and manage AWS IoTAnalytics Channels u
 
 # Channel
 
-The Channel resource lets you manage [AWS IoTAnalytics Channels](https://docs.aws.amazon.com/iotanalytics/latest/userguide/) for collecting and processing IoT data streams.
+The Channel resource allows you to manage [AWS IoTAnalytics Channels](https://docs.aws.amazon.com/iotanalytics/latest/userguide/) for collecting and storing IoT data.
 
 ## Minimal Example
 
-Create a basic IoTAnalytics Channel with required properties and a common optional property.
+Create a basic IoTAnalytics Channel with a name and retention period.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicChannel = await AWS.IoTAnalytics.Channel("basicChannel", {
-  ChannelName: "TemperatureDataChannel",
-  ChannelStorage: {
-    Type: "S3",
-    S3: {
-      Bucket: "iotanalytics-data-bucket",
-      KeyPrefix: "temperature-data/"
-    }
-  },
+const basicChannel = await AWS.IoTAnalytics.Channel("BasicIoTChannel", {
+  ChannelName: "MyIoTChannel",
   RetentionPeriod: {
     NumberOfDays: 30,
     Unlimited: false
-  }
+  },
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "IoT" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a channel with tags for better organization and management.
+Configure a channel with specific storage settings and retention policies.
 
 ```ts
-const taggedChannel = await AWS.IoTAnalytics.Channel("taggedChannel", {
-  ChannelName: "HumidityDataChannel",
+const advancedChannel = await AWS.IoTAnalytics.Channel("AdvancedIoTChannel", {
+  ChannelName: "AdvancedIoTChannel",
   ChannelStorage: {
-    Type: "S3",
-    S3: {
-      Bucket: "iotanalytics-data-bucket",
-      KeyPrefix: "humidity-data/"
+    CustomerManagedS3: {
+      Bucket: "my-iot-data-bucket",
+      KeyPrefix: "channels/advanced/",
+      RoleArn: "arn:aws:iam::123456789012:role/myIoTAnalyticsRole"
     }
   },
   RetentionPeriod: {
@@ -49,36 +46,35 @@ const taggedChannel = await AWS.IoTAnalytics.Channel("taggedChannel", {
     Unlimited: false
   },
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Project",
-      Value: "WeatherMonitoring"
-    }
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "DataScience" }
   ]
 });
 ```
 
-## Adoption of Existing Channel
+## Using Existing Resources
 
-This example demonstrates how to adopt an existing channel instead of failing when it already exists.
+If you want to adopt an existing channel instead of creating a new one, set the `adopt` property to true.
 
 ```ts
-const existingChannel = await AWS.IoTAnalytics.Channel("existingChannel", {
-  ChannelName: "PressureDataChannel",
-  ChannelStorage: {
-    Type: "S3",
-    S3: {
-      Bucket: "iotanalytics-data-bucket",
-      KeyPrefix: "pressure-data/"
-    }
-  },
+const adoptedChannel = await AWS.IoTAnalytics.Channel("AdoptedIoTChannel", {
+  ChannelName: "ExistingIoTChannel",
+  adopt: true
+});
+```
+
+## Custom Retention Period
+
+Create a channel with an unlimited retention period.
+
+```ts
+const unlimitedRetentionChannel = await AWS.IoTAnalytics.Channel("UnlimitedRetentionChannel", {
+  ChannelName: "MyUnlimitedRetentionChannel",
   RetentionPeriod: {
-    NumberOfDays: 90,
-    Unlimited: false
+    Unlimited: true
   },
-  adopt: true // Adopt the existing resource
+  Tags: [
+    { Key: "Environment", Value: "Development" }
+  ]
 });
 ```

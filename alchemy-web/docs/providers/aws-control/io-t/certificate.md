@@ -5,51 +5,43 @@ description: Learn how to create, update, and manage AWS IoT Certificates using 
 
 # Certificate
 
-The Certificate resource allows you to manage [AWS IoT Certificates](https://docs.aws.amazon.com/iot/latest/userguide/) used for secure communication with AWS IoT services.
+The Certificate resource allows you to manage [AWS IoT Certificates](https://docs.aws.amazon.com/iot/latest/userguide/) for securing communications between devices and the AWS IoT Core. 
 
 ## Minimal Example
 
-Create a basic IoT certificate with the required status property and an optional CA certificate PEM.
+Create a basic IoT certificate with required and common optional properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const iotCertificate = await AWS.IoT.Certificate("iotCertificate", {
+const BasicCertificate = await AWS.IoT.Certificate("BasicCertificate", {
   Status: "ACTIVE",
-  CACertificatePem: "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
+  CACertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...YourCACert...\n-----END CERTIFICATE-----",
+  CertificateMode: "SNI_ONLY"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IoT certificate with a certificate signing request and a specific certificate mode.
+Configure an IoT certificate with additional properties for enhanced feature usage.
 
 ```ts
-const advancedCertificate = await AWS.IoT.Certificate("advancedCertificate", {
+const AdvancedCertificate = await AWS.IoT.Certificate("AdvancedCertificate", {
   Status: "ACTIVE",
-  CertificateSigningRequest: "-----BEGIN CERTIFICATE REQUEST-----\n...\n-----END CERTIFICATE REQUEST-----",
-  CertificateMode: "SNI_ONLY"
+  CACertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...YourCACert...\n-----END CERTIFICATE-----",
+  CertificateMode: "SNI_ONLY",
+  CertificateSigningRequest: "-----BEGIN CERTIFICATE REQUEST-----\nMIIC...YourCSR...\n-----END CERTIFICATE REQUEST-----",
+  CertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...YourCert...\n-----END CERTIFICATE-----"
 });
 ```
 
-## Adopt Existing Certificate
+## Adoption of Existing Resource
 
-If you want to adopt an existing certificate instead of failing when it already exists, you can set the adopt property to true.
+Adopt an existing IoT certificate instead of failing when a resource already exists.
 
 ```ts
-const existingCertificate = await AWS.IoT.Certificate("existingCertificate", {
+const ExistingCertificate = await AWS.IoT.Certificate("ExistingCertificate", {
   Status: "ACTIVE",
   adopt: true
-});
-```
-
-## Update Certificate Status
-
-You can also update an existing certificate’s status by referencing its ARN.
-
-```ts
-const updateCertificate = await AWS.IoT.Certificate("updateCertificate", {
-  Status: "INACTIVE",
-  Arn: "arn:aws:iot:us-west-2:123456789012:cert/abcd1234-efgh-5678-ijkl-mnopqrstuv"
 });
 ```

@@ -5,85 +5,88 @@ description: Learn how to create, update, and manage AWS OpsWorks Apps using Alc
 
 # App
 
-The App resource allows you to manage [AWS OpsWorks Apps](https://docs.aws.amazon.com/opsworks/latest/userguide/) and their configuration settings within the AWS ecosystem.
+The App resource lets you manage [AWS OpsWorks Apps](https://docs.aws.amazon.com/opsworks/latest/userguide/) and their configurations within your OpsWorks stacks.
 
 ## Minimal Example
 
-Create a basic OpsWorks app with required properties and a common optional property.
+Create a basic OpsWorks app with required properties and a couple of optional ones:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const myApp = await AWS.OpsWorks.App("myFirstApp", {
-  Name: "MyFirstApp",
-  StackId: "arn:aws:opsworks:us-west-2:123456789012:stack/abcd1234-56ef-78gh-90ij-klmnopqrst",
-  Type: "web",
-  EnableSsl: true
+const basicApp = await AWS.OpsWorks.App("MyBasicApp", {
+  Name: "MyWebApp",
+  StackId: "arn:aws:opsworks:us-east-1:123456789012:stack/abc123",
+  Type: "rails",
+  EnableSsl: true,
+  Domains: ["mywebapp.example.com"]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an OpsWorks app with a custom source and environment variables for more complex applications.
+Configure an OpsWorks app with additional settings including environment variables and data sources:
 
 ```ts
-const advancedApp = await AWS.OpsWorks.App("advancedApp", {
-  Name: "AdvancedApp",
-  StackId: "arn:aws:opsworks:us-west-2:123456789012:stack/abcd1234-56ef-78gh-90ij-klmnopqrst",
-  Type: "web",
+const advancedApp = await AWS.OpsWorks.App("MyAdvancedApp", {
+  Name: "MyAdvancedWebApp",
+  StackId: "arn:aws:opsworks:us-east-1:123456789012:stack/abc123",
+  Type: "php",
   AppSource: {
     Type: "git",
-    Url: "https://github.com/myrepo/myapp.git",
-    SshKey: "my-ssh-key"
+    Url: "https://github.com/my-org/my-web-app.git",
+    SshKey: "my-ssh-key",
+    Revision: "main"
   },
   Environment: [
-    { Name: "DATABASE_URL", Value: "mysql://user:pass@hostname:3306/dbname" },
-    { Name: "NODE_ENV", Value: "production" }
+    {
+      Key: "APP_ENV",
+      Value: "production"
+    },
+    {
+      Key: "DATABASE_URL",
+      Value: "mysql://user:password@db.example.com:3306/mydatabase"
+    }
   ],
-  Attributes: {
-    "DeployHook": "https://hooks.example.com/deploy"
-  }
+  DataSources: [
+    {
+      Type: "database",
+      Arn: "arn:aws:rds:us-east-1:123456789012:db:mysql-db"
+    }
+  ]
 });
 ```
 
 ## SSL Configuration
 
-Create an OpsWorks app with SSL configuration for secure connections.
+Set up an OpsWorks app with SSL configuration to secure communications:
 
 ```ts
-const sslApp = await AWS.OpsWorks.App("sslApp", {
-  Name: "SslApp",
-  StackId: "arn:aws:opsworks:us-west-2:123456789012:stack/abcd1234-56ef-78gh-90ij-klmnopqrst",
-  Type: "web",
+const sslApp = await AWS.OpsWorks.App("MySslApp", {
+  Name: "MySecureWebApp",
+  StackId: "arn:aws:opsworks:us-east-1:123456789012:stack/abc123",
+  Type: "rails",
   EnableSsl: true,
   SslConfiguration: {
-    Certificate: "-----BEGIN CERTIFICATE-----\n...certificate...\n-----END CERTIFICATE-----",
-    PrivateKey: "-----BEGIN PRIVATE KEY-----\n...private_key...\n-----END PRIVATE KEY-----",
-    Chain: "-----BEGIN CERTIFICATE-----\n...chain...\n-----END CERTIFICATE-----"
+    Certificate: "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+    PrivateKey: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
+    Chain: "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
   }
 });
 ```
 
-## Multiple Data Sources
+## Multiple Domains
 
-Create an OpsWorks app that utilizes multiple data sources for enhanced functionality.
+Create an OpsWorks app that can handle multiple domains:
 
 ```ts
-const multiDataSourceApp = await AWS.OpsWorks.App("multiDataSourceApp", {
-  Name: "MultiDataSourceApp",
-  StackId: "arn:aws:opsworks:us-west-2:123456789012:stack/abcd1234-56ef-78gh-90ij-klmnopqrst",
-  Type: "web",
-  DataSources: [
-    {
-      Type: "database",
-      Arn: "arn:aws:rds:us-west-2:123456789012:db:mydatabase",
-      DatabaseName: "mydatabase"
-    },
-    {
-      Type: "filesystem",
-      Arn: "arn:aws:elasticfilesystem:us-west-2:123456789012:file-system/fs-12345678",
-      MountPoint: "/mnt/myfs"
-    }
+const multiDomainApp = await AWS.OpsWorks.App("MyMultiDomainApp", {
+  Name: "MyMultiDomainWebApp",
+  StackId: "arn:aws:opsworks:us-east-1:123456789012:stack/abc123",
+  Type: "nodejs",
+  Domains: [
+    "mywebapp.example.com",
+    "www.mywebapp.example.com"
   ]
 });
 ```

@@ -5,84 +5,41 @@ description: Learn how to create, update, and manage AWS QuickSight Dashboards u
 
 # Dashboard
 
-The Dashboard resource lets you manage [AWS QuickSight Dashboards](https://docs.aws.amazon.com/quicksight/latest/userguide/) for data visualization and reporting.
+The Dashboard resource lets you create and manage [AWS QuickSight Dashboards](https://docs.aws.amazon.com/quicksight/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-quicksight-dashboard.html
 
 ## Minimal Example
-
-Create a basic QuickSight dashboard with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const quickSightDashboard = await AWS.QuickSight.Dashboard("simpleDashboard", {
-  DashboardId: "salesDashboard",
-  Name: "Sales Dashboard",
-  AwsAccountId: "123456789012",
-  SourceEntity: {
-    SourceAnalysis: {
-      Arn: "arn:aws:quicksight:us-east-1:123456789012:analysis/salesAnalysis",
-      DatasetArn: "arn:aws:quicksight:us-east-1:123456789012:dataset/salesData"
-    }
-  },
-  VersionDescription: "Initial version"
+const dashboard = await AWS.QuickSight.Dashboard("dashboard-example", {
+  DashboardId: "example-dashboardid",
+  Name: "dashboard-",
+  AwsAccountId: "example-awsaccountid",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a dashboard with additional properties such as theme and permissions for enhanced customization.
+Create a dashboard with additional configuration:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const advancedDashboard = await AWS.QuickSight.Dashboard("advancedDashboard", {
-  DashboardId: "advancedSalesDashboard",
-  Name: "Advanced Sales Dashboard",
-  AwsAccountId: "123456789012",
-  SourceEntity: {
-    SourceAnalysis: {
-      Arn: "arn:aws:quicksight:us-east-1:123456789012:analysis/advancedSalesAnalysis",
-      DatasetArn: "arn:aws:quicksight:us-east-1:123456789012:dataset/advancedSalesData"
-    }
+const advancedDashboard = await AWS.QuickSight.Dashboard("advanced-dashboard", {
+  DashboardId: "example-dashboardid",
+  Name: "dashboard-",
+  AwsAccountId: "example-awsaccountid",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  ThemeArn: "arn:aws:quicksight:us-east-1:123456789012:theme/defaultTheme",
-  Permissions: [{
-    Principal: "arn:aws:quicksight:us-east-1:123456789012:user/default/quickUser",
-    Actions: ["quicksight:DescribeDashboard", "quicksight:UpdateDashboard"]
-  }],
-  Tags: [{
-    Key: "Environment",
-    Value: "Production"
-  }],
-  VersionDescription: "Version 1 with advanced settings"
 });
 ```
 
-## Sharing Configuration
-
-Implement dashboard sharing options that allow link sharing and set permissions for users.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const sharingConfiguredDashboard = await AWS.QuickSight.Dashboard("sharingDashboard", {
-  DashboardId: "sharingSalesDashboard",
-  Name: "Sharing Sales Dashboard",
-  AwsAccountId: "123456789012",
-  SourceEntity: {
-    SourceAnalysis: {
-      Arn: "arn:aws:quicksight:us-east-1:123456789012:analysis/sharingSalesAnalysis",
-      DatasetArn: "arn:aws:quicksight:us-east-1:123456789012:dataset/sharingSalesData"
-    }
-  },
-  LinkSharingConfiguration: {
-    EnableLinkSharing: true,
-    LinkSharingMode: "VIEW"
-  },
-  Permissions: [{
-    Principal: "arn:aws:quicksight:us-east-1:123456789012:user/default/quickUser",
-    Actions: ["quicksight:DescribeDashboard", "quicksight:ShareDashboard"]
-  }],
-  VersionDescription: "Dashboard with sharing options"
-});
-```

@@ -5,42 +5,18 @@ description: Learn how to create, update, and manage AWS EC2 VPCDHCPOptionsAssoc
 
 # VPCDHCPOptionsAssociation
 
-The VPCDHCPOptionsAssociation resource allows you to associate DHCP options with your Amazon Virtual Private Cloud (VPC). For more details, refer to the [AWS EC2 VPCDHCPOptionsAssociations documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The VPCDHCPOptionsAssociation resource lets you create and manage [AWS EC2 VPCDHCPOptionsAssociations](https://docs.aws.amazon.com/ec2/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-vpcdhcpoptionsassociation.html
 
 ## Minimal Example
-
-This example demonstrates how to create a basic VPCDHCPOptionsAssociation with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dhcpOptionsAssociation = await AWS.EC2.VPCDHCPOptionsAssociation("defaultDhcpOptionsAssociation", {
-  VpcId: "vpc-0abcd1234efgh5678",
-  DhcpOptionsId: "dopt-0abcd1234efgh5678",
-  adopt: false // Default is false; this will fail if the resource already exists
-});
+const vpcdhcpoptionsassociation = await AWS.EC2.VPCDHCPOptionsAssociation(
+  "vpcdhcpoptionsassociation-example",
+  { VpcId: "example-vpcid", DhcpOptionsId: "example-dhcpoptionsid" }
+);
 ```
 
-## Advanced Configuration
-
-This example shows how to create a VPCDHCPOptionsAssociation while adopting an existing resource.
-
-```ts
-const existingDhcpOptionsAssociation = await AWS.EC2.VPCDHCPOptionsAssociation("existingDhcpOptionsAssociation", {
-  VpcId: "vpc-0abcd1234efgh5678",
-  DhcpOptionsId: "dopt-0abcd1234efgh5678",
-  adopt: true // Set to true to adopt if the resource already exists
-});
-```
-
-## Use Case: Updating DHCP Options
-
-In this example, you can see how to update the DHCP options associated with a VPC by creating a new association.
-
-```ts
-const updatedDhcpOptionsAssociation = await AWS.EC2.VPCDHCPOptionsAssociation("updatedDhcpOptionsAssociation", {
-  VpcId: "vpc-0abcd1234efgh5678",
-  DhcpOptionsId: "dopt-0ijkl9012mnop3456",
-  adopt: false // This will create a new association
-});
-```

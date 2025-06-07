@@ -5,71 +5,75 @@ description: Learn how to create, update, and manage AWS SES ContactLists using 
 
 # ContactList
 
-The ContactList resource allows you to manage [AWS SES ContactLists](https://docs.aws.amazon.com/ses/latest/userguide/) for organizing email contacts into lists for your email campaigns.
+The ContactList resource allows you to manage [AWS SES ContactLists](https://docs.aws.amazon.com/ses/latest/userguide/) for organizing and managing email contacts efficiently.
 
 ## Minimal Example
 
-Create a basic contact list with a name and description.
+This example demonstrates how to create a basic contact list with a name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const contactList = await AWS.SES.ContactList("myContactList", {
-  ContactListName: "Marketing Contacts",
-  Description: "A list of contacts for the marketing team."
+const basicContactList = await AWS.SES.ContactList("BasicContactList", {
+  ContactListName: "CustomerContacts",
+  Description: "A list of all customer email addresses",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Marketing" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Add topics and tags to your contact list for better categorization and management.
+Here’s how to create a contact list with topics for managing subscriptions.
 
 ```ts
-const advancedContactList = await AWS.SES.ContactList("advancedContactList", {
-  ContactListName: "Sales Contacts",
-  Description: "A list of contacts for the sales team.",
+const advancedContactList = await AWS.SES.ContactList("AdvancedContactList", {
+  ContactListName: "ProductUpdates",
+  Description: "A list for users interested in product updates",
   Topics: [
     {
-      TopicName: "Product Updates",
+      TopicName: "ProductNews",
+      DisplayName: "Product News",
       DefaultSubscriptionStatus: "OPT_IN"
     },
     {
       TopicName: "Promotions",
+      DisplayName: "Promotions",
       DefaultSubscriptionStatus: "OPT_IN"
     }
   ],
   Tags: [
-    {
-      Key: "Department",
-      Value: "Sales"
-    },
-    {
-      Key: "Region",
-      Value: "North America"
-    }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Sales" }
   ]
 });
 ```
 
-## Managing Existing Resources
+## Adding Existing Resources
 
-Adopt an existing contact list instead of failing if it already exists.
+If you want to adopt an existing contact list instead of creating a new one, you can specify the adopt property.
 
 ```ts
-const adoptedContactList = await AWS.SES.ContactList("existingContactList", {
-  ContactListName: "Customer Feedback",
-  Description: "A list of contacts providing feedback.",
+const adoptExistingContactList = await AWS.SES.ContactList("AdoptExistingContactList", {
+  ContactListName: "AdoptedCustomerContacts",
+  Description: "Adopting an existing contact list",
   adopt: true
 });
 ```
 
-## Updating a Contact List
+## Updating a ContactList
 
-Update the description of an existing contact list.
+You can also update an existing contact list by modifying its properties.
 
 ```ts
-const updatedContactList = await AWS.SES.ContactList("updateContactList", {
-  ContactListName: "Marketing Contacts",
-  Description: "Updated list of contacts for the marketing team."
+const updatedContactList = await AWS.SES.ContactList("UpdatedContactList", {
+  ContactListName: "CustomerContacts",
+  Description: "Updated description for customer contacts",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "CustomerSupport" }
+  ]
 });
 ```

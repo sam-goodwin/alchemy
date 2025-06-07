@@ -5,60 +5,67 @@ description: Learn how to create, update, and manage AWS ElastiCache ParameterGr
 
 # ParameterGroup
 
-The ParameterGroup resource allows you to manage [AWS ElastiCache ParameterGroups](https://docs.aws.amazon.com/elasticache/latest/userguide/) for configuring cache settings in your ElastiCache clusters.
+The ParameterGroup resource allows you to manage [AWS ElastiCache ParameterGroups](https://docs.aws.amazon.com/elasticache/latest/userguide/) and configure various parameters for cache engines like Redis or Memcached.
 
 ## Minimal Example
 
-Create a basic ElastiCache ParameterGroup with essential properties:
+Create a basic ElastiCache ParameterGroup with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicParameterGroup = await AWS.ElastiCache.ParameterGroup("basic-param-group", {
-  Description: "Basic parameter group for Redis",
-  CacheParameterGroupFamily: "redis6.x",
+const basicParameterGroup = await AWS.ElastiCache.ParameterGroup("BasicParameterGroup", {
+  Description: "Basic parameter group for Redis with default settings",
+  CacheParameterGroupFamily: "redis-6.x",
   Properties: {
-    maxmemory-policy: "volatile-lru",
-    timeout: "300"
-  }
+    maxmemory: "2GB",
+    notify: "all"
+  },
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ParameterGroup with additional settings for performance optimization:
+Configure a ParameterGroup with advanced settings to optimize Redis performance.
 
 ```ts
-const advancedParameterGroup = await AWS.ElastiCache.ParameterGroup("advanced-param-group", {
-  Description: "Advanced parameter group for Redis with optimized settings",
-  CacheParameterGroupFamily: "redis6.x",
+const advancedParameterGroup = await AWS.ElastiCache.ParameterGroup("AdvancedParameterGroup", {
+  Description: "Advanced parameter group for Redis with performance optimizations",
+  CacheParameterGroupFamily: "redis-6.x",
   Properties: {
-    maxmemory-policy: "allkeys-lru",
-    timeout: "200",
-    notify-keyspace-events: "KEA"
+    maxmemory: "4GB",
+    notify: "all",
+    keyspace: "on",
+    events: {
+      keyspace_notifications: "all"
+    }
   },
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Engineering" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Performance" }
   ]
 });
 ```
 
-## Using Tags for Organization
+## Using Custom Properties
 
-Create a ParameterGroup and organize it with tags for better management:
+Create a ParameterGroup with custom properties specific to your application's needs.
 
 ```ts
-const taggedParameterGroup = await AWS.ElastiCache.ParameterGroup("tagged-param-group", {
-  Description: "Parameter group with tags for better organization",
-  CacheParameterGroupFamily: "redis6.x",
+const customParameterGroup = await AWS.ElastiCache.ParameterGroup("CustomParameterGroup", {
+  Description: "Custom parameter group tailored for specific application needs",
+  CacheParameterGroupFamily: "memcached-1.6",
   Properties: {
-    maxmemory-policy: "volatile-lru",
-    maxclients: "1000"
+    maxmemory: "6GB",
+    notify: "some"
   },
   Tags: [
-    { Key: "Project", Value: "CacheOptimization" },
-    { Key: "Owner", Value: "DevTeam" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Backend" }
   ]
 });
 ```

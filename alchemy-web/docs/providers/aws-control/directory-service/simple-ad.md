@@ -5,90 +5,60 @@ description: Learn how to create, update, and manage AWS DirectoryService Simple
 
 # SimpleAD
 
-The SimpleAD resource lets you manage [AWS DirectoryService SimpleADs](https://docs.aws.amazon.com/directoryservice/latest/userguide/) for directory services in your AWS environment.
+The SimpleAD resource allows you to create and manage an [AWS DirectoryService SimpleAD](https://docs.aws.amazon.com/directoryservice/latest/userguide/) for your applications, providing basic Active Directory functionality without the need for a full Microsoft AD deployment.
 
 ## Minimal Example
 
-Create a basic SimpleAD directory with essential properties:
+This example demonstrates how to create a basic SimpleAD instance with required properties and a couple of optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const simpleAdDirectory = await AWS.DirectoryService.SimpleAD("mySimpleAD", {
-  Name: "MySimpleAD",
-  Size: "Small", // Options: Small, Medium, Large
+const simpleAD = await AWS.DirectoryService.SimpleAD("MySimpleAD", {
+  Name: "my-simple-ad",
+  Size: "Small",
   VpcSettings: {
     VpcId: "vpc-12345678",
-    SubnetIds: [
-      "subnet-12345678",
-      "subnet-87654321"
-    ]
+    SubnetIds: ["subnet-12345678", "subnet-87654321"]
   },
-  CreateAlias: true, // Optional: Create an alias for the directory
-  EnableSso: false // Optional: Disable Single Sign-On
+  Description: "A SimpleAD directory for testing purposes.",
+  CreateAlias: true,
+  EnableSso: false
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SimpleAD with additional options like a description and password:
+In this example, we configure a SimpleAD with additional advanced options like enabling SSO and specifying a short name.
 
 ```ts
-const advancedSimpleAd = await AWS.DirectoryService.SimpleAD("advancedSimpleAD", {
-  Name: "AdvancedSimpleAD",
-  Size: "Medium",
-  Description: "This is an advanced SimpleAD configuration.",
-  VpcSettings: {
-    VpcId: "vpc-87654321",
-    SubnetIds: [
-      "subnet-12345678",
-      "subnet-87654321"
-    ]
-  },
-  CreateAlias: true,
-  EnableSso: true,
-  Password: "StrongPassword123!" // Ensure it's compliant with AWS password policy
-});
-```
-
-## Custom Alias Configuration
-
-Create a SimpleAD with a custom alias and short name:
-
-```ts
-const aliasSimpleAd = await AWS.DirectoryService.SimpleAD("aliasSimpleAD", {
-  Name: "AliasSimpleAD",
-  Size: "Small",
-  Description: "SimpleAD with a custom alias.",
-  VpcSettings: {
-    VpcId: "vpc-12345678",
-    SubnetIds: [
-      "subnet-12345678",
-      "subnet-87654321"
-    ]
-  },
-  CreateAlias: true,
-  ShortName: "AliasAD" // Optional: Provide a short name for the directory
-});
-```
-
-## Directory with SSO Enabled
-
-Create a SimpleAD where Single Sign-On is enabled:
-
-```ts
-const ssoSimpleAd = await AWS.DirectoryService.SimpleAD("ssoSimpleAD", {
-  Name: "SSOSimpleAD",
+const advancedSimpleAD = await AWS.DirectoryService.SimpleAD("AdvancedSimpleAD", {
+  Name: "advanced-simple-ad",
   Size: "Large",
   VpcSettings: {
-    VpcId: "vpc-12345678",
-    SubnetIds: [
-      "subnet-12345678",
-      "subnet-87654321"
-    ]
+    VpcId: "vpc-87654321",
+    SubnetIds: ["subnet-abcdef01", "subnet-fedcba10"]
   },
-  EnableSso: true, // Enable Single Sign-On for this directory
+  Description: "An advanced SimpleAD directory with SSO enabled.",
   CreateAlias: true,
-  Description: "SimpleAD with SSO enabled."
+  EnableSso: true,
+  ShortName: "adv-simp-ad"
+});
+```
+
+## Adoption of Existing SimpleAD
+
+Here's how to adopt an existing SimpleAD directory without causing any failures if it already exists.
+
+```ts
+const adoptSimpleAD = await AWS.DirectoryService.SimpleAD("AdoptExistingSimpleAD", {
+  Name: "existing-simple-ad",
+  Size: "Medium",
+  VpcSettings: {
+    VpcId: "vpc-abcdef12",
+    SubnetIds: ["subnet-abc12345", "subnet-54321cba"]
+  },
+  Description: "Adopting an existing SimpleAD directory.",
+  adopt: true
 });
 ```

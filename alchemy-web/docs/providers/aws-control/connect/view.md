@@ -5,68 +5,45 @@ description: Learn how to create, update, and manage AWS Connect Views using Alc
 
 # View
 
-The View resource allows you to manage [AWS Connect Views](https://docs.aws.amazon.com/connect/latest/userguide/) which define how information is displayed in the AWS Connect interface.
+The View resource lets you create and manage [AWS Connect Views](https://docs.aws.amazon.com/connect/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-connect-view.html
 
 ## Minimal Example
-
-Create a basic AWS Connect View with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const connectView = await AWS.Connect.View("basicConnectView", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrstuv",
-  Name: "CustomerSupportView",
-  Actions: ["ViewCustomerDetails", "EscalateCall"],
-  Description: "A view for customer support agents."
+const view = await AWS.Connect.View("view-example", {
+  Actions: ["example-actions-1"],
+  InstanceArn: "example-instancearn",
+  Name: "view-",
+  Template: {},
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A view resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AWS Connect View with additional properties, including tags for better resource management.
+Create a view with additional configuration:
 
 ```ts
-const advancedConnectView = await AWS.Connect.View("advancedConnectView", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrstuv",
-  Name: "SalesDashboardView",
-  Actions: ["ViewSalesData", "CreateFollowUp"],
-  Template: {
-    templateType: "default",
-    settings: {
-      layout: "vertical",
-      colorScheme: "light"
-    }
+import AWS from "alchemy/aws/control";
+
+const advancedView = await AWS.Connect.View("advanced-view", {
+  Actions: ["example-actions-1"],
+  InstanceArn: "example-instancearn",
+  Name: "view-",
+  Template: {},
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Tags: [
-    { Key: "Department", Value: "Sales" },
-    { Key: "Team", Value: "SalesForce" }
-  ]
+  Description: "A view resource managed by Alchemy",
 });
 ```
 
-## Custom View Actions
-
-Create a view with specific actions tailored for a marketing team.
-
-```ts
-const marketingView = await AWS.Connect.View("marketingConnectView", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrstuv",
-  Name: "MarketingCampaignView",
-  Actions: ["ViewCampaignPerformance", "ManageLeads"],
-  Description: "A view designed for the marketing team to manage campaigns effectively."
-});
-```
-
-## Adopting Existing Resources
-
-If you are updating an existing view, use the adopt property to ensure the operation succeeds instead of failing.
-
-```ts
-const existingView = await AWS.Connect.View("existingConnectView", {
-  InstanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-5678-90ef-ghij-klmnopqrstuv",
-  Name: "SupportQueueView",
-  Actions: ["ViewSupportQueue"],
-  adopt: true // Adopt the existing resource if it already exists
-});
-```

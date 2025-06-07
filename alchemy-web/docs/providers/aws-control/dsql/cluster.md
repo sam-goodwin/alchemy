@@ -5,34 +5,34 @@ description: Learn how to create, update, and manage AWS DSQL Clusters using Alc
 
 # Cluster
 
-The Cluster resource allows you to manage [AWS DSQL Clusters](https://docs.aws.amazon.com/dsql/latest/userguide/) for your applications, providing features like high availability, scalability, and enhanced performance.
+The Cluster resource allows you to manage [AWS DSQL Clusters](https://docs.aws.amazon.com/dsql/latest/userguide/) for deploying, updating, and maintaining distributed SQL databases on AWS.
 
 ## Minimal Example
 
-Create a basic DSQL Cluster with deletion protection enabled.
+Create a basic DSQL Cluster with essential properties and enable deletion protection.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dsqlCluster = await AWS.DSQL.Cluster("myDsqlCluster", {
+const BasicCluster = await AWS.DSQL.Cluster("basic-cluster", {
   DeletionProtectionEnabled: true,
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyApp" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Database" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DSQL Cluster with specific tags and enable deletion protection.
+Configure a DSQL Cluster with additional settings, including custom tags and enhanced features.
 
 ```ts
-const advancedDsqlCluster = await AWS.DSQL.Cluster("advancedDsqlCluster", {
-  DeletionProtectionEnabled: true,
+const AdvancedCluster = await AWS.DSQL.Cluster("advanced-cluster", {
+  DeletionProtectionEnabled: false,
   Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Team", Value: "DevOps" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Project", Value: "DataWarehouse" }
   ],
   adopt: true // Adopt existing resource if it already exists
 });
@@ -40,30 +40,30 @@ const advancedDsqlCluster = await AWS.DSQL.Cluster("advancedDsqlCluster", {
 
 ## Monitoring and Maintenance
 
-Create a DSQL Cluster and configure it for monitoring and maintenance.
+Set up monitoring and maintenance configurations for a DSQL Cluster.
 
 ```ts
-const monitoringDsqlCluster = await AWS.DSQL.Cluster("monitoringDsqlCluster", {
-  DeletionProtectionEnabled: false,
+const MonitoringCluster = await AWS.DSQL.Cluster("monitoring-cluster", {
+  DeletionProtectionEnabled: true,
   Tags: [
-    { Key: "Environment", Value: "Testing" },
-    { Key: "Owner", Value: "QA Team" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataOps" }
   ],
-  adopt: false // Do not adopt existing resources
+  adopt: true // Use this to adopt an existing cluster
 });
 ```
 
-## Integration with Other AWS Services
+## Custom Tags and Metadata
 
-Create a DSQL Cluster that integrates with other AWS services.
+Add custom tags and metadata for better resource management.
 
 ```ts
-const integratedDsqlCluster = await AWS.DSQL.Cluster("integratedDsqlCluster", {
+const CustomTagCluster = await AWS.DSQL.Cluster("custom-tag-cluster", {
   DeletionProtectionEnabled: true,
   Tags: [
-    { Key: "Service", Value: "DataProcessing" },
-    { Key: "Owner", Value: "DataTeam" }
-  ],
-  adopt: true // Adopt existing resource if necessary
+    { Key: "Environment", Value: "testing" },
+    { Key: "Owner", Value: "John Doe" },
+    { Key: "Application", Value: "AnalyticsApp" }
+  ]
 });
 ```

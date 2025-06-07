@@ -5,88 +5,82 @@ description: Learn how to create, update, and manage AWS Glue Partitions using A
 
 # Partition
 
-The Partition resource allows you to manage [AWS Glue Partitions](https://docs.aws.amazon.com/glue/latest/userguide/) within your data catalog, enabling efficient data organization and retrieval.
+The Partition resource allows you to manage [AWS Glue Partitions](https://docs.aws.amazon.com/glue/latest/userguide/) and their configurations within a specified database and table.
 
 ## Minimal Example
 
-Create a basic Glue Partition using required properties along with an optional `adopt` property.
+Create a basic AWS Glue Partition with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const gluePartition = await AWS.Glue.Partition("myGluePartition", {
-  TableName: "sales_data",
-  DatabaseName: "ecommerce_db",
+const GluePartition = await AWS.Glue.Partition("MyPartition", {
+  TableName: "SalesData",
+  DatabaseName: "SalesDatabase",
   CatalogId: "123456789012",
   PartitionInput: {
     Values: ["2023", "Q1"],
     Parameters: {
-      "created_by": "data_team"
+      "source": "internal"
     }
   },
-  adopt: true // Optional: If true, adopts existing resource instead of failing if it already exists
+  adopt: true // Default is false, set to true to adopt an existing resource
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Glue Partition with additional parameters to optimize for specific data structure.
+Configuring a partition with additional parameters for better metadata management.
 
 ```ts
-const advancedGluePartition = await AWS.Glue.Partition("advancedGluePartition", {
-  TableName: "user_activity",
-  DatabaseName: "analytics_db",
+const AdvancedGluePartition = await AWS.Glue.Partition("AdvancedPartition", {
+  TableName: "SalesData",
+  DatabaseName: "SalesDatabase",
   CatalogId: "123456789012",
   PartitionInput: {
-    Values: ["2023", "April"],
+    Values: ["2023", "Q2"],
     Parameters: {
-      "source": "web",
-      "data_quality": "high"
+      "source": "external",
+      "owner": "data-team"
     }
   }
 });
 ```
 
-## Creating Multiple Partitions
+## Managing Multiple Partitions
 
-Demonstrate how to create multiple partitions for a single Glue Table.
+Demonstrate managing multiple partitions by creating several partitions at once.
 
 ```ts
-const createMultiplePartitions = async () => {
-  const partitions = ["2023", "March", "2023", "April", "2023", "May"];
-  
-  for (let i = 0; i < partitions.length; i += 2) {
-    await AWS.Glue.Partition(`partition-${partitions[i + 1]}`, {
-      TableName: "monthly_sales",
-      DatabaseName: "sales_db",
-      CatalogId: "123456789012",
-      PartitionInput: {
-        Values: [partitions[i], partitions[i + 1]],
-        Parameters: {
-          "created_by": "sales_team"
-        }
+const QuarterlyPartitions = ["Q1", "Q2", "Q3", "Q4"].map(quarter => 
+  AWS.Glue.Partition(`PartitionFor${quarter}`, {
+    TableName: "SalesData",
+    DatabaseName: "SalesDatabase",
+    CatalogId: "123456789012",
+    PartitionInput: {
+      Values: ["2023", quarter],
+      Parameters: {
+        "source": "quarterly-report"
       }
-    });
-  }
-};
-
-await createMultiplePartitions();
+    }
+  })
+);
 ```
 
-## Updating Existing Partitions
+## Updating an Existing Partition
 
-Show how to update an existing partition's parameters.
+Show how to update an existing partition with new values.
 
 ```ts
-const updateExistingPartition = await AWS.Glue.Partition("updatePartition", {
-  TableName: "inventory_data",
-  DatabaseName: "warehouse_db",
+const UpdateGluePartition = await AWS.Glue.Partition("UpdatePartition", {
+  TableName: "SalesData",
+  DatabaseName: "SalesDatabase",
   CatalogId: "123456789012",
   PartitionInput: {
-    Values: ["2023", "February"],
+    Values: ["2023", "Q1"],
     Parameters: {
-      "modified_by": "inventory_team",
-      "status": "archived"
+      "source": "internal",
+      "lastUpdated": "2023-04-01"
     }
   }
 });

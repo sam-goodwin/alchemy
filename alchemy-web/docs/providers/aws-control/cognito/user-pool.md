@@ -5,17 +5,32 @@ description: Learn how to create, update, and manage AWS Cognito UserPools using
 
 # UserPool
 
-The UserPool resource lets you manage [AWS Cognito UserPools](https://docs.aws.amazon.com/cognito/latest/userguide/) for user authentication and management in your applications.
+The UserPool resource lets you manage [AWS Cognito UserPools](https://docs.aws.amazon.com/cognito/latest/userguide/) for user authentication and management within your applications.
 
 ## Minimal Example
 
-Create a basic UserPool with required properties and some common optional settings.
+Create a basic UserPool with default settings and tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const userPool = await AWS.Cognito.UserPool("myUserPool", {
-  UserPoolName: "MyUserPool",
+const BasicUserPool = await AWS.Cognito.UserPool("BasicUserPool", {
+  UserPoolName: "BasicUserPool",
+  UserPoolTags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "UserManagement" }
+  ],
+  MfaConfiguration: "OFF"
+});
+```
+
+## Advanced Configuration
+
+Configure a UserPool with custom policies and email settings.
+
+```ts
+const AdvancedUserPool = await AWS.Cognito.UserPool("AdvancedUserPool", {
+  UserPoolName: "AdvancedUserPool",
   Policies: {
     PasswordPolicy: {
       MinimumLength: 8,
@@ -25,89 +40,52 @@ const userPool = await AWS.Cognito.UserPool("myUserPool", {
       RequireSymbols: true
     }
   },
-  UserPoolTags: {
-    Environment: "Development",
-    Purpose: "User Authentication"
-  }
-});
-```
-
-## Advanced Configuration
-
-Configure a UserPool with advanced settings, including multi-factor authentication (MFA) and email configurations.
-
-```ts
-const advancedUserPool = await AWS.Cognito.UserPool("advancedUserPool", {
-  UserPoolName: "AdvancedUserPool",
-  MfaConfiguration: "ON",
-  SmsConfiguration: {
-    SnsCallerArn: "arn:aws:iam::123456789012:role/SMSRole",
-    ExternalId: "MyExternalId"
-  },
   EmailConfiguration: {
     EmailSendingAccount: "DEVELOPER",
-    From: "no-reply@mydomain.com",
-    ReplyToEmailAddress: "support@mydomain.com",
-    SourceArn: "arn:aws:ses:us-west-2:123456789012:identity/mydomain.com"
+    From: "no-reply@myapp.com",
+    SourceArn: "arn:aws:ses:us-east-1:123456789012:identity/myapp.com"
   },
-  UserPoolTags: {
-    Environment: "Production"
+  SmsConfiguration: {
+    SnsCallerArn: "arn:aws:iam::123456789012:role/sns-caller-role",
+    ExternalId: "my-external-id"
   }
 });
 ```
 
-## Custom User Attributes
+## User Attributes Configuration
 
-Add custom user attributes to the UserPool schema.
+Create a UserPool with specific user attributes and verification settings.
 
 ```ts
-const customAttributeUserPool = await AWS.Cognito.UserPool("customAttrUserPool", {
-  UserPoolName: "CustomAttributeUserPool",
+const UserAttributesUserPool = await AWS.Cognito.UserPool("UserAttributesUserPool", {
+  UserPoolName: "UserAttributesUserPool",
   Schema: [
-    {
-      Name: "custom:favorite_color",
-      AttributeDataType: "String",
-      Mutable: true,
-      Required: false
-    },
-    {
-      Name: "custom:birthdate",
-      AttributeDataType: "String",
-      Mutable: true,
-      Required: false
-    }
+    { Name: "email", Required: true, Mutable: true },
+    { Name: "phone_number", Required: true, Mutable: false }
   ],
-  UserPoolTags: {
-    Purpose: "User Management"
+  VerificationMessageTemplate: {
+    EmailMessage: "Your verification code is {####}",
+    EmailSubject: "Verify your email address",
+    SmsMessage: "Your verification code is {####}"
   }
 });
 ```
 
-## User Sign-Up Configuration
+## Multi-Factor Authentication (MFA) Configuration
 
-Set up a UserPool with configurations for user sign-up and account recovery.
+Set up a UserPool with MFA enabled.
 
 ```ts
-const signUpConfigUserPool = await AWS.Cognito.UserPool("signUpConfigUserPool", {
-  UserPoolName: "SignUpConfigUserPool",
+const MfaUserPool = await AWS.Cognito.UserPool("MfaUserPool", {
+  UserPoolName: "MfaUserPool",
+  MfaConfiguration: "ON",
+  SmsConfiguration: {
+    SnsCallerArn: "arn:aws:iam::123456789012:role/sns-caller-role",
+    ExternalId: "my-external-id"
+  },
   AdminCreateUserConfig: {
-    AllowAdminCreateUserOnly: false,
+    AllowAdminCreateUserOnly: true,
     UnusedAccountValidityDays: 7
-  },
-  AccountRecoverySetting: {
-    RecoveryMechanisms: [
-      {
-        Name: "verified_email",
-        Priority: 1
-      },
-      {
-        Name: "verified_phone_number",
-        Priority: 2
-      }
-    ]
-  },
-  UserPoolTags: {
-    Purpose: "User Authentication"
   }
 });
 ```

@@ -5,76 +5,91 @@ description: Learn how to create, update, and manage AWS ApiGatewayV2 Apis using
 
 # Api
 
-The Api resource allows you to create and manage [AWS ApiGatewayV2 Apis](https://docs.aws.amazon.com/apigatewayv2/latest/userguide/) for building and deploying APIs with various configurations.
+The Api resource allows you to create and manage [AWS ApiGatewayV2 Apis](https://docs.aws.amazon.com/apigatewayv2/latest/userguide/) for building and deploying APIs. This resource is essential for enabling serverless applications to communicate over HTTP and WebSocket protocols.
 
 ## Minimal Example
 
-Create a basic Api with required properties and a common optional property.
+Create a basic Api with required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicApi = await AWS.ApiGatewayV2.Api("basicApi", {
-  Name: "MyBasicApi",
+const BasicApi = await AWS.ApiGatewayV2.Api("BasicApi", {
+  Name: "BasicApi",
   ProtocolType: "HTTP",
-  Description: "A simple HTTP API for demonstration purposes",
-  CorsConfiguration: {
-    AllowOrigins: ["*"],
-    AllowMethods: ["GET", "POST"],
-    AllowHeaders: ["Content-Type"]
-  }
+  Description: "This is a basic HTTP API for demonstration purposes.",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "API-Development" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an Api with advanced options including custom route selection expressions and additional settings.
+Configure an Api with additional settings such as CORS and Route Selection Expression.
 
 ```ts
-const advancedApi = await AWS.ApiGatewayV2.Api("advancedApi", {
-  Name: "MyAdvancedApi",
+const AdvancedApi = await AWS.ApiGatewayV2.Api("AdvancedApi", {
+  Name: "AdvancedApi",
   ProtocolType: "HTTP",
-  RouteSelectionExpression: "$request.method $request.path",
-  ApiKeySelectionExpression: "$request.header.x-api-key",
-  FailOnWarnings: true,
-  Tags: {
-    Project: "Demo",
-    Environment: "Development"
-  }
-});
-```
-
-## Custom CORS Configuration
-
-Set up an Api with a detailed CORS configuration for better control over cross-origin requests.
-
-```ts
-const corsApi = await AWS.ApiGatewayV2.Api("corsApi", {
-  Name: "MyCorsApi",
-  ProtocolType: "HTTP",
+  Description: "An advanced HTTP API with CORS enabled.",
   CorsConfiguration: {
     AllowOrigins: ["https://example.com"],
-    AllowMethods: ["GET", "OPTIONS"],
-    AllowHeaders: ["Content-Type", "Authorization"],
-    ExposeHeaders: ["X-Custom-Header"],
-    MaxAge: 600
-  }
+    AllowMethods: ["GET", "POST"],
+    AllowHeaders: ["Content-Type"],
+    MaxAge: 3600
+  },
+  RouteSelectionExpression: "${request.method} ${request.path}"
 });
 ```
 
-## API with Deployment Settings
+## Using S3 for API Definition
 
-Create an Api that includes specific deployment settings and an execution endpoint configuration.
+Define an Api using an S3 location for the API body.
 
 ```ts
-const deployedApi = await AWS.ApiGatewayV2.Api("deployedApi", {
-  Name: "MyDeployedApi",
+const S3Api = await AWS.ApiGatewayV2.Api("S3Api", {
+  Name: "S3Api",
   ProtocolType: "HTTP",
-  Description: "An API with deployment settings",
-  DisableExecuteApiEndpoint: false,
   BodyS3Location: {
-    Bucket: "my-api-bucket",
+    Bucket: "my-api-definitions",
     Key: "api-definition.yaml"
-  }
+  },
+  Description: "API definition stored in S3."
+});
+```
+
+## WebSocket API Example
+
+Create a WebSocket API for real-time communication.
+
+```ts
+const WebSocketApi = await AWS.ApiGatewayV2.Api("WebSocketApi", {
+  Name: "WebSocketApi",
+  ProtocolType: "WEBSOCKET",
+  Description: "WebSocket API for real-time applications.",
+  RouteSelectionExpression: "$request.body.action",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "RealTime-Dev" }
+  ]
+});
+```
+
+## Secure API with IAM Roles
+
+Create an API that uses IAM roles for authorization.
+
+```ts
+const SecureApi = await AWS.ApiGatewayV2.Api("SecureApi", {
+  Name: "SecureApi",
+  ProtocolType: "HTTP",
+  Description: "Secure API with IAM roles for access control.",
+  CredentialsArn: "arn:aws:iam::123456789012:role/myApiRole",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Security" }
+  ]
 });
 ```

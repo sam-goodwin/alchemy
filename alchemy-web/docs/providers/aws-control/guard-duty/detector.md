@@ -5,93 +5,37 @@ description: Learn how to create, update, and manage AWS GuardDuty Detectors usi
 
 # Detector
 
-The Detector resource allows you to manage [AWS GuardDuty Detectors](https://docs.aws.amazon.com/guardduty/latest/userguide/) for continuous security monitoring of your AWS accounts and workloads.
+The Detector resource lets you create and manage [AWS GuardDuty Detectors](https://docs.aws.amazon.com/guardduty/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-guardduty-detector.html
 
 ## Minimal Example
-
-Create a basic GuardDuty detector with the required properties and a common optional property for finding publishing frequency.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDetector = await AWS.GuardDuty.Detector("basicDetector", {
+const detector = await AWS.GuardDuty.Detector("detector-example", {
   Enable: true,
-  FindingPublishingFrequency: "FIFTEEN_MINUTES"
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a GuardDuty detector with additional options like data sources and features.
+Create a detector with additional configuration:
 
 ```ts
-const advancedDetector = await AWS.GuardDuty.Detector("advancedDetector", {
+import AWS from "alchemy/aws/control";
+
+const advancedDetector = await AWS.GuardDuty.Detector("advanced-detector", {
   Enable: true,
-  FindingPublishingFrequency: "ONE_HOUR",
-  DataSources: {
-    S3Logs: {
-      Enable: true
-    },
-    CloudTrail: {
-      Enable: true
-    }
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Features: [
-    {
-      Name: "S3_DATA_EVENTS",
-      Enable: true
-    }
-  ],
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Team",
-      Value: "Security"
-    }
-  ]
 });
 ```
 
-## Enabling All Data Sources
-
-Demonstrate how to enable all data sources for a comprehensive security posture.
-
-```ts
-const fullDataSourceDetector = await AWS.GuardDuty.Detector("fullDataSourceDetector", {
-  Enable: true,
-  DataSources: {
-    S3Logs: {
-      Enable: true
-    },
-    CloudTrail: {
-      Enable: true
-    },
-    VPCFlowLogs: {
-      Enable: true
-    },
-    DNSLogs: {
-      Enable: true
-    }
-  },
-  Tags: [
-    {
-      Key: "Project",
-      Value: "GuardDutyEnhancement"
-    }
-  ]
-});
-```
-
-## Adopting Existing Detectors
-
-If you want to adopt an existing GuardDuty detector instead of failing, set the adopt property to true.
-
-```ts
-const adoptExistingDetector = await AWS.GuardDuty.Detector("adoptExistingDetector", {
-  Enable: true,
-  adopt: true
-});
-```

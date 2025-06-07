@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS QuickSight VPCConnectio
 
 # VPCConnection
 
-The VPCConnection resource allows you to manage [AWS QuickSight VPCConnections](https://docs.aws.amazon.com/quicksight/latest/userguide/) for securely connecting QuickSight to your VPC resources.
+The VPCConnection resource allows you to create and manage [AWS QuickSight VPCConnections](https://docs.aws.amazon.com/quicksight/latest/userguide/) which enable QuickSight to securely access data sources in your Virtual Private Cloud (VPC).
 
 ## Minimal Example
 
@@ -14,59 +14,62 @@ Create a basic VPCConnection with required properties and a common optional prop
 ```ts
 import AWS from "alchemy/aws/control";
 
-const vpcConnection = await AWS.QuickSight.VPCConnection("myVpcConnection", {
+const basicVPCConnection = await AWS.QuickSight.VPCConnection("BasicVPCConnection", {
   AwsAccountId: "123456789012",
-  Name: "MyVPCConnection",
-  SubnetIds: ["subnet-0abcd1234efgh5678"],
-  SecurityGroupIds: ["sg-0abcd1234efgh5678"],
-  DnsResolvers: ["10.0.0.2"]
+  VPCConnectionId: "myVPCConnection",
+  SecurityGroupIds: ["sg-0123456789abcdef0"],
+  SubnetIds: ["subnet-0123456789abcdef0"],
+  RoleArn: "arn:aws:iam::123456789012:role/myQuickSightRole"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VPCConnection with additional properties for role ARN and tags.
+Configure a VPCConnection with additional properties like DNS resolvers and tags.
 
 ```ts
-const advancedVpcConnection = await AWS.QuickSight.VPCConnection("advancedVpcConnection", {
+const advancedVPCConnection = await AWS.QuickSight.VPCConnection("AdvancedVPCConnection", {
   AwsAccountId: "123456789012",
-  Name: "AdvancedVPCConnection",
-  SubnetIds: ["subnet-0abcd1234efgh5678"],
-  SecurityGroupIds: ["sg-0abcd1234efgh5678"],
-  DnsResolvers: ["10.0.0.2"],
-  RoleArn: "arn:aws:iam::123456789012:role/MyQuickSightRole",
+  VPCConnectionId: "myAdvancedVPCConnection",
+  SecurityGroupIds: ["sg-0123456789abcdef0"],
+  SubnetIds: ["subnet-0123456789abcdef0"],
+  RoleArn: "arn:aws:iam::123456789012:role/myQuickSightRole",
+  DnsResolvers: ["192.0.2.1", "192.0.2.2"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Analytics" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataAnalytics" }
   ]
 });
 ```
 
-## Managing Availability Status
+## Using Availability Status
 
-Create or update a VPCConnection while managing its availability status.
+Create a VPCConnection and check the availability status after creation.
 
 ```ts
-const vpcConnectionWithStatus = await AWS.QuickSight.VPCConnection("vpcConnectionWithStatus", {
+const vpcConnectionWithStatus = await AWS.QuickSight.VPCConnection("StatusVPCConnection", {
   AwsAccountId: "123456789012",
-  Name: "StatusManagedVPCConnection",
-  SubnetIds: ["subnet-0abcd1234efgh5678"],
-  SecurityGroupIds: ["sg-0abcd1234efgh5678"],
-  AvailabilityStatus: "AVAILABLE"
+  VPCConnectionId: "myStatusVPCConnection",
+  SecurityGroupIds: ["sg-0123456789abcdef0"],
+  SubnetIds: ["subnet-0123456789abcdef0"],
+  RoleArn: "arn:aws:iam::123456789012:role/myQuickSightRole"
 });
+
+// Check the availability status
+console.log(`VPC Connection Status: ${vpcConnectionWithStatus.AvailabilityStatus}`);
 ```
 
-## Adopting Existing VPCConnection
+## Adopting Existing Resources
 
-Adopt an existing VPCConnection by setting the adopt property to true.
+Adopt an existing VPCConnection instead of creating a new one if it already exists.
 
 ```ts
-const adoptedVpcConnection = await AWS.QuickSight.VPCConnection("adoptedVpcConnection", {
+const adoptExistingVPCConnection = await AWS.QuickSight.VPCConnection("AdoptVPCConnection", {
   AwsAccountId: "123456789012",
-  Name: "AdoptedVPCConnection",
-  SubnetIds: ["subnet-0abcd1234efgh5678"],
-  SecurityGroupIds: ["sg-0abcd1234efgh5678"],
-  DnsResolvers: ["10.0.0.2"],
+  VPCConnectionId: "myExistingVPCConnection",
+  SecurityGroupIds: ["sg-0123456789abcdef0"],
+  SubnetIds: ["subnet-0123456789abcdef0"],
+  RoleArn: "arn:aws:iam::123456789012:role/myQuickSightRole",
   adopt: true
 });
 ```

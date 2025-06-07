@@ -5,78 +5,43 @@ description: Learn how to create, update, and manage AWS Kendra Indexs using Alc
 
 # Index
 
-The Index resource lets you manage [AWS Kendra Indexs](https://docs.aws.amazon.com/kendra/latest/userguide/) for powerful search capabilities across your data sources.
+The Index resource lets you create and manage [AWS Kendra Indexs](https://docs.aws.amazon.com/kendra/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-kendra-index.html
 
 ## Minimal Example
-
-Create a basic Kendra Index with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const kendraIndex = await AWS.Kendra.Index("myKendraIndex", {
-  name: "MyKendraIndex",
-  roleArn: "arn:aws:iam::123456789012:role/KendraIndexRole",
-  edition: "DEVELOPER_EDITION",
-  description: "This index is for our corporate documents."
+const index = await AWS.Kendra.Index("index-example", {
+  RoleArn: "example-rolearn",
+  Edition: "example-edition",
+  Name: "index-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A index resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Kendra Index with additional settings such as server-side encryption and document metadata configurations.
+Create a index with additional configuration:
 
 ```ts
-const advancedKendraIndex = await AWS.Kendra.Index("advancedKendraIndex", {
-  name: "AdvancedKendraIndex",
-  roleArn: "arn:aws:iam::123456789012:role/KendraIndexRole",
-  edition: "ENTERPRISE_EDITION",
-  description: "This index handles sensitive corporate data.",
-  serverSideEncryptionConfiguration: {
-    kmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrstuv"
+import AWS from "alchemy/aws/control";
+
+const advancedIndex = await AWS.Kendra.Index("advanced-index", {
+  RoleArn: "example-rolearn",
+  Edition: "example-edition",
+  Name: "index-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  documentMetadataConfigurations: [
-    {
-      name: "Department",
-      type: "STRING",
-      key: "department"
-    },
-    {
-      name: "Confidentiality",
-      type: "STRING",
-      key: "confidentiality"
-    }
-  ]
+  Description: "A index resource managed by Alchemy",
 });
 ```
 
-## User Context Policy
-
-Define a user context policy to control access based on user attributes.
-
-```ts
-const userContextPolicyIndex = await AWS.Kendra.Index("userContextPolicyIndex", {
-  name: "UserContextPolicyKendraIndex",
-  roleArn: "arn:aws:iam::123456789012:role/KendraIndexRole",
-  edition: "DEVELOPER_EDITION",
-  userContextPolicy: "AttributeBased",
-  description: "This index uses user attributes for search permissions."
-});
-```
-
-## Capacity Units
-
-Set up a Kendra Index with specific capacity units for document storage and query processing.
-
-```ts
-const capacityUnitsIndex = await AWS.Kendra.Index("capacityUnitsIndex", {
-  name: "CapacityUnitsKendraIndex",
-  roleArn: "arn:aws:iam::123456789012:role/KendraIndexRole",
-  edition: "ENTERPRISE_EDITION",
-  capacityUnits: {
-    queryCapacityUnits: 5,
-    storageCapacityUnits: 50
-  },
-  description: "This index is provisioned with specific capacity units."
-});
-```

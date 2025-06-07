@@ -5,60 +5,67 @@ description: Learn how to create, update, and manage AWS KinesisVideo Streams us
 
 # Stream
 
-The Stream resource lets you manage [AWS KinesisVideo Streams](https://docs.aws.amazon.com/kinesisvideo/latest/userguide/) for processing and analyzing video data in real-time.
+The Stream resource allows you to manage [AWS KinesisVideo Streams](https://docs.aws.amazon.com/kinesisvideo/latest/userguide/) for processing and analyzing video data in real-time.
 
 ## Minimal Example
 
-Create a basic KinesisVideo Stream with required properties and a common optional property.
+Create a basic KinesisVideo Stream with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const videoStream = await AWS.KinesisVideo.Stream("myVideoStream", {
-  name: "MyVideoStream",
-  mediaType: "video/h264",
-  dataRetentionInHours: 24
+const BasicStream = await AWS.KinesisVideo.Stream("BasicStream", {
+  Name: "MyVideoStream",
+  MediaType: "video/h264",
+  DataRetentionInHours: 24,
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Media" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a KinesisVideo Stream with additional security settings using KMS for encryption.
+Configure a KinesisVideo Stream with additional properties such as a KMS key for encryption.
 
 ```ts
-const secureVideoStream = await AWS.KinesisVideo.Stream("secureVideoStream", {
-  name: "SecureVideoStream",
-  mediaType: "video/h264",
-  dataRetentionInHours: 48,
-  kmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-kms-key"
-});
-```
-
-## Using Tags for Management
-
-Create a KinesisVideo Stream that includes tags for easier management and organization.
-
-```ts
-const taggedVideoStream = await AWS.KinesisVideo.Stream("taggedVideoStream", {
-  name: "TaggedVideoStream",
-  mediaType: "video/h264",
-  dataRetentionInHours: 72,
-  tags: [
+const EncryptedStream = await AWS.KinesisVideo.Stream("EncryptedStream", {
+  Name: "SecureVideoStream",
+  MediaType: "video/h264",
+  DataRetentionInHours: 48,
+  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-key-id",
+  Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "VideoAnalytics" }
+    { Key: "Compliance", Value: "HIPAA" }
   ]
 });
 ```
 
 ## Stream with Device Name
 
-Create a KinesisVideo Stream associated with a specific device for better tracking.
+Create a stream that specifies a device name for better identification.
 
 ```ts
-const deviceVideoStream = await AWS.KinesisVideo.Stream("deviceVideoStream", {
-  name: "DeviceVideoStream",
-  mediaType: "video/h264",
-  dataRetentionInHours: 24,
-  deviceName: "Camera1"
+const DeviceStream = await AWS.KinesisVideo.Stream("DeviceStream", {
+  Name: "CameraStream",
+  MediaType: "video/h264",
+  DeviceName: "Camera_1",
+  DataRetentionInHours: 72,
+  Tags: [
+    { Key: "Location", Value: "Building A" },
+    { Key: "Status", Value: "Active" }
+  ]
+});
+```
+
+## Adoption of Existing Resource
+
+Adopt an existing KinesisVideo Stream rather than creating a new one.
+
+```ts
+const ExistingStream = await AWS.KinesisVideo.Stream("ExistingStream", {
+  Name: "ExistingVideoStream",
+  adopt: true // Adopt the existing resource instead of failing.
 });
 ```

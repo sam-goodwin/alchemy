@@ -5,98 +5,41 @@ description: Learn how to create, update, and manage AWS MediaPackage OriginEndp
 
 # OriginEndpoint
 
-The OriginEndpoint resource allows you to manage [AWS MediaPackage OriginEndpoints](https://docs.aws.amazon.com/mediapackage/latest/userguide/) for delivering video content securely and reliably.
+The OriginEndpoint resource lets you create and manage [AWS MediaPackage OriginEndpoints](https://docs.aws.amazon.com/mediapackage/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-mediapackage-originendpoint.html
 
 ## Minimal Example
-
-Create a basic OriginEndpoint with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicOriginEndpoint = await AWS.MediaPackage.OriginEndpoint("basicOriginEndpoint", {
-  id: "my-origin-endpoint",
-  channelId: "my-channel",
-  description: "Basic Origin Endpoint for HLS streaming",
-  manifestName: "my-manifest",
-  hlsPackage: {
-    segmentDurationSeconds: 6,
-    playlistType: "EVENT",
-    playlistWindowSeconds: 60,
-    adMarkers: "SCTE35_ENHANCED"
-  }
+const originendpoint = await AWS.MediaPackage.OriginEndpoint("originendpoint-example", {
+  ChannelId: "example-channelid",
+  Id: "example-id",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A originendpoint resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an OriginEndpoint with advanced settings including multiple package types and authorization.
+Create a originendpoint with additional configuration:
 
 ```ts
-const advancedOriginEndpoint = await AWS.MediaPackage.OriginEndpoint("advancedOriginEndpoint", {
-  id: "my-advanced-origin-endpoint",
-  channelId: "my-channel",
-  description: "Advanced Origin Endpoint with multiple packages",
-  authorization: {
-    // Example IAM policy for securing access
-    // This policy should be tailored to your needs
-    secrets: [
-      {
-        name: "my-access-key",
-        value: alchemy.secret(process.env.MEDIA_PACKAGE_ACCESS_KEY!)
-      }
-    ]
+import AWS from "alchemy/aws/control";
+
+const advancedOriginEndpoint = await AWS.MediaPackage.OriginEndpoint("advanced-originendpoint", {
+  ChannelId: "example-channelid",
+  Id: "example-id",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  dashPackage: {
-    segmentDurationSeconds: 10,
-    manifestLayout: "FULL",
-    minBufferTimeSeconds: 2
-  },
-  cmafPackage: {
-    segmentDurationSeconds: 5,
-    encryption: {
-      spekeKeyProvider: {
-        resourceId: "my-key-provider",
-        roleArn: "arn:aws:iam::123456789012:role/MediaPackageRole"
-      }
-    }
-  },
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Project", value: "VideoStreaming" }
-  ]
+  Description: "A originendpoint resource managed by Alchemy",
 });
 ```
 
-## Secure Access with Whitelisting
-
-Create an OriginEndpoint that restricts access to specific IP addresses for security.
-
-```ts
-const secureOriginEndpoint = await AWS.MediaPackage.OriginEndpoint("secureOriginEndpoint", {
-  id: "my-secure-origin-endpoint",
-  channelId: "my-channel",
-  description: "Secure Origin Endpoint with IP whitelisting",
-  whitelist: ["192.168.1.0/24", "203.0.113.0/24"],
-  hlsPackage: {
-    segmentDurationSeconds: 6,
-    playlistType: "EVENT"
-  }
-});
-```
-
-## Time Delay Configuration
-
-Set up an OriginEndpoint with a time delay configuration for live events.
-
-```ts
-const delayedOriginEndpoint = await AWS.MediaPackage.OriginEndpoint("delayedOriginEndpoint", {
-  id: "my-delayed-origin-endpoint",
-  channelId: "my-channel",
-  description: "Origin Endpoint with time delay for live events",
-  timeDelaySeconds: 300, // 5 minutes delay
-  hlsPackage: {
-    segmentDurationSeconds: 6
-  }
-});
-```

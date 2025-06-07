@@ -5,92 +5,75 @@ description: Learn how to create, update, and manage AWS MediaLive CloudWatchAla
 
 # CloudWatchAlarmTemplate
 
-The CloudWatchAlarmTemplate resource allows you to manage [AWS MediaLive CloudWatch Alarm Templates](https://docs.aws.amazon.com/medialive/latest/userguide/), which define the metrics and thresholds for CloudWatch alarms associated with your MediaLive resources.
+The CloudWatchAlarmTemplate resource allows you to create and manage CloudWatch alarm templates within AWS MediaLive. This resource is essential for setting up monitoring and alerting based on specific metrics related to your MediaLive channels. For more information, refer to the [AWS MediaLive CloudWatchAlarmTemplates documentation](https://docs.aws.amazon.com/medialive/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic CloudWatch alarm template with required properties and a couple of common optional settings:
+This example demonstrates how to create a basic CloudWatch alarm template with required properties and common optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAlarmTemplate = await AWS.MediaLive.CloudWatchAlarmTemplate("basicAlarmTemplate", {
+const BasicAlarmTemplate = await AWS.MediaLive.CloudWatchAlarmTemplate("BasicAlarmTemplate", {
   TargetResourceType: "INPUT",
   ComparisonOperator: "GreaterThanThreshold",
   TreatMissingData: "notBreaching",
   Period: 60,
-  EvaluationPeriods: 5,
-  Name: "BasicInputAlarm",
-  MetricName: "InputLoss",
+  EvaluationPeriods: 1,
+  Name: "HighInputLatencyAlarm",
+  MetricName: "InputLatency",
   Statistic: "Average",
-  Threshold: 1.0,
-  Tags: {
-    Environment: "Production",
-    Project: "MediaLiveProject"
-  }
+  Threshold: 100,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Media" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an advanced CloudWatch alarm template with additional properties such as description and datapoints to alarm:
+This example shows how to configure a more complex CloudWatch alarm template with additional options for grouping and data point thresholds.
 
 ```ts
-const advancedAlarmTemplate = await AWS.MediaLive.CloudWatchAlarmTemplate("advancedAlarmTemplate", {
-  TargetResourceType: "OUTPUT",
+const AdvancedAlarmTemplate = await AWS.MediaLive.CloudWatchAlarmTemplate("AdvancedAlarmTemplate", {
+  TargetResourceType: "CHANNEL",
   ComparisonOperator: "LessThanThreshold",
   TreatMissingData: "breaching",
-  Description: "Alarm for output latency",
-  Period: 120,
-  EvaluationPeriods: 3,
-  DatapointsToAlarm: 2,
-  Name: "OutputLatencyAlarm",
-  MetricName: "OutputLatency",
-  Statistic: "Maximum",
-  Threshold: 2.0,
-  GroupIdentifier: "OutputGroup1"
+  Period: 300,
+  EvaluationPeriods: 2,
+  DatapointsToAlarm: 1,
+  Name: "LowOutputBitrateAlarm",
+  MetricName: "OutputBitrate",
+  Statistic: "Sum",
+  Threshold: 500000,
+  GroupIdentifier: "OutputGroupA",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Streaming" }
+  ]
 });
 ```
 
-## Grouping Alarms
+## Custom Group Identifier
 
-Create a CloudWatch alarm template that groups alarms based on a specific identifier:
+In this example, we create a CloudWatch alarm template specifically for monitoring output latency with a custom group identifier.
 
 ```ts
-const groupedAlarmTemplate = await AWS.MediaLive.CloudWatchAlarmTemplate("groupedAlarmTemplate", {
+const LatencyAlarmTemplate = await AWS.MediaLive.CloudWatchAlarmTemplate("LatencyAlarmTemplate", {
   TargetResourceType: "CHANNEL",
   ComparisonOperator: "GreaterThanThreshold",
   TreatMissingData: "notBreaching",
-  Period: 300,
-  EvaluationPeriods: 2,
-  GroupIdentifier: "ChannelGroup1",
-  Name: "ChannelHealthAlarm",
-  MetricName: "ChannelHealth",
-  Statistic: "Sum",
-  Threshold: 5.0
+  Period: 60,
+  EvaluationPeriods: 3,
+  Name: "OutputLatencyAlarm",
+  MetricName: "OutputLatency",
+  Statistic: "Average",
+  Threshold: 200,
+  GroupIdentifier: "LatencyGroup",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "LiveOps" }
+  ]
 });
 ```
-
-## Using Tags for Resource Management
-
-Create a CloudWatch alarm template with specific tags to manage resources effectively:
-
-```ts
-const taggedAlarmTemplate = await AWS.MediaLive.CloudWatchAlarmTemplate("taggedAlarmTemplate", {
-  TargetResourceType: "INPUT",
-  ComparisonOperator: "GreaterThanThreshold",
-  TreatMissingData: "breaching",
-  Period: 60,
-  EvaluationPeriods: 1,
-  Name: "TaggedInputAlarm",
-  MetricName: "InputOverruns",
-  Statistic: "Average",
-  Threshold: 0.5,
-  Tags: {
-    Environment: "Staging",
-    Owner: "DevTeam"
-  }
-});
-``` 
-
-These examples illustrate how to create and configure CloudWatch alarm templates that can help monitor and alert based on the health and performance of your MediaLive resources.

@@ -5,64 +5,43 @@ description: Learn how to create, update, and manage AWS IoTTwinMaker Scenes usi
 
 # Scene
 
-The Scene resource lets you manage [AWS IoTTwinMaker Scenes](https://docs.aws.amazon.com/iottwinmaker/latest/userguide/) for visualizing and interacting with digital twins of real-world systems.
+The Scene resource lets you create and manage [AWS IoTTwinMaker Scenes](https://docs.aws.amazon.com/iottwinmaker/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iottwinmaker-scene.html
 
 ## Minimal Example
-
-Create a basic IoTTwinMaker Scene with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicScene = await AWS.IoTTwinMaker.Scene("basicScene", {
-  SceneId: "myScene",
-  ContentLocation: "s3://mybucket/mySceneContent",
-  Description: "A basic IoTTwinMaker scene"
+const scene = await AWS.IoTTwinMaker.Scene("scene-example", {
+  SceneId: "example-sceneid",
+  ContentLocation: "example-contentlocation",
+  WorkspaceId: "example-workspaceid",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A scene resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a scene with additional metadata and capabilities for enhanced functionality.
+Create a scene with additional configuration:
 
 ```ts
-const advancedScene = await AWS.IoTTwinMaker.Scene("advancedScene", {
-  SceneId: "advancedScene",
-  ContentLocation: "s3://mybucket/advancedSceneContent",
-  SceneMetadata: {
-    author: "Jane Doe",
-    version: "1.2.0"
-  },
-  Capabilities: ["3D", "Interactive"],
-  WorkspaceId: "workspace-123"
-});
-```
+import AWS from "alchemy/aws/control";
 
-## Scene with Tags
-
-Create a scene that includes tags for better organization and management.
-
-```ts
-const taggedScene = await AWS.IoTTwinMaker.Scene("taggedScene", {
-  SceneId: "taggedScene",
-  ContentLocation: "s3://mybucket/taggedSceneContent",
+const advancedScene = await AWS.IoTTwinMaker.Scene("advanced-scene", {
+  SceneId: "example-sceneid",
+  ContentLocation: "example-contentlocation",
+  WorkspaceId: "example-workspaceid",
   Tags: {
-    environment: "production",
-    project: "IoTTwinMakerDemo"
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  WorkspaceId: "workspace-456"
+  Description: "A scene resource managed by Alchemy",
 });
 ```
 
-## Scene Adoption
-
-Create a scene that adopts an existing resource instead of failing if it already exists.
-
-```ts
-const adoptedScene = await AWS.IoTTwinMaker.Scene("adoptedScene", {
-  SceneId: "existingScene",
-  ContentLocation: "s3://mybucket/existingSceneContent",
-  adopt: true, // This will adopt the existing resource
-  WorkspaceId: "workspace-789"
-});
-```

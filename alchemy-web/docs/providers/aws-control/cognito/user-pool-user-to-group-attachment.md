@@ -5,69 +5,49 @@ description: Learn how to create, update, and manage AWS Cognito UserPoolUserToG
 
 # UserPoolUserToGroupAttachment
 
-The `UserPoolUserToGroupAttachment` resource lets you manage the association of users with groups in an AWS Cognito User Pool. This resource is essential for organizing users and controlling access to application features based on group membership. For more information, refer to the [AWS Cognito UserPoolUserToGroupAttachments documentation](https://docs.aws.amazon.com/cognito/latest/userguide/).
+The UserPoolUserToGroupAttachment resource allows you to manage user-to-group relationships within an Amazon Cognito User Pool. This enables you to assign users to specific groups, allowing for easier management of user permissions and attributes. For more information, see the [AWS Cognito UserPoolUserToGroupAttachments](https://docs.aws.amazon.com/cognito/latest/userguide/).
 
 ## Minimal Example
 
-This example demonstrates how to attach a user to a group in a Cognito User Pool with the required properties.
+Create a simple attachment of a user to a group in a Cognito User Pool with the required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const userGroupAttachment = await AWS.Cognito.UserPoolUserToGroupAttachment("userGroupAttachment", {
+const UserPoolUserToGroupAttachmentExample = await AWS.Cognito.UserPoolUserToGroupAttachment("UserGroupAttachmentExample", {
   GroupName: "Admins",
-  UserPoolId: "us-east-1_ExAmPle",
-  Username: "john_doe"
+  UserPoolId: "us-west-2_aBcDeFgHi", 
+  Username: "john.doe"
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we'll use the `adopt` property to ensure that we adopt an existing resource if it already exists, rather than failing.
+In this example, we demonstrate how to include the optional `adopt` property, allowing for the adoption of an existing resource if it already exists.
 
 ```ts
-const userGroupAttachmentWithAdopt = await AWS.Cognito.UserPoolUserToGroupAttachment("userGroupAttachmentWithAdopt", {
-  GroupName: "Editors",
-  UserPoolId: "us-west-2_ExAmPle",
-  Username: "jane_doe",
-  adopt: true
+const AdoptExistingUserGroupAttachment = await AWS.Cognito.UserPoolUserToGroupAttachment("ExistingUserGroupAttachment", {
+  GroupName: "Moderators",
+  UserPoolId: "us-west-2_aBcDeFgHi", 
+  Username: "jane.doe",
+  adopt: true // Adopt existing resource instead of failing
 });
 ```
 
-## Managing Multiple Users
+## Handling Multiple Users in a Batch
 
-Here’s how you can manage multiple users by creating separate attachments for each user in a loop.
-
-```ts
-const users = ["alice_smith", "bob_johnson", "charlie_brown"];
-const groupName = "Developers";
-
-for (const username of users) {
-  const userGroupAttachment = await AWS.Cognito.UserPoolUserToGroupAttachment(`userGroupAttachment-${username}`, {
-    GroupName: groupName,
-    UserPoolId: "eu-central-1_ExAmPle",
-    Username: username
-  });
-}
-```
-
-## Error Handling and Logging
-
-You can implement error handling to log any issues encountered during the attachment process.
+If you need to attach multiple users to a single group, you can create multiple `UserPoolUserToGroupAttachment` resources as shown below.
 
 ```ts
-const attachUserToGroup = async (username: string) => {
-  try {
-    await AWS.Cognito.UserPoolUserToGroupAttachment(`userGroupAttachment-${username}`, {
-      GroupName: "Managers",
-      UserPoolId: "ap-south-1_ExAmPle",
-      Username: username
-    });
-    console.log(`Successfully attached ${username} to Managers group.`);
-  } catch (error) {
-    console.error(`Failed to attach ${username} to Managers group:`, error);
-  }
-};
+const UserGroupAttachment1 = await AWS.Cognito.UserPoolUserToGroupAttachment("UserGroupAttachment1", {
+  GroupName: "Developers",
+  UserPoolId: "us-west-2_aBcDeFgHi", 
+  Username: "alice.smith"
+});
 
-await attachUserToGroup("david_jones");
+const UserGroupAttachment2 = await AWS.Cognito.UserPoolUserToGroupAttachment("UserGroupAttachment2", {
+  GroupName: "Developers",
+  UserPoolId: "us-west-2_aBcDeFgHi", 
+  Username: "bob.jones"
+});
 ```

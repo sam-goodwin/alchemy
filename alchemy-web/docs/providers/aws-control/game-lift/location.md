@@ -5,64 +5,49 @@ description: Learn how to create, update, and manage AWS GameLift Locations usin
 
 # Location
 
-The Location resource allows you to manage [AWS GameLift Locations](https://docs.aws.amazon.com/gamelift/latest/userguide/) for deploying game servers across various geographic regions to optimize performance and latency.
+The Location resource lets you manage [AWS GameLift Locations](https://docs.aws.amazon.com/gamelift/latest/userguide/) which are essential for deploying game servers in specific geographic regions to reduce latency and improve player experience.
 
 ## Minimal Example
 
-Create a basic GameLift location with required properties.
+Create a basic GameLift Location with a defined name and optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const gameLiftLocation = await AWS.GameLift.Location("myGameLiftLocation", {
+const GameLiftLocation = await AWS.GameLift.Location("MainLocation", {
   LocationName: "us-west-2",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "GameServerDeployment" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Game", Value: "BattleRoyale" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a GameLift location with the adoption option enabled, allowing you to adopt an existing resource if it already exists.
+Configure a GameLift Location to adopt an existing resource.
 
 ```ts
-const adoptedLocation = await AWS.GameLift.Location("adoptedGameLiftLocation", {
-  LocationName: "eu-central-1",
+const ExistingGameLiftLocation = await AWS.GameLift.Location("ExistingLocation", {
+  LocationName: "us-east-1",
   adopt: true,
   Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Project", Value: "Testing" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Game", Value: "AdventureQuest" }
   ]
 });
 ```
 
-## Resource Metadata
+## Location with Custom Tags
 
-Access the metadata of a GameLift location, including its ARN, creation time, and last update time.
-
-```ts
-const locationMetadata = await AWS.GameLift.Location("locationMetadata", {
-  LocationName: "ap-south-1"
-});
-
-// Log the metadata details
-console.log(`ARN: ${locationMetadata.Arn}`);
-console.log(`Created At: ${locationMetadata.CreationTime}`);
-console.log(`Last Updated At: ${locationMetadata.LastUpdateTime}`);
-```
-
-## Tagging for Resource Management
-
-Create a location with meaningful tags for better resource management and organization.
+Create a GameLift Location with custom tags to track resources effectively.
 
 ```ts
-const taggedLocation = await AWS.GameLift.Location("taggedLocation", {
-  LocationName: "us-east-1",
+const CustomTaggedLocation = await AWS.GameLift.Location("CustomTagLocation", {
+  LocationName: "eu-central-1",
   Tags: [
-    { Key: "Owner", Value: "GameDevTeam" },
-    { Key: "Version", Value: "1.0" }
+    { Key: "Department", Value: "GameDevelopment" },
+    { Key: "CostCenter", Value: "1234" }
   ]
 });
 ```

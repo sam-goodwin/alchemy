@@ -5,60 +5,51 @@ description: Learn how to create, update, and manage AWS ServiceDiscovery Public
 
 # PublicDnsNamespace
 
-The PublicDnsNamespace resource allows you to create and manage public DNS namespaces in AWS Service Discovery. This enables you to register services and manage DNS records for those services. For more information, visit the [AWS ServiceDiscovery PublicDnsNamespaces documentation](https://docs.aws.amazon.com/servicediscovery/latest/userguide/).
+The PublicDnsNamespace resource allows you to manage a [Public DNS namespace](https://docs.aws.amazon.com/servicediscovery/latest/userguide/) in AWS Service Discovery, which can be used to manage the DNS records for your services.
 
 ## Minimal Example
 
-Create a basic Public DNS Namespace with a name and description.
+Create a basic Public DNS namespace with a name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const publicDnsNamespace = await AWS.ServiceDiscovery.PublicDnsNamespace("myPublicDnsNamespace", {
-  name: "my-public-namespace",
-  description: "A public DNS namespace for my services",
-  tags: [
-    { key: "Environment", value: "Production" }
+const basicNamespace = await AWS.ServiceDiscovery.PublicDnsNamespace("basicNamespace", {
+  Name: "example.com",
+  Description: "A public DNS namespace for example.com",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Public DNS Namespace with additional properties and tags.
+Configure a Public DNS namespace with additional properties such as tags for better resource management.
 
 ```ts
-const advancedPublicDnsNamespace = await AWS.ServiceDiscovery.PublicDnsNamespace("advancedPublicDnsNamespace", {
-  name: "advanced-public-namespace",
-  description: "An advanced public DNS namespace for services",
-  properties: {
-    dnsProperties: {
-      dnsRecords: [
-        {
-          type: "A",
-          ttl: 300
-        },
-        {
-          type: "CNAME",
-          ttl: 300
-        }
-      ]
-    }
+const advancedNamespace = await AWS.ServiceDiscovery.PublicDnsNamespace("advancedNamespace", {
+  Name: "advanced.example.com",
+  Description: "An advanced public DNS namespace for example.com",
+  Properties: {
+    // Additional properties can be specified here as per requirements
   },
-  tags: [
-    { key: "Project", value: "ServiceDiscovery" },
-    { key: "Owner", value: "DevTeam" }
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Project", Value: "ServiceDiscovery" }
   ]
 });
 ```
 
-## Using Existing Resources
+## Adoption of Existing Resource
 
-Adopt an existing Public DNS Namespace instead of failing if it already exists.
+If you want to adopt an existing Public DNS namespace instead of creating a new one, you can specify the adopt parameter.
 
 ```ts
-const adoptedPublicDnsNamespace = await AWS.ServiceDiscovery.PublicDnsNamespace("adoptedPublicDnsNamespace", {
-  name: "existing-public-namespace",
-  adopt: true // This will adopt the existing resource if it exists
+const adoptNamespace = await AWS.ServiceDiscovery.PublicDnsNamespace("adoptNamespace", {
+  Name: "existing.example.com",
+  Description: "Adopting an existing Public DNS namespace",
+  adopt: true
 });
 ```

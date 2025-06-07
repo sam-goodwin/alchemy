@@ -5,69 +5,86 @@ description: Learn how to create, update, and manage AWS MediaLive InputSecurity
 
 # InputSecurityGroup
 
-The InputSecurityGroup resource allows you to manage [AWS MediaLive InputSecurityGroups](https://docs.aws.amazon.com/medialive/latest/userguide/) which control the whitelisted CIDR blocks for input sources.
+The InputSecurityGroup resource allows you to configure a security group specifically for AWS MediaLive inputs, controlling access to your input endpoints. For more information, refer to the [AWS MediaLive InputSecurityGroups documentation](https://docs.aws.amazon.com/medialive/latest/userguide/).
 
 ## Minimal Example
 
-This example demonstrates how to create a basic InputSecurityGroup with a whitelist rule and tags.
+Create a basic Input Security Group with a whitelist rule allowing access from a specific IP address.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const inputSecurityGroup = await AWS.MediaLive.InputSecurityGroup("basicInputSecurityGroup", {
-  WhitelistRules: [{
-    Cidr: "192.168.1.0/24"
-  }],
-  Tags: {
-    Environment: "Development",
-    Project: "MediaStreaming"
-  }
+const MinimalInputSecurityGroup = await AWS.MediaLive.InputSecurityGroup("MyInputSecurityGroup", {
+  WhitelistRules: [
+    {
+      Cidr: "192.0.2.0/24" // Allow access from this CIDR block
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Media" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-This example shows how to configure an InputSecurityGroup with multiple whitelist rules and no tags.
+Configure an Input Security Group with multiple whitelist rules and tags for better organization and access control.
 
 ```ts
-const advancedInputSecurityGroup = await AWS.MediaLive.InputSecurityGroup("advancedInputSecurityGroup", {
+const AdvancedInputSecurityGroup = await AWS.MediaLive.InputSecurityGroup("AdvancedInputSecurityGroup", {
   WhitelistRules: [
     {
-      Cidr: "10.0.0.0/16"
+      Cidr: "203.0.113.0/24" // Allow access from another CIDR block
     },
     {
-      Cidr: "172.16.0.0/12"
+      Cidr: "198.51.100.0/24" // Allow access from another CIDR block
     }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Streaming" }
+  ],
+  adopt: true // Adopt existing resource if it already exists
+});
+```
+
+## Example with Dynamic Tagging
+
+Create an Input Security Group that dynamically assigns tags based on environment variables for easier management.
+
+```ts
+const DynamicInputSecurityGroup = await AWS.MediaLive.InputSecurityGroup("DynamicInputSecurityGroup", {
+  WhitelistRules: [
+    {
+      Cidr: "192.0.2.0/24" // Allow access from this CIDR block
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: process.env.ENVIRONMENT || "development" },
+    { Key: "Owner", Value: process.env.OWNER_NAME || "default" }
+  ],
+  adopt: false // Do not adopt an existing resource
+});
+```
+
+## Example for Multi-Region Deployment
+
+Set up an Input Security Group for a multi-region deployment, allowing access from several regions.
+
+```ts
+const MultiRegionInputSecurityGroup = await AWS.MediaLive.InputSecurityGroup("MultiRegionInputSecurityGroup", {
+  WhitelistRules: [
+    {
+      Cidr: "192.0.2.0/24" // Allow access from the primary region
+    },
+    {
+      Cidr: "203.0.113.0/24" // Allow access from a secondary region
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Region", Value: "us-east-1" }
   ]
 });
-```
-
-## Adoption of Existing Resources
-
-In this example, we demonstrate how to adopt an existing InputSecurityGroup by setting the `adopt` property to true.
-
-```ts
-const adoptedInputSecurityGroup = await AWS.MediaLive.InputSecurityGroup("adoptedInputSecurityGroup", {
-  WhitelistRules: [{
-    Cidr: "203.0.113.0/24"
-  }],
-  adopt: true
-});
-```
-
-## Resource Properties
-
-This example highlights how to access additional properties of the InputSecurityGroup such as ARN and timestamps.
-
-```ts
-const inputSecurityGroupDetails = await AWS.MediaLive.InputSecurityGroup("inputSecurityGroupDetails", {
-  WhitelistRules: [{
-    Cidr: "198.51.100.0/24"
-  }]
-});
-
-// Accessing resource properties
-console.log(`ARN: ${inputSecurityGroupDetails.Arn}`);
-console.log(`Creation Time: ${inputSecurityGroupDetails.CreationTime}`);
-console.log(`Last Update Time: ${inputSecurityGroupDetails.LastUpdateTime}`);
 ```

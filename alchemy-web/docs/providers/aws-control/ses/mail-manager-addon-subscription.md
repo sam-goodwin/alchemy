@@ -5,47 +5,51 @@ description: Learn how to create, update, and manage AWS SES MailManagerAddonSub
 
 # MailManagerAddonSubscription
 
-The MailManagerAddonSubscription resource allows you to manage subscriptions to various add-ons for Amazon Simple Email Service (SES). This resource is part of the AWS SES service, enabling you to enhance your email capabilities with additional features. For more details, refer to the official AWS documentation: [AWS SES MailManagerAddonSubscriptions](https://docs.aws.amazon.com/ses/latest/userguide/).
+The MailManagerAddonSubscription resource lets you manage [AWS SES MailManagerAddonSubscriptions](https://docs.aws.amazon.com/ses/latest/userguide/) to enhance your email sending capabilities with additional features and tools.
 
 ## Minimal Example
 
-Create a basic MailManagerAddonSubscription with required properties and one optional tag.
+Create a MailManagerAddonSubscription with the required properties and an optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const mailManagerAddonSubscription = await AWS.SES.MailManagerAddonSubscription("basicSubscription", {
+const MailManagerAddonSubscription = await AWS.SES.MailManagerAddonSubscription("MyAddonSubscription", {
   AddonName: "EmailAnalytics",
-  Tags: [{ Key: "Environment", Value: "Production" }]
+  Tags: [
+    { Key: "Environment", Value: "production" }
+  ],
+  adopt: false // Optional: Set to true to adopt an existing resource
 });
 ```
 
 ## Advanced Configuration
 
-Configure a MailManagerAddonSubscription with additional properties, such as adopting an existing resource.
+Configure a MailManagerAddonSubscription with multiple tags for better resource management.
 
 ```ts
-const advancedAddonSubscription = await AWS.SES.MailManagerAddonSubscription("advancedSubscription", {
-  AddonName: "EmailDeliverability",
-  adopt: true, // Adopt existing resource if it already exists
+const AdvancedAddonSubscription = await AWS.SES.MailManagerAddonSubscription("AdvancedAddonSubscription", {
+  AddonName: "DeliverabilityDashboard",
   Tags: [
-    { Key: "Service", Value: "Email" },
+    { Key: "Environment", Value: "staging" },
     { Key: "Team", Value: "Marketing" }
-  ]
+  ],
+  adopt: true // Adopt existing resource if applicable
 });
 ```
 
-## Subscription with Multiple Tags
+## Using Tags for Resource Management
 
-Create a subscription while categorizing it with multiple tags for better resource management.
+Leverage tags to categorize your MailManagerAddonSubscription for better visibility across environments.
 
 ```ts
-const taggedAddonSubscription = await AWS.SES.MailManagerAddonSubscription("taggedSubscription", {
-  AddonName: "SpamProtection",
+const TaggedAddonSubscription = await AWS.SES.MailManagerAddonSubscription("TaggedAddonSubscription", {
+  AddonName: "ContentFiltering",
   Tags: [
-    { Key: "Purpose", Value: "Security" },
-    { Key: "Owner", Value: "DevOps" },
-    { Key: "Project", Value: "EmailCampaign" }
-  ]
+    { Key: "Project", Value: "EmailCampaign" },
+    { Key: "Owner", Value: "Alice" },
+    { Key: "CostCenter", Value: "Marketing" }
+  ],
+  adopt: false
 });
 ```

@@ -5,55 +5,68 @@ description: Learn how to create, update, and manage AWS EC2 Hosts using Alchemy
 
 # Host
 
-The Host resource allows you to manage [AWS EC2 Hosts](https://docs.aws.amazon.com/ec2/latest/userguide/) for your compute resources, providing options for instance family, auto placement, and recovery settings.
+The Host resource lets you manage [AWS EC2 Hosts](https://docs.aws.amazon.com/ec2/latest/userguide/) for dedicated hosting of Amazon EC2 instances, providing control over the underlying hardware.
 
 ## Minimal Example
 
-Create a basic EC2 Host with required properties and one optional property for instance family.
+Create a basic EC2 Host with required properties and one optional configuration for tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const ec2Host = await AWS.EC2.Host("myEc2Host", {
-  AvailabilityZone: "us-west-2a",
-  InstanceFamily: "m5"
+const MyEC2Host = await AWS.EC2.Host("MyHost", {
+  AvailabilityZone: "us-east-1a",
+  HostRecovery: "on",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EC2 Host with auto placement and host recovery options.
+Configure a host with auto placement and instance family settings for improved resource management.
 
 ```ts
-const advancedEc2Host = await AWS.EC2.Host("advancedEc2Host", {
-  AvailabilityZone: "us-east-1b",
-  InstanceFamily: "c5",
+const AdvancedEC2Host = await AWS.EC2.Host("AdvancedHost", {
+  AvailabilityZone: "us-west-2b",
   AutoPlacement: "on",
-  HostRecovery: "on"
+  InstanceFamily: "m5",
+  HostMaintenance: "off",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Owner", Value: "TeamAlpha" }
+  ]
 });
 ```
 
-## Specific Use Case: Outpost Configuration
+## Resource Adoption
 
-Create an EC2 Host that is associated with an Outpost to extend your on-premises infrastructure.
-
-```ts
-const outpostEc2Host = await AWS.EC2.Host("outpostEc2Host", {
-  AvailabilityZone: "us-west-1a",
-  InstanceFamily: "r5",
-  OutpostArn: "arn:aws:outposts:us-west-1:123456789012:outpost/op-abcdefg123456789", 
-  HostMaintenance: "on"
-});
-```
-
-## Adopting Existing Resource
-
-If you want to adopt an existing EC2 Host instead of failing if it already exists, set the adopt property to true.
+Adopt an existing EC2 Host if it already exists, instead of failing the operation.
 
 ```ts
-const adoptEc2Host = await AWS.EC2.Host("adoptEc2Host", {
+const AdoptedEC2Host = await AWS.EC2.Host("AdoptedHost", {
   AvailabilityZone: "eu-central-1a",
-  InstanceFamily: "t3",
-  adopt: true
+  adopt: true,
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "QA" }
+  ]
+});
+```
+
+## Outpost Configuration
+
+Create a host configured to run on an Outpost for hybrid cloud scenarios.
+
+```ts
+const OutpostEC2Host = await AWS.EC2.Host("OutpostHost", {
+  AvailabilityZone: "ap-south-1a",
+  OutpostArn: "arn:aws:outposts:ap-south-1:123456789012:outpost/op-123abc",
+  Tags: [
+    { Key: "Environment", Value: "Hybrid" },
+    { Key: "Team", Value: "Infrastructure" }
+  ]
 });
 ```

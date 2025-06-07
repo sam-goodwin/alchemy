@@ -5,62 +5,57 @@ description: Learn how to create, update, and manage AWS Wisdom AIGuardrailVersi
 
 # AIGuardrailVersion
 
-The AIGuardrailVersion resource allows you to manage versions of AI guardrails within the AWS Wisdom service. For more information, visit the [AWS Wisdom AIGuardrailVersions](https://docs.aws.amazon.com/wisdom/latest/userguide/).
+The AIGuardrailVersion resource allows you to manage versions of AI guardrails in AWS Wisdom, enabling you to configure and refine AI-assisted workflows. For more details, refer to the [AWS Wisdom AIGuardrailVersions](https://docs.aws.amazon.com/wisdom/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic AIGuardrailVersion with required properties and one optional property.
+This example demonstrates how to create a basic AIGuardrailVersion resource using required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const aiGuardrailVersion = await AWS.Wisdom.AIGuardrailVersion("basicGuardrailVersion", {
-  AIGuardrailId: "my-guardrail-id",
-  AssistantId: "my-assistant-id",
-  ModifiedTimeSeconds: Math.floor(Date.now() / 1000) // Current timestamp in seconds
+const basicGuardrailVersion = await AWS.Wisdom.AIGuardrailVersion("BasicGuardrailVersion", {
+  AIGuardrailId: "guardrail-12345",
+  AssistantId: "assistant-67890",
+  ModifiedTimeSeconds: Math.floor(Date.now() / 1000) // Current time in seconds
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AIGuardrailVersion with additional options, including the adoption of an existing resource.
+In this example, we configure an AIGuardrailVersion with an existing resource adoption strategy.
 
 ```ts
-const advancedGuardrailVersion = await AWS.Wisdom.AIGuardrailVersion("advancedGuardrailVersion", {
-  AIGuardrailId: "my-advanced-guardrail-id",
-  AssistantId: "my-advanced-assistant-id",
-  ModifiedTimeSeconds: Math.floor(Date.now() / 1000), // Current timestamp
-  adopt: true // Adopt existing resource instead of failing
+const advancedGuardrailVersion = await AWS.Wisdom.AIGuardrailVersion("AdvancedGuardrailVersion", {
+  AIGuardrailId: "guardrail-54321",
+  AssistantId: "assistant-09876",
+  ModifiedTimeSeconds: Math.floor(Date.now() / 1000),
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Updating an Existing Version
+## Example with Creation Time
 
-Here’s how to create a new version of an existing guardrail.
+This example illustrates creating an AIGuardrailVersion and displaying its creation time.
 
 ```ts
-const updatedGuardrailVersion = await AWS.Wisdom.AIGuardrailVersion("updatedGuardrailVersion", {
-  AIGuardrailId: "existing-guardrail-id",
-  AssistantId: "existing-assistant-id",
-  ModifiedTimeSeconds: Math.floor(Date.now() / 1000), // Update timestamp
-  adopt: false // Fails if resource already exists
+const guardrailVersionWithCreationTime = await AWS.Wisdom.AIGuardrailVersion("GuardrailVersionWithCreationTime", {
+  AIGuardrailId: "guardrail-11223",
+  AssistantId: "assistant-44556"
 });
+
+console.log("Creation Time:", guardrailVersionWithCreationTime.CreationTime);
 ```
 
-## Creating Multiple Versions
+## Example with Last Update Time
 
-Demonstrating the creation of multiple versions for the same guardrail.
+Here we demonstrate how to access the last update time of the AIGuardrailVersion resource.
 
 ```ts
-const versionOne = await AWS.Wisdom.AIGuardrailVersion("firstGuardrailVersion", {
-  AIGuardrailId: "multi-version-guardrail-id",
-  AssistantId: "multi-version-assistant-id",
-  ModifiedTimeSeconds: Math.floor(Date.now() / 1000) // Version 1 timestamp
+const guardrailVersionWithLastUpdateTime = await AWS.Wisdom.AIGuardrailVersion("GuardrailVersionWithLastUpdateTime", {
+  AIGuardrailId: "guardrail-77889",
+  AssistantId: "assistant-99000"
 });
 
-const versionTwo = await AWS.Wisdom.AIGuardrailVersion("secondGuardrailVersion", {
-  AIGuardrailId: "multi-version-guardrail-id",
-  AssistantId: "multi-version-assistant-id",
-  ModifiedTimeSeconds: Math.floor(Date.now() / 1000) + 60 // Version 2 timestamp, 60 seconds later
-});
+console.log("Last Update Time:", guardrailVersionWithLastUpdateTime.LastUpdateTime);
 ```

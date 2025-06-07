@@ -5,44 +5,53 @@ description: Learn how to create, update, and manage AWS IVS PublicKeys using Al
 
 # PublicKey
 
-The PublicKey resource lets you manage [AWS IVS PublicKeys](https://docs.aws.amazon.com/ivs/latest/userguide/) for securely signing video streams. This resource allows you to create and manage public keys used in the signing process of video streams.
+The PublicKey resource allows you to manage [AWS IVS PublicKeys](https://docs.aws.amazon.com/ivs/latest/userguide/) for secure streaming. PublicKeys are used to authenticate and encrypt communications for AWS Interactive Video Service.
 
 ## Minimal Example
 
-Create a basic IVS PublicKey with required properties and one optional property:
+Create a basic IVS PublicKey with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const publicKey = await AWS.IVS.PublicKey("myPublicKey", {
-  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC1...",
-  Name: "MyIVSPublicKey"
+const MyPublicKey = await AWS.IVS.PublicKey("MyPublicKey", {
+  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...",
+  Name: "MyIVSPublicKey",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Streaming" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IVS PublicKey with tags for better resource management:
+Configure an IVS PublicKey with optional properties for greater flexibility.
 
 ```ts
-const taggedPublicKey = await AWS.IVS.PublicKey("taggedPublicKey", {
-  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC2...",
-  Name: "TaggedIVSPublicKey",
+const AdvancedPublicKey = await AWS.IVS.PublicKey("AdvancedPublicKey", {
+  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...",
+  Name: "AdvancedIVSPublicKey",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "LiveStream" }
-  ]
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Development" }
+  ],
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Adoption of Existing Resource
+## Adoption of Existing Key
 
-Adopt an existing IVS PublicKey instead of creating a new one if it already exists:
+Use the `adopt` property to handle existing resources gracefully.
 
 ```ts
-const existingPublicKey = await AWS.IVS.PublicKey("existingPublicKey", {
-  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3...",
-  Name: "ExistingIVSPublicKey",
-  adopt: true
+const AdoptedPublicKey = await AWS.IVS.PublicKey("AdoptedPublicKey", {
+  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...",
+  Name: "AdoptedIVSPublicKey",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Operations" }
+  ],
+  adopt: true // This will adopt the existing key instead of failing
 });
 ```

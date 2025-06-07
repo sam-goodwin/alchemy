@@ -5,75 +5,37 @@ description: Learn how to create, update, and manage AWS Omics Workflows using A
 
 # Workflow
 
-The Workflow resource allows you to create, manage, and update [AWS Omics Workflows](https://docs.aws.amazon.com/omics/latest/userguide/) for executing bioinformatics applications and data processing tasks.
+The Workflow resource lets you create and manage [AWS Omics Workflows](https://docs.aws.amazon.com/omics/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-omics-workflow.html
 
 ## Minimal Example
-
-Create a basic Omics Workflow with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicWorkflow = await AWS.Omics.Workflow("basicWorkflow", {
-  Name: "RNASeqAnalysis",
-  DefinitionUri: "s3://my-bucket/definitions/rnaseq.cwl",
-  Main: "main.cwl",
-  ParameterTemplate: {
-    readFiles: ["s3://my-bucket/reads/sample1.fastq", "s3://my-bucket/reads/sample2.fastq"]
-  }
+const workflow = await AWS.Omics.Workflow("workflow-example", {
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A workflow resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Workflow with additional options, such as storage capacity and tags.
+Create a workflow with additional configuration:
 
 ```ts
-const advancedWorkflow = await AWS.Omics.Workflow("advancedWorkflow", {
-  Name: "WholeGenomeSequencing",
-  DefinitionUri: "s3://my-bucket/definitions/wgs.cwl",
-  Main: "main.cwl",
-  ParameterTemplate: {
-    genomeReference: "s3://my-bucket/references/genome.fa",
-    qualityThreshold: 30
-  },
-  StorageCapacity: 100, // in GiB
+import AWS from "alchemy/aws/control";
+
+const advancedWorkflow = await AWS.Omics.Workflow("advanced-workflow", {
   Tags: {
-    project: "Genomics",
-    owner: "bioinformatics_team"
-  }
-});
-```
-
-## Using Accelerators
-
-Create a Workflow that utilizes AWS Omics accelerators for improved performance.
-
-```ts
-const acceleratedWorkflow = await AWS.Omics.Workflow("acceleratedWorkflow", {
-  Name: "VariantCalling",
-  DefinitionUri: "s3://my-bucket/definitions/variant_calling.cwl",
-  Main: "main.cwl",
-  ParameterTemplate: {
-    inputBam: "s3://my-bucket/aligned/sample.bam",
-    outputVcf: "s3://my-bucket/variants/sample.vcf"
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Accelerators: "SAGEMAKER" // Using SageMaker for acceleration
+  Description: "A workflow resource managed by Alchemy",
 });
 ```
 
-## Resource Adoption
-
-If you want to adopt an existing Workflow resource instead of failing if it already exists, use the adopt property.
-
-```ts
-const adoptedWorkflow = await AWS.Omics.Workflow("adoptedWorkflow", {
-  Name: "AdoptedWorkflow",
-  DefinitionUri: "s3://my-bucket/definitions/adopted_workflow.cwl",
-  Main: "main.cwl",
-  ParameterTemplate: {
-    inputData: "s3://my-bucket/input/data.json"
-  },
-  adopt: true // Adopt existing resource
-});
-```

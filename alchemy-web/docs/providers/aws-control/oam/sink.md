@@ -5,82 +5,84 @@ description: Learn how to create, update, and manage AWS Oam Sinks using Alchemy
 
 # Sink
 
-The Sink resource allows you to create and manage [AWS Oam Sinks](https://docs.aws.amazon.com/oam/latest/userguide/) for centralized logging and monitoring of your AWS resources.
+The Sink resource allows you to manage [AWS Oam Sinks](https://docs.aws.amazon.com/oam/latest/userguide/) which are used to collect and route observability data across AWS accounts and services.
 
 ## Minimal Example
 
-Create a basic Oam Sink with a name and optional tags.
+Create a basic Oam Sink with essential properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSink = await AWS.Oam.Sink("basicSink", {
-  name: "MyOamSink",
-  tags: {
-    Environment: "Production",
-    Project: "LoggingService"
-  }
-});
-```
-
-## Enhanced Policy Configuration
-
-Configure a sink with an IAM policy that grants permissions to write logs.
-
-```ts
-const secureSink = await AWS.Oam.Sink("secureSink", {
-  name: "SecureOamSink",
-  policy: {
+const BasicSink = await AWS.Oam.Sink("BasicSink", {
+  Name: "MyOamSink",
+  Policy: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
         Principal: {
-          Service: "logs.amazonaws.com"
+          Service: "oam.amazonaws.com"
         },
-        Action: "oam:PutLogEvents",
+        Action: "oam:PutSink",
         Resource: "*"
       }
     ]
-  }
-});
-```
-
-## Adoption of Existing Resource
-
-Adopt an existing Oam Sink if it already exists, preventing failure during creation.
-
-```ts
-const adoptedSink = await AWS.Oam.Sink("adoptedSink", {
-  name: "ExistingOamSink",
-  adopt: true
-});
-```
-
-## Advanced Configuration with Detailed Tags
-
-Create a sink with detailed tags for better resource management and tracking.
-
-```ts
-const detailedSink = await AWS.Oam.Sink("detailedSink", {
-  name: "DetailedOamSink",
-  tags: {
-    Environment: "Staging",
-    Owner: "DevTeam",
-    Purpose: "Testing"
   },
-  policy: {
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Observability" }
+  ]
+});
+```
+
+## Advanced Configuration
+
+Configure a sink with enhanced permissions and specific tags:
+
+```ts
+const AdvancedSink = await AWS.Oam.Sink("AdvancedSink", {
+  Name: "AdvancedOamSink",
+  Policy: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
         Principal: {
-          Service: "logs.amazonaws.com"
+          Service: "oam.amazonaws.com"
         },
         Action: [
-          "oam:PutLogEvents",
-          "oam:CreateLogStream"
+          "oam:PutSink",
+          "oam:DeleteSink"
         ],
+        Resource: "*"
+      }
+    ]
+  },
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Project", Value: "Monitoring" }
+  ]
+});
+```
+
+## Using Existing Resources
+
+Adopt an existing Oam Sink resource without failing if it already exists:
+
+```ts
+const AdoptExistingSink = await AWS.Oam.Sink("AdoptExistingSink", {
+  Name: "ExistingOamSink",
+  adopt: true, // This will allow adopting the existing sink
+  Policy: {
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: {
+          Service: "oam.amazonaws.com"
+        },
+        Action: "oam:PutSink",
         Resource: "*"
       }
     ]

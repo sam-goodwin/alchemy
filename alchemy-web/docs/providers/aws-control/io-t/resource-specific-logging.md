@@ -5,61 +5,67 @@ description: Learn how to create, update, and manage AWS IoT ResourceSpecificLog
 
 # ResourceSpecificLogging
 
-The ResourceSpecificLogging resource allows you to configure logging settings for specific AWS IoT resources, enabling you to manage logging levels for better observability and troubleshooting. For more details, refer to the [AWS IoT ResourceSpecificLoggings documentation](https://docs.aws.amazon.com/iot/latest/userguide/).
+The ResourceSpecificLogging resource allows you to manage logging configurations for specific AWS IoT resources. This enables you to control the logging level of your IoT resources, facilitating better debugging and monitoring. For more detailed information, visit the [AWS IoT ResourceSpecificLoggings documentation](https://docs.aws.amazon.com/iot/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic ResourceSpecificLogging with required properties to enable logging for a specific AWS IoT resource.
+Create a basic ResourceSpecificLogging configuration with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const resourceSpecificLogging = await AWS.IoT.ResourceSpecificLogging("basicLogging", {
+const BasicLogging = await AWS.IoT.ResourceSpecificLogging("BasicLogging", {
   TargetType: "Thing",
   TargetName: "MyIoTDevice",
-  LogLevel: "INFO"
+  LogLevel: "INFO",
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
 ## Advanced Configuration
 
-Configure ResourceSpecificLogging with additional optional properties such as adopting an existing resource.
+Update logging settings with additional properties such as adopting existing configurations.
 
 ```ts
-const advancedLogging = await AWS.IoT.ResourceSpecificLogging("advancedLogging", {
-  TargetType: "Topic",
-  TargetName: "MyIoTTopic",
-  LogLevel: "ERROR",
-  adopt: true // Adopts the existing resource if it already exists
+const AdvancedLogging = await AWS.IoT.ResourceSpecificLogging("AdvancedLogging", {
+  TargetType: "Policy",
+  TargetName: "MyIoTPolicy",
+  LogLevel: "DEBUG",
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Debugging Logs Configuration
+## Custom Logging for Multiple Resource Types
 
-Set up ResourceSpecificLogging to capture detailed debugging logs for an IoT resource.
-
-```ts
-const debugLogging = await AWS.IoT.ResourceSpecificLogging("debugLogging", {
-  TargetType: "Rule",
-  TargetName: "MyIoTRule",
-  LogLevel: "DEBUG"
-});
-```
-
-## Multi-Resource Logging Setup
-
-Create multiple ResourceSpecificLoggings for different types of resources to manage logging centrally.
+Configure logging for multiple resource types by creating separate ResourceSpecificLogging instances.
 
 ```ts
-const thingLogging = await AWS.IoT.ResourceSpecificLogging("thingLogging", {
+const ThingLogging = await AWS.IoT.ResourceSpecificLogging("ThingLogging", {
   TargetType: "Thing",
   TargetName: "MyIoTDevice",
-  LogLevel: "INFO"
+  LogLevel: "ERROR",
+  adopt: false // Do not adopt existing resource, fail if it exists
 });
 
-const topicLogging = await AWS.IoT.ResourceSpecificLogging("topicLogging", {
-  TargetType: "Topic",
-  TargetName: "MyIoTTopic",
-  LogLevel: "WARN"
+const PolicyLogging = await AWS.IoT.ResourceSpecificLogging("PolicyLogging", {
+  TargetType: "Policy",
+  TargetName: "MyIoTPolicy",
+  LogLevel: "WARN",
+  adopt: false // Do not adopt existing resource, fail if it exists
+});
+```
+
+## Conditional Logging Based on Environment
+
+Set up logging based on different environments (e.g., development, production).
+
+```ts
+const Environment = process.env.NODE_ENV || "development";
+
+const EnvironmentLogging = await AWS.IoT.ResourceSpecificLogging("EnvLogging", {
+  TargetType: "Thing",
+  TargetName: Environment === "production" ? "ProductionDevice" : "DevelopmentDevice",
+  LogLevel: Environment === "production" ? "ERROR" : "DEBUG",
+  adopt: true // Adopt existing resource if it already exists
 });
 ```

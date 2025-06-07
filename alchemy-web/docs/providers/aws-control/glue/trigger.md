@@ -5,108 +5,117 @@ description: Learn how to create, update, and manage AWS Glue Triggers using Alc
 
 # Trigger
 
-The Trigger resource lets you manage [AWS Glue Triggers](https://docs.aws.amazon.com/glue/latest/userguide/) which are used to start jobs based on specific events or schedules.
+The Trigger resource allows you to manage [AWS Glue Triggers](https://docs.aws.amazon.com/glue/latest/userguide/) which are used to start jobs based on certain events or schedules.
 
 ## Minimal Example
 
-Create a basic Glue Trigger that starts on job creation:
+Create a basic AWS Glue Trigger that starts on job creation.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const glueTrigger = await AWS.Glue.Trigger("myGlueTrigger", {
+const basicTrigger = await AWS.Glue.Trigger("BasicTrigger", {
   Type: "SCHEDULED",
   StartOnCreation: true,
   Actions: [
     {
-      JobName: "myGlueJob",
+      JobName: "ETLJob",
       Arguments: {
-        "--input": "s3://my-bucket/input",
-        "--output": "s3://my-bucket/output"
+        "--key": "value"
       }
     }
   ],
-  Schedule: "cron(0 12 * * ? *)" // Every day at noon UTC
+  Schedule: "cron(0 12 * * ? *)", // Every day at 12 PM UTC
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Owner", Value: "DataEngineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Glue Trigger with event batching conditions and a predicate:
+Configure a trigger with advanced options including predicates and event batching conditions.
 
 ```ts
-const advancedGlueTrigger = await AWS.Glue.Trigger("advancedGlueTrigger", {
-  Type: "EVENT",
+const advancedTrigger = await AWS.Glue.Trigger("AdvancedTrigger", {
+  Type: "CONDITIONAL",
   StartOnCreation: false,
   Actions: [
     {
-      JobName: "myAdvancedGlueJob",
+      JobName: "DataProcessingJob",
       Arguments: {
-        "--input": "s3://my-bucket/advanced-input",
-        "--output": "s3://my-bucket/advanced-output"
+        "--input": "s3://input-bucket/",
+        "--output": "s3://output-bucket/"
       }
     }
   ],
-  EventBatchingCondition: {
-    BatchSize: 10,
-    BatchWindow: 60 // seconds
-  },
   Predicate: {
     Conditions: [
       {
-        JobName: "myGlueJob",
-        State: "SUCCEEDED"
+        JobName: "DependentJob",
+        State: "SUCCEEDED" // Trigger only if the dependent job succeeded
       }
     ]
-  }
+  },
+  EventBatchingCondition: {
+    BatchSize: 5,
+    BatchWindow: 60 // 60 seconds
+  },
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Analytics" }
+  ]
 });
 ```
 
 ## Scheduled Trigger Example
 
-Create a Glue Trigger that runs a job daily at a specific time:
+Create a trigger that runs on a specific schedule.
 
 ```ts
-const dailyGlueTrigger = await AWS.Glue.Trigger("dailyGlueTrigger", {
+const scheduledTrigger = await AWS.Glue.Trigger("ScheduledTrigger", {
   Type: "SCHEDULED",
   StartOnCreation: true,
   Actions: [
     {
-      JobName: "myDailyJob",
+      JobName: "DailyDataIngestion",
       Arguments: {
-        "--input": "s3://my-bucket/daily-input",
-        "--output": "s3://my-bucket/daily-output"
+        "--source": "s3://data-source/",
+        "--target": "s3://data-target/"
       }
     }
   ],
-  Schedule: "cron(0 15 * * ? *)" // Every day at 3 PM UTC
+  Schedule: "cron(0 6 * * ? *)", // Every day at 6 AM UTC
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Owner", Value: "DataTeam" }
+  ]
 });
 ```
 
-## Event-Based Trigger Example
+## Event-Driven Trigger Example
 
-Set up a Glue Trigger that responds to an event from another service:
+Set up a trigger that responds to specific events.
 
 ```ts
-const eventBasedGlueTrigger = await AWS.Glue.Trigger("eventBasedGlueTrigger", {
+const eventDrivenTrigger = await AWS.Glue.Trigger("EventDrivenTrigger", {
   Type: "EVENT",
-  StartOnCreation: true,
   Actions: [
     {
-      JobName: "myEventJob",
+      JobName: "EventHandlingJob",
       Arguments: {
-        "--input": "s3://my-bucket/event-input",
-        "--output": "s3://my-bucket/event-output"
+        "--eventType": "S3:ObjectCreated:*"
       }
     }
   ],
-  Predicate: {
-    Conditions: [
-      {
-        JobName: "myEventJob",
-        State: "FAILED"
-      }
-    ]
-  }
+  EventBatchingCondition: {
+    BatchSize: 10,
+    BatchWindow: 120 // 120 seconds
+  },
+  Tags: [
+    { Key: "Environment", Value: "QA" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```

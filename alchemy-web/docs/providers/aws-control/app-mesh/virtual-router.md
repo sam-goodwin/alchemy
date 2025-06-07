@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS AppMesh VirtualRouters 
 
 # VirtualRouter
 
-The VirtualRouter resource lets you manage [AWS AppMesh VirtualRouters](https://docs.aws.amazon.com/appmesh/latest/userguide/) which are used to route traffic between different services in your mesh.
+The VirtualRouter resource allows you to manage [AWS AppMesh VirtualRouters](https://docs.aws.amazon.com/appmesh/latest/userguide/) to facilitate service communication within your microservices architecture.
 
 ## Minimal Example
 
@@ -14,30 +14,29 @@ Create a basic VirtualRouter with required properties and one optional tag:
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicVirtualRouter = await AWS.AppMesh.VirtualRouter("basicVirtualRouter", {
-  MeshName: "myAppMesh",
+const basicVirtualRouter = await AWS.AppMesh.VirtualRouter("BasicVirtualRouter", {
+  MeshName: "my-app-mesh",
+  VirtualRouterName: "my-virtual-router",
   Spec: {
     Listeners: [{
       PortMapping: {
         Port: 8080,
         Protocol: "http"
       }
-    }]
+    }],
   },
-  Tags: [{
-    Key: "Environment",
-    Value: "Development"
-  }]
+  Tags: [{ Key: "Environment", Value: "production" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VirtualRouter with additional properties such as multiple listeners and tags for better management:
+Configure a VirtualRouter with multiple listeners for different protocols and ports:
 
 ```ts
-const advancedVirtualRouter = await AWS.AppMesh.VirtualRouter("advancedVirtualRouter", {
-  MeshName: "myAppMesh",
+const advancedVirtualRouter = await AWS.AppMesh.VirtualRouter("AdvancedVirtualRouter", {
+  MeshName: "my-app-mesh",
+  VirtualRouterName: "my-advanced-router",
   Spec: {
     Listeners: [{
       PortMapping: {
@@ -49,52 +48,35 @@ const advancedVirtualRouter = await AWS.AppMesh.VirtualRouter("advancedVirtualRo
         Port: 8443,
         Protocol: "https"
       }
-    }]
+    }],
   },
-  Tags: [{
-    Key: "Environment",
-    Value: "Production"
-  }, {
-    Key: "Team",
-    Value: "DevOps"
-  }]
+  Tags: [{ Key: "Environment", Value: "staging" }, { Key: "Team", Value: "DevOps" }]
 });
 ```
 
-## Custom Mesh Owner
+## Multiple VirtualRouter Listeners
 
-Create a VirtualRouter specifying a custom mesh owner if required:
+Set up a VirtualRouter with distinct listeners to handle different service traffic:
 
 ```ts
-const customOwnerVirtualRouter = await AWS.AppMesh.VirtualRouter("customOwnerVirtualRouter", {
-  MeshName: "myAppMesh",
-  MeshOwner: "123456789012", // Example AWS account ID
+const multiListenerVirtualRouter = await AWS.AppMesh.VirtualRouter("MultiListenerVirtualRouter", {
+  MeshName: "my-app-mesh",
+  VirtualRouterName: "my-multi-listener-router",
   Spec: {
     Listeners: [{
       PortMapping: {
         Port: 8080,
         Protocol: "http"
       }
-    }]
-  }
-});
-```
-
-## Adoption of Existing Resource
-
-Configure a VirtualRouter that adopts an existing resource instead of failing:
-
-```ts
-const adoptExistingVirtualRouter = await AWS.AppMesh.VirtualRouter("adoptExistingVirtualRouter", {
-  MeshName: "myAppMesh",
-  Spec: {
-    Listeners: [{
+    }, {
       PortMapping: {
-        Port: 8080,
-        Protocol: "http"
+        Port: 8443,
+        Protocol: "https"
       }
-    }]
+    }],
   },
-  adopt: true // Allows adoption of an existing resource
+  Tags: [{ Key: "Environment", Value: "development" }]
 });
 ```
+
+This example demonstrates how to create a VirtualRouter that can handle both HTTP and HTTPS traffic, allowing your services to communicate securely and efficiently.

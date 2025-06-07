@@ -5,58 +5,102 @@ description: Learn how to create, update, and manage AWS CloudTrail ResourcePoli
 
 # ResourcePolicy
 
-The ResourcePolicy resource lets you manage [AWS CloudTrail ResourcePolicys](https://docs.aws.amazon.com/cloudtrail/latest/userguide/) that define access to your CloudTrail resources. Resource policies are important for controlling which AWS accounts or IAM roles can access your CloudTrail logs.
+The ResourcePolicy resource allows you to manage access control policies for AWS CloudTrail resources. This enables you to specify who can access your CloudTrail data and what actions they can perform. For more detailed information, refer to the [AWS CloudTrail ResourcePolicys documentation](https://docs.aws.amazon.com/cloudtrail/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic resource policy that allows specific AWS accounts to access CloudTrail logs.
+Create a basic ResourcePolicy for a CloudTrail resource, specifying the required properties along with one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const resourcePolicy = await AWS.CloudTrail.ResourcePolicy("basicResourcePolicy", {
-  ResourceArn: "arn:aws:cloudtrail:us-east-1:123456789012:trail/MyTrail",
-  ResourcePolicy: {
+const BasicResourcePolicy = await AWS.CloudTrail.ResourcePolicy("BasicPolicy", {
+  ResourceArn: "arn:aws:cloudtrail:us-west-2:123456789012:trail/MyTrail",
+  ResourcePolicy: JSON.stringify({
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Principal: {
-          AWS: [
-            "arn:aws:iam::111122223333:role/ExampleRole"
-          ]
-        },
+        Principal: "*",
         Action: "cloudtrail:LookupEvents",
         Resource: "*"
       }
     ]
-  },
-  adopt: false // Default is false; adopt existing resource if true
+  }),
+  adopt: true // Optionally adopt an existing resource
 });
 ```
 
 ## Advanced Configuration
 
-Configure a resource policy that includes multiple principals and additional actions.
+Configure a ResourcePolicy with a more complex policy that includes multiple statements and conditions.
 
 ```ts
-const advancedResourcePolicy = await AWS.CloudTrail.ResourcePolicy("advancedResourcePolicy", {
-  ResourceArn: "arn:aws:cloudtrail:us-east-1:123456789012:trail/MyTrail",
-  ResourcePolicy: {
+const AdvancedResourcePolicy = await AWS.CloudTrail.ResourcePolicy("AdvancedPolicy", {
+  ResourceArn: "arn:aws:cloudtrail:us-west-2:123456789012:trail/MyTrail",
+  ResourcePolicy: JSON.stringify({
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Principal: {
-          AWS: [
-            "arn:aws:iam::111122223333:role/ExampleRole",
-            "arn:aws:iam::444455556666:user/AnotherUser"
-          ]
-        },
+        Principal: { AWS: "arn:aws:iam::098765432109:user/ExampleUser" },
+        Action: "cloudtrail:DescribeTrails",
+        Resource: "*",
+        Condition: {
+          StringEquals: {
+            "aws:SourceIp": "203.0.113.0/24"
+          }
+        }
+      },
+      {
+        Effect: "Deny",
+        Principal: "*",
+        Action: "cloudtrail:DeleteTrail",
+        Resource: "arn:aws:cloudtrail:us-west-2:123456789012:trail/MyTrail"
+      }
+    ]
+  })
+});
+```
+
+## Specific Use Case: Restricting Access
+
+Create a ResourcePolicy that restricts access to a specific AWS account and limits actions to only those necessary for auditing.
+
+```ts
+const RestrictedAccessPolicy = await AWS.CloudTrail.ResourcePolicy("RestrictedAccess", {
+  ResourceArn: "arn:aws:cloudtrail:us-west-2:123456789012:trail/MyTrail",
+  ResourcePolicy: JSON.stringify({
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: { AWS: "arn:aws:iam::123456789012:role/AuditorRole" },
         Action: [
           "cloudtrail:LookupEvents",
-          "cloudtrail:GetTrail"
+          "cloudtrail:GetTrailStatus"
         ],
+        Resource: "*"
+      }
+    ]
+  })
+});
+```
+
+## Specific Use Case: Cross-Account Access
+
+Set up a ResourcePolicy that allows cross-account access for specific actions.
+
+```ts
+const CrossAccountPolicy = await AWS.CloudTrail.ResourcePolicy("CrossAccountAccess", {
+  ResourceArn: "arn:aws:cloudtrail:us-west-2:123456789012:trail/MyTrail",
+  ResourcePolicy: JSON.stringify({
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: { AWS: "arn:aws:iam::987654321098:role/ExternalAuditorRole" },
+        Action: "cloudtrail:LookupEvents",
         Resource: "*",
         Condition: {
           StringEquals: {
@@ -65,34 +109,6 @@ const advancedResourcePolicy = await AWS.CloudTrail.ResourcePolicy("advancedReso
         }
       }
     ]
-  }
-});
-```
-
-## Specific Use Case: Deny Access Based on Conditions
-
-Demonstrate how to deny access to specific actions based on certain conditions.
-
-```ts
-const denyAccessPolicy = await AWS.CloudTrail.ResourcePolicy("denyAccessPolicy", {
-  ResourceArn: "arn:aws:cloudtrail:us-east-1:123456789012:trail/MyTrail",
-  ResourcePolicy: {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Deny",
-        Principal: {
-          AWS: "arn:aws:iam::999988887777:role/RestrictedRole"
-        },
-        Action: "cloudtrail:LookupEvents",
-        Resource: "*",
-        Condition: {
-          StringEquals: {
-            "aws:SourceIp": "203.0.113.0/24"
-          }
-        }
-      }
-    ]
-  }
+  })
 });
 ```

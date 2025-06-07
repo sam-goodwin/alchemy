@@ -5,46 +5,56 @@ description: Learn how to create, update, and manage AWS ServiceCatalog LaunchRo
 
 # LaunchRoleConstraint
 
-The LaunchRoleConstraint resource allows you to manage the launch role constraints for AWS Service Catalog products. This enables you to specify the IAM role that users can assume when launching a product from a portfolio. For more information, visit the [AWS ServiceCatalog LaunchRoleConstraints](https://docs.aws.amazon.com/servicecatalog/latest/userguide/) documentation.
+The LaunchRoleConstraint resource allows you to manage [AWS ServiceCatalog LaunchRoleConstraints](https://docs.aws.amazon.com/servicecatalog/latest/userguide/) that define the permissions related to launching products from a portfolio. 
 
 ## Minimal Example
 
-Create a basic LaunchRoleConstraint specifying the portfolio ID, product ID, and a role ARN.
+Create a basic LaunchRoleConstraint with the required properties and a common optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const launchRoleConstraint = await AWS.ServiceCatalog.LaunchRoleConstraint("basicLaunchRoleConstraint", {
-  PortfolioId: "portfolio-12345678",
-  ProductId: "product-87654321",
-  RoleArn: "arn:aws:iam::123456789012:role/LaunchRole",
-  Description: "Launch role constraint for my product."
+const LaunchRoleConstraint = await AWS.ServiceCatalog.LaunchRoleConstraint("BasicLaunchRoleConstraint", {
+  PortfolioId: "port-12345abcd",
+  ProductId: "prod-67890efgh",
+  Description: "This constraint allows users to launch the product with specified IAM roles."
 });
 ```
 
 ## Advanced Configuration
 
-Configure a LaunchRoleConstraint with additional options such as accept language and a local role name.
+Configure a LaunchRoleConstraint with additional properties, such as a local role name and accept language.
 
 ```ts
-const advancedLaunchRoleConstraint = await AWS.ServiceCatalog.LaunchRoleConstraint("advancedLaunchRoleConstraint", {
-  PortfolioId: "portfolio-87654321",
-  ProductId: "product-12345678",
-  RoleArn: "arn:aws:iam::123456789012:role/AdvancedLaunchRole",
-  LocalRoleName: "AdvancedLaunchRoleName",
+const AdvancedLaunchRoleConstraint = await AWS.ServiceCatalog.LaunchRoleConstraint("AdvancedLaunchRoleConstraint", {
+  PortfolioId: "port-12345abcd",
+  ProductId: "prod-67890efgh",
+  LocalRoleName: "CustomLaunchRole",
   AcceptLanguage: "en"
 });
 ```
 
-## Adopting Existing Resources
+## Adoption of Existing Resources
 
-If you want to adopt an existing LaunchRoleConstraint without failing if it already exists, you can set the adopt property to true.
+If you want to adopt an existing LaunchRoleConstraint instead of failing when it already exists, you can set the adopt property to true.
 
 ```ts
-const adoptExistingLaunchRoleConstraint = await AWS.ServiceCatalog.LaunchRoleConstraint("adoptLaunchRoleConstraint", {
-  PortfolioId: "portfolio-12345678",
-  ProductId: "product-87654321",
-  RoleArn: "arn:aws:iam::123456789012:role/AdoptLaunchRole",
+const AdoptExistingLaunchRoleConstraint = await AWS.ServiceCatalog.LaunchRoleConstraint("AdoptLaunchRoleConstraint", {
+  PortfolioId: "port-12345abcd",
+  ProductId: "prod-67890efgh",
   adopt: true
+});
+```
+
+## Specifying RoleArn
+
+Here’s how to specify a RoleArn in your LaunchRoleConstraint configuration for more controlled access.
+
+```ts
+const RoleArnLaunchRoleConstraint = await AWS.ServiceCatalog.LaunchRoleConstraint("RoleArnLaunchRoleConstraint", {
+  PortfolioId: "port-12345abcd",
+  ProductId: "prod-67890efgh",
+  RoleArn: "arn:aws:iam::123456789012:role/MyLaunchRole",
+  Description: "This constraint uses a specific IAM role for launching products."
 });
 ```

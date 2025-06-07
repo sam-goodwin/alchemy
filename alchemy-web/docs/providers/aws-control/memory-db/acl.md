@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS MemoryDB ACLs using Alc
 
 # ACL
 
-The ACL resource allows you to manage [AWS MemoryDB Access Control Lists (ACLs)](https://docs.aws.amazon.com/memorydb/latest/userguide/) to control access to your MemoryDB clusters and resources.
+The ACL resource allows you to manage [AWS MemoryDB Access Control Lists (ACLs)](https://docs.aws.amazon.com/memorydb/latest/userguide/), which define permissions for users to access MemoryDB clusters.
 
 ## Minimal Example
 
@@ -14,43 +14,55 @@ Create a basic ACL with a name and a list of usernames.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const memoryDbAcl = await AWS.MemoryDB.ACL("basicAcl", {
-  ACLName: "myAcl",
+const basicACL = await AWS.MemoryDB.ACL("basicAcl", {
+  ACLName: "default-access",
   UserNames: ["user1", "user2"],
   Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "MemoryDBSetup" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Create an ACL with additional configuration options including tags and adoption of existing resources.
+Configure an ACL with additional options for user permissions.
 
 ```ts
-const advancedMemoryDbAcl = await AWS.MemoryDB.ACL("advancedAcl", {
-  ACLName: "secureAcl",
-  UserNames: ["adminUser", "readonlyUser"],
+const advancedACL = await AWS.MemoryDB.ACL("advancedAcl", {
+  ACLName: "advanced-access",
+  UserNames: ["admin-user", "read-only-user"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Application", Value: "HighSecurityApp" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
   ],
-  adopt: true // This will use an existing resource if it already exists
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Use Case: Restrict Access for Multiple Users
+## Example with No Users
 
-Create an ACL that restricts access for a specific set of users.
+Create an ACL that does not specify any usernames, allowing for further customization later.
 
 ```ts
-const restrictedMemoryDbAcl = await AWS.MemoryDB.ACL("restrictedAcl", {
-  ACLName: "restrictedAccess",
-  UserNames: ["guestUser1", "guestUser2"],
+const noUserACL = await AWS.MemoryDB.ACL("noUserAcl", {
+  ACLName: "no-users-access",
   Tags: [
-    { Key: "AccessLevel", Value: "Restricted" },
-    { Key: "Compliance", Value: "GDPR" }
+    { Key: "Environment", Value: "staging" }
+  ]
+});
+```
+
+## Example with Tags Only
+
+Create an ACL resource that only specifies tags, allowing for a quick setup.
+
+```ts
+const tagOnlyACL = await AWS.MemoryDB.ACL("tagOnlyAcl", {
+  ACLName: "tagged-access",
+  Tags: [
+    { Key: "Environment", Value: "testing" },
+    { Key: "Owner", Value: "QA" }
   ]
 });
 ```

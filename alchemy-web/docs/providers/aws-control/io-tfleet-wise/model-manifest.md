@@ -5,68 +5,41 @@ description: Learn how to create, update, and manage AWS IoTFleetWise ModelManif
 
 # ModelManifest
 
-The ModelManifest resource allows you to define and manage [AWS IoTFleetWise ModelManifests](https://docs.aws.amazon.com/iotfleetwise/latest/userguide/) that specify vehicle signal configurations and data collection strategies.
+The ModelManifest resource lets you create and manage [AWS IoTFleetWise ModelManifests](https://docs.aws.amazon.com/iotfleetwise/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iotfleetwise-modelmanifest.html
 
 ## Minimal Example
-
-Create a basic ModelManifest with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicModelManifest = await AWS.IoTFleetWise.ModelManifest("basicModelManifest", {
-  name: "BasicVehicleManifest",
-  signalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog/MySignalCatalog",
-  status: "ACTIVE",
-  description: "A basic model manifest for vehicle data collection."
+const modelmanifest = await AWS.IoTFleetWise.ModelManifest("modelmanifest-example", {
+  SignalCatalogArn: "example-signalcatalogarn",
+  Name: "modelmanifest-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A modelmanifest resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ModelManifest with additional nodes and tags for better organization and clarity.
+Create a modelmanifest with additional configuration:
 
 ```ts
-const advancedModelManifest = await AWS.IoTFleetWise.ModelManifest("advancedModelManifest", {
-  name: "AdvancedVehicleManifest",
-  signalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog/MySignalCatalog",
-  status: "ACTIVE",
-  description: "An advanced model manifest with specific nodes and tags.",
-  nodes: ["Node1", "Node2"],
-  tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "FleetManagement" }
-  ]
+import AWS from "alchemy/aws/control";
+
+const advancedModelManifest = await AWS.IoTFleetWise.ModelManifest("advanced-modelmanifest", {
+  SignalCatalogArn: "example-signalcatalogarn",
+  Name: "modelmanifest-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A modelmanifest resource managed by Alchemy",
 });
 ```
 
-## Adoption of Existing Resource
-
-If you want to adopt an existing ModelManifest instead of failing when it already exists, you can use the `adopt` property.
-
-```ts
-const adoptExistingModelManifest = await AWS.IoTFleetWise.ModelManifest("adoptExistingModelManifest", {
-  name: "ExistingVehicleManifest",
-  signalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog/MySignalCatalog",
-  status: "ACTIVE",
-  description: "Adopting an existing model manifest without failure.",
-  adopt: true
-});
-```
-
-## Creation with Nodes
-
-Create a ModelManifest that includes specific nodes to collect data from.
-
-```ts
-const modelManifestWithNodes = await AWS.IoTFleetWise.ModelManifest("modelManifestWithNodes", {
-  name: "VehicleDataManifest",
-  signalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog/MySignalCatalog",
-  description: "A manifest that includes specific nodes for data collection.",
-  nodes: [
-    "EngineSpeed",
-    "VehicleSpeed",
-    "FuelLevel"
-  ]
-});
-```

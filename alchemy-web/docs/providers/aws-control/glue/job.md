@@ -5,81 +5,95 @@ description: Learn how to create, update, and manage AWS Glue Jobs using Alchemy
 
 # Job
 
-The Job resource lets you manage [AWS Glue Jobs](https://docs.aws.amazon.com/glue/latest/userguide/) for data processing and ETL (Extract, Transform, Load) operations.
+The Job resource allows you to manage [AWS Glue Jobs](https://docs.aws.amazon.com/glue/latest/userguide/) for ETL (Extract, Transform, Load) operations in your data workflows.
 
 ## Minimal Example
 
-Create a basic AWS Glue Job with required properties and a couple of common optional properties:
+Create a basic Glue Job with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const glueJob = await AWS.Glue.Job("basic-glue-job", {
-  role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
-  command: {
-    name: "glueetl",
-    scriptLocation: "s3://my-bucket/scripts/my-glue-script.py",
-    pythonVersion: "3"
+const basicGlueJob = await AWS.Glue.Job("BasicGlueJob", {
+  Role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
+  Command: {
+    Name: "glueetl",
+    ScriptLocation: "s3://my-script-bucket/scripts/my_etl_script.py"
   },
-  description: "A simple Glue job for ETL process",
-  maxRetries: 2
+  DefaultArguments: {
+    "--TempDir": "s3://my-script-bucket/temp/",
+    "--job-language": "python"
+  },
+  MaxRetries: 2
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Glue Job with advanced settings such as job mode and custom default arguments:
+Configure a Glue Job with additional properties for fine-tuning its execution.
 
 ```ts
-const advancedGlueJob = await AWS.Glue.Job("advanced-glue-job", {
-  role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
-  command: {
-    name: "glueetl",
-    scriptLocation: "s3://my-bucket/scripts/my-advanced-glue-script.py",
-    pythonVersion: "3"
+const advancedGlueJob = await AWS.Glue.Job("AdvancedGlueJob", {
+  Role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
+  Command: {
+    Name: "glueetl",
+    ScriptLocation: "s3://my-script-bucket/scripts/my_etl_script.py"
   },
-  jobMode: "GOVERNED",
-  defaultArguments: {
-    "--job-bookmark-option": "job-bookmark-enable",
-    "--enable-s3-parquet-optimization": "true"
+  WorkerType: "G.2X",
+  NumberOfWorkers: 10,
+  MaxCapacity: 10,
+  GlueVersion: "2.0",
+  DefaultArguments: {
+    "--TempDir": "s3://my-script-bucket/temp/",
+    "--job-language": "python",
+    "--enable-metrics": "true"
   },
-  allocatedCapacity: 10,
-  timeout: 60
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Analytics" }
+  ]
 });
 ```
 
-## Job Queuing and Notifications
+## Job with Security Configuration
 
-Create a Glue Job that enables job queuing and sets up notifications:
+Set up a Glue Job with a security configuration for sensitive data handling.
 
 ```ts
-const queuedGlueJob = await AWS.Glue.Job("queued-glue-job", {
-  role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
-  command: {
-    name: "glueetl",
-    scriptLocation: "s3://my-bucket/scripts/my-queued-glue-script.py",
-    pythonVersion: "3"
+const secureGlueJob = await AWS.Glue.Job("SecureGlueJob", {
+  Role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
+  Command: {
+    Name: "glueetl",
+    ScriptLocation: "s3://my-script-bucket/scripts/my_etl_script.py"
   },
-  jobRunQueuingEnabled: true,
-  notificationProperty: {
-    notifyDelayAfter: 5
+  SecurityConfiguration: "my-security-configuration",
+  DefaultArguments: {
+    "--TempDir": "s3://my-script-bucket/temp/",
+    "--job-language": "python"
+  },
+  NotificationProperty: {
+    NotifyDelayAfter: 10
   }
 });
 ```
 
-## Custom Security Configuration
+## Job with Execution Property
 
-Define a Glue Job with a custom security configuration for encrypted data processing:
+Create a Glue Job with specific execution properties for fine-tuning.
 
 ```ts
-const secureGlueJob = await AWS.Glue.Job("secure-glue-job", {
-  role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
-  command: {
-    name: "glueetl",
-    scriptLocation: "s3://my-bucket/scripts/my-secure-glue-script.py",
-    pythonVersion: "3"
+const executionPropertyGlueJob = await AWS.Glue.Job("ExecutionPropertyGlueJob", {
+  Role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole",
+  Command: {
+    Name: "glueetl",
+    ScriptLocation: "s3://my-script-bucket/scripts/my_etl_script.py"
   },
-  securityConfiguration: "my-secure-configuration",
-  description: "Glue job with custom security settings"
+  ExecutionProperty: {
+    MaxConcurrentRuns: 5
+  },
+  DefaultArguments: {
+    "--TempDir": "s3://my-script-bucket/temp/",
+    "--job-language": "python"
+  }
 });
 ```

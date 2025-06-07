@@ -5,62 +5,66 @@ description: Learn how to create, update, and manage AWS IoT Authorizers using A
 
 # Authorizer
 
-The Authorizer resource lets you manage [AWS IoT Authorizers](https://docs.aws.amazon.com/iot/latest/userguide/) which are used to control access to AWS IoT devices and services.
+The Authorizer resource lets you manage [AWS IoT Authorizers](https://docs.aws.amazon.com/iot/latest/userguide/) that enable you to control access to your AWS IoT resources through custom authentication mechanisms.
 
 ## Minimal Example
 
-Create an IoT Authorizer with the required properties and some common optional settings.
+Create a basic IoT Authorizer with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const myAuthorizer = await AWS.IoT.Authorizer("myAuthorizer", {
-  AuthorizerFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:myAuthFunction",
-  Status: "ACTIVE",
-  TokenKeyName: "Authorization"
+const BasicAuthorizer = await AWS.IoT.Authorizer("BasicAuthorizer", {
+  AuthorizerFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:MyAuthorizerFunction",
+  TokenKeyName: "Authorization",
+  EnableCachingForHttp: true,
+  Status: "ACTIVE"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IoT Authorizer with additional settings such as caching and token signing.
+Configure an IoT Authorizer with additional settings, including token signing public keys and tags.
 
 ```ts
-const advancedAuthorizer = await AWS.IoT.Authorizer("advancedAuthorizer", {
-  AuthorizerFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:advancedAuthFunction",
-  Status: "ACTIVE",
+const AdvancedAuthorizer = await AWS.IoT.Authorizer("AdvancedAuthorizer", {
+  AuthorizerFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:AdvancedAuthorizerFunction",
   TokenKeyName: "Authorization",
   EnableCachingForHttp: true,
-  SigningDisabled: false,
   TokenSigningPublicKeys: {
-    "key1": "publicKeyData"
-  }
-});
-```
-
-## Using Tags for Resource Management
-
-You can add tags to your Authorizer for better resource management and organization.
-
-```ts
-const taggedAuthorizer = await AWS.IoT.Authorizer("taggedAuthorizer", {
-  AuthorizerFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:taggedAuthFunction",
-  Status: "ACTIVE",
+    "key1": "publicKey1Base64Encoded",
+    "key2": "publicKey2Base64Encoded"
+  },
+  SigningDisabled: false,
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "IoTPlatform" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
   ]
 });
 ```
 
-## Adopting Existing Resources
+## Caching Configuration
 
-If you want to adopt an existing Authorizer instead of failing if it already exists, set the `adopt` parameter to true.
+Create an IoT Authorizer that utilizes caching for HTTP requests to improve performance.
 
 ```ts
-const adoptedAuthorizer = await AWS.IoT.Authorizer("existingAuthorizer", {
-  AuthorizerFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:existingAuthFunction",
-  Status: "ACTIVE",
-  adopt: true
+const CachingAuthorizer = await AWS.IoT.Authorizer("CachingAuthorizer", {
+  AuthorizerFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:CachingAuthorizerFunction",
+  TokenKeyName: "AuthToken",
+  EnableCachingForHttp: true,
+  Status: "ACTIVE"
+});
+```
+
+## Disabling Signing
+
+Configure an IoT Authorizer with signing disabled for scenarios that do not require it.
+
+```ts
+const NoSigningAuthorizer = await AWS.IoT.Authorizer("NoSigningAuthorizer", {
+  AuthorizerFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:NoSigningAuthorizerFunction",
+  TokenKeyName: "AuthHeader",
+  SigningDisabled: true,
+  Status: "ACTIVE"
 });
 ```

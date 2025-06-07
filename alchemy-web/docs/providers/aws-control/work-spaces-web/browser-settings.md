@@ -5,75 +5,38 @@ description: Learn how to create, update, and manage AWS WorkSpacesWeb BrowserSe
 
 # BrowserSettings
 
-The BrowserSettings resource allows you to manage the configuration settings for browser settings in AWS WorkSpacesWeb. For more information, refer to the [AWS WorkSpacesWeb BrowserSettings documentation](https://docs.aws.amazon.com/workspacesweb/latest/userguide/).
+The BrowserSettings resource lets you create and manage [AWS WorkSpacesWeb BrowserSettingss](https://docs.aws.amazon.com/workspacesweb/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-workspacesweb-browsersettings.html
 
 ## Minimal Example
-
-Create a basic BrowserSettings resource with a browser policy and a customer-managed key.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicBrowserSettings = await AWS.WorkSpacesWeb.BrowserSettings("basicBrowserSettings", {
-  BrowserPolicy: JSON.stringify({
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: "workspacesweb:StartBrowserSession",
-        Resource: "*"
-      }
-    ]
-  }),
-  CustomerManagedKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-12ab-34cd-56ef-1234567890ab"
+const browsersettings = await AWS.WorkSpacesWeb.BrowserSettings("browsersettings-example", {
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a BrowserSettings resource with additional encryption context and tags for resource management.
+Create a browsersettings with additional configuration:
 
 ```ts
-const advancedBrowserSettings = await AWS.WorkSpacesWeb.BrowserSettings("advancedBrowserSettings", {
-  BrowserPolicy: JSON.stringify({
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: "workspacesweb:StartBrowserSession",
-        Resource: "*"
-      }
-    ]
-  }),
-  CustomerManagedKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-12ab-34cd-56ef-1234567890ab",
-  AdditionalEncryptionContext: {
-    "User": "exampleUser",
-    "Session": "session-12345"
-  },
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "WebApp" }
-  ]
-});
+import AWS from "alchemy/aws/control";
+
+const advancedBrowserSettings = await AWS.WorkSpacesWeb.BrowserSettings(
+  "advanced-browsersettings",
+  {
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+  }
+);
 ```
 
-## Using Adopt Option
-
-Create a BrowserSettings resource while adopting an existing resource if it already exists.
-
-```ts
-const adoptBrowserSettings = await AWS.WorkSpacesWeb.BrowserSettings("adoptBrowserSettings", {
-  BrowserPolicy: JSON.stringify({
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: "workspacesweb:StartBrowserSession",
-        Resource: "*"
-      }
-    ]
-  }),
-  CustomerManagedKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-12ab-34cd-56ef-1234567890ab",
-  adopt: true
-});
-```

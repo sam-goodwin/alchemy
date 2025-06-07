@@ -5,75 +5,45 @@ description: Learn how to create, update, and manage AWS Lightsail Databases usi
 
 # Database
 
-The Database resource lets you manage [AWS Lightsail Databases](https://docs.aws.amazon.com/lightsail/latest/userguide/) including their configurations and settings.
+The Database resource lets you create and manage [AWS Lightsail Databases](https://docs.aws.amazon.com/lightsail/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lightsail-database.html
 
 ## Minimal Example
-
-Create a basic Lightsail database with required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDatabase = await AWS.Lightsail.Database("basicDatabase", {
-  RelationalDatabaseName: "myDatabase",
-  RelationalDatabaseBlueprintId: "mysql_5_7",
-  MasterDatabaseName: "primaryDB",
-  MasterUsername: "adminUser",
-  MasterUserPassword: "SecurePassword123",
-  RelationalDatabaseBundleId: "medium_2_0",
-  PubliclyAccessible: true
+const database = await AWS.Lightsail.Database("database-example", {
+  RelationalDatabaseName: "database-relationaldatabase",
+  RelationalDatabaseBlueprintId: "example-relationaldatabaseblueprintid",
+  MasterDatabaseName: "database-masterdatabase",
+  MasterUsername: "database-masteruser",
+  RelationalDatabaseBundleId: "example-relationaldatabasebundleid",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a database with advanced settings including maintenance windows and backup options.
+Create a database with additional configuration:
 
 ```ts
-const advancedDatabase = await AWS.Lightsail.Database("advancedDatabase", {
-  RelationalDatabaseName: "advancedDB",
-  RelationalDatabaseBlueprintId: "mysql_5_7",
-  MasterDatabaseName: "primaryDB",
-  MasterUsername: "adminUser",
-  MasterUserPassword: "AnotherSecurePassword456",
-  RelationalDatabaseBundleId: "large_2_0",
-  PreferredMaintenanceWindow: "Mon:04:00-Mon:05:00",
-  PreferredBackupWindow: "Mon:02:00-Mon:03:00",
-  BackupRetention: true
+import AWS from "alchemy/aws/control";
+
+const advancedDatabase = await AWS.Lightsail.Database("advanced-database", {
+  RelationalDatabaseName: "database-relationaldatabase",
+  RelationalDatabaseBlueprintId: "example-relationaldatabaseblueprintid",
+  MasterDatabaseName: "database-masterdatabase",
+  MasterUsername: "database-masteruser",
+  RelationalDatabaseBundleId: "example-relationaldatabasebundleid",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
 
-## Database with Custom Parameters
-
-Create a database with specific relational database parameters.
-
-```ts
-const parameterDatabase = await AWS.Lightsail.Database("parameterDatabase", {
-  RelationalDatabaseName: "paramDB",
-  RelationalDatabaseBlueprintId: "mysql_5_7",
-  MasterDatabaseName: "primaryDB",
-  MasterUsername: "adminUser",
-  MasterUserPassword: "PasswordWithSpecialChar!789",
-  RelationalDatabaseBundleId: "medium_2_0",
-  RelationalDatabaseParameters: [
-    { parameterName: "max_connections", parameterValue: "200" },
-    { parameterName: "query_cache_size", parameterValue: "1048576" }
-  ]
-});
-```
-
-## Adopt Existing Database Resource
-
-If you want to adopt an existing database resource instead of creating a new one, you can specify the adopt option.
-
-```ts
-const adoptDatabase = await AWS.Lightsail.Database("adoptDatabase", {
-  RelationalDatabaseName: "existingDB",
-  RelationalDatabaseBlueprintId: "mysql_5_7",
-  MasterDatabaseName: "primaryDB",
-  MasterUsername: "adminUser",
-  MasterUserPassword: "SecurePassword789",
-  RelationalDatabaseBundleId: "medium_2_0",
-  adopt: true
-});
-```

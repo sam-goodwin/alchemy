@@ -5,50 +5,47 @@ description: Learn how to create, update, and manage AWS EC2 LocalGatewayRouteTa
 
 # LocalGatewayRouteTableVirtualInterfaceGroupAssociation
 
-The `LocalGatewayRouteTableVirtualInterfaceGroupAssociation` resource lets you manage associations between local gateway route tables and virtual interface groups in AWS EC2. This resource is essential for routing traffic through local gateways in your AWS infrastructure. For more details, refer to the [AWS EC2 LocalGatewayRouteTableVirtualInterfaceGroupAssociations documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The LocalGatewayRouteTableVirtualInterfaceGroupAssociation resource allows you to associate a virtual interface group with a local gateway route table in AWS EC2. This resource is essential for managing the routing of traffic in your VPC. For more details, refer to the [AWS EC2 LocalGatewayRouteTableVirtualInterfaceGroupAssociations documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-This example demonstrates how to create a basic `LocalGatewayRouteTableVirtualInterfaceGroupAssociation` with required properties and some optional tags.
+Create a basic LocalGatewayRouteTableVirtualInterfaceGroupAssociation with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const localGatewayAssociation = await AWS.EC2.LocalGatewayRouteTableVirtualInterfaceGroupAssociation("localGatewayAssociation", {
+const localGatewayAssociation = await AWS.EC2.LocalGatewayRouteTableVirtualInterfaceGroupAssociation("BasicAssociation", {
   LocalGatewayRouteTableId: "ltb-12345678",
   LocalGatewayVirtualInterfaceGroupId: "lvig-87654321",
   Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "Networking" }
+    { Key: "Environment", Value: "production" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we enable the adoption of existing resources by setting the `adopt` property to true.
+Configure a LocalGatewayRouteTableVirtualInterfaceGroupAssociation with additional options including multiple tags and enabling the adoption of an existing resource.
 
 ```ts
-const existingLocalGatewayAssociation = await AWS.EC2.LocalGatewayRouteTableVirtualInterfaceGroupAssociation("existingLocalGatewayAssociation", {
+const advancedLocalGatewayAssociation = await AWS.EC2.LocalGatewayRouteTableVirtualInterfaceGroupAssociation("AdvancedAssociation", {
   LocalGatewayRouteTableId: "ltb-12345678",
   LocalGatewayVirtualInterfaceGroupId: "lvig-87654321",
-  Tags: [{ Key: "Environment", Value: "Production" }],
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Networking" }
+  ],
   adopt: true
 });
 ```
 
-## Use Case: Dynamic Tagging
+## Example with No Tags
 
-This example shows how to create a `LocalGatewayRouteTableVirtualInterfaceGroupAssociation` with dynamic tags based on application needs.
+Create a LocalGatewayRouteTableVirtualInterfaceGroupAssociation without any tags, emphasizing the required properties only.
 
 ```ts
-const dynamicTaggingAssociation = await AWS.EC2.LocalGatewayRouteTableVirtualInterfaceGroupAssociation("dynamicTaggingAssociation", {
+const noTagLocalGatewayAssociation = await AWS.EC2.LocalGatewayRouteTableVirtualInterfaceGroupAssociation("NoTagAssociation", {
   LocalGatewayRouteTableId: "ltb-12345678",
-  LocalGatewayVirtualInterfaceGroupId: "lvig-87654321",
-  Tags: [
-    { Key: "Application", Value: "WebApp" },
-    { Key: "Owner", Value: "TeamA" },
-    { Key: "CostCenter", Value: "CC123" }
-  ]
+  LocalGatewayVirtualInterfaceGroupId: "lvig-87654321"
 });
 ```

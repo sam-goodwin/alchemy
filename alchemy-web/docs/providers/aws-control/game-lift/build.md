@@ -5,81 +5,81 @@ description: Learn how to create, update, and manage AWS GameLift Builds using A
 
 # Build
 
-The Build resource lets you manage [AWS GameLift Builds](https://docs.aws.amazon.com/gamelift/latest/userguide/) for deploying your game server binaries to the GameLift service.
+The Build resource allows you to manage [AWS GameLift Builds](https://docs.aws.amazon.com/gamelift/latest/userguide/) for deploying and scaling game server applications.
 
 ## Minimal Example
 
-Create a basic GameLift build with required properties and a common optional property.
+Create a basic GameLift Build with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const gameLiftBuild = await AWS.GameLift.Build("myGameLiftBuild", {
-  Name: "MyAwesomeGame",
+const basicBuild = await AWS.GameLift.Build("BasicBuild", {
+  Name: "MyGameBuild",
   OperatingSystem: "WINDOWS_2012",
+  Version: "1.0.0",
   StorageLocation: {
     Bucket: "my-game-builds",
-    Key: "game-build.zip",
-    RoleArn: "arn:aws:iam::123456789012:role/GameLiftAccessRole"
-  }
+    Key: "MyGameBuild.zip",
+    RoleArn: "arn:aws:iam::123456789012:role/GameLiftUploadRole"
+  },
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Game", Value: "MySuperGame" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a GameLift build with more advanced options like specifying a version and server SDK version.
+Configure a GameLift Build with additional options like server SDK version.
 
 ```ts
-const advancedGameLiftBuild = await AWS.GameLift.Build("advancedGameLiftBuild", {
-  Name: "MyAwesomeGame",
+const advancedBuild = await AWS.GameLift.Build("AdvancedBuild", {
+  Name: "MyAdvancedGameBuild",
   OperatingSystem: "WINDOWS_2012",
-  Version: "1.0.0",
+  Version: "1.0.1",
   ServerSdkVersion: "v1.0.0",
   StorageLocation: {
     Bucket: "my-game-builds",
-    Key: "game-build.zip",
-    RoleArn: "arn:aws:iam::123456789012:role/GameLiftAccessRole"
+    Key: "MyAdvancedGameBuild.zip",
+    RoleArn: "arn:aws:iam::123456789012:role/GameLiftUploadRole"
   },
   Tags: [
-    { Key: "GameType", Value: "Multiplayer" },
-    { Key: "Status", Value: "Active" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Game", Value: "MySuperGame" }
   ]
 });
 ```
 
-## Tagging for Organization
+## Adoption of Existing Resources
 
-Demonstrate how to tag builds for better organization and tracking.
+If you want to adopt an existing GameLift Build into your management, you can do so by setting the `adopt` property.
 
 ```ts
-const taggedGameLiftBuild = await AWS.GameLift.Build("taggedGameLiftBuild", {
-  Name: "MyAwesomeGame",
+const adoptBuild = await AWS.GameLift.Build("AdoptExistingBuild", {
+  Name: "ExistingGameBuild",
+  adopt: true
+});
+```
+
+## Custom Storage Location
+
+Create a GameLift Build with a custom storage location configuration.
+
+```ts
+const customStorageBuild = await AWS.GameLift.Build("CustomStorageBuild", {
+  Name: "MyCustomStorageGameBuild",
   OperatingSystem: "LINUX",
+  Version: "1.2.0",
   StorageLocation: {
-    Bucket: "my-game-builds-linux",
-    Key: "game-build-linux.zip",
-    RoleArn: "arn:aws:iam::123456789012:role/GameLiftAccessRole"
+    Bucket: "custom-bucket",
+    Key: "MyCustomGameBuild.zip",
+    RoleArn: "arn:aws:iam::123456789012:role/GameLiftUploadRole"
   },
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "Development" }
+    { Key: "Environment", Value: "testing" },
+    { Key: "Team", Value: "GameDev" }
   ]
-});
-```
-
-## Resource Adoption
-
-Show how to adopt an existing GameLift build if it already exists.
-
-```ts
-const adoptedGameLiftBuild = await AWS.GameLift.Build("adoptedGameLiftBuild", {
-  Name: "MyExistingGameLiftBuild",
-  OperatingSystem: "WINDOWS_2012",
-  StorageLocation: {
-    Bucket: "my-existing-game-builds",
-    Key: "existing-build.zip",
-    RoleArn: "arn:aws:iam::123456789012:role/GameLiftAccessRole"
-  },
-  adopt: true // This will adopt the existing resource instead of failing
 });
 ```

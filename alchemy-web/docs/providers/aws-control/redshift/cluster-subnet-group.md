@@ -5,82 +5,73 @@ description: Learn how to create, update, and manage AWS Redshift ClusterSubnetG
 
 # ClusterSubnetGroup
 
-The ClusterSubnetGroup resource lets you manage [AWS Redshift ClusterSubnetGroups](https://docs.aws.amazon.com/redshift/latest/userguide/) which define a collection of subnets for your Redshift cluster.
+The ClusterSubnetGroup resource lets you manage [AWS Redshift ClusterSubnetGroups](https://docs.aws.amazon.com/redshift/latest/userguide/) which are used to define a collection of subnets that can be used by Redshift clusters.
 
 ## Minimal Example
 
-Create a basic ClusterSubnetGroup with required properties and one optional tag.
+Create a basic Redshift ClusterSubnetGroup with a description and a list of subnet IDs.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const subnetGroup = await AWS.Redshift.ClusterSubnetGroup("mySubnetGroup", {
-  Description: "My Redshift Cluster Subnet Group",
+const BasicClusterSubnetGroup = await AWS.Redshift.ClusterSubnetGroup("BasicSubnetGroup", {
+  Description: "Subnet group for my Redshift cluster",
   SubnetIds: [
-    "subnet-0a1b2c3d",
-    "subnet-1a2b3c4d"
+    "subnet-0abcd1234efgh5678", 
+    "subnet-1abcd1234efgh5678"
   ],
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
-  ]
+  Tags: [{ Key: "Environment", Value: "production" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ClusterSubnetGroup with additional properties such as enabling resource adoption.
+Configure a ClusterSubnetGroup with additional tags for better resource management.
 
 ```ts
-const advancedSubnetGroup = await AWS.Redshift.ClusterSubnetGroup("advancedSubnetGroup", {
-  Description: "Advanced Configuration for Redshift",
+const AdvancedClusterSubnetGroup = await AWS.Redshift.ClusterSubnetGroup("AdvancedSubnetGroup", {
+  Description: "Advanced subnet group for Redshift cluster with extra tags",
   SubnetIds: [
-    "subnet-0a1b2c3d",
-    "subnet-1a2b3c4d",
-    "subnet-2a3b4c5d"
+    "subnet-2abcd1234efgh5678", 
+    "subnet-3abcd1234efgh5678"
   ],
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Staging"
-    },
-    {
-      Key: "Owner",
-      Value: "TeamA"
-    }
-  ],
-  adopt: true
-});
-```
-
-## Using with Multiple Subnets
-
-Demonstrate creating a ClusterSubnetGroup that spans multiple availability zones.
-
-```ts
-const multiAzSubnetGroup = await AWS.Redshift.ClusterSubnetGroup("multiAzSubnetGroup", {
-  Description: "Cluster Subnet Group across multiple AZs",
-  SubnetIds: [
-    "subnet-0a1b2c3d", // Availability Zone 1
-    "subnet-1a2b3c4d", // Availability Zone 2
-    "subnet-2a3b4c5d"  // Availability Zone 3
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataEngineering" }
   ]
 });
 ```
 
-## Adopting Existing Resources
+## Using Existing Resources
 
-Show how to adopt an existing ClusterSubnetGroup rather than failing if it exists.
+Adopt an existing ClusterSubnetGroup instead of failing if it already exists.
 
 ```ts
-const existingSubnetGroup = await AWS.Redshift.ClusterSubnetGroup("existingSubnetGroup", {
-  Description: "Adopt an existing subnet group",
+const AdoptedClusterSubnetGroup = await AWS.Redshift.ClusterSubnetGroup("AdoptedSubnetGroup", {
+  Description: "Adopt existing subnet group",
   SubnetIds: [
-    "subnet-0a1b2c3d",
-    "subnet-1a2b3c4d"
+    "subnet-4abcd1234efgh5678", 
+    "subnet-5abcd1234efgh5678"
   ],
   adopt: true
+});
+```
+
+## Descriptive Tags for Resource Management
+
+Create a ClusterSubnetGroup with detailed tags to help in tracking resource usage.
+
+```ts
+const TaggedClusterSubnetGroup = await AWS.Redshift.ClusterSubnetGroup("TaggedSubnetGroup", {
+  Description: "Subnet group with detailed tags",
+  SubnetIds: [
+    "subnet-6abcd1234efgh5678", 
+    "subnet-7abcd1234efgh5678"
+  ],
+  Tags: [
+    { Key: "CostCenter", Value: "1234" },
+    { Key: "Owner", Value: "Alice" },
+    { Key: "Project", Value: "DataMigration" }
+  ]
 });
 ```

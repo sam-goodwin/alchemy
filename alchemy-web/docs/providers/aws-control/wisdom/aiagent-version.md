@@ -5,62 +5,62 @@ description: Learn how to create, update, and manage AWS Wisdom AIAgentVersions 
 
 # AIAgentVersion
 
-The AIAgentVersion resource allows you to create and manage versions of AI Agents within AWS Wisdom. This resource is essential for maintaining the configuration and deployment of your AI agents. For more information, consult the [AWS Wisdom AIAgentVersions documentation](https://docs.aws.amazon.com/wisdom/latest/userguide/).
+The AIAgentVersion resource allows you to create and manage versions of AI agents in AWS Wisdom, enabling enhanced support capabilities. For more details, refer to the [AWS Wisdom AIAgentVersions documentation](https://docs.aws.amazon.com/wisdom/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic AIAgentVersion with required properties:
+Create a basic AI agent version with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAIAgentVersion = await AWS.Wisdom.AIAgentVersion("basicAgentVersion", {
+const AIAgentVersion = await AWS.Wisdom.AIAgentVersion("BasicAIAgentVersion", {
   AssistantId: "assistant-123456",
-  AIAgentId: "agent-987654",
-  ModifiedTimeSeconds: Date.now() / 1000 // current time in seconds
+  AIAgentId: "ai-agent-789012",
+  ModifiedTimeSeconds: Math.floor(Date.now() / 1000) // Current Unix time
 });
 ```
 
 ## Advanced Configuration
 
-Update the AIAgentVersion with additional properties, such as the adoption of existing resources:
+Configure an AI agent version with optional properties including adoption of existing resources.
 
 ```ts
-const advancedAIAgentVersion = await AWS.Wisdom.AIAgentVersion("advancedAgentVersion", {
-  AssistantId: "assistant-123456",
-  AIAgentId: "agent-987654",
-  ModifiedTimeSeconds: Date.now() / 1000,
-  adopt: true // adopt existing resource if it exists
+const AdvancedAIAgentVersion = await AWS.Wisdom.AIAgentVersion("AdvancedAIAgentVersion", {
+  AssistantId: "assistant-654321",
+  AIAgentId: "ai-agent-210987",
+  ModifiedTimeSeconds: Math.floor(Date.now() / 1000),
+  adopt: true // Adopt existing resource instead of failing
 });
 ```
 
-## Version Management
+## Versioning and Updates
 
-Create multiple versions of the same AI Agent for managing updates efficiently:
+Create a new version of an existing AI agent with updated properties.
 
 ```ts
-const version1 = await AWS.Wisdom.AIAgentVersion("agentVersion1", {
+const UpdatedAIAgentVersion = await AWS.Wisdom.AIAgentVersion("UpdatedAIAgentVersion", {
   AssistantId: "assistant-123456",
-  AIAgentId: "agent-987654",
-  ModifiedTimeSeconds: Date.now() / 1000
-});
-
-const version2 = await AWS.Wisdom.AIAgentVersion("agentVersion2", {
-  AssistantId: "assistant-123456",
-  AIAgentId: "agent-987654",
-  ModifiedTimeSeconds: Date.now() / 1000 + 3600 // one hour later
+  AIAgentId: "ai-agent-789012",
+  ModifiedTimeSeconds: Math.floor(Date.now() / 1000), // Updated timestamp
+  adopt: false // Default behavior, will fail if resource exists
 });
 ```
 
-## Handling Updates and Changes
+## Resource Metadata
 
-When making changes to the AIAgentVersion, you can specify the modified time to reflect updates accurately:
+Create an AI agent version while also capturing metadata properties like creation and update times.
 
 ```ts
-const updatedAIAgentVersion = await AWS.Wisdom.AIAgentVersion("updatedAgentVersion", {
-  AssistantId: "assistant-123456",
-  AIAgentId: "agent-987654",
-  ModifiedTimeSeconds: Date.now() / 1000 + 7200, // two hours later to indicate a new update
-  adopt: false // will fail if the resource already exists
+const MetadataAIAgentVersion = await AWS.Wisdom.AIAgentVersion("MetadataAIAgentVersion", {
+  AssistantId: "assistant-111111",
+  AIAgentId: "ai-agent-222222",
+  ModifiedTimeSeconds: Math.floor(Date.now() / 1000),
+  adopt: true // Adopt existing resource
 });
+
+// Accessing additional properties
+console.log(`ARN: ${MetadataAIAgentVersion.Arn}`);
+console.log(`Creation Time: ${MetadataAIAgentVersion.CreationTime}`);
+console.log(`Last Updated Time: ${MetadataAIAgentVersion.LastUpdateTime}`);
 ```

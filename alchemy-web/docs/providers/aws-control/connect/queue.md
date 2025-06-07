@@ -5,78 +5,43 @@ description: Learn how to create, update, and manage AWS Connect Queues using Al
 
 # Queue
 
-The Queue resource lets you manage [AWS Connect Queues](https://docs.aws.amazon.com/connect/latest/userguide/) and their configuration settings.
+The Queue resource lets you create and manage [AWS Connect Queues](https://docs.aws.amazon.com/connect/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-connect-queue.html
 
 ## Minimal Example
-
-Create a basic AWS Connect Queue with required properties and common optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicQueue = await AWS.Connect.Queue("basicQueue", {
-  Name: "CustomerSupportQueue",
-  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcdefgh-ijkl-mnop-qrst-uvwxyz012345",
-  HoursOfOperationArn: "arn:aws:connect:us-west-2:123456789012:hours-of-operation/abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef",
-  Status: "ACTIVE",
-  Description: "Queue for handling customer support requests"
+const queue = await AWS.Connect.Queue("queue-example", {
+  HoursOfOperationArn: "example-hoursofoperationarn",
+  InstanceArn: "example-instancearn",
+  Name: "queue-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A queue resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AWS Connect Queue with advanced settings, including outbound email configuration and tags.
+Create a queue with additional configuration:
 
 ```ts
-const advancedQueue = await AWS.Connect.Queue("advancedQueue", {
-  Name: "SalesQueue",
-  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcdefgh-ijkl-mnop-qrst-uvwxyz012345",
-  HoursOfOperationArn: "arn:aws:connect:us-west-2:123456789012:hours-of-operation/abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef",
-  OutboundEmailConfig: {
-    EmailAddress: "support@company.com",
-    FromEmailAddress: "no-reply@company.com"
+import AWS from "alchemy/aws/control";
+
+const advancedQueue = await AWS.Connect.Queue("advanced-queue", {
+  HoursOfOperationArn: "example-hoursofoperationarn",
+  InstanceArn: "example-instancearn",
+  Name: "queue-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Tags: [
-    { Key: "Department", Value: "Sales" },
-    { Key: "Priority", Value: "High" }
-  ],
-  MaxContacts: 10,
-  Status: "ACTIVE"
+  Description: "A queue resource managed by Alchemy",
 });
 ```
 
-## Queue with Outbound Caller Configuration
-
-Set up an AWS Connect Queue with an outbound caller configuration for more personalized customer interactions.
-
-```ts
-const callerConfigQueue = await AWS.Connect.Queue("callerConfigQueue", {
-  Name: "FeedbackQueue",
-  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcdefgh-ijkl-mnop-qrst-uvwxyz012345",
-  HoursOfOperationArn: "arn:aws:connect:us-west-2:123456789012:hours-of-operation/abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef",
-  OutboundCallerConfig: {
-    OutboundCallerIdName: "Company Feedback Line",
-    OutboundCallerIdNumber: "+11234567890"
-  },
-  Status: "ACTIVE",
-  Description: "Queue for collecting customer feedback"
-});
-```
-
-## Queue with Quick Connects
-
-Create an AWS Connect Queue that is linked to multiple Quick Connects for enhanced routing capabilities.
-
-```ts
-const quickConnectQueue = await AWS.Connect.Queue("quickConnectQueue", {
-  Name: "TechSupportQueue",
-  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abcdefgh-ijkl-mnop-qrst-uvwxyz012345",
-  HoursOfOperationArn: "arn:aws:connect:us-west-2:123456789012:hours-of-operation/abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef",
-  QuickConnectArns: [
-    "arn:aws:connect:us-west-2:123456789012:quick-connect/abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef1",
-    "arn:aws:connect:us-west-2:123456789012:quick-connect/abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef2"
-  ],
-  Status: "ACTIVE",
-  Description: "Queue for technical support"
-});
-```

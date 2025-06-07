@@ -1,99 +1,46 @@
 ---
-title: Managing AWS WorkSpacesWeb IpAccessSettings with Alchemy
-description: Learn how to create, update, and manage AWS WorkSpacesWeb IpAccessSettings using Alchemy Cloud Control.
+title: Managing AWS WorkSpacesWeb IpAccessSettingss with Alchemy
+description: Learn how to create, update, and manage AWS WorkSpacesWeb IpAccessSettingss using Alchemy Cloud Control.
 ---
 
 # IpAccessSettings
 
-The IpAccessSettings resource lets you manage [AWS WorkSpacesWeb IpAccessSettings](https://docs.aws.amazon.com/workspacesweb/latest/userguide/) for controlling access to your applications based on IP address rules.
+The IpAccessSettings resource lets you create and manage [AWS WorkSpacesWeb IpAccessSettingss](https://docs.aws.amazon.com/workspacesweb/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-workspacesweb-ipaccesssettings.html
 
 ## Minimal Example
-
-Create basic IP access settings with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const ipAccessSettings = await AWS.WorkSpacesWeb.IpAccessSettings("basicIpAccessSettings", {
-  IpRules: [
-    {
-      ipRule: "192.168.1.0/24",
-      ruleAction: "ALLOW"
-    },
-    {
-      ipRule: "10.0.0.0/8",
-      ruleAction: "DENY"
-    }
-  ],
-  Description: "Basic IP access settings for application access"
+const ipaccesssettings = await AWS.WorkSpacesWeb.IpAccessSettings("ipaccesssettings-example", {
+  IpRules: [],
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A ipaccesssettings resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure IP access settings with additional encryption context and a customer-managed key for enhanced security.
+Create a ipaccesssettings with additional configuration:
 
 ```ts
-const advancedIpAccessSettings = await AWS.WorkSpacesWeb.IpAccessSettings("advancedIpAccessSettings", {
-  IpRules: [
-    {
-      ipRule: "203.0.113.0/24",
-      ruleAction: "ALLOW"
+import AWS from "alchemy/aws/control";
+
+const advancedIpAccessSettings = await AWS.WorkSpacesWeb.IpAccessSettings(
+  "advanced-ipaccesssettings",
+  {
+    IpRules: [],
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
     },
-    {
-      ipRule: "198.51.100.0/24",
-      ruleAction: "DENY"
-    }
-  ],
-  Description: "Advanced IP access settings with encryption",
-  CustomerManagedKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
-  AdditionalEncryptionContext: {
-    "Project": "WebApp",
-    "Environment": "Production"
-  },
-  DisplayName: "Advanced Access Settings"
-});
+    Description: "A ipaccesssettings resource managed by Alchemy",
+  }
+);
 ```
 
-## Using Tags for Resource Management
-
-Create IP access settings with tags for better organization and management.
-
-```ts
-const taggedIpAccessSettings = await AWS.WorkSpacesWeb.IpAccessSettings("taggedIpAccessSettings", {
-  IpRules: [
-    {
-      ipRule: "192.0.2.0/24",
-      ruleAction: "ALLOW"
-    }
-  ],
-  Description: "IP access settings with tags",
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Development"
-    },
-    {
-      Key: "Department",
-      Value: "IT"
-    }
-  ]
-});
-```
-
-## Adopting Existing Resources
-
-Create IP access settings while adopting an existing resource to avoid failures.
-
-```ts
-const adoptedIpAccessSettings = await AWS.WorkSpacesWeb.IpAccessSettings("adoptedIpAccessSettings", {
-  IpRules: [
-    {
-      ipRule: "172.16.0.0/12",
-      ruleAction: "ALLOW"
-    }
-  ],
-  Description: "Adopt existing IP access settings",
-  adopt: true
-});
-```

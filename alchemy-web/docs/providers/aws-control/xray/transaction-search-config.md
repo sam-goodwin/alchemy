@@ -5,44 +5,39 @@ description: Learn how to create, update, and manage AWS XRay TransactionSearchC
 
 # TransactionSearchConfig
 
-The TransactionSearchConfig resource allows you to manage the configuration settings for AWS X-Ray transaction search. This resource can be used to control the indexing percentage for transaction data. For more information, refer to the [AWS XRay TransactionSearchConfigs documentation](https://docs.aws.amazon.com/xray/latest/userguide/).
+The TransactionSearchConfig resource allows you to manage configurations for AWS XRay transaction search capabilities. You can learn more about this resource in the [AWS XRay TransactionSearchConfigs documentation](https://docs.aws.amazon.com/xray/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic TransactionSearchConfig with the default indexing percentage.
+Create a basic TransactionSearchConfig with default settings and a specified indexing percentage.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicTransactionSearchConfig = await AWS.XRay.TransactionSearchConfig("basic-config", {
+const BasicTransactionSearchConfig = await AWS.XRay.TransactionSearchConfig("BasicTransactionSearchConfig", {
   IndexingPercentage: 50,
-  adopt: true // Adopt existing resource if it already exists
+  adopt: false // Default is false
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TransactionSearchConfig with a higher indexing percentage.
+Configure a TransactionSearchConfig with a high indexing percentage for improved search capabilities.
 
 ```ts
-const advancedTransactionSearchConfig = await AWS.XRay.TransactionSearchConfig("advanced-config", {
-  IndexingPercentage: 75,
-  adopt: false // Do not adopt existing resource, fail if it exists
+const AdvancedTransactionSearchConfig = await AWS.XRay.TransactionSearchConfig("AdvancedTransactionSearchConfig", {
+  IndexingPercentage: 90,
+  adopt: false // Default is false
 });
 ```
 
-## Monitoring Configuration Changes
+## Resource Adoption
 
-Create a TransactionSearchConfig while monitoring changes with creation and update timestamps.
+Create a TransactionSearchConfig that adopts an existing resource rather than failing if it already exists.
 
 ```ts
-const monitoredTransactionSearchConfig = await AWS.XRay.TransactionSearchConfig("monitored-config", {
-  IndexingPercentage: 100,
-  adopt: true // Adopt existing resource if it already exists
+const AdoptedTransactionSearchConfig = await AWS.XRay.TransactionSearchConfig("AdoptedTransactionSearchConfig", {
+  IndexingPercentage: 70,
+  adopt: true // Enables adoption of existing resources
 });
-
-// Accessing additional properties
-console.log(`ARN: ${monitoredTransactionSearchConfig.Arn}`);
-console.log(`Created At: ${monitoredTransactionSearchConfig.CreationTime}`);
-console.log(`Last Updated At: ${monitoredTransactionSearchConfig.LastUpdateTime}`);
 ```

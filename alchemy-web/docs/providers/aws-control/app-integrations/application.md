@@ -5,115 +5,43 @@ description: Learn how to create, update, and manage AWS AppIntegrations Applica
 
 # Application
 
-The Application resource lets you manage [AWS AppIntegrations Applications](https://docs.aws.amazon.com/appintegrations/latest/userguide/) and their configuration settings.
+The Application resource lets you create and manage [AWS AppIntegrations Applications](https://docs.aws.amazon.com/appintegrations/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-appintegrations-application.html
 
 ## Minimal Example
-
-Create a basic application with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicApplication = await AWS.AppIntegrations.Application("basicApp", {
-  ApplicationSourceConfig: {
-    // Sample configuration for an application source
-    SourceType: "S3",
-    SourceProperties: {
-      BucketName: "my-app-bucket",
-      Key: "config.json"
-    }
-  },
-  Description: "My basic application for integration.",
-  Namespace: "myAppNamespace",
-  Name: "MyApp",
-  Tags: [
-    { Key: "Environment", Value: "Development" }
-  ]
+const application = await AWS.AppIntegrations.Application("application-example", {
+  ApplicationSourceConfig: "example-applicationsourceconfig",
+  Description: "A application resource managed by Alchemy",
+  Namespace: "application-space",
+  Name: "application-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an application with detailed permissions and multiple tags for better resource management.
+Create a application with additional configuration:
 
 ```ts
-const advancedApplication = await AWS.AppIntegrations.Application("advancedApp", {
-  ApplicationSourceConfig: {
-    SourceType: "DynamoDB",
-    SourceProperties: {
-      TableName: "my-app-table",
-      Region: "us-west-2"
-    }
+import AWS from "alchemy/aws/control";
+
+const advancedApplication = await AWS.AppIntegrations.Application("advanced-application", {
+  ApplicationSourceConfig: "example-applicationsourceconfig",
+  Description: "A application resource managed by Alchemy",
+  Namespace: "application-space",
+  Name: "application-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Description: "An advanced application with extensive configurations.",
-  Namespace: "advancedAppNamespace",
-  Name: "AdvancedApp",
-  Permissions: [
-    "arn:aws:iam::123456789012:policy/MyAppPolicy",
-    "arn:aws:iam::123456789012:policy/AnotherPolicy"
-  ],
-  Tags: [
-    { Key: "Project", Value: "AppIntegrations" },
-    { Key: "Owner", Value: "TeamA" }
-  ]
 });
 ```
 
-## Using Application with Permissions
-
-This example demonstrates how to set specific permissions for the application.
-
-```ts
-const permissionedApplication = await AWS.AppIntegrations.Application("permissionedApp", {
-  ApplicationSourceConfig: {
-    SourceType: "Kinesis",
-    SourceProperties: {
-      StreamName: "my-stream",
-      Region: "us-east-1"
-    }
-  },
-  Description: "Application with specific IAM permissions.",
-  Namespace: "permissionedAppNamespace",
-  Name: "PermissionedApp",
-  Permissions: [
-    JSON.stringify({
-      Version: "2012-10-17",
-      Statement: [
-        {
-          Effect: "Allow",
-          Action: [
-            "kinesis:DescribeStream",
-            "kinesis:GetRecords"
-          ],
-          Resource: "arn:aws:kinesis:us-east-1:123456789012:stream/my-stream"
-        }
-      ]
-    })
-  ]
-});
-```
-
-## Application with Multiple Sources
-
-This example shows how to create an application that integrates with multiple sources.
-
-```ts
-const multiSourceApplication = await AWS.AppIntegrations.Application("multiSourceApp", {
-  ApplicationSourceConfig: {
-    SourceType: "API",
-    SourceProperties: {
-      ApiEndpoint: "https://api.example.com/data",
-      Authentication: {
-        Type: "OAuth2",
-        Token: "my-oauth-token"
-      }
-    }
-  },
-  Description: "Application integrating with multiple data sources.",
-  Namespace: "multiSourceAppNamespace",
-  Name: "MultiSourceApp",
-  Tags: [
-    { Key: "Integration", Value: "MultipleSources" }
-  ]
-});
-```

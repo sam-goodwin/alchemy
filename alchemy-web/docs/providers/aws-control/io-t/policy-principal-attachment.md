@@ -5,54 +5,61 @@ description: Learn how to create, update, and manage AWS IoT PolicyPrincipalAtta
 
 # PolicyPrincipalAttachment
 
-The PolicyPrincipalAttachment resource lets you manage [AWS IoT PolicyPrincipalAttachments](https://docs.aws.amazon.com/iot/latest/userguide/) which are used to attach an IoT policy to a principal (such as a device or user). This allows you to control access to IoT resources.
+The PolicyPrincipalAttachment resource allows you to attach an AWS IoT policy to a principal (an AWS IoT thing, user, or certificate). This is essential for managing permissions for IoT devices and users. For more detailed information, refer to the [AWS IoT PolicyPrincipalAttachments documentation](https://docs.aws.amazon.com/iot/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic PolicyPrincipalAttachment to attach an IoT policy to a principal.
+This example demonstrates how to create a basic PolicyPrincipalAttachment with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const policyPrincipalAttachment = await AWS.IoT.PolicyPrincipalAttachment("attachPolicyToDevice", {
-  PolicyName: "IoTDevicePolicy",
+const BasicAttachment = await AWS.IoT.PolicyPrincipalAttachment("BasicAttachment", {
+  PolicyName: "MyIoTPolicy",
   Principal: "arn:aws:iot:us-west-2:123456789012:cert/abcd1234efgh5678ijkl9012mnop3456qrstuvwx",
-  adopt: true // Allows adoption of existing resource
+  adopt: false // Default is false: Fail if the resource already exists
 });
 ```
 
 ## Advanced Configuration
 
-Attach a policy to a principal with error handling for existing attachments.
+In this example, we are creating a PolicyPrincipalAttachment with additional properties such as adopting an existing resource.
 
 ```ts
-const advancedAttachment = await AWS.IoT.PolicyPrincipalAttachment("advancedAttachment", {
+const AdvancedAttachment = await AWS.IoT.PolicyPrincipalAttachment("AdvancedAttachment", {
   PolicyName: "AdvancedIoTPolicy",
-  Principal: "arn:aws:iot:us-west-2:123456789012:cert/efgh5678ijkl9012mnop3456qrstuvwx", 
-  adopt: true // Enables the adoption of an existing resource if it already exists
+  Principal: "arn:aws:iot:us-west-2:123456789012:thing/MyIoTDevice",
+  adopt: true // Set to true to adopt existing resource if it already exists
 });
 ```
 
-## Reattaching Policies
+## Use Case: Attaching Policies to Multiple Principals
 
-Reattach a policy to a principal where the policy name or principal ARN may change.
+This example shows how to create multiple attachments for different principals for the same policy, which is useful for batch operations.
 
 ```ts
-const reattachPolicy = await AWS.IoT.PolicyPrincipalAttachment("reattachPolicy", {
-  PolicyName: "ReattachIoTPolicy",
-  Principal: "arn:aws:iot:us-west-2:123456789012:cert/ijkl9012mnop3456qrstuvwx", 
-  adopt: false // Will create a new attachment instead of adopting if it exists
-});
+const Attachments = [
+  { PolicyName: "CommonPolicy", Principal: "arn:aws:iot:us-west-2:123456789012:cert/cert1" },
+  { PolicyName: "CommonPolicy", Principal: "arn:aws:iot:us-west-2:123456789012:thing/Thing1" },
+  { PolicyName: "CommonPolicy", Principal: "arn:aws:iot:us-west-2:123456789012:cert/cert2" }
+];
+
+for (const attachment of Attachments) {
+  await AWS.IoT.PolicyPrincipalAttachment(`Attachment-${attachment.Principal}`, {
+    PolicyName: attachment.PolicyName,
+    Principal: attachment.Principal
+  });
+}
 ```
 
-## Dynamic Principal Management
+## Use Case: Updating a PolicyPrincipalAttachment
 
-Dynamically manage principal attachments based on application requirements.
+This example illustrates how to update an existing PolicyPrincipalAttachment by reattaching the same policy to a principal.
 
 ```ts
-const dynamicAttachment = await AWS.IoT.PolicyPrincipalAttachment("dynamicAttachment", {
-  PolicyName: "DynamicIoTPolicy",
-  Principal: "arn:aws:iot:us-west-2:123456789012:cert/mnop3456qrstuvwx", 
-  adopt: true // Adopt existing attachment if it already exists
+const UpdateAttachment = await AWS.IoT.PolicyPrincipalAttachment("UpdateAttachment", {
+  PolicyName: "UpdatedIoTPolicy",
+  Principal: "arn:aws:iot:us-west-2:123456789012:thing/MyUpdatedIoTDevice",
+  adopt: false // Will fail if the resource already exists
 });
 ```

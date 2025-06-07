@@ -5,86 +5,92 @@ description: Learn how to create, update, and manage AWS GameLift MatchmakingCon
 
 # MatchmakingConfiguration
 
-The MatchmakingConfiguration resource allows you to manage [AWS GameLift MatchmakingConfigurations](https://docs.aws.amazon.com/gamelift/latest/userguide/) for creating and managing multiplayer game sessions. This resource provides various properties that define the matchmaking settings, including game properties and player count configurations.
+The MatchmakingConfiguration resource allows you to create and manage matchmaking configurations for AWS GameLift. This resource is essential for defining how players are matched in your multiplayer games. For more information, visit the [AWS GameLift MatchmakingConfigurations documentation](https://docs.aws.amazon.com/gamelift/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic matchmaking configuration with required properties and a few optional settings.
+Create a basic matchmaking configuration with required properties and some common options.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const matchmakingConfig = await AWS.GameLift.MatchmakingConfiguration("basicMatchmakingConfig", {
-  name: "BasicMatchmaking",
-  ruleSetName: "defaultRuleSet",
-  requestTimeoutSeconds: 30,
-  acceptanceRequired: true,
-  additionalPlayerCount: 2,
-  gameProperties: [
-    {
-      key: "GameMode",
-      value: "TeamDeathmatch"
-    }
+const BasicMatchmakingConfig = await AWS.GameLift.MatchmakingConfiguration("BasicMatchmakingConfig", {
+  Name: "MyGameMatchmaking",
+  RuleSetName: "MyGameRuleSet",
+  AcceptanceRequired: true,
+  RequestTimeoutSeconds: 30,
+  GameProperties: [
+    { Key: "MapName", Value: "Desert" },
+    { Key: "GameMode", Value: "TeamDeathmatch" }
+  ],
+  AdditionalPlayerCount: 2,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "GameDev" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a matchmaking setup with advanced settings including notifications and custom event data.
+Configure a matchmaking setup with advanced options such as custom event data and notifications.
 
 ```ts
-const advancedMatchmakingConfig = await AWS.GameLift.MatchmakingConfiguration("advancedMatchmakingConfig", {
-  name: "AdvancedMatchmaking",
-  ruleSetName: "advancedRuleSet",
-  requestTimeoutSeconds: 60,
-  acceptanceRequired: true,
-  notificationTarget: "arn:aws:sns:us-west-2:123456789012:MySNSTopic",
-  customEventData: JSON.stringify({ eventType: "MatchmakingStarted" }),
-  gameProperties: [
-    {
-      key: "GameMode",
-      value: "CaptureTheFlag"
-    }
+const AdvancedMatchmakingConfig = await AWS.GameLift.MatchmakingConfiguration("AdvancedMatchmakingConfig", {
+  Name: "AdvancedGameMatchmaking",
+  RuleSetName: "AdvancedGameRules",
+  AcceptanceRequired: true,
+  RequestTimeoutSeconds: 60,
+  NotificationTarget: "arn:aws:sns:us-west-2:123456789012:MySNSTopic",
+  CustomEventData: "PlayerData",
+  GameSessionData: "SessionData",
+  AcceptanceTimeoutSeconds: 15,
+  GameSessionQueueArns: [
+    "arn:aws:gamelift:us-west-2:123456789012:gamesessionqueue/MyGameSessionQueue"
   ],
-  gameSessionData: "sessionDataExample"
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```
 
 ## Backfill Mode Example
 
-Create a matchmaking configuration that uses backfill mode to allow new players to join existing game sessions.
+Create a matchmaking configuration with backfill mode enabled for ongoing games.
 
 ```ts
-const backfillMatchmakingConfig = await AWS.GameLift.MatchmakingConfiguration("backfillMatchmakingConfig", {
-  name: "BackfillMatchmaking",
-  ruleSetName: "backfillRuleSet",
-  requestTimeoutSeconds: 30,
-  acceptanceRequired: true,
-  backfillMode: "ALLOW",
-  gameSessionQueueArns: [
-    "arn:aws:gamelift:us-west-2:123456789012:gamesessionqueue/MyGameSessionQueue"
+const BackfillMatchmakingConfig = await AWS.GameLift.MatchmakingConfiguration("BackfillMatchmakingConfig", {
+  Name: "BackfillMatchmaking",
+  RuleSetName: "BackfillGameRules",
+  AcceptanceRequired: false,
+  RequestTimeoutSeconds: 45,
+  BackfillMode: "AUTOMATIC",
+  GameSessionQueueArns: [
+    "arn:aws:gamelift:us-west-2:123456789012:gamesessionqueue/BackfillQueue"
   ],
-  additionalPlayerCount: 1
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Operations" }
+  ]
 });
 ```
 
-## Custom Event Data
+## Custom Event Data Example
 
-Set up a matchmaking configuration with custom event data to track specific game events.
+Demonstrate setting up custom event data for player sessions.
 
 ```ts
-const customEventMatchmakingConfig = await AWS.GameLift.MatchmakingConfiguration("customEventMatchmakingConfig", {
-  name: "CustomEventMatchmaking",
-  ruleSetName: "customEventRuleSet",
-  requestTimeoutSeconds: 45,
-  acceptanceRequired: true,
-  customEventData: JSON.stringify({ eventID: "GameStart", playerCount: 10 }),
-  gameProperties: [
-    {
-      key: "Map",
-      value: "DesertMap"
-    }
+const CustomEventMatchmakingConfig = await AWS.GameLift.MatchmakingConfiguration("CustomEventMatchmakingConfig", {
+  Name: "CustomEventMatchmaking",
+  RuleSetName: "CustomEventRules",
+  AcceptanceRequired: true,
+  RequestTimeoutSeconds: 30,
+  CustomEventData: JSON.stringify({ gameMode: "CaptureTheFlag", maxPlayers: 10 }),
+  GameSessionData: "CustomSessionData",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Development" }
   ]
 });
 ```

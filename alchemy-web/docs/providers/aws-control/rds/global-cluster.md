@@ -5,63 +5,59 @@ description: Learn how to create, update, and manage AWS RDS GlobalClusters usin
 
 # GlobalCluster
 
-The GlobalCluster resource lets you manage [AWS RDS GlobalClusters](https://docs.aws.amazon.com/rds/latest/userguide/) for horizontally scaling your database across multiple AWS Regions, enhancing availability and recovery capabilities.
+The GlobalCluster resource allows you to create and manage [AWS RDS GlobalClusters](https://docs.aws.amazon.com/rds/latest/userguide/) which enable you to have a globally distributed database with cross-region read replicas.
 
 ## Minimal Example
 
-Create a basic GlobalCluster with essential properties.
+This example demonstrates how to create a basic GlobalCluster with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const minimalGlobalCluster = await AWS.RDS.GlobalCluster("myGlobalCluster", {
-  Engine: "aurora",
+const MyGlobalCluster = await AWS.RDS.GlobalCluster("MyGlobalCluster", {
   GlobalClusterIdentifier: "my-global-cluster",
-  SourceDBClusterIdentifier: "my-source-cluster",
-  StorageEncrypted: true
+  Engine: "aurora",
+  EngineVersion: "5.6.10",
+  StorageEncrypted: true,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Database" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a GlobalCluster with additional options such as engine version and deletion protection.
+This example shows how to set up a GlobalCluster with additional configurations such as deletion protection and a source DB cluster.
 
 ```ts
-const advancedGlobalCluster = await AWS.RDS.GlobalCluster("advancedGlobalCluster", {
-  Engine: "aurora",
-  EngineVersion: "5.6.mysql_aurora.1.22.1",
-  GlobalClusterIdentifier: "my-advanced-global-cluster",
-  SourceDBClusterIdentifier: "my-source-cluster",
-  StorageEncrypted: true,
+const AdvancedGlobalCluster = await AWS.RDS.GlobalCluster("AdvancedGlobalCluster", {
+  GlobalClusterIdentifier: "advanced-global-cluster",
+  Engine: "aurora-postgresql",
+  EngineVersion: "12.4",
+  SourceDBClusterIdentifier: "arn:aws:rds:us-west-2:123456789012:cluster:source-db-cluster",
   DeletionProtection: true,
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "GlobalExpansion" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Adopt Existing Resource
+## Cross-Region Read Replica Setup
 
-If you want to adopt an existing GlobalCluster without failing, use the `adopt` option.
-
-```ts
-const adoptGlobalCluster = await AWS.RDS.GlobalCluster("adoptGlobalCluster", {
-  GlobalClusterIdentifier: "existing-global-cluster-id",
-  adopt: true // This will adopt an existing resource instead of failing
-});
-```
-
-## Custom Engine Lifecycle Support
-
-Create a GlobalCluster that specifies engine lifecycle support.
+This example illustrates how to create a GlobalCluster designed for cross-region read replicas.
 
 ```ts
-const lifecycleSupportedGlobalCluster = await AWS.RDS.GlobalCluster("lifecycleGlobalCluster", {
-  Engine: "aurora-postgresql",
-  GlobalClusterIdentifier: "my-lifecycle-global-cluster",
-  EngineLifecycleSupport: "available",
-  SourceDBClusterIdentifier: "my-source-cluster",
-  StorageEncrypted: true
+const CrossRegionGlobalCluster = await AWS.RDS.GlobalCluster("CrossRegionGlobalCluster", {
+  GlobalClusterIdentifier: "cross-region-global-cluster",
+  Engine: "aurora",
+  EngineVersion: "5.6.10",
+  SourceDBClusterIdentifier: "arn:aws:rds:us-east-1:123456789012:cluster:source-db-cluster",
+  StorageEncrypted: true,
+  Tags: [
+    { Key: "Purpose", Value: "read-replica" },
+    { Key: "Team", Value: "Analytics" }
+  ]
 });
 ```

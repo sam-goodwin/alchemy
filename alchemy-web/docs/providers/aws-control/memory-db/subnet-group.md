@@ -5,49 +5,55 @@ description: Learn how to create, update, and manage AWS MemoryDB SubnetGroups u
 
 # SubnetGroup
 
-The SubnetGroup resource lets you manage [AWS MemoryDB SubnetGroups](https://docs.aws.amazon.com/memorydb/latest/userguide/) for your MemoryDB clusters, allowing you to define the network configuration and ensure connectivity within your VPC.
+The SubnetGroup resource lets you manage [AWS MemoryDB SubnetGroups](https://docs.aws.amazon.com/memorydb/latest/userguide/) which define a collection of subnets from different Availability Zones for MemoryDB clusters.
 
 ## Minimal Example
 
-Create a basic MemoryDB SubnetGroup with required properties and one optional description.
+Create a basic MemoryDB SubnetGroup with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSubnetGroup = await AWS.MemoryDB.SubnetGroup("basicSubnetGroup", {
+const BasicSubnetGroup = await AWS.MemoryDB.SubnetGroup("BasicSubnetGroup", {
   SubnetGroupName: "my-memorydb-subnet-group",
-  SubnetIds: ["subnet-0123456789abcdef0", "subnet-abcdef0123456789"],
-  Description: "Subnet group for my MemoryDB instances"
+  Description: "A basic subnet group for MemoryDB",
+  SubnetIds: ["10.0.1.0/24", "10.0.2.0/24"],
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Database" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Create a MemoryDB SubnetGroup with additional tags for better resource management.
+Configure a MemoryDB SubnetGroup with multiple subnets across different Availability Zones and additional tags.
 
 ```ts
-const advancedSubnetGroup = await AWS.MemoryDB.SubnetGroup("advancedSubnetGroup", {
+const AdvancedSubnetGroup = await AWS.MemoryDB.SubnetGroup("AdvancedSubnetGroup", {
   SubnetGroupName: "advanced-memorydb-subnet-group",
-  SubnetIds: ["subnet-0123456789abcdef0", "subnet-abcdef0123456789"],
+  Description: "An advanced subnet group for MemoryDB with multiple AZs",
+  SubnetIds: ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "Data" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Owner", Value: "DevOps" },
+    { Key: "Project", Value: "MemoryDBMigration" }
   ]
 });
 ```
 
-## Using with Multiple Subnets
+## Customizing for Performance
 
-Demonstrate creating a SubnetGroup that spans multiple availability zones.
+Create a MemoryDB SubnetGroup optimized for performance, including specific subnet IDs and tags.
 
 ```ts
-const multiAzSubnetGroup = await AWS.MemoryDB.SubnetGroup("multiAzSubnetGroup", {
-  SubnetGroupName: "multi-az-memorydb-subnet-group",
-  SubnetIds: [
-    "subnet-0123456789abcdef0", // Availability Zone A
-    "subnet-abcdef0123456789",   // Availability Zone B
-    "subnet-1234567890abcdef1"    // Availability Zone C
-  ],
-  Description: "Subnet group with multiple availability zones"
+const PerformanceOptimizedSubnetGroup = await AWS.MemoryDB.SubnetGroup("PerformanceOptimizedSubnetGroup", {
+  SubnetGroupName: "performance-memorydb-subnet-group",
+  Description: "A performance-optimized subnet group for MemoryDB",
+  SubnetIds: ["10.0.10.0/24", "10.0.11.0/24"],
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Performance" }
+  ]
 });
 ```

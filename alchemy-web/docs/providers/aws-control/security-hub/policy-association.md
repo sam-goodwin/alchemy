@@ -5,63 +5,67 @@ description: Learn how to create, update, and manage AWS SecurityHub PolicyAssoc
 
 # PolicyAssociation
 
-The PolicyAssociation resource lets you manage [AWS SecurityHub PolicyAssociations](https://docs.aws.amazon.com/securityhub/latest/userguide/) for associating security policies with targets like accounts or organizational units.
+The PolicyAssociation resource allows you to manage associations between AWS SecurityHub and configuration policies. You can create, update, and delete these associations to ensure your security policies are enforced as intended. For more details, refer to the official [AWS SecurityHub PolicyAssociations documentation](https://docs.aws.amazon.com/securityhub/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic PolicyAssociation that links a configuration policy to a target account.
+This example demonstrates how to create a basic PolicyAssociation with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const policyAssociation = await AWS.SecurityHub.PolicyAssociation("myPolicyAssociation", {
-  ConfigurationPolicyId: "arn:aws:securityhub:us-east-1:123456789012:config-policy/myConfigPolicy",
-  TargetType: "ACCOUNT",
-  TargetId: "123456789012",
-  adopt: true // Adopt existing resource if it exists
+const basicPolicyAssociation = await AWS.SecurityHub.PolicyAssociation("BasicPolicyAssociation", {
+  ConfigurationPolicyId: "arn:aws:config:us-west-2:123456789012:config-rule/my-config-rule",
+  TargetType: "AWS::EC2::Instance",
+  TargetId: "i-0abcd1234efgh5678",
+  adopt: true // Optional property indicating to adopt existing resources
 });
 ```
 
 ## Advanced Configuration
 
-Configure a PolicyAssociation with a different target type, associating a policy with an organizational unit.
+This example shows how to configure a PolicyAssociation with a specific target type and ID, including the adoption of existing resources.
 
 ```ts
-const organizationalPolicyAssociation = await AWS.SecurityHub.PolicyAssociation("orgPolicyAssociation", {
-  ConfigurationPolicyId: "arn:aws:securityhub:us-east-1:123456789012:config-policy/myOrgPolicy",
-  TargetType: "ORGANIZATIONAL_UNIT",
-  TargetId: "ou-xyz-123456",
-  adopt: false // Do not adopt existing resource
+const advancedPolicyAssociation = await AWS.SecurityHub.PolicyAssociation("AdvancedPolicyAssociation", {
+  ConfigurationPolicyId: "arn:aws:config:us-west-2:123456789012:config-rule/another-config-rule",
+  TargetType: "AWS::S3::Bucket",
+  TargetId: "my-s3-bucket",
+  adopt: false // Optional property indicating not to adopt existing resources
 });
 ```
 
-## Using with Multiple Targets
+## Use Case: Associating Multiple Targets
 
-Establish multiple associations for different accounts under a single policy.
+In this scenario, we create multiple PolicyAssociations for different target types, demonstrating how to apply different policies.
 
 ```ts
-const firstAccountAssociation = await AWS.SecurityHub.PolicyAssociation("firstAccountAssociation", {
-  ConfigurationPolicyId: "arn:aws:securityhub:us-east-1:123456789012:config-policy/myConfigPolicy",
-  TargetType: "ACCOUNT",
-  TargetId: "111111111111"
+const ec2PolicyAssociation = await AWS.SecurityHub.PolicyAssociation("EC2PolicyAssociation", {
+  ConfigurationPolicyId: "arn:aws:config:us-west-2:123456789012:config-rule/ec2-config-rule",
+  TargetType: "AWS::EC2::Instance",
+  TargetId: "i-0abcd1234efgh5678"
 });
 
-const secondAccountAssociation = await AWS.SecurityHub.PolicyAssociation("secondAccountAssociation", {
-  ConfigurationPolicyId: "arn:aws:securityhub:us-east-1:123456789012:config-policy/myConfigPolicy",
-  TargetType: "ACCOUNT",
-  TargetId: "222222222222"
+const s3PolicyAssociation = await AWS.SecurityHub.PolicyAssociation("S3PolicyAssociation", {
+  ConfigurationPolicyId: "arn:aws:config:us-west-2:123456789012:config-rule/s3-config-rule",
+  TargetType: "AWS::S3::Bucket",
+  TargetId: "my-s3-bucket"
 });
 ```
 
-## Handling Existing Resources
+## Use Case: Error Handling
 
-Demonstrate how to manage a PolicyAssociation that might already exist using the `adopt` property.
+This example demonstrates error handling when trying to create a PolicyAssociation for an existing resource, adopting it instead of failing.
 
 ```ts
-const existingPolicyAssociation = await AWS.SecurityHub.PolicyAssociation("existingPolicyAssociation", {
-  ConfigurationPolicyId: "arn:aws:securityhub:us-east-1:123456789012:config-policy/myExistingPolicy",
-  TargetType: "ACCOUNT",
-  TargetId: "333333333333",
-  adopt: true // Adopts the existing association instead of failing
-});
+try {
+  const existingPolicyAssociation = await AWS.SecurityHub.PolicyAssociation("ExistingPolicyAssociation", {
+    ConfigurationPolicyId: "arn:aws:config:us-west-2:123456789012:config-rule/existing-config-rule",
+    TargetType: "AWS::Lambda::Function",
+    TargetId: "my-lambda-function",
+    adopt: true // Attempt to adopt the existing resource
+  });
+} catch (error) {
+  console.error("Failed to create PolicyAssociation:", error);
+}
 ```

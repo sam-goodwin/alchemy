@@ -5,72 +5,39 @@ description: Learn how to create, update, and manage AWS NetworkManager Devices 
 
 # Device
 
-The Device resource lets you manage [AWS NetworkManager Devices](https://docs.aws.amazon.com/networkmanager/latest/userguide/) and their configurations within your global network. 
+The Device resource lets you create and manage [AWS NetworkManager Devices](https://docs.aws.amazon.com/networkmanager/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-networkmanager-device.html
 
 ## Minimal Example
-
-Create a basic device by specifying the required Global Network ID along with a Site ID.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const networkDevice = await AWS.NetworkManager.Device("myDevice", {
-  GlobalNetworkId: "gn-12345678",
-  SiteId: "site-12345678",
-  Type: "customer-gateway", // Optional: Type of the device
-  Description: "Main office router" // Optional: Description of the device
+const device = await AWS.NetworkManager.Device("device-example", {
+  GlobalNetworkId: "example-globalnetworkid",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A device resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a device with additional properties such as location and vendor details for more comprehensive management.
+Create a device with additional configuration:
 
 ```ts
-const advancedDevice = await AWS.NetworkManager.Device("advancedDevice", {
-  GlobalNetworkId: "gn-87654321",
-  SiteId: "site-87654321",
-  Type: "device", // Optional: Type of the device
-  Description: "Branch office switch",
-  AWSLocation: {
-    Latitude: 37.7749,
-    Longitude: -122.4194
+import AWS from "alchemy/aws/control";
+
+const advancedDevice = await AWS.NetworkManager.Device("advanced-device", {
+  GlobalNetworkId: "example-globalnetworkid",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Vendor: "Cisco", // Optional: Vendor of the device
-  Model: "Catalyst 9200", // Optional: Model of the device
-  SerialNumber: "ABC1234567", // Optional: Serial number of the device
+  Description: "A device resource managed by Alchemy",
 });
 ```
 
-## Device Tags
-
-Add tags to your device for better organization and management.
-
-```ts
-const taggedDevice = await AWS.NetworkManager.Device("taggedDevice", {
-  GlobalNetworkId: "gn-13579246",
-  SiteId: "site-13579246",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "IT" }
-  ]
-});
-```
-
-## Location Configuration
-
-Define the physical location of a device to enhance network mapping.
-
-```ts
-const locationConfiguredDevice = await AWS.NetworkManager.Device("locationDevice", {
-  GlobalNetworkId: "gn-24681357",
-  SiteId: "site-24681357",
-  Location: {
-    Address: "123 Main St",
-    Latitude: 40.7128,
-    Longitude: -74.0060
-  },
-  Type: "device",
-  Description: "New York office access point"
-});
-```

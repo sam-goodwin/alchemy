@@ -5,58 +5,73 @@ description: Learn how to create, update, and manage AWS SecretsManager SecretTa
 
 # SecretTargetAttachment
 
-The SecretTargetAttachment resource allows you to manage the association between a secret in AWS Secrets Manager and a specific target, such as an AWS resource. For more information, visit the [AWS SecretsManager SecretTargetAttachments documentation](https://docs.aws.amazon.com/secretsmanager/latest/userguide/).
+The SecretTargetAttachment resource lets you manage [AWS SecretsManager SecretTargetAttachments](https://docs.aws.amazon.com/secretsmanager/latest/userguide/) that allow you to associate a secret with specific AWS resources.
 
 ## Minimal Example
 
-This example demonstrates creating a basic SecretTargetAttachment with required properties.
+Create a basic SecretTargetAttachment that links a secret to an RDS database instance:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const secretTargetAttachment = await AWS.SecretsManager.SecretTargetAttachment("mySecretAttachment", {
-  SecretId: "mySecretId",
+const SecretAttachment = await AWS.SecretsManager.SecretTargetAttachment("MySecretAttachment", {
+  SecretId: "arn:aws:secretsmanager:us-west-2:123456789012:secret:my-database-secret",
   TargetType: "AWS::RDS::DBInstance",
-  TargetId: "myDatabaseInstanceId",
-  adopt: true // Optional: adopt existing resource if it already exists
+  TargetId: "my-database-instance"
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we configure a SecretTargetAttachment with a different target type and an optional property.
+Configure a SecretTargetAttachment with an adoption policy for existing resources:
 
 ```ts
-const advancedSecretTargetAttachment = await AWS.SecretsManager.SecretTargetAttachment("advancedSecretAttachment", {
-  SecretId: "myAnotherSecretId",
-  TargetType: "AWS::Lambda::Function",
-  TargetId: "myLambdaFunctionId",
-  adopt: false // Optional: do not adopt existing resource
-});
-```
-
-## Use Case: Attaching a Secret to an RDS Instance
-
-This example shows how to attach a secret to an RDS database instance for enhanced security.
-
-```ts
-const rdsSecretAttachment = await AWS.SecretsManager.SecretTargetAttachment("rdsSecretAttachment", {
-  SecretId: "myRdsSecretId",
+const AdvancedSecretAttachment = await AWS.SecretsManager.SecretTargetAttachment("AdvancedSecretAttachment", {
+  SecretId: "arn:aws:secretsmanager:us-west-2:123456789012:secret:my-advanced-secret",
   TargetType: "AWS::RDS::DBInstance",
-  TargetId: "myProductionDatabase",
-  adopt: true
+  TargetId: "my-advanced-database-instance",
+  adopt: true // Allows adopting an existing resource if it already exists
 });
 ```
 
-## Use Case: Attaching a Secret to a Lambda Function
+## Using with IAM Policies
 
-Here, we create a SecretTargetAttachment for a Lambda function to securely access its secrets.
+Link a secret to a Lambda function with specific permissions:
 
 ```ts
-const lambdaSecretAttachment = await AWS.SecretsManager.SecretTargetAttachment("lambdaSecretAttachment", {
-  SecretId: "myLambdaSecretId",
+const LambdaSecretAttachment = await AWS.SecretsManager.SecretTargetAttachment("LambdaSecretAttachment", {
+  SecretId: "arn:aws:secretsmanager:us-west-2:123456789012:secret:my-lambda-secret",
   TargetType: "AWS::Lambda::Function",
-  TargetId: "myFunctionId",
-  adopt: false
+  TargetId: "my-lambda-function"
+});
+
+// Example IAM Policy for the Lambda function to access the secret
+const iamPolicy = {
+  Version: "2012-10-17",
+  Statement: [
+    {
+      Effect: "Allow",
+      Action: "secretsmanager:GetSecretValue",
+      Resource: "arn:aws:secretsmanager:us-west-2:123456789012:secret:my-lambda-secret"
+    }
+  ]
+};
+```
+
+## Multiple Secret Attachments
+
+Illustrate how to create multiple SecretTargetAttachments for various services:
+
+```ts
+const RDSSecretAttachment = await AWS.SecretsManager.SecretTargetAttachment("RDSSecretAttachment", {
+  SecretId: "arn:aws:secretsmanager:us-west-2:123456789012:secret:rds-database-secret",
+  TargetType: "AWS::RDS::DBInstance",
+  TargetId: "my-rds-instance"
+});
+
+const LambdaSecretAttachmentMultiple = await AWS.SecretsManager.SecretTargetAttachment("LambdaSecretAttachmentMultiple", {
+  SecretId: "arn:aws:secretsmanager:us-west-2:123456789012:secret:lambda-database-secret",
+  TargetType: "AWS::Lambda::Function",
+  TargetId: "my-another-lambda-function"
 });
 ```

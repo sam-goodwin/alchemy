@@ -5,73 +5,40 @@ description: Learn how to create, update, and manage AWS Glue UsageProfiles usin
 
 # UsageProfile
 
-The UsageProfile resource allows you to manage [AWS Glue UsageProfiles](https://docs.aws.amazon.com/glue/latest/userguide/) that define the usage metrics and configurations for your Glue jobs and crawlers.
+The UsageProfile resource lets you create and manage [AWS Glue UsageProfiles](https://docs.aws.amazon.com/glue/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-glue-usageprofile.html
 
 ## Minimal Example
-
-Create a basic UsageProfile with a name and description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const usageProfile = await AWS.Glue.UsageProfile("basicUsageProfile", {
-  name: "DataProcessingProfile",
-  description: "Profile for managing data processing jobs."
+const usageprofile = await AWS.Glue.UsageProfile("usageprofile-example", {
+  Name: "usageprofile-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A usageprofile resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a UsageProfile with detailed settings and tags:
+Create a usageprofile with additional configuration:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const advancedUsageProfile = await AWS.Glue.UsageProfile("advancedUsageProfile", {
-  name: "ETLProcessingProfile",
-  description: "Profile for advanced ETL processing.",
-  configuration: {
-    maxConcurrentRuns: 5,
-    timeout: 60 // in minutes
+const advancedUsageProfile = await AWS.Glue.UsageProfile("advanced-usageprofile", {
+  Name: "usageprofile-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Department", value: "DataEngineering" }
-  ]
+  Description: "A usageprofile resource managed by Alchemy",
+  Configuration: "example-configuration",
 });
 ```
 
-## Adoption of Existing Resource
-
-Adopt an existing UsageProfile if it already exists instead of failing:
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const adoptedUsageProfile = await AWS.Glue.UsageProfile("adoptedUsageProfile", {
-  name: "ExistingDataProfile",
-  description: "Adopt existing UsageProfile for data operations.",
-  adopt: true
-});
-```
-
-## UsageProfile with Configuration
-
-Create a UsageProfile that specifies custom configuration settings:
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const configuredUsageProfile = await AWS.Glue.UsageProfile("configuredUsageProfile", {
-  name: "CustomConfigProfile",
-  description: "Profile with custom configuration for Glue jobs.",
-  configuration: {
-    maxRetries: 3,
-    workerType: "G.2X",
-    numberOfWorkers: 10
-  },
-  tags: [
-    { key: "Project", value: "DataPipeline" }
-  ]
-});
-```

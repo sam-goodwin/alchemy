@@ -5,65 +5,71 @@ description: Learn how to create, update, and manage AWS EMR WALWorkspaces using
 
 # WALWorkspace
 
-The WALWorkspace resource allows you to manage [AWS EMR WALWorkspaces](https://docs.aws.amazon.com/emr/latest/userguide/) for your data processing and analytics needs.
+The WALWorkspace resource allows you to create and manage AWS EMR WALWorkspaces, which are essential for processing and analyzing vast amounts of data using Amazon EMR. For more information, refer to the [AWS EMR WALWorkspaces documentation](https://docs.aws.amazon.com/emr/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic WALWorkspace with a specified name:
+Create a basic WALWorkspace with a name and tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicWALWorkspace = await AWS.EMR.WALWorkspace("basic-walworkspace", {
-  WALWorkspaceName: "MyFirstWALWorkspace", 
+const basicWALWorkspace = await AWS.EMR.WALWorkspace("BasicWALWorkspace", {
+  WALWorkspaceName: "MyFirstWALWorkspace",
   Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "DataAnalytics" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "data-team" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a WALWorkspace with additional options, such as tags for better resource management:
+Configure a WALWorkspace with additional properties such as adoption of existing resources.
 
 ```ts
-const advancedWALWorkspace = await AWS.EMR.WALWorkspace("advanced-walworkspace", {
-  WALWorkspaceName: "AdvancedWALWorkspace",
+const advancedWALWorkspace = await AWS.EMR.WALWorkspace("AdvancedWALWorkspace", {
+  WALWorkspaceName: "MyAdvancedWALWorkspace",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MachineLearning" },
-    { Key: "Owner", Value: "DataTeam" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataScience" }
   ],
-  adopt: true // Enable resource adoption if it already exists
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Using Tags for Resource Management
+## Workspace with Custom Tags
 
-Create a WALWorkspace that utilizes tagging for organizational purposes:
+Create a WALWorkspace with specific tags for better resource management and tracking.
 
 ```ts
-const taggedWALWorkspace = await AWS.EMR.WALWorkspace("tagged-walworkspace", {
-  WALWorkspaceName: "TaggedWALWorkspace",
+const taggedWALWorkspace = await AWS.EMR.WALWorkspace("TaggedWALWorkspace", {
+  WALWorkspaceName: "MyTaggedWALWorkspace",
   Tags: [
-    { Key: "Department", Value: "Research" },
-    { Key: "CostCenter", Value: "CC12345" }
+    { Key: "Project", Value: "DataMigration" },
+    { Key: "CostCenter", Value: "CC101" }
   ]
 });
 ```
 
-## Resource Information
+## Creating Multiple Workspaces
 
-Retrieve information about an existing WALWorkspace including its ARN and timestamps:
+Manage multiple WALWorkspaces in a single script for batch processing.
 
 ```ts
-const existingWALWorkspace = await AWS.EMR.WALWorkspace("existing-walworkspace-info", {
-  WALWorkspaceName: "ExistingWALWorkspace"
+const devWALWorkspace = await AWS.EMR.WALWorkspace("DevWALWorkspace", {
+  WALWorkspaceName: "DevelopmentWorkspace",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "dev-team" }
+  ]
 });
 
-// Assuming you have a method to log or handle resource information
-console.log(`Workspace ARN: ${existingWALWorkspace.Arn}`);
-console.log(`Created at: ${existingWALWorkspace.CreationTime}`);
-console.log(`Last updated at: ${existingWALWorkspace.LastUpdateTime}`);
+const prodWALWorkspace = await AWS.EMR.WALWorkspace("ProdWALWorkspace", {
+  WALWorkspaceName: "ProductionWorkspace",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Owner", Value: "prod-team" }
+  ]
+});
 ```

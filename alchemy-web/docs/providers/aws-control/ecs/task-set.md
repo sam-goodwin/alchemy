@@ -5,84 +5,88 @@ description: Learn how to create, update, and manage AWS ECS TaskSets using Alch
 
 # TaskSet
 
-The TaskSet resource lets you manage [AWS ECS TaskSets](https://docs.aws.amazon.com/ecs/latest/userguide/) that define a group of tasks within an AWS ECS service. This allows for deployment and scaling of containerized applications.
+The TaskSet resource lets you manage [AWS ECS TaskSets](https://docs.aws.amazon.com/ecs/latest/userguide/) within your Elastic Container Service (ECS) environment. TaskSets are a grouping of tasks that together represent a specific version of a service.
 
 ## Minimal Example
 
-Create a basic TaskSet with required properties and one optional property.
+Create a basic TaskSet with required properties and a couple of optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const taskSet = await AWS.ECS.TaskSet("myTaskSet", {
-  TaskDefinition: "myTaskDefinition:1",
-  Cluster: "myCluster",
-  Service: "myService",
-  PlatformVersion: "1.4.0" // Optional: specify a platform version
+const BasicTaskSet = await AWS.ECS.TaskSet("basic-taskset", {
+  TaskDefinition: "my-app:1",
+  Cluster: "my-cluster",
+  Service: "my-service",
+  PlatformVersion: "1.4.0",
+  Scale: {
+    Value: 1,
+    Unit: "COUNT"
+  }
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TaskSet with load balancers and scaling options for more advanced scenarios.
+Configure a TaskSet with advanced options such as Load Balancers and Network Configuration.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const taskSetWithLoadBalancer = await AWS.ECS.TaskSet("myAdvancedTaskSet", {
-  TaskDefinition: "myTaskDefinition:1",
-  Cluster: "myCluster",
-  Service: "myService",
-  LoadBalancers: [{
-    TargetGroupArn: "arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-target-group/abcdef123456",
-    ContainerName: "myContainer",
-    ContainerPort: 80
-  }],
-  Scale: {
-    Value: 1,
-    Unit: "COUNT" // Scale by number of tasks
-  }
-});
-```
-
-## Network Configuration Example
-
-Set up a TaskSet with specific network configurations.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const networkConfiguredTaskSet = await AWS.ECS.TaskSet("myNetworkTaskSet", {
-  TaskDefinition: "myTaskDefinition:1",
-  Cluster: "myCluster",
-  Service: "myService",
+const AdvancedTaskSet = await AWS.ECS.TaskSet("advanced-taskset", {
+  TaskDefinition: "my-app:1",
+  Cluster: "my-cluster",
+  Service: "my-service",
+  LoadBalancers: [
+    {
+      TargetGroupArn: "arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-target-group/abc123",
+      ContainerName: "my-app-container",
+      ContainerPort: 80
+    }
+  ],
   NetworkConfiguration: {
-    AwsvpcConfiguration: {
+    AwsVpcConfiguration: {
       Subnets: ["subnet-12345678", "subnet-87654321"],
       SecurityGroups: ["sg-12345678"],
-      AssignPublicIp: "ENABLED" // Assign a public IP
+      AssignPublicIp: "ENABLED"
     }
   }
 });
 ```
 
-## Using Tags for Resource Management
+## Scaling and Tags
 
-Create a TaskSet with tags for better resource management and cost tracking.
+Create a TaskSet with scaling options and tags for better resource management.
 
 ```ts
-import AWS from "alchemy/aws/control";
+const ScalableTaskSet = await AWS.ECS.TaskSet("scalable-taskset", {
+  TaskDefinition: "my-app:2",
+  Cluster: "my-cluster",
+  Service: "my-service",
+  Scale: {
+    Value: 3,
+    Unit: "COUNT"
+  },
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
+});
+```
 
-const taggedTaskSet = await AWS.ECS.TaskSet("myTaggedTaskSet", {
-  TaskDefinition: "myTaskDefinition:1",
-  Cluster: "myCluster",
-  Service: "myService",
-  Tags: [{
-    Key: "Environment",
-    Value: "Production"
-  }, {
-    Key: "Project",
-    Value: "MyProject"
-  }]
+## Using Service Registries
+
+Demonstrate how to use service registries in a TaskSet configuration.
+
+```ts
+const TaskSetWithServiceRegistry = await AWS.ECS.TaskSet("taskset-with-service-registry", {
+  TaskDefinition: "my-app:2",
+  Cluster: "my-cluster",
+  Service: "my-service",
+  ServiceRegistries: [
+    {
+      RegistryArn: "arn:aws:servicediscovery:us-west-2:123456789012:service/srv-example",
+      ContainerName: "my-app-container",
+      ContainerPort: 80
+    }
+  ]
 });
 ```

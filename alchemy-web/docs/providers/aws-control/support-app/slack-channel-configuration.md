@@ -5,52 +5,69 @@ description: Learn how to create, update, and manage AWS SupportApp SlackChannel
 
 # SlackChannelConfiguration
 
-The SlackChannelConfiguration resource allows you to manage Slack channel configurations for AWS SupportApp, enabling notifications for case updates. For more information, refer to the [AWS SupportApp SlackChannelConfigurations documentation](https://docs.aws.amazon.com/supportapp/latest/userguide/).
+The SlackChannelConfiguration resource allows you to manage the configuration of Slack channels for AWS SupportApp, enabling seamless integration between AWS Support and your Slack workspace. For more information, refer to the [AWS SupportApp SlackChannelConfigurations documentation](https://docs.aws.amazon.com/supportapp/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic Slack channel configuration that notifies on case severity:
+Create a basic Slack channel configuration with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const slackChannelConfig = await AWS.SupportApp.SlackChannelConfiguration("basicSlackChannelConfig", {
-  ChannelName: "aws-support-updates",
+const BasicSlackChannelConfig = await AWS.SupportApp.SlackChannelConfiguration("BasicSlackChannel", {
+  ChannelName: "AWSSupport",
   ChannelRoleArn: "arn:aws:iam::123456789012:role/SlackChannelRole",
+  ChannelId: "C12345678",
+  TeamId: "T12345678",
   NotifyOnCaseSeverity: "high",
-  TeamId: "T1234567890",
-  ChannelId: "C1234567890"
+  NotifyOnCreateOrReopenCase: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Slack channel with multiple notification settings:
+Configure a Slack channel with advanced notification settings for case updates.
 
 ```ts
-const advancedSlackChannelConfig = await AWS.SupportApp.SlackChannelConfiguration("advancedSlackChannelConfig", {
-  ChannelName: "aws-support-team",
+const AdvancedSlackChannelConfig = await AWS.SupportApp.SlackChannelConfiguration("AdvancedSlackChannel", {
+  ChannelName: "AWSDevOps",
   ChannelRoleArn: "arn:aws:iam::123456789012:role/SlackChannelRole",
-  NotifyOnCaseSeverity: "all",
-  TeamId: "T0987654321",
-  ChannelId: "C0987654321",
+  ChannelId: "C87654321",
+  TeamId: "T87654321",
+  NotifyOnCaseSeverity: "medium",
   NotifyOnAddCorrespondenceToCase: true,
-  NotifyOnResolveCase: true,
-  NotifyOnCreateOrReopenCase: true
+  NotifyOnResolveCase: true
 });
 ```
 
-## Use Case: Adopting Existing Resources
+## Resource Adoption
 
-If you need to adopt an existing Slack channel configuration without failing, you can specify the `adopt` property:
+Create a Slack channel configuration while adopting an existing resource if it already exists.
 
 ```ts
-const adoptExistingSlackChannelConfig = await AWS.SupportApp.SlackChannelConfiguration("adoptExistingSlackChannelConfig", {
-  ChannelName: "existing-slack-channel",
+const AdoptedSlackChannelConfig = await AWS.SupportApp.SlackChannelConfiguration("AdoptedSlackChannel", {
+  ChannelName: "AWSAdoption",
   ChannelRoleArn: "arn:aws:iam::123456789012:role/SlackChannelRole",
-  NotifyOnCaseSeverity: "medium",
-  TeamId: "T1122334455",
-  ChannelId: "C1122334455",
-  adopt: true // This will adopt the existing resource instead of failing
+  ChannelId: "C11223344",
+  TeamId: "T11223344",
+  NotifyOnCaseSeverity: "low",
+  adopt: true
+});
+```
+
+## Notifications Configuration
+
+Set up a channel configuration that focuses on notification preferences.
+
+```ts
+const NotificationsSlackChannelConfig = await AWS.SupportApp.SlackChannelConfiguration("NotificationsSlackChannel", {
+  ChannelName: "AWSNotifications",
+  ChannelRoleArn: "arn:aws:iam::123456789012:role/SlackChannelRole",
+  ChannelId: "C33445566",
+  TeamId: "T33445566",
+  NotifyOnCaseSeverity: "critical",
+  NotifyOnCreateOrReopenCase: true,
+  NotifyOnAddCorrespondenceToCase: false,
+  NotifyOnResolveCase: true
 });
 ```

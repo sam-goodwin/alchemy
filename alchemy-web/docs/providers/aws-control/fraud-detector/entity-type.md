@@ -5,58 +5,67 @@ description: Learn how to create, update, and manage AWS FraudDetector EntityTyp
 
 # EntityType
 
-The EntityType resource lets you manage [AWS FraudDetector EntityTypes](https://docs.aws.amazon.com/frauddetector/latest/userguide/) which are essential for defining the types of entities that can be detected in your fraud detection models.
+The EntityType resource allows you to define and manage entity types in AWS FraudDetector. An entity type is a category of entities, such as users or devices, that you want to monitor for fraud detection. For more details, refer to the [AWS FraudDetector EntityTypes documentation](https://docs.aws.amazon.com/frauddetector/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic EntityType with required properties and an optional description.
+Create a basic entity type with a name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicEntityType = await AWS.FraudDetector.EntityType("basicEntityType", {
-  Name: "Customer",
-  Description: "Represents a customer in the fraud detection model"
+const BasicEntityType = await AWS.FraudDetector.EntityType("BasicEntityType", {
+  Name: "UserAccount",
+  Description: "Represents user accounts for fraud detection",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "FraudDetection" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EntityType with tags for better management and organization.
+Configure an entity type with additional properties, including adoption of an existing resource.
 
 ```ts
-const taggedEntityType = await AWS.FraudDetector.EntityType("taggedEntityType", {
-  Name: "Transaction",
-  Description: "Represents a transaction entity for fraud detection",
+const AdvancedEntityType = await AWS.FraudDetector.EntityType("AdvancedEntityType", {
+  Name: "Device",
+  Description: "Represents devices used by users",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "FraudDetection" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataScience" }
+  ],
+  adopt: true // Adopt existing resource if it already exists
+});
+```
+
+## Use Case: Entity Type for Transactions
+
+Define an entity type specifically for transactions to monitor fraud patterns.
+
+```ts
+const TransactionEntityType = await AWS.FraudDetector.EntityType("TransactionEntityType", {
+  Name: "Transaction",
+  Description: "Represents financial transactions for fraud detection",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Finance" }
   ]
 });
 ```
 
-## Using Adopt Option
+## Use Case: Entity Type for Sessions
 
-Use the adopt option to ensure that the existing resource is used rather than creating a new one.
-
-```ts
-const adoptEntityType = await AWS.FraudDetector.EntityType("adoptEntityType", {
-  Name: "User",
-  Description: "Represents a user entity for tracking",
-  adopt: true
-});
-```
-
-## Viewing EntityType Properties
-
-Create an EntityType and inspect its properties like ARN and creation time.
+Create an entity type to track user sessions, which can help identify suspicious activity.
 
 ```ts
-const entityTypeWithProperties = await AWS.FraudDetector.EntityType("propertiesEntityType", {
-  Name: "Device",
-  Description: "Represents a device entity for fraud detection"
+const SessionEntityType = await AWS.FraudDetector.EntityType("SessionEntityType", {
+  Name: "UserSession",
+  Description: "Represents user sessions for monitoring",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Monitoring" }
+  ]
 });
-
-console.log(`EntityType ARN: ${entityTypeWithProperties.Arn}`);
-console.log(`Created at: ${entityTypeWithProperties.CreationTime}`);
 ```

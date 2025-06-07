@@ -5,19 +5,19 @@ description: Learn how to create, update, and manage AWS CodePipeline Webhooks u
 
 # Webhook
 
-The Webhook resource allows you to create and manage [AWS CodePipeline Webhooks](https://docs.aws.amazon.com/codepipeline/latest/userguide/) which enable you to trigger a pipeline execution in response to changes in a source repository.
+The Webhook resource lets you manage [AWS CodePipeline Webhooks](https://docs.aws.amazon.com/codepipeline/latest/userguide/) that trigger pipelines on events in a source repository.
 
 ## Minimal Example
 
-Create a basic webhook that triggers a pipeline on a push event to a GitHub repository.
+Create a basic webhook with required properties and a common optional name.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const webhook = await AWS.CodePipeline.Webhook("githubWebhook", {
+const BasicWebhook = await AWS.CodePipeline.Webhook("BasicWebhook", {
   AuthenticationConfiguration: {
-    AllowedIPRange: "192.168.1.0/24",
-    SecretToken: "mySecretToken"
+    AllowedIPRange: "203.0.113.0/24",
+    SecretToken: "mySecretToken123"
   },
   Filters: [
     {
@@ -26,65 +26,86 @@ const webhook = await AWS.CodePipeline.Webhook("githubWebhook", {
     }
   ],
   Authentication: "GITHUB_HMAC",
-  TargetPipeline: "myPipeline",
-  TargetAction: "source",
+  TargetPipeline: "MyPipeline",
+  TargetAction: "Source",
   TargetPipelineVersion: 1,
-  RegisterWithThirdParty: true
+  Name: "MyWebhook"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a webhook with multiple filters and advanced authentication settings.
+Configure a webhook with additional options such as registering it with a third party.
 
 ```ts
-const advancedWebhook = await AWS.CodePipeline.Webhook("advancedWebhook", {
+const AdvancedWebhook = await AWS.CodePipeline.Webhook("AdvancedWebhook", {
   AuthenticationConfiguration: {
-    AllowedIPRange: "203.0.113.0/24",
-    SecretToken: "myAdvancedSecretToken"
-  },
-  Filters: [
-    {
-      JsonPath: "$.ref",
-      MatchEquals: "refs/heads/release"
-    },
-    {
-      JsonPath: "$.repository.name",
-      MatchEquals: "my-repo"
-    }
-  ],
-  Authentication: "GITHUB_HMAC",
-  TargetPipeline: "releasePipeline",
-  TargetAction: "build",
-  TargetPipelineVersion: 2,
-  RegisterWithThirdParty: true
-});
-```
-
-## Specific Use Case: Trigger on Pull Requests
-
-Set up a webhook specifically to trigger the pipeline on pull request events.
-
-```ts
-const pullRequestWebhook = await AWS.CodePipeline.Webhook("pullRequestWebhook", {
-  AuthenticationConfiguration: {
-    AllowedIPRange: "198.51.100.0/24",
-    SecretToken: "pullRequestSecret"
+    AllowedIPRange: "192.0.2.0/24",
+    SecretToken: "anotherSecretToken456"
   },
   Filters: [
     {
       JsonPath: "$.action",
-      MatchEquals: "opened"
-    },
-    {
-      JsonPath: "$.pull_request.base.ref",
-      MatchEquals: "main"
+      MatchEquals: "created"
     }
   ],
   Authentication: "GITHUB_HMAC",
-  TargetPipeline: "pullRequestPipeline",
-  TargetAction: "source",
+  TargetPipeline: "AdvancedPipeline",
+  TargetAction: "Source",
+  TargetPipelineVersion: 2,
+  RegisterWithThirdParty: true,
+  Name: "AdvancedWebhookWithRegistration"
+});
+```
+
+## Additional Use Case: Multiple Filters
+
+Create a webhook that listens for multiple types of events by specifying multiple filters.
+
+```ts
+const MultiFilterWebhook = await AWS.CodePipeline.Webhook("MultiFilterWebhook", {
+  AuthenticationConfiguration: {
+    AllowedIPRange: "198.51.100.0/24",
+    SecretToken: "multiFilterSecret789"
+  },
+  Filters: [
+    {
+      JsonPath: "$.ref",
+      MatchEquals: "refs/heads/main"
+    },
+    {
+      JsonPath: "$.action",
+      MatchEquals: "pushed"
+    }
+  ],
+  Authentication: "GITHUB_HMAC",
+  TargetPipeline: "MultiFilterPipeline",
+  TargetAction: "Source",
   TargetPipelineVersion: 1,
-  RegisterWithThirdParty: true
+  Name: "WebhookWithMultipleFilters"
+});
+```
+
+## Additional Use Case: Custom Authentication
+
+Demonstrate how to set up a webhook with a custom authentication configuration.
+
+```ts
+const CustomAuthWebhook = await AWS.CodePipeline.Webhook("CustomAuthWebhook", {
+  AuthenticationConfiguration: {
+    AllowedIPRange: "172.16.0.0/12",
+    SecretToken: "customAuthToken321"
+  },
+  Filters: [
+    {
+      JsonPath: "$.ref",
+      MatchEquals: "refs/tags/v1.0"
+    }
+  ],
+  Authentication: "GITHUB_HMAC",
+  TargetPipeline: "CustomAuthPipeline",
+  TargetAction: "Source",
+  TargetPipelineVersion: 3,
+  Name: "WebhookWithCustomAuth"
 });
 ```

@@ -5,92 +5,65 @@ description: Learn how to create, update, and manage AWS EC2 FlowLogs using Alch
 
 # FlowLog
 
-The FlowLog resource allows you to manage [AWS EC2 FlowLogs](https://docs.aws.amazon.com/ec2/latest/userguide/) which capture information about the IP traffic going to and from network interfaces in your VPC.
+The FlowLog resource lets you manage [AWS EC2 FlowLogs](https://docs.aws.amazon.com/ec2/latest/userguide/) for capturing information about the IP traffic going to and from network interfaces in your VPC.
 
 ## Minimal Example
 
-Create a basic FlowLog to capture all traffic from a specified VPC with default settings.
+Create a basic FlowLog to monitor traffic for a specific VPC.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const vpcFlowLog = await AWS.EC2.FlowLog("vpcFlowLog", {
+const MyVpcFlowLog = await AWS.EC2.FlowLog("MyVpcFlowLog", {
   ResourceId: "vpc-12345678",
   ResourceType: "VPC",
+  LogDestination: "s3",
+  LogDestinationType: "S3",
+  LogGroupName: "MyVpcFlowLogGroup",
   TrafficType: "ALL",
-  LogDestination: "cloud-watch-logs",
-  LogGroupName: "vpc-flow-logs",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Networking" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a FlowLog with advanced options, including a custom log format and aggregation interval settings.
+Configure a FlowLog with a custom log format and cross-account role for log delivery.
 
 ```ts
-const advancedFlowLog = await AWS.EC2.FlowLog("advancedFlowLog", {
+const AdvancedVpcFlowLog = await AWS.EC2.FlowLog("AdvancedVpcFlowLog", {
   ResourceId: "vpc-87654321",
   ResourceType: "VPC",
-  TrafficType: "ACCEPT",
-  LogDestination: "s3",
-  LogDestinationType: "S3",
-  LogGroupName: "advanced-vpc-flow-logs",
-  LogFormat: "${version} ${timestamp} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes}",
-  MaxAggregationInterval: 60,
-  DeliverCrossAccountRole: "arn:aws:iam::123456789012:role/FlowLogsRole",
-  Tags: [
-    {
-      Key: "Project",
-      Value: "NetworkMonitoring"
-    }
-  ]
-});
-```
-
-## Capture Specific Traffic Types
-
-Set up a FlowLog to capture only accepted and rejected traffic for a specific network interface.
-
-```ts
-const interfaceFlowLog = await AWS.EC2.FlowLog("interfaceFlowLog", {
-  ResourceId: "eni-12345678",
-  ResourceType: "NetworkInterface",
-  TrafficType: "REJECT",
   LogDestination: "cloud-watch-logs",
-  LogGroupName: "interface-flow-logs",
+  LogDestinationType: "CloudWatchLogs",
+  LogGroupName: "AdvancedVpcFlowLogGroup",
+  LogFormat: "${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end}",
+  DeliverCrossAccountRole: "arn:aws:iam::123456789012:role/FlowLogDeliveryRole",
+  TrafficType: "ACCEPT",
   Tags: [
-    {
-      Key: "Type",
-      Value: "Monitoring"
-    }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Security" }
   ]
 });
 ```
 
-## Cross-Account Flow Logs
+## Using Custom Aggregation Interval
 
-Establish a FlowLog that delivers logs to a different account's S3 bucket.
+Create a FlowLog with a specified maximum aggregation interval to control log delivery frequency.
 
 ```ts
-const crossAccountFlowLog = await AWS.EC2.FlowLog("crossAccountFlowLog", {
-  ResourceId: "vpc-11223344",
-  ResourceType: "VPC",
-  TrafficType: "ALL",
+const CustomAggregationFlowLog = await AWS.EC2.FlowLog("CustomAggregationFlowLog", {
+  ResourceId: "eni-1234567890abcdef0",
+  ResourceType: "NetworkInterface",
   LogDestination: "s3",
   LogDestinationType: "S3",
-  LogGroupName: "cross-account-vpc-flow-logs",
-  DeliverCrossAccountRole: "arn:aws:iam::123456789012:role/CrossAccountFlowLogsRole",
+  MaxAggregationInterval: 60, // In seconds
+  TrafficType: "ALL",
   Tags: [
-    {
-      Key: "Compliance",
-      Value: "Audit"
-    }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```

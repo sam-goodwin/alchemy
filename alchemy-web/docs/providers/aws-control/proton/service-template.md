@@ -5,72 +5,57 @@ description: Learn how to create, update, and manage AWS Proton ServiceTemplates
 
 # ServiceTemplate
 
-The ServiceTemplate resource lets you manage [AWS Proton ServiceTemplates](https://docs.aws.amazon.com/proton/latest/userguide/) that define how services are built and managed within AWS Proton.
+The ServiceTemplate resource lets you manage [AWS Proton ServiceTemplates](https://docs.aws.amazon.com/proton/latest/userguide/) for defining service infrastructure and configuration.
 
 ## Minimal Example
 
-Create a basic ServiceTemplate with required properties and a common optional property.
+Create a basic service template with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicServiceTemplate = await AWS.Proton.ServiceTemplate("basicServiceTemplate", {
-  name: "MyServiceTemplate",
-  description: "A simple service template for managing microservices.",
-  displayName: "My Service Template",
-  pipelineProvisioning: "CUSTOM",
-  tags: [
-    { key: "Environment", value: "Development" }
+const BasicServiceTemplate = await AWS.Proton.ServiceTemplate("BasicServiceTemplate", {
+  Name: "MyServiceTemplate",
+  Description: "A simple service template for deployment.",
+  DisplayName: "Simple Service Template",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Engineering" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ServiceTemplate with additional options including encryption and a custom pipeline provisioning strategy.
+Configure a service template with additional features and encryption settings.
 
 ```ts
-const advancedServiceTemplate = await AWS.Proton.ServiceTemplate("advancedServiceTemplate", {
-  name: "AdvancedServiceTemplate",
-  description: "An advanced service template with custom pipeline provisioning.",
-  displayName: "Advanced Service Template",
-  pipelineProvisioning: "CUSTOM",
-  encryptionKey: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrstuv",
-  tags: [
-    { key: "Project", value: "ProtonDemo" },
-    { key: "Owner", value: "TeamA" }
+const AdvancedServiceTemplate = await AWS.Proton.ServiceTemplate("AdvancedServiceTemplate", {
+  Name: "SecureServiceTemplate",
+  Description: "A secure service template with encryption.",
+  DisplayName: "Secure Service Template",
+  PipelineProvisioning: "SERVICE_MANAGED",
+  EncryptionKey: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-efgh-5678-ijkl-90mnopqrst",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Security" }
   ]
 });
 ```
 
 ## Adoption of Existing Resources
 
-Create a ServiceTemplate that adopts existing resources instead of failing when resources already exist.
+Create a service template that adopts existing resources without failing.
 
 ```ts
-const adoptServiceTemplate = await AWS.Proton.ServiceTemplate("adoptServiceTemplate", {
-  name: "AdoptedServiceTemplate",
-  description: "This service template adopts existing resources.",
-  displayName: "Adopted Service Template",
+const AdoptExistingServiceTemplate = await AWS.Proton.ServiceTemplate("AdoptExistingServiceTemplate", {
+  Name: "ExistingServiceTemplate",
+  Description: "This service template adopts existing resources.",
+  DisplayName: "Adopted Service Template",
   adopt: true,
-  tags: [
-    { key: "UseCase", value: "Migration" }
-  ]
-});
-```
-
-## Tagging for Resource Management
-
-Create a ServiceTemplate with specific tags for better resource management and categorization.
-
-```ts
-const taggedServiceTemplate = await AWS.Proton.ServiceTemplate("taggedServiceTemplate", {
-  name: "TaggedServiceTemplate",
-  description: "Service template with detailed tagging for resource management.",
-  displayName: "Tagged Service Template",
-  tags: [
-    { key: "Department", value: "Engineering" },
-    { key: "CostCenter", value: "R&D" }
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```

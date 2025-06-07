@@ -5,58 +5,35 @@ description: Learn how to create, update, and manage AWS IAM SAMLProviders using
 
 # SAMLProvider
 
-The SAMLProvider resource allows you to manage [AWS IAM SAMLProviders](https://docs.aws.amazon.com/iam/latest/userguide/) for enabling single sign-on (SSO) authentication in AWS environments.
+The SAMLProvider resource lets you create and manage [AWS IAM SAMLProviders](https://docs.aws.amazon.com/iam/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-samlprovider.html
 
 ## Minimal Example
-
-Create a basic SAMLProvider with required properties and one optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const samlProvider = await AWS.IAM.SAMLProvider("mySAMLProvider", {
-  SamlMetadataDocument: "<SAML_METADATA_DOCUMENT>",
-  AssertionEncryptionMode: "ENCRYPTED"
+const samlprovider = await AWS.IAM.SAMLProvider("samlprovider-example", {
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SAMLProvider with multiple private keys and tags for better management:
+Create a samlprovider with additional configuration:
 
 ```ts
-const advancedSamlProvider = await AWS.IAM.SAMLProvider("advancedSAMLProvider", {
-  SamlMetadataDocument: "<SAML_METADATA_DOCUMENT>",
-  PrivateKeyList: [
-    { Key: "<PRIVATE_KEY_1>" },
-    { Key: "<PRIVATE_KEY_2>" }
-  ],
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Engineering" }
-  ]
+import AWS from "alchemy/aws/control";
+
+const advancedSAMLProvider = await AWS.IAM.SAMLProvider("advanced-samlprovider", {
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
 
-## Adding and Removing Private Keys
-
-Demonstrate how to update a SAMLProvider by adding and removing private keys:
-
-```ts
-const updateSamlProvider = await AWS.IAM.SAMLProvider("updateSAMLProvider", {
-  SamlMetadataDocument: "<SAML_METADATA_DOCUMENT>",
-  AddPrivateKey: "<NEW_PRIVATE_KEY>",
-  RemovePrivateKey: "<EXISTING_PRIVATE_KEY>"
-});
-```
-
-## Resource Adoption
-
-Show how to adopt an existing SAMLProvider without failing if it already exists:
-
-```ts
-const adoptSamlProvider = await AWS.IAM.SAMLProvider("adoptSAMLProvider", {
-  SamlMetadataDocument: "<SAML_METADATA_DOCUMENT>",
-  adopt: true
-});
-```

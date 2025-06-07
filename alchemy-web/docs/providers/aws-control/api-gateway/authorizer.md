@@ -5,18 +5,18 @@ description: Learn how to create, update, and manage AWS ApiGateway Authorizers 
 
 # Authorizer
 
-The Authorizer resource allows you to manage [AWS ApiGateway Authorizers](https://docs.aws.amazon.com/apigateway/latest/userguide/) which are used to control access to your API Gateway methods.
+The Authorizer resource lets you manage [AWS ApiGateway Authorizers](https://docs.aws.amazon.com/apigateway/latest/userguide/) for your APIs, providing authentication and authorization capabilities.
 
 ## Minimal Example
 
-Create a basic Authorizer with required properties and a common optional property.
+Create a basic authorizer with required properties and one common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const apiGatewayAuthorizer = await AWS.ApiGateway.Authorizer("myAuthorizer", {
-  RestApiId: "myApiId",
-  Name: "MyAuthorizer",
+const SimpleAuthorizer = await AWS.ApiGateway.Authorizer("SimpleAuthorizer", {
+  RestApiId: "myRestApiId",
+  Name: "MySimpleAuthorizer",
   Type: "TOKEN",
   IdentitySource: "method.request.header.Authorization"
 });
@@ -24,47 +24,47 @@ const apiGatewayAuthorizer = await AWS.ApiGateway.Authorizer("myAuthorizer", {
 
 ## Advanced Configuration
 
-Configure an Authorizer with additional options like credentials and result TTL.
+Configure an authorizer with additional settings including provider ARNs and a custom identity validation expression.
 
 ```ts
-const advancedAuthorizer = await AWS.ApiGateway.Authorizer("advancedAuthorizer", {
-  RestApiId: "myApiId",
-  Name: "AdvancedAuthorizer",
-  Type: "TOKEN",
-  AuthorizerUri: "arn:aws:lambda:us-west-2:123456789012:function:myAuthFunction",
-  AuthorizerCredentials: "arn:aws:iam::123456789012:role/myAuthRole",
-  AuthorizerResultTtlInSeconds: 300,
+const AdvancedAuthorizer = await AWS.ApiGateway.Authorizer("AdvancedAuthorizer", {
+  RestApiId: "myRestApiId",
+  Name: "MyAdvancedAuthorizer",
+  Type: "COGNITO_USER_POOLS",
+  ProviderARNs: [
+    "arn:aws:cognito:us-west-2:123456789012:userpool/us-west-2_aBcDeFgHi"
+  ],
+  IdentityValidationExpression: "^[A-Za-z0-9-_.]+$",
+  AuthorizerResultTtlInSeconds: 300
+});
+```
+
+## Using Lambda Authorizer
+
+Create an authorizer that uses a Lambda function for custom authorization logic.
+
+```ts
+const LambdaAuthorizer = await AWS.ApiGateway.Authorizer("LambdaAuthorizer", {
+  RestApiId: "myRestApiId",
+  Name: "MyLambdaAuthorizer",
+  Type: "REQUEST",
+  AuthorizerUri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:myLambdaFunction/invocations",
+  AuthorizerCredentials: "arn:aws:iam::123456789012:role/myLambdaRole",
   IdentitySource: "method.request.header.Authorization"
 });
 ```
 
-## Using AWS Cognito as an Authorizer
+## Token Validation Example
 
-Create an Authorizer using AWS Cognito for authentication.
-
-```ts
-const cognitoAuthorizer = await AWS.ApiGateway.Authorizer("cognitoAuthorizer", {
-  RestApiId: "myApiId",
-  Name: "CognitoAuthorizer",
-  Type: "COGNITO_USER_POOLS",
-  ProviderARNs: [
-    "arn:aws:cognito:us-west-2:123456789012:userpool/us-west-2_aBcDeFgHi"
-  ]
-});
-```
-
-## Custom Lambda Authorizer
-
-Set up a custom Lambda function as an Authorizer.
+Create an authorizer with a specific token validation setup for enhanced security.
 
 ```ts
-const lambdaAuthorizer = await AWS.ApiGateway.Authorizer("lambdaAuthorizer", {
-  RestApiId: "myApiId",
-  Name: "LambdaAuthorizer",
-  Type: "REQUEST",
-  AuthorizerUri: "arn:aws:lambda:us-west-2:123456789012:function:myCustomAuthFunction",
-  AuthorizerCredentials: "arn:aws:iam::123456789012:role/myLambdaAuthRole",
+const TokenValidationAuthorizer = await AWS.ApiGateway.Authorizer("TokenValidationAuthorizer", {
+  RestApiId: "myRestApiId",
+  Name: "TokenValidationAuthorizer",
+  Type: "TOKEN",
   IdentitySource: "method.request.header.Authorization",
-  IdentityValidationExpression: "^[A-Za-z0-9-._~+/]+=*$"
+  IdentityValidationExpression: "Bearer [A-Za-z0-9-_.]+",
+  AuthorizerResultTtlInSeconds: 60
 });
 ```

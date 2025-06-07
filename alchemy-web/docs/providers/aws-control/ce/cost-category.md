@@ -5,80 +5,41 @@ description: Learn how to create, update, and manage AWS CE CostCategorys using 
 
 # CostCategory
 
-The CostCategory resource lets you manage [AWS Cost Categories](https://docs.aws.amazon.com/ce/latest/userguide/) for organizing your AWS cost allocation according to your business needs.
+The CostCategory resource lets you create and manage [AWS CE CostCategorys](https://docs.aws.amazon.com/ce/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ce-costcategory.html
 
 ## Minimal Example
-
-Create a basic cost category with a default value and a set of rules.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const costCategory = await AWS.CE.CostCategory("basicCostCategory", {
-  name: "Basic Cost Category",
-  ruleVersion: "CostCategoryExpression.v1",
-  rules: JSON.stringify({
-    "Rule1": {
-      "RuleType": "Service",
-      "MatchOptions": ["Include"],
-      "Values": ["AmazonEC2"]
-    }
-  }),
-  defaultValue: "Unallocated"
+const costcategory = await AWS.CE.CostCategory("costcategory-example", {
+  RuleVersion: "example-ruleversion",
+  Rules: "example-rules",
+  Name: "costcategory-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a cost category with split charge rules to distribute costs across different services.
+Create a costcategory with additional configuration:
 
 ```ts
-const advancedCostCategory = await AWS.CE.CostCategory("advancedCostCategory", {
-  name: "Advanced Cost Category",
-  ruleVersion: "CostCategoryExpression.v1",
-  rules: JSON.stringify({
-    "Rule1": {
-      "RuleType": "Service",
-      "MatchOptions": ["Include"],
-      "Values": ["AmazonS3"]
-    },
-    "Rule2": {
-      "RuleType": "LinkedAccount",
-      "MatchOptions": ["Include"],
-      "Values": ["123456789012"]
-    }
-  }),
-  splitChargeRules: JSON.stringify({
-    "SplitRule1": {
-      "Percentage": 50,
-      "ChargeType": "Service"
-    },
-    "SplitRule2": {
-      "Percentage": 50,
-      "ChargeType": "LinkedAccount"
-    }
-  })
+import AWS from "alchemy/aws/control";
+
+const advancedCostCategory = await AWS.CE.CostCategory("advanced-costcategory", {
+  RuleVersion: "example-ruleversion",
+  Rules: "example-rules",
+  Name: "costcategory-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
 
-## Example with Tags
-
-Create a cost category that includes tags for additional categorization.
-
-```ts
-const taggedCostCategory = await AWS.CE.CostCategory("taggedCostCategory", {
-  name: "Tagged Cost Category",
-  ruleVersion: "CostCategoryExpression.v1",
-  rules: JSON.stringify({
-    "Rule1": {
-      "RuleType": "Tag",
-      "MatchOptions": ["Include"],
-      "Values": ["Environment"]
-    }
-  }),
-  tags: [
-    { Key: "Project", Value: "ProjectAlpha" },
-    { Key: "Department", Value: "Engineering" }
-  ]
-});
-```

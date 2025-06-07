@@ -5,53 +5,29 @@ description: Learn how to create, update, and manage AWS ElasticBeanstalk Applic
 
 # Application
 
-The Application resource lets you manage [AWS ElasticBeanstalk Applications](https://docs.aws.amazon.com/elasticbeanstalk/latest/userguide/) and their associated settings and configurations.
+The Application resource lets you create and manage [AWS ElasticBeanstalk Applications](https://docs.aws.amazon.com/elasticbeanstalk/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticbeanstalk-application.html
 
 ## Minimal Example
-
-Create a basic ElasticBeanstalk application with a name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const myApplication = await AWS.ElasticBeanstalk.Application("myApplication", {
-  ApplicationName: "MyWebApp",
-  Description: "This is my web application running on Elastic Beanstalk."
+const application = await AWS.ElasticBeanstalk.Application("application-example", {
+  Description: "A application resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an ElasticBeanstalk application with resource lifecycle settings for better management.
+Create a application with additional configuration:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const lifecycleConfig = {
-  ServiceRole: "arn:aws:iam::123456789012:role/elasticbeanstalk-service-role",
-  VersionLifecycleConfig: {
-    MaxCount: 10,
-    MaxAge: 30
-  }
-};
-
-const advancedApplication = await AWS.ElasticBeanstalk.Application("advancedApplication", {
-  ApplicationName: "AdvancedWebApp",
-  Description: "This application includes advanced lifecycle configurations.",
-  ResourceLifecycleConfig: lifecycleConfig
+const advancedApplication = await AWS.ElasticBeanstalk.Application("advanced-application", {
+  Description: "A application resource managed by Alchemy",
 });
 ```
 
-## Adoption of Existing Resources
-
-Adopt an existing ElasticBeanstalk application instead of failing if it already exists.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const adoptExistingApp = await AWS.ElasticBeanstalk.Application("existingApplication", {
-  ApplicationName: "ExistingWebApp",
-  Description: "This application is being adopted from existing resources.",
-  adopt: true
-});
-```

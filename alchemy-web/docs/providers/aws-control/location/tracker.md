@@ -5,58 +5,72 @@ description: Learn how to create, update, and manage AWS Location Trackers using
 
 # Tracker
 
-The Tracker resource allows you to manage [AWS Location Trackers](https://docs.aws.amazon.com/location/latest/userguide/) for tracking the location of devices and assets in real-time.
+The Tracker resource lets you manage [AWS Location Trackers](https://docs.aws.amazon.com/location/latest/userguide/) for tracking the geographic locations of assets and devices in real-time.
 
 ## Minimal Example
 
-Create a basic location tracker with required properties and a common optional property.
+Create a basic Location Tracker with essential properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicTracker = await AWS.Location.Tracker("basicTracker", {
-  TrackerName: "MyDeviceTracker",
-  Description: "Tracks the location of my devices",
-  EventBridgeEnabled: true
+const locationTracker = await AWS.Location.Tracker("MyLocationTracker", {
+  TrackerName: "MyTracker",
+  Description: "A tracker for monitoring device locations.",
+  EventBridgeEnabled: true,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Operations" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a tracker with encryption settings and position filtering.
+Configure a tracker with additional settings for enhanced security and data management:
 
 ```ts
-const advancedTracker = await AWS.Location.Tracker("advancedTracker", {
-  TrackerName: "SecureDeviceTracker",
-  Description: "Tracks devices with secure settings",
-  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-efgh-5678-ijkl-9876543210mn",
+const secureLocationTracker = await AWS.Location.Tracker("SecureLocationTracker", {
+  TrackerName: "SecureTracker",
+  Description: "A secure tracker with KMS encryption.",
+  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-12ab-34cd-56ef-1234567890ab",
   KmsKeyEnableGeospatialQueries: true,
-  PositionFiltering: "TimeBased"
-});
-```
-
-## Using Tags for Resource Management
-
-Create a tracker with tags for better resource organization.
-
-```ts
-const taggedTracker = await AWS.Location.Tracker("taggedTracker", {
-  TrackerName: "TaggedDeviceTracker",
-  Description: "Tracks devices with tagging",
+  PositionFiltering: "TimeBased",
   Tags: [
-    { Key: "Environment", Value: "Production" },
+    { Key: "Environment", Value: "staging" },
     { Key: "Team", Value: "Development" }
   ]
 });
 ```
 
-## Adoption of Existing Resource
+## Using EventBridge for Real-Time Tracking
 
-Adopt an existing tracker instead of failing if it already exists.
+Set up a tracker that integrates with Amazon EventBridge to trigger events for location updates:
 
 ```ts
-const adoptTracker = await AWS.Location.Tracker("adoptTracker", {
-  TrackerName: "ExistingDeviceTracker",
-  adopt: true
+const eventDrivenTracker = await AWS.Location.Tracker("EventDrivenTracker", {
+  TrackerName: "EventDrivenTracker",
+  Description: "Tracker that triggers events on location updates.",
+  EventBridgeEnabled: true,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Analytics" }
+  ]
+});
+```
+
+## Enabling Position Filtering
+
+Create a tracker with position filtering to manage location data more effectively:
+
+```ts
+const filteredTracker = await AWS.Location.Tracker("FilteredTracker", {
+  TrackerName: "FilteredTracker",
+  Description: "Tracker with position filtering enabled.",
+  PositionFiltering: "AccuracyBased",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "R&D" }
+  ]
 });
 ```

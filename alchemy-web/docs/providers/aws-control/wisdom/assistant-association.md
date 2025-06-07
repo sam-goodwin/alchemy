@@ -5,84 +5,44 @@ description: Learn how to create, update, and manage AWS Wisdom AssistantAssocia
 
 # AssistantAssociation
 
-The AssistantAssociation resource allows you to create and manage associations between AWS Wisdom assistants and other resources. This can enhance the functionality of your assistants by connecting them with the required data sources and services. For more information, refer to the [AWS Wisdom AssistantAssociations documentation](https://docs.aws.amazon.com/wisdom/latest/userguide/).
+The AssistantAssociation resource lets you create and manage [AWS Wisdom AssistantAssociations](https://docs.aws.amazon.com/wisdom/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wisdom-assistantassociation.html
 
 ## Minimal Example
-
-Create a basic AssistantAssociation with required properties and an optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const assistantAssociation = await AWS.Wisdom.AssistantAssociation("basicAssociation", {
-  Association: {
-    Type: "KnowledgeBase",
-    Id: "knowledge-base-id"
-  },
-  AssociationType: "KnowledgeBase",
-  AssistantId: "assistant-id",
-  Tags: [
-    {
-      Key: "Project",
-      Value: "CustomerSupport"
-    }
-  ]
+const assistantassociation = await AWS.Wisdom.AssistantAssociation("assistantassociation-example", {
+  Association: "example-association",
+  AssociationType: "example-associationtype",
+  AssistantId: "example-assistantid",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AssistantAssociation with an adopt option to handle existing resources.
+Create a assistantassociation with additional configuration:
 
 ```ts
-const advancedAssociation = await AWS.Wisdom.AssistantAssociation("advancedAssociation", {
-  Association: {
-    Type: "KnowledgeBase",
-    Id: "another-knowledge-base-id"
-  },
-  AssociationType: "KnowledgeBase",
-  AssistantId: "assistant-id",
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
+import AWS from "alchemy/aws/control";
+
+const advancedAssistantAssociation = await AWS.Wisdom.AssistantAssociation(
+  "advanced-assistantassociation",
+  {
+    Association: "example-association",
+    AssociationType: "example-associationtype",
+    AssistantId: "example-assistantid",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
     },
-    {
-      Key: "Owner",
-      Value: "TeamA"
-    }
-  ],
-  adopt: true // Adopt existing resource if it already exists
-});
+  }
+);
 ```
 
-## Connecting Multiple Resources
-
-Create an AssistantAssociation that connects multiple knowledge bases and assistants.
-
-```ts
-const multipleAssociations = await AWS.Wisdom.AssistantAssociation("multiAssociation", {
-  Association: {
-    Type: "KnowledgeBase",
-    Id: "knowledge-base-id-1"
-  },
-  AssociationType: "KnowledgeBase",
-  AssistantId: "assistant-id-1",
-  Tags: [
-    {
-      Key: "Integration",
-      Value: "CrossTeam"
-    }
-  ]
-});
-
-// Adding another association
-const secondAssociation = await AWS.Wisdom.AssistantAssociation("multiAssociation2", {
-  Association: {
-    Type: "KnowledgeBase",
-    Id: "knowledge-base-id-2"
-  },
-  AssociationType: "KnowledgeBase",
-  AssistantId: "assistant-id-2"
-});
-```

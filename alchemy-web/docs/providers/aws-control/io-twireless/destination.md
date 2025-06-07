@@ -5,56 +5,73 @@ description: Learn how to create, update, and manage AWS IoTWireless Destination
 
 # Destination
 
-The Destination resource allows you to manage [AWS IoTWireless Destinations](https://docs.aws.amazon.com/iotwireless/latest/userguide/) for routing messages from your IoT devices to AWS services. 
+The Destination resource lets you manage [AWS IoTWireless Destinations](https://docs.aws.amazon.com/iotwireless/latest/userguide/) which are used to route messages from devices to other AWS services.
 
 ## Minimal Example
 
-Create a basic IoTWireless Destination with required properties and one optional property.
+Create a basic IoTWireless Destination with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const simpleDestination = await AWS.IoTWireless.Destination("simpleDestination", {
-  Name: "SimpleDestination",
-  Expression: "SELECT * FROM 'iot/topic'",
+const BasicDestination = await AWS.IoTWireless.Destination("BasicDestination", {
+  Name: "BasicDestination",
+  Expression: "SELECT * FROM 'device/messages'",
   ExpressionType: "RuleQueryString",
-  Description: "A simple destination for routing IoT messages",
-  RoleArn: "arn:aws:iam::123456789012:role/MyIoTRole"
+  Description: "A basic IoT Wireless Destination for routing messages"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a more complex IoTWireless Destination with multiple tags and necessary IAM role.
+Configure an IoTWireless Destination with additional options such as IAM Role and tags:
 
 ```ts
-const advancedDestination = await AWS.IoTWireless.Destination("advancedDestination", {
+const AdvancedDestination = await AWS.IoTWireless.Destination("AdvancedDestination", {
   Name: "AdvancedDestination",
-  Expression: "SELECT * FROM 'iot/topic'",
+  Expression: "SELECT * FROM 'device/messages'",
   ExpressionType: "RuleQueryString",
   RoleArn: "arn:aws:iam::123456789012:role/MyIoTRole",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Project",
-      Value: "IoTMonitoring"
-    }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "IoT" }
+  ],
+  Description: "An advanced IoT Wireless Destination with role and tags"
+});
+```
+
+## Using with an AWS Lambda Function
+
+Demonstrate how to create a Destination that routes messages to an AWS Lambda function:
+
+```ts
+const LambdaDestination = await AWS.IoTWireless.Destination("LambdaDestination", {
+  Name: "LambdaDestination",
+  Expression: "SELECT * FROM 'device/messages'",
+  ExpressionType: "RuleQueryString",
+  RoleArn: "arn:aws:iam::123456789012:role/MyIoTRole",
+  Description: "Destination for routing messages to a Lambda function",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Service", Value: "DataProcessing" }
   ]
 });
 ```
 
-## Using Existing Resources
+## Integrating with Amazon S3
 
-If you want to adopt an existing resource instead of failing when it already exists, set the `adopt` property to `true`.
+Create a Destination to send messages directly to an Amazon S3 bucket:
 
 ```ts
-const adoptDestination = await AWS.IoTWireless.Destination("adoptDestination", {
-  Name: "ExistingDestination",
-  Expression: "SELECT * FROM 'iot/topic'",
+const S3Destination = await AWS.IoTWireless.Destination("S3Destination", {
+  Name: "S3Destination",
+  Expression: "SELECT * FROM 'device/messages'",
   ExpressionType: "RuleQueryString",
-  adopt: true
+  RoleArn: "arn:aws:iam::123456789012:role/MyIoTRole",
+  Description: "Destination for routing IoT messages to an S3 bucket",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Service", Value: "Storage" }
+  ]
 });
 ```

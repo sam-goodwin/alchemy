@@ -5,43 +5,69 @@ description: Learn how to create, update, and manage AWS SecurityHub Hubs using 
 
 # Hub
 
-The Hub resource lets you manage [AWS SecurityHub Hubs](https://docs.aws.amazon.com/securityhub/latest/userguide/) for centralizing security findings and compliance checks across your AWS accounts.
+The Hub resource lets you manage [AWS SecurityHub Hubs](https://docs.aws.amazon.com/securityhub/latest/userguide/) which provide a centralized view of security alerts and compliance status across AWS accounts.
 
 ## Minimal Example
 
-Create a basic SecurityHub Hub with default settings and enable default standards.
+Create a basic SecurityHub Hub with default settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const securityHubHub = await AWS.SecurityHub.Hub("defaultSecurityHub", {
+const SecurityHubHub = await AWS.SecurityHub.Hub("default-hub", {
   EnableDefaultStandards: true,
-  ControlFindingGenerator: "AWS"
+  ControlFindingGenerator: "AWS",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SecurityHub Hub with automatic control enabling and specific tags for management.
+Configure a SecurityHub Hub with auto-enable controls and custom tags.
 
 ```ts
-const advancedSecurityHubHub = await AWS.SecurityHub.Hub("advancedSecurityHub", {
+const AdvancedSecurityHubHub = await AWS.SecurityHub.Hub("advanced-hub", {
   EnableDefaultStandards: true,
   AutoEnableControls: true,
-  Tags: {
-    Environment: "Production",
-    Department: "Security"
-  }
+  ControlFindingGenerator: "CustomGenerator",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevSecOps" }
+  ]
 });
 ```
 
-## Adoption of Existing Resources
+## Adoption of Existing Resource
 
-If you need to adopt an existing SecurityHub Hub without failing if it already exists, you can set the `adopt` property to true.
+Adopt an existing SecurityHub Hub without failing if it already exists.
 
 ```ts
-const adoptedSecurityHubHub = await AWS.SecurityHub.Hub("adoptedSecurityHub", {
+const AdoptedSecurityHubHub = await AWS.SecurityHub.Hub("adopted-hub", {
   EnableDefaultStandards: true,
-  adopt: true
+  ControlFindingGenerator: "AWS",
+  adopt: true,
+  Tags: [
+    { Key: "Environment", Value: "testing" },
+    { Key: "Team", Value: "Infrastructure" }
+  ]
+});
+```
+
+## Integration with Other AWS Services
+
+Create a SecurityHub Hub that integrates with other AWS services for enhanced monitoring.
+
+```ts
+const IntegratedSecurityHubHub = await AWS.SecurityHub.Hub("integrated-hub", {
+  EnableDefaultStandards: true,
+  ControlFindingGenerator: "AWS",
+  AutoEnableControls: true,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Service", Value: "Monitoring" }
+  ]
 });
 ```

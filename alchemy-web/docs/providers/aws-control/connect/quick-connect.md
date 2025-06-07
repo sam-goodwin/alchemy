@@ -5,67 +5,43 @@ description: Learn how to create, update, and manage AWS Connect QuickConnects u
 
 # QuickConnect
 
-The QuickConnect resource lets you manage [AWS Connect QuickConnects](https://docs.aws.amazon.com/connect/latest/userguide/) which are used to set up quick connection capabilities for agents and customers.
+The QuickConnect resource lets you create and manage [AWS Connect QuickConnects](https://docs.aws.amazon.com/connect/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-connect-quickconnect.html
 
 ## Minimal Example
-
-Create a basic QuickConnect with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const quickConnect = await AWS.Connect.QuickConnect("basicQuickConnect", {
-  Name: "SupportLine",
-  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abc12345-abc1-abc1-abc1-abc123456789",
-  QuickConnectConfig: {
-    QuickConnectType: "USER",
-    UserConfig: {
-      UserArn: "arn:aws:connect:us-west-2:123456789012:user/abc12345-abc1-abc1-abc1-abc123456789",
-      ContactFlowId: "contact-flow-id-123"
-    }
-  },
-  Description: "QuickConnect for customer support line"
+const quickconnect = await AWS.Connect.QuickConnect("quickconnect-example", {
+  QuickConnectConfig: "example-quickconnectconfig",
+  InstanceArn: "example-instancearn",
+  Name: "quickconnect-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A quickconnect resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a QuickConnect with tags for better resource management and monitoring.
+Create a quickconnect with additional configuration:
 
 ```ts
-const advancedQuickConnect = await AWS.Connect.QuickConnect("advancedQuickConnect", {
-  Name: "SalesLine",
-  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abc12345-abc1-abc1-abc1-abc123456789",
-  QuickConnectConfig: {
-    QuickConnectType: "USER",
-    UserConfig: {
-      UserArn: "arn:aws:connect:us-west-2:123456789012:user/def67890-def6-def6-def6-def678901234",
-      ContactFlowId: "contact-flow-id-456"
-    }
+import AWS from "alchemy/aws/control";
+
+const advancedQuickConnect = await AWS.Connect.QuickConnect("advanced-quickconnect", {
+  QuickConnectConfig: "example-quickconnectconfig",
+  InstanceArn: "example-instancearn",
+  Name: "quickconnect-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Tags: [
-    { Key: "Department", Value: "Sales" },
-    { Key: "Priority", Value: "High" }
-  ],
-  Description: "QuickConnect for sales inquiries"
+  Description: "A quickconnect resource managed by Alchemy",
 });
 ```
 
-## Example with Different QuickConnect Types
-
-This example demonstrates how to create a QuickConnect with a phone number configuration.
-
-```ts
-const phoneQuickConnect = await AWS.Connect.QuickConnect("phoneQuickConnect", {
-  Name: "SupportHotline",
-  InstanceArn: "arn:aws:connect:us-west-2:123456789012:instance/abc12345-abc1-abc1-abc1-abc123456789",
-  QuickConnectConfig: {
-    QuickConnectType: "PHONE_NUMBER",
-    PhoneConfig: {
-      PhoneNumber: "+15555551234",
-      ContactFlowId: "contact-flow-id-789"
-    }
-  },
-  Description: "QuickConnect for customer support hotline"
-});
-```

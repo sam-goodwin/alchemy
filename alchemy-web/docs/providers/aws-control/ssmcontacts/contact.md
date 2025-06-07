@@ -5,70 +5,41 @@ description: Learn how to create, update, and manage AWS SSMContacts Contacts us
 
 # Contact
 
-The Contact resource lets you manage [AWS SSMContacts Contacts](https://docs.aws.amazon.com/ssmcontacts/latest/userguide/) for incident management and on-call scheduling.
+The Contact resource lets you create and manage [AWS SSMContacts Contacts](https://docs.aws.amazon.com/ssmcontacts/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ssmcontacts-contact.html
 
 ## Minimal Example
-
-Create a basic contact with essential properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicContact = await AWS.SSMContacts.Contact("basic-contact", {
-  Type: "PERSON",
-  Alias: "john-doe",
-  DisplayName: "John Doe",
-  Plan: [{
-    Type: "ON_CALL",
-    Stages: [{
-      DurationInMinutes: 60,
-      Targets: [{
-        Type: "PERSON",
-        Id: "john-doe"
-      }]
-    }]
-  }]
+const contact = await AWS.SSMContacts.Contact("contact-example", {
+  Type: "example-type",
+  Alias: "example-alias",
+  DisplayName: "contact-display",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a contact with a more complex on-call plan including multiple stages:
+Create a contact with additional configuration:
 
 ```ts
+import AWS from "alchemy/aws/control";
+
 const advancedContact = await AWS.SSMContacts.Contact("advanced-contact", {
-  Type: "PERSON",
-  Alias: "jane-doe",
-  DisplayName: "Jane Doe",
-  Plan: [{
-    Type: "ON_CALL",
-    Stages: [{
-      DurationInMinutes: 120,
-      Targets: [{
-        Type: "PERSON",
-        Id: "jane-doe"
-      }]
-    }, {
-      DurationInMinutes: 30,
-      Targets: [{
-        Type: "PERSON",
-        Id: "john-doe"
-      }]
-    }]
-  }],
-  adopt: true // Adopt existing resource if it already exists
+  Type: "example-type",
+  Alias: "example-alias",
+  DisplayName: "contact-display",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
 
-## Using an Existing Contact
-
-Adopt an existing contact if it already exists, preventing failure during resource creation:
-
-```ts
-const existingContact = await AWS.SSMContacts.Contact("existing-contact", {
-  Type: "PERSON",
-  Alias: "existing-alias",
-  DisplayName: "Existing Contact",
-  adopt: true // This will ensure that the operation does not fail if the contact already exists
-});
-```

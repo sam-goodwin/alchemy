@@ -5,48 +5,59 @@ description: Learn how to create, update, and manage AWS BillingConductor Pricin
 
 # PricingPlan
 
-The PricingPlan resource lets you create and manage [AWS BillingConductor PricingPlans](https://docs.aws.amazon.com/billingconductor/latest/userguide/) for customizing your billing management and pricing structures.
+The PricingPlan resource lets you create and manage [AWS BillingConductor PricingPlans](https://docs.aws.amazon.com/billingconductor/latest/userguide/) to handle custom billing strategies in your AWS account.
 
 ## Minimal Example
 
-Create a basic PricingPlan with required properties and one optional description.
+Create a basic PricingPlan with a name and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPricingPlan = await AWS.BillingConductor.PricingPlan("basicPricingPlan", {
-  Name: "BasicPricing",
-  Description: "This is a basic pricing plan for our services."
+const BasicPricingPlan = await AWS.BillingConductor.PricingPlan("BasicPricingPlan", {
+  Name: "Basic Pricing Plan",
+  Description: "A simple pricing plan for basic services",
+  PricingRuleArns: [
+    "arn:aws:billingconductor:us-east-1:123456789012:pricing-rule/abc123"
+  ],
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Billing" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a PricingPlan with additional pricing rules and tags for better organization and management.
+Configure a PricingPlan with multiple pricing rules and tags:
 
 ```ts
-const advancedPricingPlan = await AWS.BillingConductor.PricingPlan("advancedPricingPlan", {
-  Name: "AdvancedPricing",
-  Description: "This pricing plan includes advanced pricing rules.",
+const AdvancedPricingPlan = await AWS.BillingConductor.PricingPlan("AdvancedPricingPlan", {
+  Name: "Advanced Pricing Plan",
+  Description: "An advanced pricing plan with multiple rules",
   PricingRuleArns: [
-    "arn:aws:billingconductor:us-east-1:123456789012:pricing-rule/abc123",
-    "arn:aws:billingconductor:us-east-1:123456789012:pricing-rule/def456"
+    "arn:aws:billingconductor:us-east-1:123456789012:pricing-rule/def456",
+    "arn:aws:billingconductor:us-east-1:123456789012:pricing-rule/ghi789"
   ],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Finance" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Finance" },
+    { Key: "Project", Value: "CostManagement" }
   ]
 });
 ```
 
-## Adoption of Existing Resources
+## Adopt Existing Resource
 
-Create a PricingPlan that adopts an existing resource instead of failing if it already exists.
+Create a PricingPlan that adopts an existing resource instead of failing:
 
 ```ts
-const adoptExistingPricingPlan = await AWS.BillingConductor.PricingPlan("adoptExistingPricingPlan", {
-  Name: "AdoptedPricing",
-  Description: "This pricing plan adopts an existing resource.",
+const ExistingPricingPlan = await AWS.BillingConductor.PricingPlan("ExistingPricingPlan", {
+  Name: "Existing Pricing Plan",
+  Description: "This plan adopts an existing pricing plan",
+  PricingRuleArns: [
+    "arn:aws:billingconductor:us-east-1:123456789012:pricing-rule/jkl012"
+  ],
   adopt: true
 });
 ```

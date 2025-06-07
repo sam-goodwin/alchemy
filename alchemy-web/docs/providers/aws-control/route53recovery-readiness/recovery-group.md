@@ -5,63 +5,70 @@ description: Learn how to create, update, and manage AWS Route53RecoveryReadines
 
 # RecoveryGroup
 
-The RecoveryGroup resource allows you to manage [AWS Route53RecoveryReadiness RecoveryGroups](https://docs.aws.amazon.com/route53recoveryreadiness/latest/userguide/) for improving the recovery readiness of your applications.
+The RecoveryGroup resource allows you to manage [AWS Route53RecoveryReadiness RecoveryGroups](https://docs.aws.amazon.com/route53recoveryreadiness/latest/userguide/) that help ensure your applications remain available during outages.
 
 ## Minimal Example
 
-Create a basic RecoveryGroup with a specified name and a single cell.
+Create a basic RecoveryGroup with a name and a list of associated cells.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const recoveryGroup = await AWS.Route53RecoveryReadiness.RecoveryGroup("myRecoveryGroup", {
+const BasicRecoveryGroup = await AWS.Route53RecoveryReadiness.RecoveryGroup("BasicRecoveryGroup", {
   RecoveryGroupName: "MyRecoveryGroup",
-  Cells: ["cell-1"],
+  Cells: ["CellA", "CellB"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a RecoveryGroup with tags for resource management and multiple cells.
+Configure a RecoveryGroup with additional tags and settings for adopting existing resources.
 
 ```ts
-const advancedRecoveryGroup = await AWS.Route53RecoveryReadiness.RecoveryGroup("advancedRecoveryGroup", {
+const AdvancedRecoveryGroup = await AWS.Route53RecoveryReadiness.RecoveryGroup("AdvancedRecoveryGroup", {
   RecoveryGroupName: "AdvancedRecoveryGroup",
-  Cells: ["cell-1", "cell-2", "cell-3"],
+  Cells: ["CellX", "CellY", "CellZ"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Owner", Value: "TeamA" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" },
+    { Key: "Project", Value: "Migration" }
   ],
+  adopt: true // Adopt existing RecoveryGroup if it already exists
 });
 ```
 
-## Adopting Existing Resources
+## Use Case: Disaster Recovery Planning
 
-If you want to adopt an existing RecoveryGroup instead of failing if it already exists, you can set the `adopt` property to true.
+Create a RecoveryGroup specifically for disaster recovery planning, including multiple cells and tags for tracking.
 
 ```ts
-const adoptedRecoveryGroup = await AWS.Route53RecoveryReadiness.RecoveryGroup("adoptedRecoveryGroup", {
-  RecoveryGroupName: "AdoptedRecoveryGroup",
-  Cells: ["cell-1"],
-  adopt: true,
+const DisasterRecoveryGroup = await AWS.Route53RecoveryReadiness.RecoveryGroup("DisasterRecoveryGroup", {
+  RecoveryGroupName: "DisasterRecoveryGroup",
+  Cells: ["PrimaryCell", "BackupCell", "DisasterCell"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Infrastructure" },
+    { Key: "Purpose", Value: "Disaster Recovery" }
+  ]
 });
 ```
 
-## Creating Multiple RecoveryGroups
+## Use Case: Multi-Region Setup
 
-Manage multiple RecoveryGroups for different environments efficiently.
+Set up a RecoveryGroup that spans multiple regions for high availability.
 
 ```ts
-const devRecoveryGroup = await AWS.Route53RecoveryReadiness.RecoveryGroup("devRecoveryGroup", {
-  RecoveryGroupName: "DevRecoveryGroup",
-  Cells: ["cell-dev-1", "cell-dev-2"],
-});
-
-const prodRecoveryGroup = await AWS.Route53RecoveryReadiness.RecoveryGroup("prodRecoveryGroup", {
-  RecoveryGroupName: "ProdRecoveryGroup",
-  Cells: ["cell-prod-1", "cell-prod-2"],
+const MultiRegionRecoveryGroup = await AWS.Route53RecoveryReadiness.RecoveryGroup("MultiRegionRecoveryGroup", {
+  RecoveryGroupName: "MultiRegionRecovery",
+  Cells: ["USWestCell", "USEastCell"],
   Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Region", Value: "Multi-Region" }
   ],
+  adopt: false // Do not adopt existing resources
 });
 ```

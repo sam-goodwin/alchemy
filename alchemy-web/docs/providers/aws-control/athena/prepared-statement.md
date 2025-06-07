@@ -5,63 +5,35 @@ description: Learn how to create, update, and manage AWS Athena PreparedStatemen
 
 # PreparedStatement
 
-The PreparedStatement resource allows you to manage [AWS Athena PreparedStatements](https://docs.aws.amazon.com/athena/latest/userguide/) for executing SQL queries with predefined parameters in a specified workgroup.
+The PreparedStatement resource lets you create and manage [AWS Athena PreparedStatements](https://docs.aws.amazon.com/athena/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-athena-preparedstatement.html
 
 ## Minimal Example
-
-Create a basic prepared statement with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const preparedStatement = await AWS.Athena.PreparedStatement("basicPreparedStatement", {
-  StatementName: "GetUserDetails",
-  WorkGroup: "primary",
-  Description: "A prepared statement for fetching user details",
-  QueryStatement: "SELECT * FROM users WHERE user_id = ?"
+const preparedstatement = await AWS.Athena.PreparedStatement("preparedstatement-example", {
+  StatementName: "preparedstatement-statement",
+  WorkGroup: "example-workgroup",
+  QueryStatement: "example-querystatement",
+  Description: "A preparedstatement resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Create a prepared statement with additional properties such as adopting an existing resource:
+Create a preparedstatement with additional configuration:
 
 ```ts
-const advancedPreparedStatement = await AWS.Athena.PreparedStatement("advancedPreparedStatement", {
-  StatementName: "FetchOrders",
-  WorkGroup: "analytics",
-  Description: "A prepared statement for fetching order details",
-  QueryStatement: "SELECT * FROM orders WHERE status = ?",
-  adopt: true
+import AWS from "alchemy/aws/control";
+
+const advancedPreparedStatement = await AWS.Athena.PreparedStatement("advanced-preparedstatement", {
+  StatementName: "preparedstatement-statement",
+  WorkGroup: "example-workgroup",
+  QueryStatement: "example-querystatement",
+  Description: "A preparedstatement resource managed by Alchemy",
 });
 ```
 
-## Using Prepared Statements in Queries
-
-You can utilize prepared statements in your SQL queries by binding parameters:
-
-```ts
-const userId = 12345;
-const userQueryExecution = await AWS.Athena.StartQueryExecution("userQueryExecution", {
-  QueryString: "EXECUTE GetUserDetails USING ?",
-  QueryExecutionContext: {
-    Database: "user_database"
-  },
-  WorkGroup: "primary",
-  Parameters: [userId]
-});
-```
-
-## Updating a Prepared Statement
-
-You can also update an existing prepared statement if needed:
-
-```ts
-const updatedPreparedStatement = await AWS.Athena.PreparedStatement("updatedPreparedStatement", {
-  StatementName: "GetUserDetails",
-  WorkGroup: "primary",
-  Description: "Updated prepared statement for fetching user details",
-  QueryStatement: "SELECT * FROM users WHERE user_email = ?",
-  adopt: true
-});
-```

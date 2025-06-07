@@ -5,100 +5,41 @@ description: Learn how to create, update, and manage AWS MediaTailor Channels us
 
 # Channel
 
-The Channel resource lets you manage [AWS MediaTailor Channels](https://docs.aws.amazon.com/mediatailor/latest/userguide/) for delivering video on-demand and live streaming services.
+The Channel resource lets you create and manage [AWS MediaTailor Channels](https://docs.aws.amazon.com/mediatailor/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-mediatailor-channel.html
 
 ## Minimal Example
-
-Create a basic MediaTailor Channel with required properties and common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const mediaTailorChannel = await AWS.MediaTailor.Channel("myMediaTailorChannel", {
-  ChannelName: "MyChannel",
-  PlaybackMode: "LIVE",
-  Outputs: [
-    {
-      Url: "https://example.com/live",
-      Name: "Output1"
-    }
-  ],
-  FillerSlate: {
-    Source: "https://example.com/slate.mp4"
-  }
+const channel = await AWS.MediaTailor.Channel("channel-example", {
+  ChannelName: "channel-channel",
+  Outputs: [],
+  PlaybackMode: "example-playbackmode",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a MediaTailor Channel with detailed audience targeting and logging configurations.
+Create a channel with additional configuration:
 
 ```ts
-const advancedMediaTailorChannel = await AWS.MediaTailor.Channel("advancedMediaTailorChannel", {
-  ChannelName: "AdvancedChannel",
-  PlaybackMode: "LINEAR",
-  Outputs: [
-    {
-      Url: "https://example.com/linear",
-      Name: "OutputLinear1"
-    }
-  ],
-  Audiences: ["US", "CA"],
-  LogConfiguration: {
-    LogLevel: "DEBUG",
-    LogDestination: "s3://my-log-bucket/logs/"
+import AWS from "alchemy/aws/control";
+
+const advancedChannel = await AWS.MediaTailor.Channel("advanced-channel", {
+  ChannelName: "channel-channel",
+  Outputs: [],
+  PlaybackMode: "example-playbackmode",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  TimeShiftConfiguration: {
-    TimeShiftBuffer: 60, // Time in minutes
-    TimeShiftOutput: {
-      Url: "https://example.com/timeshift",
-      Name: "TimeShiftOutput1"
-    }
-  }
 });
 ```
 
-## Using Tags for Organization
-
-Create a MediaTailor Channel with tags for better organization and resource management.
-
-```ts
-const taggedMediaTailorChannel = await AWS.MediaTailor.Channel("taggedMediaTailorChannel", {
-  ChannelName: "TaggedChannel",
-  PlaybackMode: "VOD",
-  Outputs: [
-    {
-      Url: "https://example.com/vod",
-      Name: "OutputVOD1"
-    }
-  ],
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Project",
-      Value: "VideoStreaming"
-    }
-  ]
-});
-```
-
-## Adopting Existing Resources
-
-Adopt an existing MediaTailor Channel by setting the adopt flag to true.
-
-```ts
-const existingMediaTailorChannel = await AWS.MediaTailor.Channel("existingMediaTailorChannel", {
-  ChannelName: "ExistingChannel",
-  PlaybackMode: "LIVE",
-  Outputs: [
-    {
-      Url: "https://example.com/existing",
-      Name: "ExistingOutput1"
-    }
-  ],
-  adopt: true // Adopt existing resource instead of failing
-});
-```

@@ -5,92 +5,95 @@ description: Learn how to create, update, and manage AWS IoTTwinMaker Entitys us
 
 # Entity
 
-The Entity resource lets you manage [AWS IoTTwinMaker Entities](https://docs.aws.amazon.com/iottwinmaker/latest/userguide/) which represent real-world objects in your digital twin environments.
+The Entity resource lets you manage [AWS IoTTwinMaker Entitys](https://docs.aws.amazon.com/iottwinmaker/latest/userguide/) and their configurations, allowing you to represent real-world objects in a digital twin.
 
 ## Minimal Example
 
-Create a basic entity with required properties and some optional ones.
+Create a basic IoTTwinMaker Entity with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicEntity = await AWS.IoTTwinMaker.Entity("basicEntity", {
-  EntityId: "entity-12345",
-  EntityName: "CoolingSystem",
-  WorkspaceId: "workspace-xyz",
-  Description: "A cooling system for the factory"
+const basicEntity = await AWS.IoTTwinMaker.Entity("BasicEntity", {
+  EntityId: "Device001",
+  EntityName: "Temperature Sensor",
+  WorkspaceId: "Workspace123",
+  Description: "This entity represents a temperature sensor in the facility."
 });
 ```
 
 ## Advanced Configuration
 
-Configure an entity with components and tags for better identification and functionality.
+Configure an IoTTwinMaker Entity with components and tags for better organization.
 
 ```ts
-const advancedEntity = await AWS.IoTTwinMaker.Entity("advancedEntity", {
-  EntityId: "entity-67890",
-  EntityName: "ConveyorBelt",
-  WorkspaceId: "workspace-xyz",
+const advancedEntity = await AWS.IoTTwinMaker.Entity("AdvancedEntity", {
+  EntityId: "Device002",
+  EntityName: "Pressure Sensor",
+  WorkspaceId: "Workspace123",
   Components: {
-    Speed: {
-      type: "number",
-      value: 5.0
-    },
-    Temperature: {
-      type: "number",
-      value: 70.0
+    "PressureComponent": {
+      "type": "PressureSensor",
+      "properties": {
+        "Pressure": {
+          "type": "Double",
+          "value": 101.3
+        }
+      }
     }
   },
-  Tags: {
-    environment: "production",
-    status: "active"
-  }
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Location", Value: "Main Hall" }
+  ]
 });
 ```
 
-## Composite Components
+## Composite Components Example
 
-This example demonstrates how to create an entity with composite components.
+Demonstrate how to create an IoTTwinMaker Entity with composite components.
 
 ```ts
-const compositeEntity = await AWS.IoTTwinMaker.Entity("compositeEntity", {
-  EntityId: "entity-13579",
-  EntityName: "SensorArray",
-  WorkspaceId: "workspace-xyz",
+const compositeEntity = await AWS.IoTTwinMaker.Entity("CompositeEntity", {
+  EntityId: "Device003",
+  EntityName: "HVAC System",
+  WorkspaceId: "Workspace123",
   CompositeComponents: {
-    TemperatureSensor: {
-      type: "Sensor",
-      properties: {
-        unit: "Celsius",
-        value: 22.5
-      }
-    },
-    PressureSensor: {
-      type: "Sensor",
-      properties: {
-        unit: "Pascal",
-        value: 101325
+    "HVACComposite": {
+      "type": "HVACSystem",
+      "properties": {
+        "Status": {
+          "type": "String",
+          "value": "Operational"
+        },
+        "Temperature": {
+          "type": "Double",
+          "value": 22.5
+        }
       }
     }
-  }
+  },
+  Description: "This entity represents the HVAC system controlling room temperature."
 });
 ```
 
-## Parent Entity Relationship
+## Parent Entity Example
 
-Link an entity as a child to a parent entity.
+Create an IoTTwinMaker Entity that has a parent entity defined.
 
 ```ts
-const childEntity = await AWS.IoTTwinMaker.Entity("childEntity", {
-  EntityId: "entity-24680",
-  EntityName: "SubCoolingUnit",
-  WorkspaceId: "workspace-xyz",
-  ParentEntityId: "entity-12345", // Link to the CoolingSystem entity
-  Components: {
-    Status: {
-      type: "string",
-      value: "operational"
-    }
-  }
+const parentEntity = await AWS.IoTTwinMaker.Entity("ParentEntity", {
+  EntityId: "Building001",
+  EntityName: "Main Building",
+  WorkspaceId: "Workspace123",
+  Description: "This entity represents the main building."
+});
+
+const childEntity = await AWS.IoTTwinMaker.Entity("ChildEntity", {
+  EntityId: "Room101",
+  EntityName: "Conference Room",
+  WorkspaceId: "Workspace123",
+  ParentEntityId: parentEntity.EntityId,
+  Description: "This entity represents the conference room in the main building."
 });
 ```

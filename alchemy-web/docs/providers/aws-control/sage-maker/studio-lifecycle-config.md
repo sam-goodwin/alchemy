@@ -5,59 +5,66 @@ description: Learn how to create, update, and manage AWS SageMaker StudioLifecyc
 
 # StudioLifecycleConfig
 
-The StudioLifecycleConfig resource lets you manage [AWS SageMaker Studio Lifecycle Configurations](https://docs.aws.amazon.com/sagemaker/latest/userguide/) that define scripts to run when users start or stop their studio sessions.
+The StudioLifecycleConfig resource allows you to create and manage [AWS SageMaker Studio Lifecycle Configurations](https://docs.aws.amazon.com/sagemaker/latest/userguide/), which are scripts that automatically run when a SageMaker Studio app is created or started.
 
 ## Minimal Example
 
-Create a basic StudioLifecycleConfig with required properties and a couple of optional tags.
+Create a basic SageMaker Studio Lifecycle Configuration with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const lifecycleConfig = await AWS.SageMaker.StudioLifecycleConfig("basic-lifecycle-config", {
+const basicLifecycleConfig = await AWS.SageMaker.StudioLifecycleConfig("BasicLifecycleConfig", {
   StudioLifecycleConfigAppType: "JupyterServer",
-  StudioLifecycleConfigName: "BasicConfig",
-  StudioLifecycleConfigContent: "echo 'Welcome to SageMaker Studio!'",
+  StudioLifecycleConfigName: "MyBasicLifecycleConfig",
+  StudioLifecycleConfigContent: "echo 'Hello from Lifecycle Config!'",
   Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Owner", Value: "DataScienceTeam" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "data-team" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a StudioLifecycleConfig with a custom script that runs additional commands.
+Configure a more advanced Lifecycle Configuration that runs multiple commands.
 
 ```ts
-const advancedLifecycleConfig = await AWS.SageMaker.StudioLifecycleConfig("advanced-lifecycle-config", {
+const advancedLifecycleConfig = await AWS.SageMaker.StudioLifecycleConfig("AdvancedLifecycleConfig", {
   StudioLifecycleConfigAppType: "JupyterServer",
-  StudioLifecycleConfigName: "AdvancedConfig",
+  StudioLifecycleConfigName: "MyAdvancedLifecycleConfig",
   StudioLifecycleConfigContent: `
     #!/bin/bash
     echo 'Setting up environment...'
-    conda install -y numpy pandas matplotlib
-    echo 'Environment setup complete!'
+    pip install -r /home/sagemaker-user/requirements.txt
+    echo 'Environment setup complete.'
   `,
   Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Owner", Value: "data-science" }
   ]
 });
 ```
 
-## User-Specific Configuration
+## Custom User Setup
 
-Create a StudioLifecycleConfig that runs specific commands tailored for a user.
+Create a Lifecycle Configuration designed to set up user-specific configurations.
 
 ```ts
-const userSpecificLifecycleConfig = await AWS.SageMaker.StudioLifecycleConfig("user-specific-lifecycle-config", {
+const userSetupLifecycleConfig = await AWS.SageMaker.StudioLifecycleConfig("UserSetupLifecycleConfig", {
   StudioLifecycleConfigAppType: "JupyterServer",
-  StudioLifecycleConfigName: "UserSpecificConfig",
+  StudioLifecycleConfigName: "MyUserSetupLifecycleConfig",
   StudioLifecycleConfigContent: `
     #!/bin/bash
-    echo 'Starting custom setup for user session...'
-    pip install --upgrade boto3
-    echo 'Custom setup completed for user session.'
-  `
+    echo 'Configuring user settings...'
+    mkdir -p /home/sagemaker-user/.config/myapp
+    echo 'User settings configured.'
+  `,
+  Tags: [
+    { Key: "Environment", Value: "testing" },
+    { Key: "Owner", Value: "dev-team" }
+  ]
 });
 ```
+
+These examples demonstrate how to utilize the SageMaker StudioLifecycleConfig resource effectively, providing configurations tailored for different operational needs.

@@ -5,59 +5,71 @@ description: Learn how to create, update, and manage AWS IoT CACertificates usin
 
 # CACertificate
 
-The CACertificate resource allows you to manage [AWS IoT CACertificates](https://docs.aws.amazon.com/iot/latest/userguide/), which are used to authenticate devices connecting to AWS IoT.
+The CACertificate resource allows you to manage [AWS IoT CACertificates](https://docs.aws.amazon.com/iot/latest/userguide/) for securing device communications and ensuring trusted connections within AWS IoT services.
 
 ## Minimal Example
 
-Create a basic CACertificate with the required properties and one optional property.
+Create a basic CACertificate with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const caCertificate = await AWS.IoT.CACertificate("myCACertificate", {
+const basicCACertificate = await AWS.IoT.CACertificate("BasicCACertificate", {
   Status: "ACTIVE",
-  CACertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...YourCert...IDAQAB\n-----END CERTIFICATE-----",
-  CertificateMode: "DEFAULT" // Optional: can also be "SNI_ONLY"
+  CACertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...rest_of_certificate...\n-----END CERTIFICATE-----",
+  CertificateMode: "SNI_ONLY" // Optional property
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CACertificate with additional options like auto registration status and tags.
+Configure a CACertificate with auto registration settings and tags for better resource management.
 
 ```ts
-const advancedCACertificate = await AWS.IoT.CACertificate("advancedCACertificate", {
+const advancedCACertificate = await AWS.IoT.CACertificate("AdvancedCACertificate", {
   Status: "ACTIVE",
-  CACertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...YourCert...IDAQAB\n-----END CERTIFICATE-----",
-  CertificateMode: "DEFAULT",
-  AutoRegistrationStatus: "ENABLE", // Optional: can also be "DISABLE"
+  CACertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...rest_of_certificate...\n-----END CERTIFICATE-----",
+  AutoRegistrationStatus: "ENABLE",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "IoTDevice" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "IoT" }
   ]
 });
 ```
 
+## Custom Registration Configuration
+
+Demonstrate how to set up a CACertificate with a custom registration configuration to manage device registrations.
+
+```ts
+const registrationConfigCACertificate = await AWS.IoT.CACertificate("RegistrationConfigCACertificate", {
+  Status: "ACTIVE",
+  CACertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...rest_of_certificate...\n-----END CERTIFICATE-----",
+  RegistrationConfig: {
+    // Custom registration parameters e.g., roleArn, templateBody, etc.
+    RoleArn: "arn:aws:iam::123456789012:role/IoTRole",
+    TemplateBody: JSON.stringify({
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": "iot:CreateKeysAndCertificate",
+          "Resource": "*"
+        }
+      ]
+    })
+  }
+});
+``` 
+
 ## Removing Auto Registration
 
-Create a CACertificate and specify that auto registration should be removed.
+Create a CACertificate while specifying the removal of auto registration.
 
 ```ts
-const noAutoRegistrationCACertificate = await AWS.IoT.CACertificate("noAutoRegCACertificate", {
+const removeAutoRegistrationCACertificate = await AWS.IoT.CACertificate("RemoveAutoRegistrationCACertificate", {
   Status: "ACTIVE",
-  CACertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...YourCert...IDAQAB\n-----END CERTIFICATE-----",
-  RemoveAutoRegistration: true // Optional: set to true to prevent auto registration
-});
-```
-
-## Verification Certificate
-
-Create a CACertificate that includes a verification certificate.
-
-```ts
-const verificationCACertificate = await AWS.IoT.CACertificate("verificationCACertificate", {
-  Status: "ACTIVE",
-  CACertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...YourCert...IDAQAB\n-----END CERTIFICATE-----",
-  VerificationCertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...YourVerificationCert...IDAQAB\n-----END CERTIFICATE-----"
+  CACertificatePem: "-----BEGIN CERTIFICATE-----\nMIID...rest_of_certificate...\n-----END CERTIFICATE-----",
+  RemoveAutoRegistration: true // Disables auto-registration for this certificate
 });
 ```

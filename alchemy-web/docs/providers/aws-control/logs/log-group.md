@@ -5,76 +5,81 @@ description: Learn how to create, update, and manage AWS Logs LogGroups using Al
 
 # LogGroup
 
-The LogGroup resource lets you manage [AWS Logs LogGroups](https://docs.aws.amazon.com/logs/latest/userguide/) which act as containers for log streams that share the same retention, monitoring, and access control settings.
+The LogGroup resource allows you to manage [AWS Logs LogGroups](https://docs.aws.amazon.com/logs/latest/userguide/) for aggregating and monitoring logs from various AWS services.
 
 ## Minimal Example
 
-Create a basic LogGroup with a retention policy and a tag.
+Create a basic LogGroup with a retention policy of 14 days.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const logGroup = await AWS.Logs.LogGroup("myLogGroup", {
-  logGroupName: "MyApplicationLogs",
-  retentionInDays: 14,
-  tags: [{
-    key: "Environment",
-    value: "Production"
-  }]
+const BasicLogGroup = await AWS.Logs.LogGroup("BasicLogGroup", {
+  LogGroupName: "MyBasicLogGroup",
+  RetentionInDays: 14
 });
 ```
 
 ## Advanced Configuration
 
-Configure a LogGroup with a custom KMS key and field index policies.
+Configure a LogGroup with additional settings, including a custom KMS key for encryption and a data protection policy.
 
 ```ts
-const secureLogGroup = await AWS.Logs.LogGroup("secureLogGroup", {
-  logGroupName: "SecureApplicationLogs",
-  kmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
-  fieldIndexPolicies: [{
-    field: "userId",
-    index: "true"
-  }],
-  retentionInDays: 30,
-  tags: [{
-    key: "Application",
-    value: "MySecureApp"
-  }]
-});
-```
+import AWS from "alchemy/aws/control";
 
-## Adoption of Existing LogGroup
-
-Adopt an existing LogGroup instead of failing if it already exists.
-
-```ts
-const existingLogGroup = await AWS.Logs.LogGroup("existingLogGroup", {
-  logGroupName: "ExistingApplicationLogs",
-  adopt: true
-});
-```
-
-## Data Protection Policy
-
-Create a LogGroup with a data protection policy for enhanced security.
-
-```ts
-const protectedLogGroup = await AWS.Logs.LogGroup("protectedLogGroup", {
-  logGroupName: "ProtectedApplicationLogs",
-  dataProtectionPolicy: {
-    version: "2012-10-17",
-    statement: [{
-      effect: "Allow",
-      action: "logs:PutLogEvents",
-      resource: "arn:aws:logs:us-west-2:123456789012:log-group:ProtectedApplicationLogs:*",
-      condition: {
-        test: "StringEquals",
-        variable: "aws:username",
-        values: ["admin"]
+const AdvancedLogGroup = await AWS.Logs.LogGroup("AdvancedLogGroup", {
+  LogGroupName: "MyAdvancedLogGroup",
+  RetentionInDays: 30,
+  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst",
+  DataProtectionPolicy: JSON.stringify({
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: {
+          Service: "logs.amazonaws.com"
+        },
+        Action: "kms:Decrypt",
+        Resource: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst"
       }
-    }]
-  },
-  retentionInDays: 365
+    ]
+  })
+});
+```
+
+## Custom Indexing Policies
+
+Define a LogGroup with custom field indexing policies for enhanced search capabilities.
+
+```ts
+import AWS from "alchemy/aws/control";
+
+const IndexedLogGroup = await AWS.Logs.LogGroup("IndexedLogGroup", {
+  LogGroupName: "MyIndexedLogGroup",
+  FieldIndexPolicies: [{
+    Field: "userId",
+    Index: true
+  }, {
+    Field: "eventType",
+    Index: true
+  }],
+  RetentionInDays: 90
+});
+```
+
+## Tagging for Resource Management
+
+Create a LogGroup with tags for better resource management and categorization.
+
+```ts
+import AWS from "alchemy/aws/control";
+
+const TaggedLogGroup = await AWS.Logs.LogGroup("TaggedLogGroup", {
+  LogGroupName: "MyTaggedLogGroup",
+  RetentionInDays: 60,
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Department", Value: "Engineering" }
+  ]
 });
 ```

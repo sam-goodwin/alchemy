@@ -5,118 +5,129 @@ description: Learn how to create, update, and manage AWS CloudWatch Dashboards u
 
 # Dashboard
 
-The Dashboard resource lets you manage [AWS CloudWatch Dashboards](https://docs.aws.amazon.com/cloudwatch/latest/userguide/) for visualizing metrics and logs in AWS. 
+The Dashboard resource lets you create and manage [AWS CloudWatch Dashboards](https://docs.aws.amazon.com/cloudwatch/latest/userguide/) for visualizing your AWS resources and application metrics.
 
 ## Minimal Example
 
-Create a basic CloudWatch Dashboard with essential properties:
+Create a basic CloudWatch Dashboard with a specified name and a simple widget.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const cloudWatchDashboard = await AWS.CloudWatch.Dashboard("basicDashboard", {
-  DashboardName: "MainMetricsDashboard",
+const SimpleDashboard = await AWS.CloudWatch.Dashboard("MySimpleDashboard", {
+  DashboardName: "SimpleDashboard",
   DashboardBody: JSON.stringify({
-    widgets: [
-      {
-        type: "metric",
-        x: 0,
-        y: 0,
-        width: 6,
-        height: 6,
-        properties: {
-          metrics: [
-            ["AWS/EC2", "CPUUtilization", "InstanceId", "i-1234567890abcdef0"],
-            ["AWS/EC2", "DiskReadOps", "InstanceId", "i-1234567890abcdef0"]
-          ],
-          view: "timeSeries",
-          stacked: false,
-          region: "us-east-1",
-          title: "EC2 Instance Metrics"
-        }
+    widgets: [{
+      type: "metric",
+      properties: {
+        metrics: [
+          ["AWS/EC2", "CPUUtilization", "InstanceId", "i-1234567890abcdef0"]
+        ],
+        title: "EC2 CPU Utilization",
+        view: "timeSeries",
+        region: "us-east-1",
+        stacked: false,
+        period: 300
       }
-    ]
+    }]
   })
 });
 ```
 
 ## Advanced Configuration
 
-Configure a dashboard with multiple widgets and a custom layout:
+Configure a dashboard with multiple widgets and additional layout settings.
 
 ```ts
-const advancedDashboard = await AWS.CloudWatch.Dashboard("advancedDashboard", {
-  DashboardName: "AdvancedMetricsDashboard",
+const AdvancedDashboard = await AWS.CloudWatch.Dashboard("MyAdvancedDashboard", {
+  DashboardName: "AdvancedDashboard",
   DashboardBody: JSON.stringify({
-    widgets: [
-      {
-        type: "metric",
-        x: 0,
-        y: 0,
-        width: 4,
-        height: 6,
-        properties: {
-          metrics: [["AWS/S3", "NumberOfObjects", "BucketName", "my-bucket"]],
-          view: "timeSeries",
-          stacked: false,
-          region: "us-west-2",
-          title: "S3 Object Count"
-        }
-      },
-      {
-        type: "text",
-        x: 4,
-        y: 0,
-        width: 8,
-        height: 6,
-        properties: {
-          markdown: "# Welcome to Your Dashboard\nThis dashboard displays key metrics."
-        }
-      },
-      {
-        type: "metric",
-        x: 0,
-        y: 6,
-        width: 12,
-        height: 6,
-        properties: {
-          metrics: [["AWS/Lambda", "Invocations", "FunctionName", "myLambdaFunction"]],
-          view: "timeSeries",
-          stacked: true,
-          region: "us-east-1",
-          title: "Lambda Function Invocations"
-        }
+    widgets: [{
+      type: "metric",
+      properties: {
+        metrics: [
+          ["AWS/EC2", "CPUUtilization", "InstanceId", "i-1234567890abcdef0"],
+          ["AWS/EC2", "MemoryUtilization", "InstanceId", "i-1234567890abcdef0"]
+        ],
+        title: "EC2 Metrics Overview",
+        view: "timeSeries",
+        region: "us-east-1",
+        stacked: true,
+        period: 300
       }
-    ]
+    }, {
+      type: "text",
+      properties: {
+        markdown: "# Welcome to the Advanced Dashboard"
+      }
+    }]
   })
 });
 ```
 
-## Updating an Existing Dashboard
+## Dashboard with Multiple Metrics
 
-Use the `adopt` property to update an existing dashboard without failing if it already exists:
+Demonstrate a dashboard that visualizes metrics from different AWS services.
 
 ```ts
-const updatedDashboard = await AWS.CloudWatch.Dashboard("updatedDashboard", {
-  DashboardName: "MainMetricsDashboard",
+const MultiServiceDashboard = await AWS.CloudWatch.Dashboard("MyMultiServiceDashboard", {
+  DashboardName: "MultiServiceDashboard",
   DashboardBody: JSON.stringify({
-    widgets: [
-      {
-        type: "metric",
-        x: 0,
-        y: 0,
-        width: 6,
-        height: 6,
-        properties: {
-          metrics: [["AWS/EC2", "NetworkIn", "InstanceId", "i-1234567890abcdef0"]],
-          view: "timeSeries",
-          stacked: false,
-          region: "us-east-1",
-          title: "Network In"
-        }
+    widgets: [{
+      type: "metric",
+      properties: {
+        metrics: [
+          ["AWS/S3", "NumberOfObjects", "BucketName", "my-bucket"],
+          ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", "my-db-instance"]
+        ],
+        title: "S3 and RDS Metrics",
+        view: "timeSeries",
+        region: "us-west-2",
+        stacked: false,
+        period: 300
       }
-    ]
-  }),
-  adopt: true
+    }]
+  })
+});
+```
+
+## Dashboard with Custom Layout
+
+Create a dashboard with a custom layout and specific widths for widgets.
+
+```ts
+const CustomLayoutDashboard = await AWS.CloudWatch.Dashboard("MyCustomLayoutDashboard", {
+  DashboardName: "CustomLayoutDashboard",
+  DashboardBody: JSON.stringify({
+    widgets: [{
+      width: 6,
+      height: 6,
+      type: "metric",
+      properties: {
+        metrics: [
+          ["AWS/EC2", "CPUUtilization", "InstanceId", "i-1234567890abcdef0"]
+        ],
+        title: "EC2 CPU Utilization",
+        view: "timeSeries",
+        region: "us-east-1",
+        stacked: false,
+        period: 300
+      }
+    }, {
+      width: 6,
+      height: 6,
+      type: "metric",
+      properties: {
+        metrics: [
+          ["AWS/S3", "NumberOfObjects", "BucketName", "my-bucket"]
+        ],
+        title: "S3 Object Count",
+        view: "timeSeries",
+        region: "us-west-2",
+        stacked: false,
+        period: 300
+      }
+    }]
+  })
 });
 ```

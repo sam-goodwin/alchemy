@@ -5,58 +5,44 @@ description: Learn how to create, update, and manage AWS EventSchemas Registrys 
 
 # Registry
 
-The Registry resource allows you to create and manage [AWS EventSchemas Registrys](https://docs.aws.amazon.com/eventschemas/latest/userguide/) for organizing event schemas in your AWS account.
+The Registry resource allows you to manage [AWS EventSchemas Registrys](https://docs.aws.amazon.com/eventschemas/latest/userguide/) for organizing and managing event schemas across your AWS account.
 
 ## Minimal Example
 
-Create a basic EventSchemas Registry with a description and tags.
+Create a basic EventSchemas Registry with a name and description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicRegistry = await AWS.EventSchemas.Registry("basic-registry", {
-  Description: "This is a basic registry for event schemas.",
-  RegistryName: "BasicEventRegistry",
-  Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "EventProcessing" }
-  ]
+const myRegistry = await AWS.EventSchemas.Registry("MyEventRegistry", {
+  RegistryName: "MyEventRegistry",
+  Description: "A registry for managing event schemas"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a registry that enables adoption of existing resources if they already exist.
+Configure the registry with additional properties like tags for better resource management:
 
 ```ts
-const advancedRegistry = await AWS.EventSchemas.Registry("advanced-registry", {
-  Description: "This registry adopts existing resources if present.",
-  RegistryName: "AdvancedEventRegistry",
-  adopt: true,
+const taggedRegistry = await AWS.EventSchemas.Registry("TaggedEventRegistry", {
+  RegistryName: "TaggedEventRegistry",
+  Description: "A registry with tags for better organization",
   Tags: [
-    { Key: "UseCase", Value: "EventManagement" }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Owner", Value: "DataTeam" }
   ]
 });
 ```
 
-## Registry Without Tags
+## Adoption of Existing Resource
 
-Create a registry without any tags, focusing solely on the name and description.
-
-```ts
-const noTagsRegistry = await AWS.EventSchemas.Registry("no-tags-registry", {
-  Description: "Registry created without tags.",
-  RegistryName: "NoTagsEventRegistry"
-});
-```
-
-## Read-Only Registry
-
-Establish a registry designed for read-only purposes by not including certain optional properties.
+If you want to adopt an existing EventSchemas Registry without failing, you can set the `adopt` property:
 
 ```ts
-const readOnlyRegistry = await AWS.EventSchemas.Registry("read-only-registry", {
-  Description: "This registry is intended for read-only access.",
-  RegistryName: "ReadOnlyEventRegistry"
+const adoptExistingRegistry = await AWS.EventSchemas.Registry("AdoptedEventRegistry", {
+  RegistryName: "ExistingEventRegistry",
+  Description: "Adopting an existing registry",
+  adopt: true
 });
 ```

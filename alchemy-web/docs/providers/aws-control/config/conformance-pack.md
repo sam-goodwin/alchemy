@@ -5,67 +5,83 @@ description: Learn how to create, update, and manage AWS Config ConformancePacks
 
 # ConformancePack
 
-The ConformancePack resource lets you manage [AWS Config ConformancePacks](https://docs.aws.amazon.com/config/latest/userguide/) that help ensure compliance of your AWS resources with specific rules and standards.
+The ConformancePack resource lets you create and manage [AWS Config ConformancePacks](https://docs.aws.amazon.com/config/latest/userguide/) that help you maintain compliance with your organization's policies and regulations.
 
 ## Minimal Example
 
-Create a basic ConformancePack with required properties and one optional parameter.
+Create a basic ConformancePack with required properties and one optional property for input parameters.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicConformancePack = await AWS.Config.ConformancePack("basicConformancePack", {
+const BasicConformancePack = await AWS.Config.ConformancePack("BasicConformancePack", {
   ConformancePackName: "BasicCompliancePack",
-  DeliveryS3Bucket: "my-config-bucket",
-  DeliveryS3KeyPrefix: "compliance-packs/"
+  ConformancePackInputParameters: [
+    {
+      ParameterName: "ComplianceType",
+      ParameterValue: "CIS"
+    }
+  ],
+  DeliveryS3Bucket: "my-config-bucket"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ConformancePack with input parameters and SSM document details for more complex setups.
+Configure a ConformancePack with a custom SSM document template and additional input parameters for enhanced compliance management.
 
 ```ts
-const advancedConformancePack = await AWS.Config.ConformancePack("advancedConformancePack", {
+const AdvancedConformancePack = await AWS.Config.ConformancePack("AdvancedConformancePack", {
   ConformancePackName: "AdvancedCompliancePack",
-  DeliveryS3Bucket: "my-config-bucket",
-  ConformancePackInputParameters: [
-    {
-      ParameterName: "S3BucketName",
-      ParameterValue: "my-secure-bucket"
-    },
-    {
-      ParameterName: "DynamoDBTable",
-      ParameterValue: "my-table"
-    }
-  ],
   TemplateSSMDocumentDetails: {
     DocumentName: "MySSMDocument",
     DocumentVersion: "1"
-  }
+  },
+  ConformancePackInputParameters: [
+    {
+      ParameterName: "ComplianceType",
+      ParameterValue: "CIS"
+    },
+    {
+      ParameterName: "Region",
+      ParameterValue: "us-east-1"
+    }
+  ],
+  DeliveryS3Bucket: "my-config-bucket",
+  DeliveryS3KeyPrefix: "conformance-packs/"
 });
 ```
 
-## Using a Template from S3
+## Using Template Body
 
-Deploy a ConformancePack using a CloudFormation template stored in S3.
+Create a ConformancePack using a template body to define compliance rules directly in the resource definition.
 
 ```ts
-const s3TemplateConformancePack = await AWS.Config.ConformancePack("s3TemplateConformancePack", {
-  ConformancePackName: "S3TemplateCompliancePack",
-  TemplateS3Uri: "s3://my-config-templates/compliance-pack-template.yaml",
+const TemplateBodyConformancePack = await AWS.Config.ConformancePack("TemplateBodyConformancePack", {
+  ConformancePackName: "TemplateBodyCompliancePack",
+  TemplateBody: JSON.stringify({
+    Rules: [
+      {
+        ConfigRuleName: "S3BucketPublicReadProhibited",
+        Source: {
+          Owner: "AWS",
+          SourceIdentifier: "S3_BUCKET_PUBLIC_READ_PROHIBITED"
+        }
+      }
+    ]
+  }),
   DeliveryS3Bucket: "my-config-bucket"
 });
 ```
 
-## Adopting Existing Resources
+## Adoption of Existing Resources
 
-Create a ConformancePack that will adopt existing resources instead of failing if they already exist.
+Adopt existing resources into a new ConformancePack without failing if they already exist.
 
 ```ts
-const adoptExistingConformancePack = await AWS.Config.ConformancePack("adoptExistingConformancePack", {
-  ConformancePackName: "AdoptExistingCompliancePack",
-  DeliveryS3Bucket: "my-config-bucket",
-  adopt: true
+const AdoptExistingConformancePack = await AWS.Config.ConformancePack("AdoptExistingConformancePack", {
+  ConformancePackName: "ExistingCompliancePack",
+  adopt: true,
+  DeliveryS3Bucket: "my-config-bucket"
 });
 ```

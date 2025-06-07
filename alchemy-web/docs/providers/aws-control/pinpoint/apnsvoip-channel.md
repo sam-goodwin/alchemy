@@ -5,65 +5,51 @@ description: Learn how to create, update, and manage AWS Pinpoint APNSVoipChanne
 
 # APNSVoipChannel
 
-The APNSVoipChannel resource enables you to manage the Apple Push Notification service (APNs) VOIP channel for AWS Pinpoint. This service allows you to send notifications to iOS devices for VoIP applications. For more detailed information, you can refer to the [AWS Pinpoint APNSVoipChannels documentation](https://docs.aws.amazon.com/pinpoint/latest/userguide/).
+The APNSVoipChannel resource allows you to manage the Apple Push Notification Service (APNS) VoIP channels for AWS Pinpoint. This resource enables you to send real-time notifications to your iOS applications. For more details, see the [AWS Pinpoint APNSVoipChannels documentation](https://docs.aws.amazon.com/pinpoint/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic APNSVoipChannel with required properties and a common optional property.
+Create an APNS VoIP channel with the required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const apnsVoipChannel = await AWS.Pinpoint.APNSVoipChannel("myAPNSVoipChannel", {
-  ApplicationId: "myApplicationId",
+const apnsVoipChannel = await AWS.Pinpoint.APNSVoipChannel("MyAPNSVoipChannel", {
+  ApplicationId: "my-application-id",
   BundleId: "com.mycompany.myapp",
-  PrivateKey: "myPrivateKey",
-  Enabled: true
+  PrivateKey: "my-private-key",
+  Certificate: "my-certificate"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an APNSVoipChannel with additional authentication methods and team ID.
+Configure an APNS VoIP channel with additional properties for enhanced functionality.
 
 ```ts
-const advancedApnsVoipChannel = await AWS.Pinpoint.APNSVoipChannel("advancedAPNSVoipChannel", {
-  ApplicationId: "myApplicationId",
+const advancedAPNSVoipChannel = await AWS.Pinpoint.APNSVoipChannel("AdvancedAPNSVoipChannel", {
+  ApplicationId: "my-application-id",
   BundleId: "com.mycompany.myapp",
-  PrivateKey: "myPrivateKey",
+  PrivateKey: "my-private-key",
+  Certificate: "my-certificate",
   Enabled: true,
   DefaultAuthenticationMethod: "key",
-  TokenKey: "myTokenKey",
-  TokenKeyId: "myTokenKeyId",
-  TeamId: "myTeamId"
+  TokenKey: "my-token-key",
+  TokenKeyId: "my-token-key-id",
+  TeamId: "my-team-id"
 });
 ```
 
-## Enable and Disable Channel
+## Adoption of Existing Resource
 
-Demonstrate how to enable and disable the APNSVoipChannel.
-
-```ts
-const toggleApnsVoipChannel = await AWS.Pinpoint.APNSVoipChannel("toggleAPNSVoipChannel", {
-  ApplicationId: "myApplicationId",
-  BundleId: "com.mycompany.myapp",
-  PrivateKey: "myPrivateKey",
-  Enabled: false // Initially disabled
-});
-
-// Later on, enable the channel
-toggleApnsVoipChannel.props.Enabled = true;
-```
-
-## Using Adopt Feature
-
-Show how to create an APNSVoipChannel while adopting an existing resource.
+If you want to adopt an existing APNS VoIP channel instead of failing when it already exists, you can set the `adopt` property to true.
 
 ```ts
-const adoptApnsVoipChannel = await AWS.Pinpoint.APNSVoipChannel("adoptAPNSVoipChannel", {
-  ApplicationId: "myApplicationId",
+const adoptExistingAPNSVoipChannel = await AWS.Pinpoint.APNSVoipChannel("ExistingAPNSVoipChannel", {
+  ApplicationId: "my-application-id",
   BundleId: "com.mycompany.myapp",
-  PrivateKey: "myPrivateKey",
-  adopt: true // Adopt existing resource instead of failing
+  PrivateKey: "my-private-key",
+  Certificate: "my-certificate",
+  adopt: true
 });
 ```

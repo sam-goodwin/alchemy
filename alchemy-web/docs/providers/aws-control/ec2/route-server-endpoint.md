@@ -5,86 +5,53 @@ description: Learn how to create, update, and manage AWS EC2 RouteServerEndpoint
 
 # RouteServerEndpoint
 
-The RouteServerEndpoint resource allows you to manage [AWS EC2 RouteServerEndpoints](https://docs.aws.amazon.com/ec2/latest/userguide/) which enable customers to connect to the AWS Direct Connect and transit gateway services through a centralized routing mechanism.
+The RouteServerEndpoint resource allows you to manage [AWS EC2 RouteServerEndpoints](https://docs.aws.amazon.com/ec2/latest/userguide/) for establishing peering with Amazon VPCs and other networks.
 
 ## Minimal Example
 
-Create a basic RouteServerEndpoint with required properties.
+Create a basic RouteServerEndpoint with required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const routeServerEndpoint = await AWS.EC2.RouteServerEndpoint("myRouteServerEndpoint", {
-  SubnetId: "subnet-0abcd1234efgh5678",
-  RouteServerId: "rs-0abcd1234efgh5678",
+const BasicRouteServerEndpoint = await AWS.EC2.RouteServerEndpoint("BasicRouteServerEndpoint", {
+  SubnetId: "subnet-0abc1234def567890", // Replace with your subnet ID
+  RouteServerId: "rs-0abc1234def567890", // Replace with your Route Server ID
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Networking" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a RouteServerEndpoint with additional properties, including adopting an existing resource.
+Configure a RouteServerEndpoint with additional properties including adoption of existing resources:
 
 ```ts
-const advancedRouteServerEndpoint = await AWS.EC2.RouteServerEndpoint("advancedRouteServerEndpoint", {
-  SubnetId: "subnet-0abcd1234efgh5678",
-  RouteServerId: "rs-0abcd1234efgh5678",
+const AdvancedRouteServerEndpoint = await AWS.EC2.RouteServerEndpoint("AdvancedRouteServerEndpoint", {
+  SubnetId: "subnet-1abc5678def123456", // Replace with your subnet ID
+  RouteServerId: "rs-1abc5678def123456", // Replace with your Route Server ID
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Staging"
-    }
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Operations" }
   ],
-  adopt: true // Adopt existing resource instead of failing if it already exists
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Connecting Multiple Networks
+## Example with Additional Tags
 
-Create a RouteServerEndpoint to connect multiple networks through distinct subnets.
-
-```ts
-const primaryRouteServerEndpoint = await AWS.EC2.RouteServerEndpoint("primaryRouteServerEndpoint", {
-  SubnetId: "subnet-0abcd1234efgh5678",
-  RouteServerId: "rs-0abcd1234efgh5678",
-  Tags: [
-    {
-      Key: "Role",
-      Value: "Primary"
-    }
-  ]
-});
-
-const secondaryRouteServerEndpoint = await AWS.EC2.RouteServerEndpoint("secondaryRouteServerEndpoint", {
-  SubnetId: "subnet-1abcd1234efgh5678",
-  RouteServerId: "rs-0abcd1234efgh5678",
-  Tags: [
-    {
-      Key: "Role",
-      Value: "Secondary"
-    }
-  ]
-});
-```
-
-## Deleting a RouteServerEndpoint
-
-Example of how to delete a RouteServerEndpoint when it is no longer needed.
+You can add more tags to categorize your RouteServerEndpoint for better resource management:
 
 ```ts
-await AWS.EC2.RouteServerEndpoint("deleteRouteServerEndpoint", {
-  SubnetId: "subnet-0abcd1234efgh5678",
-  RouteServerId: "rs-0abcd1234efgh5678",
+const TaggedRouteServerEndpoint = await AWS.EC2.RouteServerEndpoint("TaggedRouteServerEndpoint", {
+  SubnetId: "subnet-2abc8765def432109", // Replace with your subnet ID
+  RouteServerId: "rs-2abc8765def432109", // Replace with your Route Server ID
   Tags: [
-    {
-      Key: "Action",
-      Value: "Delete"
-    }
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Owner", Value: "DevTeam" },
+    { Key: "Project", Value: "RouteOptimization" }
   ]
 });
 ```

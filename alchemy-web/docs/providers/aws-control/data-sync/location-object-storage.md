@@ -5,67 +5,39 @@ description: Learn how to create, update, and manage AWS DataSync LocationObject
 
 # LocationObjectStorage
 
-The LocationObjectStorage resource lets you manage [AWS DataSync LocationObjectStorages](https://docs.aws.amazon.com/datasync/latest/userguide/) for transferring data between on-premises storage and AWS storage services.
+The LocationObjectStorage resource lets you create and manage [AWS DataSync LocationObjectStorages](https://docs.aws.amazon.com/datasync/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-datasync-locationobjectstorage.html
 
 ## Minimal Example
-
-Create a basic DataSync LocationObjectStorage with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const objectStorageLocation = await AWS.DataSync.LocationObjectStorage("myObjectStorageLocation", {
-  AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/my-agent"],
-  BucketName: "my-data-bucket",
-  ServerHostname: "storage.example.com",
-  ServerProtocol: "S3"
-});
+const locationobjectstorage = await AWS.DataSync.LocationObjectStorage(
+  "locationobjectstorage-example",
+  { Tags: { Environment: "production", ManagedBy: "Alchemy" } }
+);
 ```
 
 ## Advanced Configuration
 
-Configure a more complex DataSync LocationObjectStorage with additional security properties and tags.
+Create a locationobjectstorage with additional configuration:
 
 ```ts
-const secureObjectStorageLocation = await AWS.DataSync.LocationObjectStorage("secureObjectStorageLocation", {
-  AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/my-agent"],
-  BucketName: "my-secure-data-bucket",
-  ServerHostname: "secure-storage.example.com",
-  ServerProtocol: "S3",
-  AccessKey: "myAccessKey",
-  SecretKey: "mySecretKey",
-  ServerCertificate: "certificate.pem",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DataSync" }
-  ]
-});
+import AWS from "alchemy/aws/control";
+
+const advancedLocationObjectStorage = await AWS.DataSync.LocationObjectStorage(
+  "advanced-locationobjectstorage",
+  {
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+  }
+);
 ```
 
-## Including Subdirectories
-
-Create a DataSync LocationObjectStorage that specifies a subdirectory within the S3 bucket.
-
-```ts
-const subdirectoryObjectStorageLocation = await AWS.DataSync.LocationObjectStorage("subdirectoryObjectStorageLocation", {
-  AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/my-agent"],
-  BucketName: "my-data-bucket",
-  ServerHostname: "storage.example.com",
-  ServerProtocol: "S3",
-  Subdirectory: "/data/subdirectory"
-});
-```
-
-## With Custom Server Port
-
-Set up a DataSync LocationObjectStorage using a custom server port.
-
-```ts
-const customPortObjectStorageLocation = await AWS.DataSync.LocationObjectStorage("customPortObjectStorageLocation", {
-  AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/my-agent"],
-  BucketName: "my-data-bucket",
-  ServerHostname: "storage.example.com",
-  ServerProtocol: "S3",
-  ServerPort: 8080 // Custom port for the server
-});
-```

@@ -5,52 +5,52 @@ description: Learn how to create, update, and manage AWS MediaLive EventBridgeRu
 
 # EventBridgeRuleTemplateGroup
 
-The EventBridgeRuleTemplateGroup resource allows you to manage groups of AWS MediaLive EventBridge rule templates. This resource is essential for organizing and automating media workflows. For more information, refer to the [AWS MediaLive EventBridgeRuleTemplateGroups](https://docs.aws.amazon.com/medialive/latest/userguide/).
+The EventBridgeRuleTemplateGroup resource allows you to manage [AWS MediaLive EventBridge Rule Template Groups](https://docs.aws.amazon.com/medialive/latest/userguide/) for configuring event-driven workflows in your media processing pipeline.
 
 ## Minimal Example
 
-Create a basic EventBridgeRuleTemplateGroup with a name and description.
+Create a basic EventBridge Rule Template Group with a name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const templateGroup = await AWS.MediaLive.EventBridgeRuleTemplateGroup("basic-template-group", {
-  name: "MyMediaLiveTemplateGroup",
-  description: "This is a template group for media live events.",
-  tags: {
-    environment: "production",
-    project: "media-live"
-  }
+const MinimalEventBridgeRuleTemplateGroup = await AWS.MediaLive.EventBridgeRuleTemplateGroup("MinimalRuleTemplateGroup", {
+  Name: "MyFirstTemplateGroup",
+  Description: "This is a minimal EventBridge Rule Template Group",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Media" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EventBridgeRuleTemplateGroup with additional properties such as tags and adoption of existing resources.
+Configure an EventBridge Rule Template Group with additional properties such as tags and adoption behavior.
 
 ```ts
-const advancedTemplateGroup = await AWS.MediaLive.EventBridgeRuleTemplateGroup("advanced-template-group", {
-  name: "AdvancedMediaLiveTemplateGroup",
-  description: "This group adopts existing resources for better management.",
-  tags: {
-    department: "media",
-    owner: "team-a"
-  },
-  adopt: true
+const AdvancedEventBridgeRuleTemplateGroup = await AWS.MediaLive.EventBridgeRuleTemplateGroup("AdvancedRuleTemplateGroup", {
+  Name: "AdvancedTemplateGroup",
+  Description: "This template group includes advanced configurations.",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Owner", Value: "MediaTeam" }
+  ],
+  adopt: true // Adopt existing resource if it exists
 });
 ```
 
-## Use Case: Automated Event Management
+## Using Tags for Organization
 
-Set up a template group specifically for managing automated events in a media workflow.
+Create an EventBridge Rule Template Group that uses tags to categorize resources effectively.
 
 ```ts
-const automatedEventTemplateGroup = await AWS.MediaLive.EventBridgeRuleTemplateGroup("automated-event-group", {
-  name: "AutomatedEventTemplateGroup",
-  description: "Template group for managing automated media events.",
-  tags: {
-    useCase: "automation",
-    status: "active"
-  }
+const TaggedEventBridgeRuleTemplateGroup = await AWS.MediaLive.EventBridgeRuleTemplateGroup("TaggedRuleTemplateGroup", {
+  Name: "TaggedTemplateGroup",
+  Description: "A tagged EventBridge Rule Template Group for better management.",
+  Tags: [
+    { Key: "Project", Value: "LiveStreaming" },
+    { Key: "Department", Value: "Broadcast" }
+  ]
 });
 ```

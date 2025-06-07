@@ -5,88 +5,42 @@ description: Learn how to create, update, and manage AWS SageMaker InferenceComp
 
 # InferenceComponent
 
-The InferenceComponent resource allows you to manage [AWS SageMaker InferenceComponents](https://docs.aws.amazon.com/sagemaker/latest/userguide/) for deploying machine learning models and serving predictions.
+The InferenceComponent resource lets you create and manage [AWS SageMaker InferenceComponents](https://docs.aws.amazon.com/sagemaker/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-sagemaker-inferencecomponent.html
 
 ## Minimal Example
-
-Create a basic InferenceComponent with required properties and one optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const inferenceComponent = await AWS.SageMaker.InferenceComponent("basicInferenceComponent", {
-  EndpointName: "my-endpoint",
-  Specification: {
-    ContentType: "application/json",
-    InputPath: "/input",
-    OutputPath: "/output"
-  },
-  VariantName: "AllTraffic" // Common optional property
+const inferencecomponent = await AWS.SageMaker.InferenceComponent("inferencecomponent-example", {
+  EndpointName: "inferencecomponent-endpoint",
+  Specification: "example-specification",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an InferenceComponent with additional options such as runtime configuration and deployment settings:
+Create a inferencecomponent with additional configuration:
 
 ```ts
-const advancedInferenceComponent = await AWS.SageMaker.InferenceComponent("advancedInferenceComponent", {
-  EndpointName: "my-endpoint",
-  Specification: {
-    ContentType: "application/json",
-    InputPath: "/input",
-    OutputPath: "/output"
-  },
-  RuntimeConfig: {
-    Environment: {
-      LOG_LEVEL: "DEBUG"
-    }
-  },
-  DeploymentConfig: {
-    AutoRollbackConfiguration: {
-      Alarms: [
-        {
-          AlarmName: "HighErrorRate",
-          AlarmType: "CLOUDWATCH",
-          Interval: 60
-        }
-      ]
-    }
+import AWS from "alchemy/aws/control";
+
+const advancedInferenceComponent = await AWS.SageMaker.InferenceComponent(
+  "advanced-inferencecomponent",
+  {
+    EndpointName: "inferencecomponent-endpoint",
+    Specification: "example-specification",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
   }
-});
+);
 ```
 
-## Example with Tags
-
-Create an InferenceComponent and assign tags for better resource management:
-
-```ts
-const taggedInferenceComponent = await AWS.SageMaker.InferenceComponent("taggedInferenceComponent", {
-  EndpointName: "my-endpoint",
-  Specification: {
-    ContentType: "application/json",
-    InputPath: "/input",
-    OutputPath: "/output"
-  },
-  Tags: [
-    { Key: "Project", Value: "ImageRecognition" },
-    { Key: "Environment", Value: "Production" }
-  ]
-});
-```
-
-## Example with Existing Resource Adoption
-
-If you want to adopt an existing InferenceComponent instead of creating a new one, you can set the `adopt` property to true:
-
-```ts
-const adoptedInferenceComponent = await AWS.SageMaker.InferenceComponent("adoptedInferenceComponent", {
-  EndpointName: "existing-endpoint",
-  Specification: {
-    ContentType: "application/json",
-    InputPath: "/input",
-    OutputPath: "/output"
-  },
-  adopt: true // Adopt existing resource
-});
-```

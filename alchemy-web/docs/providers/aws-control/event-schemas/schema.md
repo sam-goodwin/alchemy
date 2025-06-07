@@ -5,96 +5,79 @@ description: Learn how to create, update, and manage AWS EventSchemas Schemas us
 
 # Schema
 
-The Schema resource allows you to define and manage [AWS EventSchemas Schemas](https://docs.aws.amazon.com/eventschemas/latest/userguide/) for configuring event-driven architectures in AWS.
+The Schema resource allows you to define and manage [AWS EventSchemas Schemas](https://docs.aws.amazon.com/eventschemas/latest/userguide/) for your applications. This resource enables you to create event schemas that can be used to validate and define the structure of events in your AWS environment.
 
 ## Minimal Example
 
-Create a basic schema with required properties and a description.
+Create a basic schema with the required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSchema = await AWS.EventSchemas.Schema("myBasicSchema", {
+const basicSchema = await AWS.EventSchemas.Schema("BasicEventSchema", {
   Type: "openapi3",
-  Description: "A simple example schema for event management.",
   Content: JSON.stringify({
-    openapi: "3.0.0",
-    info: {
-      title: "Sample Schema",
-      version: "1.0.0"
-    },
-    paths: {}
+    Schema: {
+      type: "object",
+      properties: {
+        message: { type: "string" },
+        timestamp: { type: "string", format: "date-time" }
+      }
+    }
   }),
-  RegistryName: "myEventRegistry"
+  RegistryName: "MyEventRegistry",
+  Description: "A basic schema for event messages",
+  Tags: [{ Key: "Environment", Value: "Development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a schema with additional optional properties like SchemaName and Tags for better organization.
+Define an advanced schema with additional optional properties such as schema name and tags:
 
 ```ts
-const advancedSchema = await AWS.EventSchemas.Schema("myAdvancedSchema", {
+const advancedSchema = await AWS.EventSchemas.Schema("AdvancedEventSchema", {
   Type: "openapi3",
-  Description: "An advanced schema with additional configurations.",
   Content: JSON.stringify({
-    openapi: "3.0.0",
-    info: {
-      title: "Advanced Schema",
-      version: "1.0.0"
-    },
-    paths: {}
+    Schema: {
+      type: "object",
+      properties: {
+        userId: { type: "string" },
+        action: { type: "string" },
+        timestamp: { type: "string", format: "date-time" }
+      }
+    }
   }),
-  RegistryName: "myEventRegistry",
-  SchemaName: "CustomSchemaName",
+  RegistryName: "MyEventRegistry",
+  SchemaName: "UserActionSchema",
+  Description: "Schema for user actions",
   Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "Finance" }
+    { Key: "Team", Value: "User Experience" }
   ]
 });
 ```
 
-## Adopting Existing Resources
+## Detailed Event Schema
 
-Use the adopt option to modify an existing schema without failure.
+Create a schema that captures more detailed event information:
 
 ```ts
-const adoptSchema = await AWS.EventSchemas.Schema("adoptExistingSchema", {
+const detailedSchema = await AWS.EventSchemas.Schema("DetailedEventSchema", {
   Type: "openapi3",
-  Description: "This schema will adopt if it already exists.",
   Content: JSON.stringify({
-    openapi: "3.0.0",
-    info: {
-      title: "Adopted Schema",
-      version: "1.0.0"
-    },
-    paths: {}
+    Schema: {
+      type: "object",
+      properties: {
+        eventId: { type: "string" },
+        status: { type: "string" },
+        createdAt: { type: "string", format: "date-time" }
+      }
+    }
   }),
-  RegistryName: "myEventRegistry",
-  adopt: true
-});
-```
-
-## Schema for Event-Driven Architecture
-
-Define a schema specifically for integrating with an event-driven application.
-
-```ts
-const eventDrivenSchema = await AWS.EventSchemas.Schema("eventDrivenSchema", {
-  Type: "cloudwatch",
-  Description: "Schema designed for event-driven applications.",
-  Content: JSON.stringify({
-    type: "object",
-    properties: {
-      eventType: { type: "string" },
-      timestamp: { type: "string", format: "date-time" },
-      source: { type: "string" }
-    },
-    required: ["eventType", "timestamp"]
-  }),
-  RegistryName: "myEventRegistry",
-  Tags: [
-    { Key: "UseCase", Value: "Event Processing" }
-  ]
+  RegistryName: "MyEventRegistry",
+  SchemaName: "EventStatusSchema",
+  Description: "Schema for tracking event statuses",
+  Tags: [{ Key: "Project", Value: "Events" }]
 });
 ```

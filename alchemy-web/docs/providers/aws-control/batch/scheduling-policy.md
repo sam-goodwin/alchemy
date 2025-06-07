@@ -5,103 +5,88 @@ description: Learn how to create, update, and manage AWS Batch SchedulingPolicys
 
 # SchedulingPolicy
 
-The SchedulingPolicy resource allows you to manage the scheduling policies for AWS Batch jobs, which define how jobs are scheduled and prioritized within the Batch environment. For more information, visit the [AWS Batch SchedulingPolicys documentation](https://docs.aws.amazon.com/batch/latest/userguide/).
+The SchedulingPolicy resource in AWS Batch allows you to manage scheduling policies that define how jobs are prioritized and scheduled in your Batch environment. For more information, refer to the [AWS Batch SchedulingPolicys documentation](https://docs.aws.amazon.com/batch/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic scheduling policy with a fair share policy:
+Create a basic scheduling policy with a fair share policy and tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const minimalSchedulingPolicy = await AWS.Batch.SchedulingPolicy("minimalSchedulingPolicy", {
-  Name: "MinimalSchedulingPolicy",
+const MinimalSchedulingPolicy = await AWS.Batch.SchedulingPolicy("BasicSchedulingPolicy", {
   FairsharePolicy: {
     ShareDecaySeconds: 86400,
-    ComputeEnvironments: [
+    ShareDistribution: [
       {
-        ComputeEnvironment: "exampleComputeEnv",
-        Share: 100
+        ShareIdentifier: "TeamA",
+        WeightFactor: 1
+      },
+      {
+        ShareIdentifier: "TeamB",
+        WeightFactor: 2
       }
     ]
   },
-  Tags: {
-    Environment: "Development",
-    Team: "Batch"
-  }
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Owner", Value: "TeamA" }
+  ],
+  Name: "BasicSchedulingPolicy"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a scheduling policy with more complex fair share settings:
+Configure a scheduling policy with a more complex fair share policy and custom naming.
 
 ```ts
-const advancedSchedulingPolicy = await AWS.Batch.SchedulingPolicy("advancedSchedulingPolicy", {
-  Name: "AdvancedSchedulingPolicy",
-  FairsharePolicy: {
-    ShareDecaySeconds: 3600,
-    ComputeEnvironments: [
-      {
-        ComputeEnvironment: "exampleComputeEnv1",
-        Share: 70
-      },
-      {
-        ComputeEnvironment: "exampleComputeEnv2",
-        Share: 30
-      }
-    ]
-  },
-  Tags: {
-    Environment: "Production",
-    Team: "Batch"
-  }
-});
-```
-
-## Policy with Tags
-
-Create a scheduling policy specifically for a team with detailed tags:
-
-```ts
-const teamSchedulingPolicy = await AWS.Batch.SchedulingPolicy("teamSchedulingPolicy", {
-  Name: "TeamSchedulingPolicy",
+const AdvancedSchedulingPolicy = await AWS.Batch.SchedulingPolicy("AdvancedSchedulingPolicy", {
   FairsharePolicy: {
     ShareDecaySeconds: 7200,
-    ComputeEnvironments: [
+    ShareDistribution: [
       {
-        ComputeEnvironment: "teamComputeEnv",
-        Share: 50
+        ShareIdentifier: "TeamX",
+        WeightFactor: 3
+      },
+      {
+        ShareIdentifier: "TeamY",
+        WeightFactor: 1
+      },
+      {
+        ShareIdentifier: "TeamZ",
+        WeightFactor: 2
       }
     ]
   },
-  Tags: {
-    Project: "DataProcessing",
-    Owner: "DataTeam",
-    Purpose: "BatchJobScheduling"
-  }
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Owner", Value: "TeamB" }
+  ],
+  Name: "AdvancedSchedulingPolicy",
+  adopt: true // Enables adoption of existing policy if it exists
 });
 ```
 
-## Adoption of Existing Resource
+## Custom Policy with No Tags
 
-Create a scheduling policy that adopts an existing resource if it already exists:
+Create a scheduling policy without any tags, focusing solely on the fair share policy.
 
 ```ts
-const adoptSchedulingPolicy = await AWS.Batch.SchedulingPolicy("adoptSchedulingPolicy", {
-  Name: "AdoptSchedulingPolicy",
+const NoTagSchedulingPolicy = await AWS.Batch.SchedulingPolicy("NoTagSchedulingPolicy", {
   FairsharePolicy: {
-    ShareDecaySeconds: 43200,
-    ComputeEnvironments: [
+    ShareDecaySeconds: 1800,
+    ShareDistribution: [
       {
-        ComputeEnvironment: "adoptComputeEnv",
-        Share: 100
+        ShareIdentifier: "TeamAlpha",
+        WeightFactor: 5
+      },
+      {
+        ShareIdentifier: "TeamBeta",
+        WeightFactor: 3
       }
     ]
   },
-  Tags: {
-    Environment: "Testing"
-  },
-  adopt: true // Enable adoption of existing resource
+  Name: "NoTagSchedulingPolicy"
 });
 ```

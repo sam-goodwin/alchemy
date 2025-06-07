@@ -5,101 +5,39 @@ description: Learn how to create, update, and manage AWS Pinpoint Segments using
 
 # Segment
 
-The Segment resource allows you to manage [AWS Pinpoint Segments](https://docs.aws.amazon.com/pinpoint/latest/userguide/) which are used to define a group of endpoints that you can target with campaigns.
+The Segment resource lets you create and manage [AWS Pinpoint Segments](https://docs.aws.amazon.com/pinpoint/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-pinpoint-segment.html
 
 ## Minimal Example
-
-Create a basic segment with essential properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSegment = await AWS.Pinpoint.Segment("basic-segment", {
-  ApplicationId: "app-123456", 
-  Name: "New Customers",
-  Dimensions: {
-    Attributes: {
-      customerType: {
-        AttributeType: "INCLUSIVE",
-        Values: ["new"]
-      }
-    }
-  }
+const segment = await AWS.Pinpoint.Segment("segment-example", {
+  ApplicationId: "example-applicationid",
+  Name: "segment-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a segment with segment groups for more complex targeting:
+Create a segment with additional configuration:
 
 ```ts
+import AWS from "alchemy/aws/control";
+
 const advancedSegment = await AWS.Pinpoint.Segment("advanced-segment", {
-  ApplicationId: "app-123456", 
-  Name: "Loyal Customers",
-  SegmentGroups: {
-    Groups: [
-      {
-        SourceSegments: [],
-        Dimensions: {
-          Attributes: {
-            customerType: {
-              AttributeType: "EXCLUSIVE",
-              Values: ["loyal"]
-            }
-          }
-        }
-      }
-    ]
-  },
+  ApplicationId: "example-applicationid",
+  Name: "segment-",
   Tags: {
-    project: "marketing",
-    environment: "production"
-  }
-});
-```
-
-## Targeting Based on Engagement
-
-Create a segment targeting users based on their engagement metrics:
-
-```ts
-const engagementSegment = await AWS.Pinpoint.Segment("engagement-segment", {
-  ApplicationId: "app-123456",
-  Name: "Highly Engaged Users",
-  Dimensions: {
-    Metrics: {
-      sessionCount: {
-        DimensionType: "INCLUSIVE",
-        Values: ["5"]
-      },
-      engagementScore: {
-        DimensionType: "GREATER_THAN",
-        Values: ["75"]
-      }
-    }
-  }
-});
-```
-
-## Segment for Specific Campaigns
-
-Define a segment specifically for an upcoming campaign:
-
-```ts
-const campaignSegment = await AWS.Pinpoint.Segment("campaign-segment", {
-  ApplicationId: "app-123456",
-  Name: "Winter Sale Shoppers",
-  Dimensions: {
-    Attributes: {
-      lastPurchaseDate: {
-        AttributeType: "GREATER_THAN",
-        Values: ["2023-11-01"]
-      }
-    }
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Tags: {
-    campaign: "winter-sale",
-    status: "active"
-  }
 });
 ```
+

@@ -5,59 +5,49 @@ description: Learn how to create, update, and manage AWS IAM ManagedPolicys usin
 
 # ManagedPolicy
 
-The ManagedPolicy resource lets you manage [AWS IAM ManagedPolicys](https://docs.aws.amazon.com/iam/latest/userguide/) which are used to define permissions for AWS resources.
+The ManagedPolicy resource lets you manage [AWS IAM Managed Policies](https://docs.aws.amazon.com/iam/latest/userguide/) which are used to define permissions for users, groups, and roles.
 
 ## Minimal Example
 
-Create a basic IAM ManagedPolicy with required properties and a description:
+Create a basic managed policy with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPolicy = await AWS.IAM.ManagedPolicy("basicPolicy", {
+const BasicManagedPolicy = await AWS.IAM.ManagedPolicy("BasicPolicy", {
   ManagedPolicyName: "BasicS3Access",
-  Description: "Allows read and write access to S3 buckets",
+  Description: "A policy that allows basic access to S3 resources.",
   PolicyDocument: {
     Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: [
-          "s3:ListBucket",
-          "s3:GetObject",
-          "s3:PutObject"
-        ],
-        Resource: [
-          "arn:aws:s3:::my-bucket",
-          "arn:aws:s3:::my-bucket/*"
-        ]
-      }
-    ]
+    Statement: [{
+      Effect: "Allow",
+      Action: "s3:*",
+      Resource: "*"
+    }]
   }
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IAM ManagedPolicy with specific groups, roles, and an optional path:
+Configure a managed policy with multiple statements and a specific path.
 
 ```ts
-const advancedPolicy = await AWS.IAM.ManagedPolicy("advancedPolicy", {
-  ManagedPolicyName: "AdvancedEC2Access",
-  Path: "/admin/",
-  Description: "Grants permissions to manage EC2 instances",
-  Groups: ["AdminGroup"],
-  Roles: ["EC2AdminRole"],
+const AdvancedManagedPolicy = await AWS.IAM.ManagedPolicy("AdvancedPolicy", {
+  ManagedPolicyName: "AdvancedS3AndDynamoDBAccess",
+  Path: "/custom/policies/",
+  Description: "A policy that allows access to both S3 and DynamoDB.",
   PolicyDocument: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Action: [
-          "ec2:RunInstances",
-          "ec2:TerminateInstances",
-          "ec2:DescribeInstances"
-        ],
+        Action: "s3:*",
+        Resource: "*"
+      },
+      {
+        Effect: "Allow",
+        Action: "dynamodb:*",
         Resource: "*"
       }
     ]
@@ -65,53 +55,27 @@ const advancedPolicy = await AWS.IAM.ManagedPolicy("advancedPolicy", {
 });
 ```
 
-## Attaching to Users
+## Associating with Users, Groups, and Roles
 
-Demonstrate how to attach the ManagedPolicy to specific users:
+Create a managed policy and associate it with specific users, groups, and roles.
 
 ```ts
-const userPolicy = await AWS.IAM.ManagedPolicy("userPolicy", {
-  ManagedPolicyName: "UserS3Access",
-  Description: "Allows users to access specified S3 buckets",
+const UserManagedPolicy = await AWS.IAM.ManagedPolicy("UserPolicy", {
+  ManagedPolicyName: "UserAccessPolicy",
+  Description: "A policy that grants access to IAM users.",
   PolicyDocument: {
     Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: "s3:*",
-        Resource: [
-          "arn:aws:s3:::user-bucket",
-          "arn:aws:s3:::user-bucket/*"
-        ]
-      }
-    ]
+    Statement: [{
+      Effect: "Allow",
+      Action: [
+        "iam:ListUsers",
+        "iam:GetUser"
+      ],
+      Resource: "*"
+    }]
   },
-  Users: ["UserA", "UserB"]
-});
-```
-
-## Policy with Conditions
-
-Create a ManagedPolicy that includes conditions for access control:
-
-```ts
-const conditionalPolicy = await AWS.IAM.ManagedPolicy("conditionalPolicy", {
-  ManagedPolicyName: "ConditionalS3Access",
-  Description: "Grants access to S3 buckets only if conditions are met",
-  PolicyDocument: {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: "s3:GetObject",
-        Resource: "arn:aws:s3:::condition-bucket/*",
-        Condition: {
-          StringEquals: {
-            "s3:prefix": "docs/"
-          }
-        }
-      }
-    ]
-  }
+  Users: ["User1", "User2"],
+  Groups: ["AdminGroup"],
+  Roles: ["AppRole"]
 });
 ```

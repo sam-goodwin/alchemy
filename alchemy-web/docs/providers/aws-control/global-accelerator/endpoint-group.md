@@ -5,84 +5,88 @@ description: Learn how to create, update, and manage AWS GlobalAccelerator Endpo
 
 # EndpointGroup
 
-The EndpointGroup resource lets you manage [AWS GlobalAccelerator EndpointGroups](https://docs.aws.amazon.com/globalaccelerator/latest/userguide/) that improve the availability and performance of your applications by directing traffic to optimal endpoints.
+The EndpointGroup resource lets you manage [AWS GlobalAccelerator EndpointGroups](https://docs.aws.amazon.com/globalaccelerator/latest/userguide/) that define the endpoints to which traffic is directed by an AWS Global Accelerator.
 
 ## Minimal Example
 
-Create a basic EndpointGroup with required properties and a common optional property for health checks.
+Create a basic EndpointGroup with required properties and common optional settings:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicEndpointGroup = await AWS.GlobalAccelerator.EndpointGroup("basic-endpoint-group", {
-  ListenerArn: "arn:aws:globalaccelerator::123456789012:listener/abcd1234-5678-90ab-cdef-1234567890ab",
-  EndpointGroupRegion: "us-east-1",
-  HealthCheckIntervalSeconds: 30
+const BasicEndpointGroup = await AWS.GlobalAccelerator.EndpointGroup("BasicEndpointGroup", {
+  ListenerArn: "arn:aws:globalaccelerator::123456789012:listener/abcd1234",
+  EndpointGroupRegion: "us-west-2",
+  HealthCheckIntervalSeconds: 30,
+  TrafficDialPercentage: 100
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EndpointGroup with additional options such as traffic dial percentage and health check settings.
+Configure an EndpointGroup with advanced options such as health checks and endpoint configurations:
 
 ```ts
-const advancedEndpointGroup = await AWS.GlobalAccelerator.EndpointGroup("advanced-endpoint-group", {
-  ListenerArn: "arn:aws:globalaccelerator::123456789012:listener/abcd1234-5678-90ab-cdef-1234567890ab",
-  EndpointGroupRegion: "us-west-2",
-  HealthCheckIntervalSeconds: 20,
-  TrafficDialPercentage: 75,
+const AdvancedEndpointGroup = await AWS.GlobalAccelerator.EndpointGroup("AdvancedEndpointGroup", {
+  ListenerArn: "arn:aws:globalaccelerator::123456789012:listener/abcd1234",
+  EndpointGroupRegion: "us-east-1",
+  HealthCheckIntervalSeconds: 10,
   HealthCheckPath: "/health",
   HealthCheckProtocol: "HTTP",
   HealthCheckPort: 80,
-  ThresholdCount: 3
+  EndpointConfigurations: [
+    {
+      EndpointId: "i-0abcd1234efgh5678", // Example EC2 instance ID
+      Weight: 128
+    },
+    {
+      EndpointId: "i-1ijkl9012mnop3456", // Another EC2 instance ID
+      Weight: 64
+    }
+  ]
 });
 ```
 
-## Adding Endpoint Configurations
+## Traffic Management
 
-Manage a group of endpoints by specifying configurations for each endpoint.
+Define an EndpointGroup that manages traffic distribution across multiple endpoints:
 
 ```ts
-const endpointConfigurations = [
-  {
-    EndpointId: "i-0abcd1234efgh5678", // EC2 instance ID
-    Weight: 100
-  },
-  {
-    EndpointId: "i-0ijklmnop1234qrst", // Another EC2 instance ID
-    Weight: 50
-  }
-];
-
-const configuredEndpointGroup = await AWS.GlobalAccelerator.EndpointGroup("configured-endpoint-group", {
-  ListenerArn: "arn:aws:globalaccelerator::123456789012:listener/abcd1234-5678-90ab-cdef-1234567890ab",
+const TrafficManagedEndpointGroup = await AWS.GlobalAccelerator.EndpointGroup("TrafficManagedEndpointGroup", {
+  ListenerArn: "arn:aws:globalaccelerator::123456789012:listener/abcd1234",
   EndpointGroupRegion: "eu-central-1",
-  EndpointConfigurations: endpointConfigurations,
-  HealthCheckIntervalSeconds: 10,
-  TrafficDialPercentage: 100
+  TrafficDialPercentage: 75,
+  EndpointConfigurations: [
+    {
+      EndpointId: "i-2qrst7890uvwx1234", // A different EC2 instance ID
+      Weight: 200
+    },
+    {
+      EndpointId: "i-3yzab4567cdef8901", // Yet another EC2 instance ID
+      Weight: 100
+    }
+  ]
 });
 ```
 
-## Using Port Overrides
+## Health Check Configuration
 
-Customize the traffic routing by specifying port overrides for the EndpointGroup.
+Set up an EndpointGroup with specific health check configurations to ensure endpoint availability:
 
 ```ts
-const portOverrides = [
-  {
-    EndpointPort: 8080,
-    ListenerPort: 80
-  },
-  {
-    EndpointPort: 8443,
-    ListenerPort: 443
-  }
-];
-
-const portOverrideEndpointGroup = await AWS.GlobalAccelerator.EndpointGroup("port-override-endpoint-group", {
-  ListenerArn: "arn:aws:globalaccelerator::123456789012:listener/abcd1234-5678-90ab-cdef-1234567890ab",
-  EndpointGroupRegion: "ap-south-1",
-  PortOverrides: portOverrides,
-  HealthCheckIntervalSeconds: 15
+const HealthCheckConfiguredEndpointGroup = await AWS.GlobalAccelerator.EndpointGroup("HealthCheckConfiguredEndpointGroup", {
+  ListenerArn: "arn:aws:globalaccelerator::123456789012:listener/abcd1234",
+  EndpointGroupRegion: "ap-southeast-1",
+  HealthCheckIntervalSeconds: 15,
+  HealthCheckPath: "/status",
+  HealthCheckProtocol: "HTTPS",
+  HealthCheckPort: 443,
+  ThresholdCount: 3,
+  EndpointConfigurations: [
+    {
+      EndpointId: "i-4ghijklmnopq1234", // Another EC2 instance ID
+      Weight: 150
+    }
+  ]
 });
 ```

@@ -5,115 +5,45 @@ description: Learn how to create, update, and manage AWS SecurityLake Subscriber
 
 # Subscriber
 
-The Subscriber resource allows you to manage [AWS SecurityLake Subscribers](https://docs.aws.amazon.com/securitylake/latest/userguide/) for accessing and consuming security data stored in AWS Security Lake.
+The Subscriber resource lets you create and manage [AWS SecurityLake Subscribers](https://docs.aws.amazon.com/securitylake/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-securitylake-subscriber.html
 
 ## Minimal Example
-
-Create a basic SecurityLake subscriber with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSubscriber = await AWS.SecurityLake.Subscriber("basic-subscriber", {
-  SubscriberIdentity: {
-    Type: "AWS_ACCOUNT",
-    Value: "123456789012"
-  },
-  SubscriberName: "MySecuritySubscriber",
-  AccessTypes: ["FULL_ACCESS"],
-  Sources: [
-    {
-      SourceType: "AWS_S3",
-      SourceArn: "arn:aws:s3:::my-security-logs"
-    }
-  ],
-  DataLakeArn: "arn:aws:securitylake:us-east-1:123456789012:data-lake"
+const subscriber = await AWS.SecurityLake.Subscriber("subscriber-example", {
+  SubscriberIdentity: "example-subscriberidentity",
+  SubscriberName: "subscriber-subscriber",
+  AccessTypes: ["example-accesstypes-1"],
+  Sources: [],
+  DataLakeArn: "example-datalakearn",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a subscriber with additional optional properties, such as a description and tags.
+Create a subscriber with additional configuration:
 
 ```ts
+import AWS from "alchemy/aws/control";
+
 const advancedSubscriber = await AWS.SecurityLake.Subscriber("advanced-subscriber", {
-  SubscriberIdentity: {
-    Type: "AWS_ACCOUNT",
-    Value: "987654321098"
+  SubscriberIdentity: "example-subscriberidentity",
+  SubscriberName: "subscriber-subscriber",
+  AccessTypes: ["example-accesstypes-1"],
+  Sources: [],
+  DataLakeArn: "example-datalakearn",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  SubscriberName: "AdvancedSecuritySubscriber",
-  SubscriberDescription: "This subscriber accesses advanced security data.",
-  AccessTypes: ["READ_ONLY"],
-  Sources: [
-    {
-      SourceType: "AWS_S3",
-      SourceArn: "arn:aws:s3:::advanced-security-logs"
-    }
-  ],
-  DataLakeArn: "arn:aws:securitylake:us-east-1:987654321098:data-lake",
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Department",
-      Value: "Security"
-    }
-  ]
 });
 ```
 
-## Multiple Sources Configuration
-
-Create a subscriber that listens to multiple sources for diverse log types.
-
-```ts
-const multiSourceSubscriber = await AWS.SecurityLake.Subscriber("multi-source-subscriber", {
-  SubscriberIdentity: {
-    Type: "AWS_ACCOUNT",
-    Value: "123456789012"
-  },
-  SubscriberName: "MultiSourceSecuritySubscriber",
-  AccessTypes: ["FULL_ACCESS"],
-  Sources: [
-    {
-      SourceType: "AWS_S3",
-      SourceArn: "arn:aws:s3:::security-logs-bucket"
-    },
-    {
-      SourceType: "AWS_KINESIS",
-      SourceArn: "arn:aws:kinesis:us-east-1:123456789012:stream/security-logs-stream"
-    }
-  ],
-  DataLakeArn: "arn:aws:securitylake:us-east-1:123456789012:data-lake"
-});
-```
-
-## Subscriber Identity with IAM Policy
-
-Define a subscriber with a specific IAM policy for access control.
-
-```ts
-const iamPolicySubscriber = await AWS.SecurityLake.Subscriber("iam-policy-subscriber", {
-  SubscriberIdentity: {
-    Type: "AWS_ACCOUNT",
-    Value: "234567890123"
-  },
-  SubscriberName: "IAMPolicySecuritySubscriber",
-  AccessTypes: ["FULL_ACCESS"],
-  Sources: [
-    {
-      SourceType: "AWS_S3",
-      SourceArn: "arn:aws:s3:::iam-security-logs"
-    }
-  ],
-  DataLakeArn: "arn:aws:securitylake:us-east-1:234567890123:data-lake",
-  Tags: [
-    {
-      Key: "AccessLevel",
-      Value: "Admin"
-    }
-  ]
-});
-```

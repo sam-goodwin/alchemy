@@ -5,65 +5,78 @@ description: Learn how to create, update, and manage AWS CloudTrail EventDataSto
 
 # EventDataStore
 
-The EventDataStore resource lets you manage [AWS CloudTrail EventDataStores](https://docs.aws.amazon.com/cloudtrail/latest/userguide/) for storing and querying CloudTrail events.
+The EventDataStore resource allows you to create and manage [AWS CloudTrail EventDataStores](https://docs.aws.amazon.com/cloudtrail/latest/userguide/) for centralized logging of events in your AWS account.
 
 ## Minimal Example
 
-Create a basic EventDataStore with essential properties.
+This example demonstrates how to create a basic EventDataStore with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const eventDataStore = await AWS.CloudTrail.EventDataStore("basicEventDataStore", {
-  name: "MyEventDataStore",
-  multiRegionEnabled: true,
-  retentionPeriod: 365 // Retain events for 365 days
+const BasicEventDataStore = await AWS.CloudTrail.EventDataStore("BasicEventDataStore", {
+  Name: "MyEventDataStore",
+  MultiRegionEnabled: true,
+  RetentionPeriod: 365,
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Security" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EventDataStore with advanced options such as KMS key for encryption and insight selectors.
+In this example, we configure an EventDataStore with advanced options, including custom KMS key for encryption and advanced event selectors.
 
 ```ts
-const advancedEventDataStore = await AWS.CloudTrail.EventDataStore("advancedEventDataStore", {
-  name: "AdvancedEventDataStore",
-  kmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst",
-  advancedEventSelectors: [{
-    name: "MyAdvancedSelector",
-    fieldSelectors: [{
-      field: "eventSource",
-      equals: ["s3.amazonaws.com"]
-    }]
-  }],
-  insightSelectors: [{
-    insightType: "ApiCallRateInsight"
-  }],
-  federationEnabled: true,
-  organizationEnabled: false
+const AdvancedEventDataStore = await AWS.CloudTrail.EventDataStore("AdvancedEventDataStore", {
+  Name: "SecureEventDataStore",
+  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/some-key-id",
+  MultiRegionEnabled: true,
+  AdvancedEventSelectors: [
+    {
+      Name: "AdvancedSelector1",
+      FieldSelectors: [
+        {
+          Field: "eventCategory",
+          Equals: ["Management"]
+        },
+        {
+          Field: "eventSource",
+          Equals: ["ec2.amazonaws.com"]
+        }
+      ]
+    }
+  ],
+  RetentionPeriod: 730,
+  TerminationProtectionEnabled: true,
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
-## Event Ingestion Enabled
+## Federation and Insights Configuration
 
-Create an EventDataStore with ingestion enabled for capturing real-time events.
-
-```ts
-const ingestionEnabledEventDataStore = await AWS.CloudTrail.EventDataStore("ingestionEnabledEventDataStore", {
-  name: "IngestionEnabledDataStore",
-  ingestionEnabled: true,
-  retentionPeriod: 180 // Retain events for 180 days
-});
-```
-
-## Termination Protection
-
-Set up an EventDataStore with termination protection enabled to prevent accidental deletion.
+This example shows how to enable federation and define insight selectors for the EventDataStore.
 
 ```ts
-const protectedEventDataStore = await AWS.CloudTrail.EventDataStore("protectedEventDataStore", {
-  name: "ProtectedEventDataStore",
-  terminationProtectionEnabled: true,
-  multiRegionEnabled: true
+const FederatedEventDataStore = await AWS.CloudTrail.EventDataStore("FederatedEventDataStore", {
+  Name: "FederatedEventStore",
+  FederationEnabled: true,
+  FederationRoleArn: "arn:aws:iam::123456789012:role/MyFederationRole",
+  InsightSelectors: [
+    {
+      InsightType: "ApiCallRateInsight"
+    }
+  ],
+  IngestionEnabled: true,
+  RetentionPeriod: 180,
+  Tags: [
+    { Key: "Environment", Value: "Testing" },
+    { Key: "Team", Value: "Compliance" }
+  ]
 });
 ```

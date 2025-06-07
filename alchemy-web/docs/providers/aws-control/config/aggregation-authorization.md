@@ -5,48 +5,57 @@ description: Learn how to create, update, and manage AWS Config AggregationAutho
 
 # AggregationAuthorization
 
-The AggregationAuthorization resource allows you to manage [AWS Config AggregationAuthorizations](https://docs.aws.amazon.com/config/latest/userguide/) that enable the aggregation of AWS Config data across multiple accounts and regions.
+The AggregationAuthorization resource allows you to give permissions to an AWS account to aggregate AWS Config data from multiple accounts and regions. For more information, refer to the [AWS Config AggregationAuthorizations documentation](https://docs.aws.amazon.com/config/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic AggregationAuthorization with required properties.
+Create a basic AggregationAuthorization with the required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const aggregationAuthorization = await AWS.Config.AggregationAuthorization("myAggregationAuthorization", {
+const BasicAggregationAuthorization = await AWS.Config.AggregationAuthorization("BasicAggregationAuthorization", {
   AuthorizedAccountId: "123456789012",
   AuthorizedAwsRegion: "us-west-2",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyProject" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Compliance" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-This example demonstrates how to create an AggregationAuthorization with the adoption flag set to true, indicating that you want to adopt an existing resource if it already exists.
+Configure an AggregationAuthorization with additional options such as adopting existing resources.
 
 ```ts
-const advancedAggregationAuthorization = await AWS.Config.AggregationAuthorization("advancedAggregationAuthorization", {
+const AdvancedAggregationAuthorization = await AWS.Config.AggregationAuthorization("AdvancedAggregationAuthorization", {
   AuthorizedAccountId: "987654321098",
   AuthorizedAwsRegion: "us-east-1",
   Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Project", Value: "MyProject" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
   ],
-  adopt: true // Adopt existing resource if it exists
+  adopt: true // Adopts the existing resource if it already exists
 });
 ```
 
-## Example with Minimal Tags
+## Handling Multiple Regions
 
-In this example, we create an AggregationAuthorization with only the required properties, demonstrating a minimal setup without any additional tags.
+Demonstrate how to authorize an account across multiple AWS regions.
 
 ```ts
-const minimalAggregationAuthorization = await AWS.Config.AggregationAuthorization("minimalAggregationAuthorization", {
-  AuthorizedAccountId: "112233445566",
-  AuthorizedAwsRegion: "eu-central-1"
+const MultiRegionAggregationAuthorization = await AWS.Config.AggregationAuthorization("MultiRegionAggregationAuthorization", {
+  AuthorizedAccountId: "555555555555",
+  AuthorizedAwsRegion: "eu-central-1", // Authorizing for Europe (Frankfurt)
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Data Engineering" }
+  ]
+});
+
+const AdditionalRegionAuthorization = await AWS.Config.AggregationAuthorization("AdditionalRegionAuthorization", {
+  AuthorizedAccountId: "555555555555",
+  AuthorizedAwsRegion: "ap-south-1", // Authorizing for Asia (Mumbai)
 });
 ```

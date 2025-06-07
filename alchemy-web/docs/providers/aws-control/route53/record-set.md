@@ -5,84 +5,84 @@ description: Learn how to create, update, and manage AWS Route53 RecordSets usin
 
 # RecordSet
 
-The RecordSet resource lets you manage [AWS Route53 RecordSets](https://docs.aws.amazon.com/route53/latest/userguide/) for DNS configurations and settings.
+The RecordSet resource allows you to manage [AWS Route53 RecordSets](https://docs.aws.amazon.com/route53/latest/userguide/) for DNS configuration in your applications.
 
 ## Minimal Example
 
-Create a basic A record for a domain.
+Create a basic A record pointing to an IP address with minimal required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicRecordSet = await AWS.Route53.RecordSet("basicRecordSet", {
-  Name: "example.com",
+const basicRecordSet = await AWS.Route53.RecordSet("BasicARecord", {
+  Name: "mywebsite.com",
   Type: "A",
   TTL: "300",
-  ResourceRecords: ["192.0.2.1"],
-  HostedZoneId: "Z1234567890" // Replace with your actual hosted zone ID
+  ResourceRecords: ["192.0.2.1"]
 });
 ```
 
-## Alias Record Example
+## Advanced Configuration
 
-Create an alias record pointing to an AWS resource.
+Configure a more complex RecordSet with health check and geo-location settings.
 
 ```ts
-const aliasRecordSet = await AWS.Route53.RecordSet("aliasRecordSet", {
-  Name: "www.example.com",
+const advancedRecordSet = await AWS.Route53.RecordSet("AdvancedGeoRecord", {
+  Name: "mygeo.website.com",
+  Type: "A",
+  TTL: "300",
+  ResourceRecords: ["203.0.113.5"],
+  HealthCheckId: "abc1234",
+  GeoLocation: {
+    CountryCode: "US"
+  },
+  Comment: "Advanced geo-targeted record for US users"
+});
+```
+
+## Multi-Value Answer Configuration
+
+Create a multi-value answer record set for load balancing across multiple IP addresses.
+
+```ts
+const multiValueRecordSet = await AWS.Route53.RecordSet("MultiValueRecord", {
+  Name: "loadbalanced.com",
+  Type: "A",
+  TTL: "300",
+  MultiValueAnswer: true,
+  ResourceRecords: ["203.0.113.10", "203.0.113.20"]
+});
+```
+
+## Alias RecordSet
+
+Define an Alias target pointing to a CloudFront distribution.
+
+```ts
+const aliasRecordSet = await AWS.Route53.RecordSet("AliasToCloudFront", {
+  Name: "www.mywebsite.com",
   Type: "A",
   AliasTarget: {
-    DNSName: "dualstack.awselb-example-1234567890.us-east-1.elb.amazonaws.com",
-    HostedZoneId: "Z1234567890" // Replace with the actual hosted zone ID for the load balancer
+    DNSName: "d123456abcdef8.cloudfront.net",
+    HostedZoneId: "Z2FDTNDATAQYW2"
   },
-  HostedZoneId: "Z1234567890" // Replace with your actual hosted zone ID
+  TTL: "60",
+  Comment: "Alias record pointing to CloudFront distribution"
 });
 ```
 
-## Geo-Location Record Example
+## Failover RecordSet
 
-Configure a GeoLocation record for specific regions.
-
-```ts
-const geoLocationRecordSet = await AWS.Route53.RecordSet("geoLocationRecordSet", {
-  Name: "example.com",
-  Type: "A",
-  TTL: "300",
-  ResourceRecords: ["203.0.113.0"],
-  GeoLocation: {
-    CountryCode: "US" // Targeting users in the United States
-  },
-  HostedZoneId: "Z1234567890" // Replace with your actual hosted zone ID
-});
-```
-
-## Multi-Value Answer Example
-
-Set up a multi-value answer record for load balancing.
+Set up a failover record set for high availability.
 
 ```ts
-const multiValueRecordSet = await AWS.Route53.RecordSet("multiValueRecordSet", {
-  Name: "example.com",
+const failoverRecordSet = await AWS.Route53.RecordSet("FailoverRecord", {
+  Name: "failover.myapp.com",
   Type: "A",
   TTL: "60",
-  MultiValueAnswer: true,
-  ResourceRecords: ["192.0.2.1", "192.0.2.2", "192.0.2.3"],
-  HostedZoneId: "Z1234567890" // Replace with your actual hosted zone ID
-});
-```
-
-## Failover Record Example
-
-Create a failover record for high availability.
-
-```ts
-const failoverRecordSet = await AWS.Route53.RecordSet("failoverRecordSet", {
-  Name: "example.com",
-  Type: "A",
-  TTL: "300",
-  ResourceRecords: ["198.51.100.1"],
-  HealthCheckId: "abc12345-6789-0123-4567-89abcdef0123", // Replace with your actual health check ID
+  ResourceRecords: ["192.0.2.2"],
   Failover: "PRIMARY",
-  HostedZoneId: "Z1234567890" // Replace with your actual hosted zone ID
+  HealthCheckId: "healthcheck-id",
+  Comment: "Primary record for failover setup"
 });
 ```

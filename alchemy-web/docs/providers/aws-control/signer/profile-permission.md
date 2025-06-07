@@ -5,73 +5,63 @@ description: Learn how to create, update, and manage AWS Signer ProfilePermissio
 
 # ProfilePermission
 
-The ProfilePermission resource allows you to manage permissions for AWS Signer profiles, enabling access controls for signing operations. For more details, refer to the [AWS Signer ProfilePermissions documentation](https://docs.aws.amazon.com/signer/latest/userguide/).
+The ProfilePermission resource allows you to manage permissions for AWS Signer profiles, enabling specific actions to be granted to designated principals. For more information, refer to the [AWS Signer ProfilePermissions](https://docs.aws.amazon.com/signer/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic ProfilePermission with required properties and one optional property.
+Create a basic ProfilePermission that allows a principal to sign using a specified profile.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const profilePermission = await AWS.Signer.ProfilePermission("basicProfilePermission", {
-  Action: "signer:StartSigningJob",
-  StatementId: "AllowSigningJobs",
+const BasicProfilePermission = await AWS.Signer.ProfilePermission("BasicProfilePermission", {
+  Action: "signer:Sign",
+  StatementId: "AllowSignAction",
   ProfileName: "MySigningProfile",
-  Principal: "arn:aws:iam::123456789012:role/MySigningRole",
-  ProfileVersion: "1" // Optional
+  Principal: "arn:aws:iam::123456789012:role/MySigningRole"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ProfilePermission with additional properties and a custom action.
+Configure a ProfilePermission with an optional ProfileVersion and adopt existing resource behavior.
 
 ```ts
-const advancedProfilePermission = await AWS.Signer.ProfilePermission("advancedProfilePermission", {
-  Action: "signer:PutSigningProfile",
-  StatementId: "AllowPutSigningProfile",
-  ProfileName: "AdvancedSigningProfile",
-  Principal: "arn:aws:iam::123456789012:role/MyAdvancedSigningRole",
-  ProfileVersion: "2", // Optional
-  adopt: true // Adopt existing resource if it already exists
+const AdvancedProfilePermission = await AWS.Signer.ProfilePermission("AdvancedProfilePermission", {
+  Action: "signer:Sign",
+  StatementId: "AllowSignActionV2",
+  ProfileName: "MySigningProfile",
+  Principal: "arn:aws:iam::123456789012:role/MySigningRole",
+  ProfileVersion: "1",
+  adopt: true // Adopt the existing resource if it already exists
 });
 ```
 
-## Granting Permissions to Multiple Principals
+## Multiple Actions
 
-You can create a ProfilePermission that grants access to multiple IAM roles or users for signing operations.
+You can specify multiple actions in a single ProfilePermission for greater flexibility.
 
 ```ts
-const multiPrincipalProfilePermission = await AWS.Signer.ProfilePermission("multiPrincipalProfilePermission", {
-  Action: "signer:StartSigningJob",
-  StatementId: "AllowMultiSigningJobs",
-  ProfileName: "MultiPrincipalSigningProfile",
-  Principal: "arn:aws:iam::123456789012:role/MyFirstSigningRole,arn:aws:iam::123456789012:role/MySecondSigningRole"
+const MultiActionProfilePermission = await AWS.Signer.ProfilePermission("MultiActionProfilePermission", {
+  Action: JSON.stringify([
+    "signer:Sign",
+    "signer:DescribeProfile"
+  ]),
+  StatementId: "AllowMultipleActions",
+  ProfileName: "MyFlexibleSigningProfile",
+  Principal: "arn:aws:iam::123456789012:role/MyFlexibleSigningRole"
 });
 ```
 
-## Using IAM Policy Document Format
+## Custom Principal
 
-You can specify the `Action` using a more detailed IAM policy JSON structure.
+Grant permissions to a specific AWS account as a principal.
 
 ```ts
-const iamPolicyProfilePermission = await AWS.Signer.ProfilePermission("iamPolicyProfilePermission", {
-  Action: JSON.stringify({
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: [
-          "signer:StartSigningJob",
-          "signer:GetSigningProfile"
-        ],
-        Resource: "*"
-      }
-    ]
-  }),
-  StatementId: "AllowSigningActions",
-  ProfileName: "IamPolicySigningProfile",
-  Principal: "arn:aws:iam::123456789012:role/MyPolicySigningRole"
+const CustomPrincipalProfilePermission = await AWS.Signer.ProfilePermission("CustomPrincipalProfilePermission", {
+  Action: "signer:Sign",
+  StatementId: "AllowSignActionForAccount",
+  ProfileName: "MyAccountSigningProfile",
+  Principal: "arn:aws:iam::987654321098:root" // Specific AWS account
 });
 ```

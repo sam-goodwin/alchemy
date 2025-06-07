@@ -5,70 +5,43 @@ description: Learn how to create, update, and manage AWS Connect AgentStatuss us
 
 # AgentStatus
 
-The AgentStatus resource lets you manage [AWS Connect AgentStatuss](https://docs.aws.amazon.com/connect/latest/userguide/) which define the status of agents in Amazon Connect.
+The AgentStatus resource lets you create and manage [AWS Connect AgentStatuss](https://docs.aws.amazon.com/connect/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-connect-agentstatus.html
 
 ## Minimal Example
-
-Create a basic AgentStatus with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const agentStatus = await AWS.Connect.AgentStatus("available-status", {
-  name: "Available",
-  state: "ACTIVE",
-  instanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-efgh-5678-ijkl-90mnopqrstuv",
-  resetOrderNumber: true
+const agentstatus = await AWS.Connect.AgentStatus("agentstatus-example", {
+  State: "example-state",
+  InstanceArn: "example-instancearn",
+  Name: "agentstatus-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A agentstatus resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AgentStatus with additional properties like description and display order.
+Create a agentstatus with additional configuration:
 
 ```ts
-const busyStatus = await AWS.Connect.AgentStatus("busy-status", {
-  name: "Busy",
-  state: "ACTIVE",
-  instanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-efgh-5678-ijkl-90mnopqrstuv",
-  description: "Agent is currently busy.",
-  displayOrder: 1,
-  resetOrderNumber: false
+import AWS from "alchemy/aws/control";
+
+const advancedAgentStatus = await AWS.Connect.AgentStatus("advanced-agentstatus", {
+  State: "example-state",
+  InstanceArn: "example-instancearn",
+  Name: "agentstatus-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A agentstatus resource managed by Alchemy",
 });
 ```
 
-## Custom Status with Tags
-
-Create an AgentStatus with tags for better resource management.
-
-```ts
-const onLeaveStatus = await AWS.Connect.AgentStatus("on-leave-status", {
-  name: "On Leave",
-  state: "INACTIVE",
-  instanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-efgh-5678-ijkl-90mnopqrstuv",
-  tags: [
-    {
-      key: "Department",
-      value: "Human Resources"
-    },
-    {
-      key: "Status",
-      value: "Leave"
-    }
-  ]
-});
-```
-
-## Status with Display Order
-
-Define an AgentStatus with a specific display order to control the order in which statuses appear.
-
-```ts
-const offlineStatus = await AWS.Connect.AgentStatus("offline-status", {
-  name: "Offline",
-  state: "INACTIVE",
-  instanceArn: "arn:aws:connect:us-east-1:123456789012:instance/abcd1234-efgh-5678-ijkl-90mnopqrstuv",
-  displayOrder: 5,
-  resetOrderNumber: true
-});
-```

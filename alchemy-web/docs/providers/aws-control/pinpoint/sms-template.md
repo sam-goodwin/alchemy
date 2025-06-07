@@ -5,58 +5,56 @@ description: Learn how to create, update, and manage AWS Pinpoint SmsTemplates u
 
 # SmsTemplate
 
-The SmsTemplate resource allows you to manage [AWS Pinpoint SmsTemplates](https://docs.aws.amazon.com/pinpoint/latest/userguide/) for sending SMS messages with predefined content.
+The SmsTemplate resource allows you to create and manage SMS message templates in AWS Pinpoint, which can be used for personalized messaging campaigns. For more information, refer to the [AWS Pinpoint SmsTemplates](https://docs.aws.amazon.com/pinpoint/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic SMS template with required properties and one optional property.
+Create a basic SMS template with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const smsTemplate = await AWS.Pinpoint.SmsTemplate("basicSmsTemplate", {
+const BasicSmsTemplate = await AWS.Pinpoint.SmsTemplate("BasicSmsTemplate", {
   TemplateName: "WelcomeMessage",
-  Body: "Welcome to our service! Your verification code is {{code}}.",
-  TemplateDescription: "A welcome message template for new users."
+  Body: "Welcome to our service! We're glad to have you.",
+  TemplateDescription: "A welcome message template for new users.",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Marketing" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an SMS template with default substitutions and tags to enhance message personalization.
+Configure an SMS template with default substitutions, allowing for dynamic content in messages.
 
 ```ts
-const advancedSmsTemplate = await AWS.Pinpoint.SmsTemplate("advancedSmsTemplate", {
-  TemplateName: "PasswordResetMessage",
-  Body: "We received a request to reset your password. Click here to reset: {{url}}",
-  DefaultSubstitutions: '{"url": "https://example.com/reset"}',
-  Tags: {
-    "type": "account",
-    "priority": "high"
-  }
+const AdvancedSmsTemplate = await AWS.Pinpoint.SmsTemplate("AdvancedSmsTemplate", {
+  TemplateName: "BirthdayWishes",
+  Body: "Happy Birthday, {{name}}! Enjoy your special day!",
+  TemplateDescription: "A birthday wishes template with dynamic name substitution.",
+  DefaultSubstitutions: '{"name": "User"}',
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Customer Engagement" }
+  ]
 });
 ```
 
-## Adoption of Existing Templates
+## Custom Use Case: Promotional Offers
 
-Adopt an existing SMS template without failing if it already exists.
-
-```ts
-const adoptSmsTemplate = await AWS.Pinpoint.SmsTemplate("adoptExistingTemplate", {
-  TemplateName: "PromotionalOffer",
-  Body: "Special offer just for you! Enjoy a discount of {{discount}} on your next purchase.",
-  adopt: true // Will not fail if the template already exists
-});
-```
-
-## Example with Custom Substitutions
-
-Create an SMS template that utilizes custom substitutions for dynamic messaging.
+Create an SMS template specifically for promotional offers that can easily be modified with different discount codes.
 
 ```ts
-const customSubstitutionTemplate = await AWS.Pinpoint.SmsTemplate("customSubstitutionTemplate", {
-  TemplateName: "EventReminder",
-  Body: "Don't forget about your upcoming event: {{eventName}} on {{eventDate}}!",
-  DefaultSubstitutions: '{"eventName": "Concert", "eventDate": "Friday, 7 PM"}'
+const PromoSmsTemplate = await AWS.Pinpoint.SmsTemplate("PromoSmsTemplate", {
+  TemplateName: "SummerSale",
+  Body: "Get {{discount}} off your next purchase! Use code: {{code}}",
+  TemplateDescription: "A promotional SMS template for summer sales.",
+  DefaultSubstitutions: '{"discount": "20%", "code": "SUMMER20"}',
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Sales" }
+  ]
 });
 ```

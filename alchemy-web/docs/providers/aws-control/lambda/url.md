@@ -5,60 +5,74 @@ description: Learn how to create, update, and manage AWS Lambda Urls using Alche
 
 # Url
 
-The Url resource lets you manage [AWS Lambda Urls](https://docs.aws.amazon.com/lambda/latest/userguide/) for your Lambda functions, allowing you to expose them directly over HTTP(S).
+The Url resource lets you manage [AWS Lambda Urls](https://docs.aws.amazon.com/lambda/latest/userguide/) that provide an HTTPS endpoint to invoke your Lambda functions directly over the internet.
 
 ## Minimal Example
 
-Create a basic Lambda Url for a function with essential properties:
+Create a basic Lambda Url with required properties and one optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const lambdaUrl = await AWS.Lambda.Url("myLambdaUrl", {
-  TargetFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:myLambdaFunction",
-  AuthType: "AWS_IAM", // Authentication type
-  InvokeMode: "BUFFERED" // Invocation mode
+const lambdaUrl = await AWS.Lambda.Url("MyLambdaUrl", {
+  TargetFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:MyFunction",
+  AuthType: "NONE", // No authentication required
+  Qualifier: "v1" // Optional: Specify a version or alias
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Lambda Url with additional CORS settings and a specific qualifier:
+Configure a Lambda Url with CORS settings to allow specific origins:
 
 ```ts
-const advancedLambdaUrl = await AWS.Lambda.Url("advancedLambdaUrl", {
-  TargetFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:myLambdaFunction",
-  AuthType: "AWS_IAM",
-  InvokeMode: "BUFFERED",
+const corsConfiguredUrl = await AWS.Lambda.Url("CorsConfiguredLambdaUrl", {
+  TargetFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:MyFunction",
+  AuthType: "AWS_IAM", // Using AWS IAM for authentication
   Cors: {
-    AllowOrigins: ["https://example.com"],
-    AllowMethods: ["GET", "POST"],
-    AllowHeaders: ["Content-Type"]
-  },
-  Qualifier: "$LATEST" // Specify the version of the function
+    AllowOrigins: ["https://example.com"], // Allow requests from this origin
+    AllowMethods: ["GET", "POST"], // Allow these HTTP methods
+    AllowHeaders: ["Content-Type"] // Allow this header in requests
+  }
 });
 ```
 
-## Using an Existing Resource
+## Adoption of Existing Resource
 
-If you want to adopt an existing Lambda Url instead of failing when it already exists:
+Create a Lambda Url while adopting an existing resource instead of failing:
 
 ```ts
-const existingLambdaUrl = await AWS.Lambda.Url("existingLambdaUrl", {
-  TargetFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:myExistingLambdaFunction",
-  AuthType: "NONE", // Public access
-  adopt: true // Adopt existing resource
+const existingUrl = await AWS.Lambda.Url("ExistingLambdaUrl", {
+  TargetFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:MyFunction",
+  AuthType: "NONE",
+  adopt: true // Adopt existing resource if it exists
 });
 ```
 
-## Custom Invocation Mode
+## Security with IAM Authentication
 
-Create a Lambda Url with a different invocation mode for specific use cases:
+Set up a Lambda Url that uses IAM authentication with proper policies:
 
 ```ts
-const customInvocationModeUrl = await AWS.Lambda.Url("customInvocationUrl", {
-  TargetFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:myCustomLambdaFunction",
+const securedUrl = await AWS.Lambda.Url("SecuredLambdaUrl", {
+  TargetFunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:MyFunction",
   AuthType: "AWS_IAM",
-  InvokeMode: "DIRECT" // Direct invocation mode
+  Cors: {
+    AllowOrigins: ["https://myapp.com"],
+    AllowMethods: ["GET", "POST", "OPTIONS"],
+    AllowHeaders: ["Authorization", "Content-Type"]
+  }
 });
+
+// Example IAM Policy for invoking the URL
+const iamPolicy = {
+  Version: "2012-10-17",
+  Statement: [
+    {
+      Effect: "Allow",
+      Action: "lambda:InvokeFunction",
+      Resource: "arn:aws:lambda:us-west-2:123456789012:function:MyFunction"
+    }
+  ]
+};
 ```

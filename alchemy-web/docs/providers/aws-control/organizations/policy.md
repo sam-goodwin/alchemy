@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS Organizations Policies 
 
 # Policy
 
-The Policy resource lets you manage [AWS Organizations Policies](https://docs.aws.amazon.com/organizations/latest/userguide/) to enforce specific controls across your organization.
+The Policy resource allows you to manage [AWS Organizations Policies](https://docs.aws.amazon.com/organizations/latest/userguide/) that define permissions and controls across your AWS accounts.
 
 ## Minimal Example
 
@@ -14,112 +14,101 @@ Create a basic policy with required properties and a description.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPolicy = await AWS.Organizations.Policy("basicPolicy", {
+const BasicPolicy = await AWS.Organizations.Policy("BasicPolicy", {
   Type: "SERVICE_CONTROL_POLICY",
-  Description: "A policy to restrict access to certain AWS services.",
+  Description: "Policy to restrict certain services",
   Content: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Deny",
-        Action: [
-          "ec2:*",
-          "s3:*"
-        ],
+        Action: "ec2:*",
         Resource: "*"
       }
     ]
   },
-  Name: "RestrictEC2andS3"
+  Name: "RestrictEC2Services"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a policy with multiple target IDs and tags.
+Configure a policy with target IDs and additional tags for better resource management.
 
 ```ts
-const advancedPolicy = await AWS.Organizations.Policy("advancedPolicy", {
+const AdvancedPolicy = await AWS.Organizations.Policy("AdvancedPolicy", {
   Type: "SERVICE_CONTROL_POLICY",
-  TargetIds: ["ou-1234-abcd", "ou-5678-efgh"],
-  Description: "A policy to manage access at the organizational unit level.",
+  TargetIds: ["ou-1234-5678"],
+  Description: "Policy to limit EC2 and S3 access",
   Content: {
     Version: "2012-10-17",
     Statement: [
       {
-        Effect: "Allow",
-        Action: "*",
+        Effect: "Deny",
+        Action: ["ec2:*", "s3:*"],
         Resource: "*"
       }
     ]
   },
+  Name: "LimitEC2AndS3Access",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Team",
-      Value: "DevOps"
-    }
-  ],
-  Name: "AllowAllServicesForOU"
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
+  ]
 });
 ```
 
-## Policy for Cross-Account Access
+## Policy with Adoption
 
-Create a policy that allows specific actions across accounts while denying all others.
+Create a policy that adopts an existing resource if it already exists, thus avoiding failure during deployment.
 
 ```ts
-const crossAccountPolicy = await AWS.Organizations.Policy("crossAccountPolicy", {
+const AdoptedPolicy = await AWS.Organizations.Policy("AdoptedPolicy", {
   Type: "SERVICE_CONTROL_POLICY",
-  Description: "Allows cross-account access for specific actions.",
+  Description: "Policy to enforce MFA on all accounts",
   Content: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Action: [
-          "sts:AssumeRole",
-          "logs:CreateLogGroup"
-        ],
-        Resource: "*"
-      },
-      {
-        Effect: "Deny",
-        Action: "*",
-        Resource: "*"
-      }
-    ]
-  },
-  Name: "CrossAccountAccessPolicy"
-});
-```
-
-## Policy to Enforce Encryption
-
-Create a policy that enforces encryption for all S3 buckets.
-
-```ts
-const encryptionPolicy = await AWS.Organizations.Policy("encryptionPolicy", {
-  Type: "SERVICE_CONTROL_POLICY",
-  Description: "Enforces encryption for all S3 buckets.",
-  Content: {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Deny",
-        Action: "s3:PutBucketEncryption",
+        Action: "sts:AssumeRole",
         Resource: "*",
         Condition: {
-          "StringEquals": {
-            "s3:x-amz-server-side-encryption": "AES256"
+          "Bool": {
+            "aws:MultiFactorAuthPresent": "true"
           }
         }
       }
     ]
   },
-  Name: "EnforceS3Encryption"
+  Name: "EnforceMFA",
+  adopt: true
+});
+```
+
+## Policy with Comprehensive Content
+
+Create a policy that allows access to specific services based on conditions, demonstrating more complex policy content.
+
+```ts
+const ComprehensivePolicy = await AWS.Organizations.Policy("ComprehensivePolicy", {
+  Type: "SERVICE_CONTROL_POLICY",
+  Description: "Policy to allow specific actions based on tags",
+  Content: {
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Action: "s3:GetObject",
+        Resource: "arn:aws:s3:::my-bucket/*",
+        Condition: {
+          StringEquals: {
+            "aws:ResourceTag/Department": "Finance"
+          }
+        }
+      }
+    ]
+  },
+  Name: "AllowS3AccessForFinance"
 });
 ```

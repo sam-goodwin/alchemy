@@ -5,30 +5,30 @@ description: Learn how to create, update, and manage AWS LakeFormation Resources
 
 # Resource
 
-The Resource resource allows you to manage [AWS LakeFormation Resources](https://docs.aws.amazon.com/lakeformation/latest/userguide/) for data lake management and governance, enabling fine-grained access control.
+The Resource resource allows you to manage [AWS LakeFormation Resources](https://docs.aws.amazon.com/lakeformation/latest/userguide/) which are essential for controlling access to data lakes and their components in AWS.
 
 ## Minimal Example
 
-Create a basic LakeFormation resource with required properties:
+Create a basic LakeFormation Resource with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const lakeFormationResource = await AWS.LakeFormation.Resource("basicLakeFormationResource", {
+const LakeFormationResource = await AWS.LakeFormation.Resource("MyLakeFormationResource", {
   ResourceArn: "arn:aws:s3:::my-data-lake",
-  UseServiceLinkedRole: true
+  UseServiceLinkedRole: true,
+  WithFederation: false
 });
 ```
 
 ## Advanced Configuration
 
-Configure a LakeFormation resource with additional optional settings, such as federation and hybrid access:
+Configure a LakeFormation Resource with additional options such as Hybrid Access and Role ARN.
 
 ```ts
-const advancedLakeFormationResource = await AWS.LakeFormation.Resource("advancedLakeFormationResource", {
-  ResourceArn: "arn:aws:s3:::my-data-lake",
+const AdvancedLakeFormationResource = await AWS.LakeFormation.Resource("AdvancedLakeFormationResource", {
+  ResourceArn: "arn:aws:s3:::my-advanced-data-lake",
   UseServiceLinkedRole: true,
-  WithFederation: true,
   HybridAccessEnabled: true,
   RoleArn: "arn:aws:iam::123456789012:role/LakeFormationRole"
 });
@@ -36,25 +36,12 @@ const advancedLakeFormationResource = await AWS.LakeFormation.Resource("advanced
 
 ## Resource Adoption
 
-Adopt an existing LakeFormation resource instead of failing when the resource already exists:
+Adopt an existing LakeFormation Resource instead of failing if it already exists.
 
 ```ts
-const adoptExistingResource = await AWS.LakeFormation.Resource("adoptExistingResource", {
+const AdoptedLakeFormationResource = await AWS.LakeFormation.Resource("AdoptedLakeFormationResource", {
   ResourceArn: "arn:aws:s3:::my-existing-data-lake",
-  UseServiceLinkedRole: false,
-  adopt: true
-});
-```
-
-## Hybrid Access Configuration
-
-Create a LakeFormation resource with hybrid access enabled for cross-account data sharing:
-
-```ts
-const hybridAccessResource = await AWS.LakeFormation.Resource("hybridAccessResource", {
-  ResourceArn: "arn:aws:s3:::my-hybrid-data-lake",
   UseServiceLinkedRole: true,
-  HybridAccessEnabled: true,
-  RoleArn: "arn:aws:iam::123456789012:role/HybirdAccessRole"
+  adopt: true
 });
 ```

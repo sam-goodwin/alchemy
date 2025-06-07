@@ -5,83 +5,69 @@ description: Learn how to create, update, and manage AWS IoT Dimensions using Al
 
 # Dimension
 
-The Dimension resource allows you to manage [AWS IoT Dimensions](https://docs.aws.amazon.com/iot/latest/userguide/) that help in categorizing and filtering IoT data streams effectively.
+The Dimension resource lets you manage [AWS IoT Dimensions](https://docs.aws.amazon.com/iot/latest/userguide/) which are used to categorize IoT things for policies and other configurations.
 
 ## Minimal Example
 
-This example demonstrates how to create a basic IoT Dimension with required properties and a common optional tag.
+Create a basic IoT Dimension with required properties and common optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDimension = await AWS.IoT.Dimension("basicDimension", {
+const basicDimension = await AWS.IoT.Dimension("BasicDimension", {
   Type: "string",
-  StringValues: ["sensor", "device", "location"],
+  StringValues: ["DeviceTypeA", "DeviceTypeB"],
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "production" },
+    { Key: "Owner", Value: "TeamA" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we create an IoT Dimension with additional properties including a unique name and multiple string values.
+Configure an IoT Dimension with additional properties such as a custom name and a larger set of string values.
 
 ```ts
-const advancedDimension = await AWS.IoT.Dimension("advancedDimension", {
+const advancedDimension = await AWS.IoT.Dimension("AdvancedDimension", {
   Type: "string",
-  StringValues: ["temperature", "humidity", "pressure"],
-  Name: "EnvironmentalParameters",
+  StringValues: [
+    "DeviceTypeC",
+    "DeviceTypeD",
+    "DeviceTypeE",
+    "DeviceTypeF"
+  ],
+  Name: "CustomDeviceCategory",
   Tags: [
-    {
-      Key: "Application",
-      Value: "WeatherMonitoring"
-    },
-    {
-      Key: "Department",
-      Value: "Research"
-    }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Owner", Value: "TeamB" }
   ]
 });
 ```
 
-## Adoption of Existing Resource
+## Resource Adoption
 
-This example demonstrates how to adopt an existing IoT Dimension instead of failing when the resource already exists.
+Create a Dimension and adopt an existing resource if it already exists.
 
 ```ts
-const adoptedDimension = await AWS.IoT.Dimension("adoptedDimension", {
+const adoptedDimension = await AWS.IoT.Dimension("AdoptedDimension", {
   Type: "string",
-  StringValues: ["existingValue"],
-  adopt: true // This will adopt the existing dimension if it exists
+  StringValues: ["DeviceTypeG"],
+  adopt: true // Enables adoption of existing Dimension
 });
 ```
 
-## Using Dimensions in IoT Rules
+## Using Tags for Organization
 
-Here’s how to reference an IoT Dimension within an IoT Rule to filter messages based on dimension values.
+Create a Dimension that leverages tags for better organization and management.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const iotRule = await AWS.IoT.Rule("temperatureAlertRule", {
-  RuleName: "TemperatureAlert",
-  Sql: "SELECT * FROM 'sensor/temperature' WHERE dimension = 'high'",
-  Actions: [
-    {
-      Lambda: {
-        FunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:alertFunction"
-      }
-    }
-  ],
+const taggedDimension = await AWS.IoT.Dimension("TaggedDimension", {
+  Type: "string",
+  StringValues: ["DeviceTypeH"],
   Tags: [
-    {
-      Key: "Status",
-      Value: "Active"
-    }
+    { Key: "Environment", Value: "development" },
+    { Key: "Project", Value: "IoTApp" }
   ]
 });
 ```

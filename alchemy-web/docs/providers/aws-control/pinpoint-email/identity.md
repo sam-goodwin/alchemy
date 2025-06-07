@@ -5,66 +5,58 @@ description: Learn how to create, update, and manage AWS PinpointEmail Identitys
 
 # Identity
 
-The Identity resource allows you to manage [AWS PinpointEmail Identitys](https://docs.aws.amazon.com/pinpointemail/latest/userguide/) for sending email messages. This resource helps in configuring email identity settings, including feedback forwarding and DKIM signing.
+The Identity resource lets you manage [AWS PinpointEmail Identitys](https://docs.aws.amazon.com/pinpointemail/latest/userguide/) for sending emails through Amazon Pinpoint Email. This includes configuring feedback forwarding, DKIM signing, and other identity attributes.
 
 ## Minimal Example
 
-Create a basic email identity with essential properties such as name and DKIM signing enabled.
+Create a basic identity with a name and enable feedback forwarding.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const emailIdentity = await AWS.PinpointEmail.Identity("myEmailIdentity", {
-  Name: "contact@example.com",
-  DkimSigningEnabled: true,
-  FeedbackForwardingEnabled: false
+const BasicIdentity = await AWS.PinpointEmail.Identity("BasicIdentity", {
+  Name: "no-reply@example.com",
+  FeedbackForwardingEnabled: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure an email identity with additional properties like MailFromAttributes and Tags.
+Configure an identity with DKIM signing and custom tags.
 
 ```ts
-const advancedEmailIdentity = await AWS.PinpointEmail.Identity("advancedEmailIdentity", {
+const AdvancedIdentity = await AWS.PinpointEmail.Identity("AdvancedIdentity", {
   Name: "support@example.com",
   DkimSigningEnabled: true,
-  FeedbackForwardingEnabled: true,
+  FeedbackForwardingEnabled: false,
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "EmailMarketing" }
+  ]
+});
+```
+
+## Custom MailFrom Attributes
+
+Set custom MailFrom attributes for an identity.
+
+```ts
+const CustomMailFromIdentity = await AWS.PinpointEmail.Identity("CustomMailFromIdentity", {
+  Name: "custom@example.com",
   MailFromAttributes: {
     MailFromDomain: "mail.example.com",
     BehaviorOnMxFailure: "UseDefaultValue"
-  },
-  Tags: [
-    { Key: "Team", Value: "Support" },
-    { Key: "Project", Value: "EmailMarketing" }
-  ]
+  }
 });
 ```
 
-## Identity with Adoption
+## Adoption of Existing Resource
 
-Create an email identity while adopting an existing resource instead of failing if it already exists.
+Adopt an existing identity if it already exists instead of failing.
 
 ```ts
-const adoptedEmailIdentity = await AWS.PinpointEmail.Identity("adoptedEmailIdentity", {
-  Name: "info@example.com",
-  DkimSigningEnabled: false,
-  FeedbackForwardingEnabled: true,
+const AdoptedIdentity = await AWS.PinpointEmail.Identity("AdoptedIdentity", {
+  Name: "existing@example.com",
   adopt: true
-});
-```
-
-## Configuring Tags for Email Identity
-
-Add tags to an email identity for better organization and tracking.
-
-```ts
-const taggedEmailIdentity = await AWS.PinpointEmail.Identity("taggedEmailIdentity", {
-  Name: "newsletter@example.com",
-  DkimSigningEnabled: true,
-  Tags: [
-    { Key: "Purpose", Value: "Newsletter" },
-    { Key: "Environment", Value: "Production" }
-  ]
 });
 ```

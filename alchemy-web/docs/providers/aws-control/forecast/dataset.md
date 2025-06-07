@@ -5,102 +5,79 @@ description: Learn how to create, update, and manage AWS Forecast Datasets using
 
 # Dataset
 
-The Dataset resource lets you manage [AWS Forecast Datasets](https://docs.aws.amazon.com/forecast/latest/userguide/) for time series forecasting and analytics.
+The Dataset resource allows you to manage [AWS Forecast Datasets](https://docs.aws.amazon.com/forecast/latest/userguide/) for time series forecasting and machine learning applications.
 
 ## Minimal Example
 
-Create a basic dataset with required properties and a common optional property for data frequency.
+Create a basic forecast dataset with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const forecastDataset = await AWS.Forecast.Dataset("salesDataset", {
-  datasetName: "SalesData",
-  datasetType: "TARGET_TIME_SERIES",
-  domain: "RETAIL",
-  schema: {
-    attributes: [
-      {
-        attributeName: "timestamp",
-        attributeType: "timestamp"
-      },
-      {
-        attributeName: "sales",
-        attributeType: "float"
-      }
+const BasicDataset = await AWS.Forecast.Dataset("BasicForecastDataset", {
+  DatasetName: "SalesData",
+  Domain: "RETAIL",
+  DatasetType: "TARGET_TIME_SERIES",
+  DataFrequency: "D",
+  Schema: {
+    Attributes: [
+      { AttributeName: "timestamp", AttributeType: "timestamp" },
+      { AttributeName: "item_id", AttributeType: "string" },
+      { AttributeName: "demand", AttributeType: "float" }
     ]
   },
-  dataFrequency: "D" // Daily data frequency
+  Tags: [
+    { Key: "Project", Value: "SalesForecast" },
+    { Key: "Environment", Value: "Production" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a dataset with encryption settings and tags for better organization.
+Configure a dataset with encryption settings for added security.
 
 ```ts
-const secureForecastDataset = await AWS.Forecast.Dataset("secureSalesDataset", {
-  datasetName: "SecureSalesData",
-  datasetType: "TARGET_TIME_SERIES",
-  domain: "RETAIL",
-  schema: {
-    attributes: [
-      {
-        attributeName: "timestamp",
-        attributeType: "timestamp"
-      },
-      {
-        attributeName: "sales",
-        attributeType: "float"
-      },
-      {
-        attributeName: "store_id",
-        attributeType: "string"
-      }
+const SecureDataset = await AWS.Forecast.Dataset("SecureForecastDataset", {
+  DatasetName: "CustomerDemandData",
+  Domain: "RETAIL",
+  DatasetType: "TARGET_TIME_SERIES",
+  DataFrequency: "H",
+  Schema: {
+    Attributes: [
+      { AttributeName: "timestamp", AttributeType: "timestamp" },
+      { AttributeName: "customer_id", AttributeType: "string" },
+      { AttributeName: "purchase_amount", AttributeType: "float" }
     ]
   },
-  encryptionConfig: {
-    roleArn: "arn:aws:iam::123456789012:role/ForecastRole",
-    kmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef"
+  EncryptionConfig: {
+    KmsKeyArn: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst",
+    RoleArn: "arn:aws:iam::123456789012:role/MyForecastRole"
   },
-  tags: [
-    {
-      key: "Environment",
-      value: "Production"
-    },
-    {
-      key: "Project",
-      value: "SalesForecasting"
-    }
+  Tags: [
+    { Key: "Project", Value: "DemandForecast" },
+    { Key: "Environment", Value: "Staging" }
   ]
 });
 ```
 
-## Additional Use Case: Historical Data
+## Adopting Existing Resources
 
-Create a dataset specifically for historical sales data with weekly frequency.
+Create a dataset and adopt an existing resource if it already exists.
 
 ```ts
-const historicalSalesDataset = await AWS.Forecast.Dataset("historicalSalesDataset", {
-  datasetName: "HistoricalSalesData",
-  datasetType: "TARGET_TIME_SERIES",
-  domain: "RETAIL",
-  schema: {
-    attributes: [
-      {
-        attributeName: "timestamp",
-        attributeType: "timestamp"
-      },
-      {
-        attributeName: "sales",
-        attributeType: "float"
-      },
-      {
-        attributeName: "region",
-        attributeType: "string"
-      }
+const AdoptExistingDataset = await AWS.Forecast.Dataset("AdoptExistingForecastDataset", {
+  DatasetName: "InventoryLevels",
+  Domain: "RETAIL",
+  DatasetType: "RELATED_TIME_SERIES",
+  DataFrequency: "M",
+  Schema: {
+    Attributes: [
+      { AttributeName: "timestamp", AttributeType: "timestamp" },
+      { AttributeName: "product_id", AttributeType: "string" },
+      { AttributeName: "stock_level", AttributeType: "float" }
     ]
   },
-  dataFrequency: "W" // Weekly data frequency
+  adopt: true // Adopts existing resource if it already exists
 });
 ```

@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS Redshift EndpointAuthor
 
 # EndpointAuthorization
 
-The EndpointAuthorization resource allows you to manage AWS Redshift EndpointAuthorizations, which are used to grant access to your Redshift clusters from specific AWS accounts. For more information, refer to the [AWS Redshift EndpointAuthorizations documentation](https://docs.aws.amazon.com/redshift/latest/userguide/).
+The EndpointAuthorization resource allows you to manage [AWS Redshift EndpointAuthorizations](https://docs.aws.amazon.com/redshift/latest/userguide/) for granting access to your Redshift clusters from other AWS accounts. This is particularly useful for organizations that need to share data across accounts while maintaining security.
 
 ## Minimal Example
 
@@ -14,34 +14,46 @@ Create a basic EndpointAuthorization with required properties and one optional p
 ```ts
 import AWS from "alchemy/aws/control";
 
-const endpointAuthorization = await AWS.Redshift.EndpointAuthorization("myEndpointAuth", {
-  Account: "123456789012", // Specify the AWS account ID to authorize
-  ClusterIdentifier: "myRedshiftCluster", // Your existing Redshift cluster identifier
-  VpcIds: ["10.0.0.0/16"], // Optional: VPC ID for the authorization
+const EndpointAuth = await AWS.Redshift.EndpointAuthorization("MyEndpointAuth", {
+  Account: "123456789012",
+  ClusterIdentifier: "my-redshift-cluster",
+  VpcIds: ["vpc-123abc45"]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EndpointAuthorization with the force option to overwrite existing authorizations.
+Configure an EndpointAuthorization with force option to override existing authorizations.
 
 ```ts
-const advancedEndpointAuthorization = await AWS.Redshift.EndpointAuthorization("myAdvancedEndpointAuth", {
-  Account: "987654321098", // Specify the AWS account ID to authorize
-  ClusterIdentifier: "myRedshiftCluster", // Your existing Redshift cluster identifier
-  VpcIds: ["10.0.1.0/24"], // Optional: VPC ID for the authorization
-  Force: true, // Optional: Force the authorization even if it already exists
+const ForceEndpointAuth = await AWS.Redshift.EndpointAuthorization("ForceEndpointAuth", {
+  Account: "123456789012",
+  ClusterIdentifier: "my-redshift-cluster",
+  Force: true,
+  VpcIds: ["vpc-123abc45", "vpc-678def90"]
 });
 ```
 
 ## Adoption of Existing Resource
 
-Adopt an existing EndpointAuthorization instead of failing when it already exists.
+Adopt an existing EndpointAuthorization instead of failing if it already exists.
 
 ```ts
-const adoptEndpointAuthorization = await AWS.Redshift.EndpointAuthorization("myAdoptEndpointAuth", {
-  Account: "555555555555", // Specify the AWS account ID to authorize
-  ClusterIdentifier: "myRedshiftCluster", // Your existing Redshift cluster identifier
-  adopt: true, // Optional: Adopt existing resource
+const AdoptExistingEndpointAuth = await AWS.Redshift.EndpointAuthorization("AdoptExistingEndpointAuth", {
+  Account: "123456789012",
+  ClusterIdentifier: "my-redshift-cluster",
+  adopt: true
+});
+```
+
+## Multiple VPCs Authorization
+
+Manage EndpointAuthorization for multiple VPCs associated with a Redshift cluster.
+
+```ts
+const MultiVpcEndpointAuth = await AWS.Redshift.EndpointAuthorization("MultiVpcEndpointAuth", {
+  Account: "123456789012",
+  ClusterIdentifier: "my-redshift-cluster",
+  VpcIds: ["vpc-123abc45", "vpc-678def90"]
 });
 ```

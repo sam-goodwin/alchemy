@@ -5,63 +5,76 @@ description: Learn how to create, update, and manage AWS Kinesis Streams using A
 
 # Stream
 
-The Stream resource lets you manage [AWS Kinesis Streams](https://docs.aws.amazon.com/kinesis/latest/userguide/) for real-time data streaming and processing.
+The Stream resource allows you to manage [AWS Kinesis Streams](https://docs.aws.amazon.com/kinesis/latest/userguide/) for real-time data processing and analytics.
 
 ## Minimal Example
 
-Create a basic Kinesis Stream with a specified number of shards and optional retention period.
+Create a basic Kinesis Stream with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const kinesisStream = await AWS.Kinesis.Stream("basicKinesisStream", {
-  name: "my-kinesis-stream",
-  shardCount: 2,
-  retentionPeriodHours: 24
+const basicStream = await AWS.Kinesis.Stream("BasicStream", {
+  Name: "MyBasicStream",
+  ShardCount: 1,
+  RetentionPeriodHours: 24,
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Project", Value: "DataIngestion" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Kinesis Stream with enhanced security settings and stream mode details.
+Configure a Kinesis Stream with encryption and shard-level metrics.
 
 ```ts
-const advancedKinesisStream = await AWS.Kinesis.Stream("advancedKinesisStream", {
-  name: "secure-kinesis-stream",
-  shardCount: 4,
-  retentionPeriodHours: 48,
-  streamModeDetails: {
-    streamMode: "PROVISIONED"
+const advancedStream = await AWS.Kinesis.Stream("AdvancedStream", {
+  Name: "MyAdvancedStream",
+  ShardCount: 2,
+  StreamEncryption: {
+    EncryptionType: "KMS",
+    KeyId: "arn:aws:kms:us-east-1:123456789012:key/my-key-id"
   },
-  streamEncryption: {
-    keyId: "alias/my-kms-key",
-    encryptionType: "KMS"
-  }
-});
-```
-
-## Using Tags for Organization
-
-Create a Kinesis Stream with tags for better resource management.
-
-```ts
-const taggedKinesisStream = await AWS.Kinesis.Stream("taggedKinesisStream", {
-  name: "tagged-kinesis-stream",
-  shardCount: 3,
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Project", value: "DataIngestion" }
+  DesiredShardLevelMetrics: ["IncomingBytes", "IncomingRecords"],
+  RetentionPeriodHours: 48,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Analytics" }
   ]
 });
 ```
 
-## Adopting Existing Streams
+## Stream with Custom Metrics
 
-Adopt an existing Kinesis Stream by setting the `adopt` property to true.
+Create a Kinesis Stream that tracks custom metrics for better monitoring.
 
 ```ts
-const existingKinesisStream = await AWS.Kinesis.Stream("existingKinesisStream", {
-  name: "existing-kinesis-stream",
-  adopt: true // This will not fail if the stream already exists
+const metricsStream = await AWS.Kinesis.Stream("MetricsStream", {
+  Name: "MyMetricsStream",
+  ShardCount: 3,
+  DesiredShardLevelMetrics: ["OutgoingBytes", "OutgoingRecords"],
+  RetentionPeriodHours: 72,
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataScience" }
+  ]
+});
+```
+
+## Stream with Encryption and Adoption
+
+Create a Kinesis Stream that adopts existing resources while implementing encryption.
+
+```ts
+const adoptedStream = await AWS.Kinesis.Stream("AdoptedStream", {
+  Name: "MyAdoptedStream",
+  ShardCount: 1,
+  StreamEncryption: {
+    EncryptionType: "KMS",
+    KeyId: "arn:aws:kms:us-west-2:123456789012:key/my-key-id"
+  },
+  adopt: true // Adopt existing resource if it exists
 });
 ```

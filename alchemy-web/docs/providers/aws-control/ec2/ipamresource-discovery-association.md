@@ -5,58 +5,52 @@ description: Learn how to create, update, and manage AWS EC2 IPAMResourceDiscove
 
 # IPAMResourceDiscoveryAssociation
 
-The IPAMResourceDiscoveryAssociation resource allows you to associate an IPAM (IP Address Manager) resource discovery with your AWS EC2 resources. This resource is important for managing IP addresses across your AWS account. For more detailed information, refer to the [AWS EC2 IPAMResourceDiscoveryAssociations documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The IPAMResourceDiscoveryAssociation resource allows you to manage associations between an IPAM resource discovery and the IPAM itself in AWS. This is useful for organizing and managing IP addresses across your cloud resources. For more information, visit the [AWS EC2 IPAMResourceDiscoveryAssociations documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic IPAM resource discovery association using required properties and a common optional tag.
+Create a basic IPAM resource discovery association with required properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const ipamAssociation = await AWS.EC2.IPAMResourceDiscoveryAssociation("basicIpamAssociation", {
+const IpamResourceDiscoveryAssociation = await AWS.EC2.IPAMResourceDiscoveryAssociation("MyIpamResourceDiscoveryAssociation", {
   IpamId: "ipam-12345678",
-  IpamResourceDiscoveryId: "discovery-12345678",
-  Tags: [{
-    Key: "Environment",
-    Value: "Development"
-  }]
+  IpamResourceDiscoveryId: "discovery-87654321",
+  Tags: [
+    { Key: "Environment", Value: "production" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an IPAM resource discovery association to adopt existing resources if they already exist.
+Create an IPAM resource discovery association and adopt an existing resource if it already exists.
 
 ```ts
-const advancedIpamAssociation = await AWS.EC2.IPAMResourceDiscoveryAssociation("advancedIpamAssociation", {
-  IpamId: "ipam-87654321",
+const AdvancedIpamResourceDiscoveryAssociation = await AWS.EC2.IPAMResourceDiscoveryAssociation("AdvancedIpamResourceDiscoveryAssociation", {
+  IpamId: "ipam-12345678",
   IpamResourceDiscoveryId: "discovery-87654321",
   adopt: true,
-  Tags: [{
-    Key: "Project",
-    Value: "Migration"
-  }]
+  Tags: [
+    { Key: "Project", Value: "NetworkOverhaul" },
+    { Key: "Owner", Value: "TeamA" }
+  ]
 });
 ```
 
-## Specific Use Case: Multiple Tags
+## Additional Use Case: Multiple Tags
 
-Create an IPAM resource discovery association with multiple tags for better resource management and organization.
+Create an IPAM resource discovery association with multiple tags for better resource management.
 
 ```ts
-const taggedIpamAssociation = await AWS.EC2.IPAMResourceDiscoveryAssociation("taggedIpamAssociation", {
-  IpamId: "ipam-abcdef12",
-  IpamResourceDiscoveryId: "discovery-abcdef12",
+const TaggedIpamResourceDiscoveryAssociation = await AWS.EC2.IPAMResourceDiscoveryAssociation("TaggedIpamResourceDiscoveryAssociation", {
+  IpamId: "ipam-12345678",
+  IpamResourceDiscoveryId: "discovery-87654321",
   Tags: [
-    {
-      Key: "Owner",
-      Value: "TeamA"
-    },
-    {
-      Key: "CostCenter",
-      Value: "CC123"
-    }
+    { Key: "Application", Value: "WebApp" },
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```

@@ -5,30 +5,20 @@ description: Learn how to create, update, and manage AWS ElasticBeanstalk Config
 
 # ConfigurationTemplate
 
-The ConfigurationTemplate resource lets you manage [AWS ElasticBeanstalk ConfigurationTemplates](https://docs.aws.amazon.com/elasticbeanstalk/latest/userguide/) which define the settings for your Elastic Beanstalk environments.
+The ConfigurationTemplate resource lets you create and manage [AWS ElasticBeanstalk ConfigurationTemplates](https://docs.aws.amazon.com/elasticbeanstalk/latest/userguide/) for your applications, allowing you to define environment configurations and reuse them across environments.
 
 ## Minimal Example
 
-Create a basic configuration template with required properties and one optional property.
+Create a basic ElasticBeanstalk ConfigurationTemplate with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicConfigTemplate = await AWS.ElasticBeanstalk.ConfigurationTemplate("basicConfigTemplate", {
-  ApplicationName: "MyApplication",
-  EnvironmentId: "my-environment-id",
-  Description: "Basic configuration template for my application"
-});
-```
-
-## Advanced Configuration
-
-Define an advanced configuration template with custom option settings.
-
-```ts
-const advancedConfigTemplate = await AWS.ElasticBeanstalk.ConfigurationTemplate("advancedConfigTemplate", {
-  ApplicationName: "MyApplication",
-  EnvironmentId: "my-environment-id",
+const BasicConfigurationTemplate = await AWS.ElasticBeanstalk.ConfigurationTemplate("BasicConfigTemplate", {
+  ApplicationName: "MyWebApp",
+  Description: "Basic configuration for MyWebApp",
+  EnvironmentId: "e-abc123",
+  PlatformArn: "arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.4 running on 64bit Amazon Linux 2",
   OptionSettings: [
     {
       Namespace: "aws:autoscaling:launchconfiguration",
@@ -40,34 +30,63 @@ const advancedConfigTemplate = await AWS.ElasticBeanstalk.ConfigurationTemplate(
       OptionName: "EnvironmentType",
       Value: "LoadBalanced"
     }
-  ],
-  Description: "Advanced configuration template with custom options"
+  ]
 });
 ```
 
-## Source Configuration
+## Advanced Configuration
 
-Create a configuration template based on an existing template for reuse.
+Configure an ElasticBeanstalk ConfigurationTemplate with additional settings including a source configuration.
 
 ```ts
-const sourceConfigTemplate = await AWS.ElasticBeanstalk.ConfigurationTemplate("sourceConfigTemplate", {
-  ApplicationName: "MyApplication",
+const AdvancedConfigurationTemplate = await AWS.ElasticBeanstalk.ConfigurationTemplate("AdvancedConfigTemplate", {
+  ApplicationName: "MyWebApp",
+  Description: "Advanced configuration for MyWebApp with source settings",
   SourceConfiguration: {
-    ApplicationName: "MyApplication",
-    TemplateName: "baseConfigTemplate"
+    ApplicationName: "MyWebApp",
+    TemplateName: "BaseTemplate"
   },
-  Description: "Configuration template derived from baseConfigTemplate"
+  OptionSettings: [
+    {
+      Namespace: "aws:elasticbeanstalk:environment",
+      OptionName: "ServiceRole",
+      Value: "aws-elasticbeanstalk-ec2-role"
+    },
+    {
+      Namespace: "aws:elasticbeanstalk:sns:topics",
+      OptionName: "NotificationTopic",
+      Value: "arn:aws:sns:us-west-2:123456789012:MySNSTopic"
+    }
+  ]
 });
 ```
 
-## Solution Stack
+## Reusable Configuration
 
-Configure a template using a specific solution stack name.
+Create a ConfigurationTemplate that can be reused across multiple environments.
 
 ```ts
-const solutionStackConfigTemplate = await AWS.ElasticBeanstalk.ConfigurationTemplate("solutionStackConfigTemplate", {
-  ApplicationName: "MyApplication",
-  SolutionStackName: "64bit Amazon Linux 2 v3.3.5 running Python 3.8",
-  Description: "Configuration template using a specific solution stack"
+const ReusableConfigurationTemplate = await AWS.ElasticBeanstalk.ConfigurationTemplate("ReusableConfigTemplate", {
+  ApplicationName: "MyWebApp",
+  Description: "Reusable configuration for different environments",
+  EnvironmentId: "e-def456",
+  PlatformArn: "arn:aws:elasticbeanstalk:us-west-2::platform/DotNet Core 3.1 running on Windows Server 2019",
+  OptionSettings: [
+    {
+      Namespace: "aws:autoscaling:launchconfiguration",
+      OptionName: "InstanceMinCount",
+      Value: "1"
+    },
+    {
+      Namespace: "aws:autoscaling:trigger",
+      OptionName: "UpperThreshold",
+      Value: "70"
+    },
+    {
+      Namespace: "aws:elasticbeanstalk:environment",
+      OptionName: "EnvironmentType",
+      Value: "SingleInstance"
+    }
+  ]
 });
 ```

@@ -5,83 +5,84 @@ description: Learn how to create, update, and manage AWS WAF SizeConstraintSets 
 
 # SizeConstraintSet
 
-The SizeConstraintSet resource allows you to define a set of size constraints for AWS WAF, which can be used to filter out web requests based on the size of specific parts of the request. This is crucial for protecting your applications from various types of attacks and ensuring performance. For more information, see the [AWS WAF SizeConstraintSets documentation](https://docs.aws.amazon.com/waf/latest/userguide/).
+The SizeConstraintSet resource lets you manage [AWS WAF SizeConstraintSets](https://docs.aws.amazon.com/waf/latest/userguide/) to control web traffic based on the size of specific parts of the request (like headers, body, etc.).
 
 ## Minimal Example
 
-Create a basic SizeConstraintSet with required properties and one optional property for adoption.
+Create a basic SizeConstraintSet with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const sizeConstraintSet = await AWS.WAF.SizeConstraintSet("basicSizeConstraintSet", {
-  Name: "MySizeConstraintSet",
+const sizeConstraintSet = await AWS.WAF.SizeConstraintSet("BasicSizeConstraintSet", {
+  Name: "BasicSizeConstraintSet",
   SizeConstraints: [
     {
-      ComparisonOperator: "GT",
-      Size: 1000,
       FieldToMatch: {
-        Type: "BODY"
+        Type: "HEADER",
+        Data: "User-Agent"
       },
+      ComparisonOperator: "GT",
+      Size: 100,
       TextTransformation: "NONE"
     }
   ],
-  adopt: true // Optionally adopt existing resource
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SizeConstraintSet with multiple size constraints for different parts of the request.
+Configure a SizeConstraintSet with multiple size constraints and transformations.
 
 ```ts
-const advancedSizeConstraintSet = await AWS.WAF.SizeConstraintSet("advancedSizeConstraintSet", {
+const advancedSizeConstraintSet = await AWS.WAF.SizeConstraintSet("AdvancedSizeConstraintSet", {
   Name: "AdvancedSizeConstraintSet",
   SizeConstraints: [
     {
-      ComparisonOperator: "LE",
-      Size: 5000,
       FieldToMatch: {
-        Type: "HEADER",
-        Data: "User-Agent"
+        Type: "QUERY_STRING",
+        Data: "search"
       },
-      TextTransformation: "NONE"
+      ComparisonOperator: "LE",
+      Size: 200,
+      TextTransformation: "URL_DECODE"
     },
     {
-      ComparisonOperator: "EQ",
-      Size: 300,
       FieldToMatch: {
-        Type: "QUERY_STRING"
+        Type: "BODY",
       },
-      TextTransformation: "LOWERCASE"
+      ComparisonOperator: "EQ",
+      Size: 500,
+      TextTransformation: "NONE"
     }
   ]
 });
 ```
 
-## Multiple Conditions
+## Multiple Size Constraints
 
-Create a SizeConstraintSet to enforce size limits on both headers and body.
+Create a SizeConstraintSet with several constraints for different fields.
 
 ```ts
-const multiConditionSizeConstraintSet = await AWS.WAF.SizeConstraintSet("multiConditionSizeConstraintSet", {
-  Name: "MultiConditionSizeConstraintSet",
+const multiSizeConstraintSet = await AWS.WAF.SizeConstraintSet("MultiSizeConstraintSet", {
+  Name: "MultiSizeConstraintSet",
   SizeConstraints: [
     {
-      ComparisonOperator: "GT",
-      Size: 2000,
       FieldToMatch: {
-        Type: "BODY"
+        Type: "URI",
       },
+      ComparisonOperator: "GT",
+      Size: 50,
       TextTransformation: "NONE"
     },
     {
-      ComparisonOperator: "EQ",
-      Size: 150,
       FieldToMatch: {
         Type: "HEADER",
         Data: "Content-Length"
       },
+      ComparisonOperator: "LT",
+      Size: 1000,
       TextTransformation: "NONE"
     }
   ]

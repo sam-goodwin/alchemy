@@ -5,62 +5,63 @@ description: Learn how to create, update, and manage AWS Redshift EventSubscript
 
 # EventSubscription
 
-The EventSubscription resource allows you to manage [AWS Redshift EventSubscriptions](https://docs.aws.amazon.com/redshift/latest/userguide/) for monitoring events in your Amazon Redshift clusters.
+The EventSubscription resource allows you to manage [AWS Redshift EventSubscriptions](https://docs.aws.amazon.com/redshift/latest/userguide/) for monitoring significant events in your Redshift clusters.
 
 ## Minimal Example
 
-Create a basic EventSubscription with required properties and one optional property.
+Create a simple EventSubscription with required properties and some common optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicEventSubscription = await AWS.Redshift.EventSubscription("basicEventSubscription", {
-  SubscriptionName: "my-redshift-events",
-  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:my-sns-topic",
-  Enabled: true
+const BasicEventSubscription = await AWS.Redshift.EventSubscription("BasicEventSubscription", {
+  SubscriptionName: "MyRedshiftEventSubscription",
+  SourceType: "cluster",
+  Enabled: true,
+  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:MySNSTopic",
+  EventCategories: ["configuration", "management"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataAnalytics" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EventSubscription with multiple event categories and severity levels.
+Configure an EventSubscription with additional options such as severity and specific source IDs.
 
 ```ts
-const advancedEventSubscription = await AWS.Redshift.EventSubscription("advancedEventSubscription", {
-  SubscriptionName: "advanced-redshift-events",
-  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:my-sns-topic",
-  Enabled: true,
-  EventCategories: ["configuration", "management"],
-  Severity: "ERROR"
-});
-```
-
-## Specific Use Case: Source IDs
-
-Create an EventSubscription for specific source IDs to monitor selected Redshift clusters.
-
-```ts
-const specificSourceIdsEventSubscription = await AWS.Redshift.EventSubscription("specificSourceIdsEventSubscription", {
-  SubscriptionName: "source-ids-redshift-events",
-  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:my-sns-topic",
-  Enabled: true,
+const AdvancedEventSubscription = await AWS.Redshift.EventSubscription("AdvancedEventSubscription", {
+  SubscriptionName: "AdvancedRedshiftEventSubscription",
   SourceType: "cluster",
-  SourceIds: ["cluster-1", "cluster-2"]
+  Enabled: true,
+  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:MySNSTopic",
+  EventCategories: ["error", "notification"],
+  Severity: "ERROR",
+  SourceIds: ["my-cluster-id"],
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
-## Specific Use Case: Tagging
+## Specific Use Case: Error Monitoring
 
-Create an EventSubscription and associate it with tags for better resource management.
+Set up an EventSubscription specifically for monitoring error events in your Redshift clusters.
 
 ```ts
-const taggedEventSubscription = await AWS.Redshift.EventSubscription("taggedEventSubscription", {
-  SubscriptionName: "tagged-redshift-events",
-  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:my-sns-topic",
+const ErrorMonitoringEventSubscription = await AWS.Redshift.EventSubscription("ErrorMonitoringEventSubscription", {
+  SubscriptionName: "ErrorMonitoringRedshiftEventSubscription",
+  SourceType: "cluster",
   Enabled: true,
+  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:ErrorNotifications",
+  EventCategories: ["error"],
+  Severity: "ERROR",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "DataEngineering" }
+    { Key: "Environment", Value: "production" },
+    { Key: "UseCase", Value: "ErrorMonitoring" }
   ]
 });
 ```

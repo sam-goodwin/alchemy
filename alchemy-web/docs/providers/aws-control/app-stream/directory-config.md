@@ -5,62 +5,19 @@ description: Learn how to create, update, and manage AWS AppStream DirectoryConf
 
 # DirectoryConfig
 
-The DirectoryConfig resource lets you manage [AWS AppStream DirectoryConfigs](https://docs.aws.amazon.com/appstream/latest/userguide/) for integrating your directory service with AppStream 2.0.
+The DirectoryConfig resource lets you create and manage [AWS AppStream DirectoryConfigs](https://docs.aws.amazon.com/appstream/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-appstream-directoryconfig.html
 
 ## Minimal Example
-
-Create a basic DirectoryConfig with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const directoryConfig = await AWS.AppStream.DirectoryConfig("myDirectoryConfig", {
-  DirectoryName: "MyActiveDirectory",
-  OrganizationalUnitDistinguishedNames: [
-    "OU=Users,DC=example,DC=com"
-  ],
-  ServiceAccountCredentials: {
-    AccountName: "service-account",
-    AccountPassword: alchemy.secret(process.env.SERVICE_ACCOUNT_PASSWORD!)
-  }
+const directoryconfig = await AWS.AppStream.DirectoryConfig("directoryconfig-example", {
+  OrganizationalUnitDistinguishedNames: "directoryconfig-organizationalunitdistinguisheds",
+  ServiceAccountCredentials: "example-serviceaccountcredentials",
+  DirectoryName: "directoryconfig-directory",
 });
 ```
 
-## Advanced Configuration
-
-Configure a DirectoryConfig with certificate-based authentication properties.
-
-```ts
-const advancedDirectoryConfig = await AWS.AppStream.DirectoryConfig("advancedDirectoryConfig", {
-  DirectoryName: "MyActiveDirectory",
-  OrganizationalUnitDistinguishedNames: [
-    "OU=Users,DC=example,DC=com"
-  ],
-  ServiceAccountCredentials: {
-    AccountName: "service-account",
-    AccountPassword: alchemy.secret(process.env.SERVICE_ACCOUNT_PASSWORD!)
-  },
-  CertificateBasedAuthProperties: {
-    Certificate: alchemy.secret(process.env.CERTIFICATE!),
-    Validity: 365
-  }
-});
-```
-
-## Adoption of Existing Resource
-
-Adopt an existing DirectoryConfig without failing if it already exists.
-
-```ts
-const adoptExistingDirectoryConfig = await AWS.AppStream.DirectoryConfig("existingDirectoryConfig", {
-  DirectoryName: "MyExistingActiveDirectory",
-  OrganizationalUnitDistinguishedNames: [
-    "OU=Users,DC=example,DC=com"
-  ],
-  ServiceAccountCredentials: {
-    AccountName: "service-account",
-    AccountPassword: alchemy.secret(process.env.SERVICE_ACCOUNT_PASSWORD!)
-  },
-  adopt: true
-});
-```

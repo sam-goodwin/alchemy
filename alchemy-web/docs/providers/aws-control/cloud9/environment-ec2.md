@@ -5,75 +5,79 @@ description: Learn how to create, update, and manage AWS Cloud9 EnvironmentEC2s 
 
 # EnvironmentEC2
 
-The EnvironmentEC2 resource allows you to create and manage [AWS Cloud9 EnvironmentEC2s](https://docs.aws.amazon.com/cloud9/latest/userguide/) for cloud-based development environments.
+The EnvironmentEC2 resource allows you to create and manage AWS Cloud9 development environments that run on Amazon EC2 instances. For more information, visit the [AWS Cloud9 EnvironmentEC2s](https://docs.aws.amazon.com/cloud9/latest/userguide/) documentation.
 
 ## Minimal Example
 
-Create a basic Cloud9 EnvironmentEC2 with required properties and a couple of optional settings.
+Create a basic Cloud9 environment with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicEnvironment = await AWS.Cloud9.EnvironmentEC2("basicEnvironment", {
-  imageId: "ami-12345678", // Specify a valid AMI ID
-  instanceType: "t2.micro", // Choose an appropriate instance type
-  automaticStopTimeMinutes: 30, // Environment stops after 30 minutes of inactivity
-  name: "MyBasicEnvironment" // Name your environment
+const BasicEnvironment = await AWS.Cloud9.EnvironmentEC2("BasicEnvironment", {
+  ImageId: "amazonlinux",
+  InstanceType: "t2.micro",
+  AutomaticStopTimeMinutes: 30,
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Cloud9 EnvironmentEC2 with additional options such as repository settings and custom tags.
+Configure a Cloud9 environment with additional settings such as a description and owner ARN.
 
 ```ts
-const advancedEnvironment = await AWS.Cloud9.EnvironmentEC2("advancedEnvironment", {
-  imageId: "ami-12345678", // Specify a valid AMI ID
-  instanceType: "t2.medium", // Choose a larger instance type for more resources
-  automaticStopTimeMinutes: 15, // Environment stops after 15 minutes of inactivity
-  repositories: [
-    {
-      pathComponent: "my-repo", // Path to the repository in the environment
-      repositoryUrl: "https://github.com/my-org/my-repo.git" // URL to the Git repository
-    }
-  ],
-  tags: [
-    {
-      key: "Environment",
-      value: "Development"
-    },
-    {
-      key: "Project",
-      value: "MyProject"
-    }
-  ],
-  name: "MyAdvancedEnvironment" // Name your environment
+const AdvancedEnvironment = await AWS.Cloud9.EnvironmentEC2("AdvancedEnvironment", {
+  ImageId: "ubuntu:latest",
+  InstanceType: "t2.large",
+  Description: "Development environment for the web application",
+  OwnerArn: "arn:aws:iam::123456789012:user/developer",
+  ConnectionType: "CONNECT_SSH",
+  AutomaticStopTimeMinutes: 60,
+  Tags: [
+    { Key: "Project", Value: "WebApp" },
+    { Key: "Environment", Value: "staging" }
+  ]
 });
 ```
 
-## Custom Networking
+## Custom VPC Configuration
 
-Create an EnvironmentEC2 that specifies a subnet and owner ARN for advanced networking configurations.
+Set up a Cloud9 environment in a specific VPC and subnet.
 
 ```ts
-const networkedEnvironment = await AWS.Cloud9.EnvironmentEC2("networkedEnvironment", {
-  imageId: "ami-12345678", // Specify a valid AMI ID
-  instanceType: "t2.large", // Use a larger instance type
-  subnetId: "subnet-0abc12345def67890", // Specify the subnet for the environment
-  ownerArn: "arn:aws:iam::123456789012:user/my-user", // Specify the ARN of the owner
-  description: "Development environment with custom networking." // Description of your environment
+const VPCEnvironment = await AWS.Cloud9.EnvironmentEC2("VPCEnvironment", {
+  ImageId: "amazonlinux",
+  InstanceType: "t2.micro",
+  SubnetId: "subnet-0abcd1234efgh5678",
+  AutomaticStopTimeMinutes: 45,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Owner", Value: "Admin" }
+  ]
 });
 ```
 
-## Adoption of Existing Resource
+## Repository Integration
 
-Use the `adopt` property to take over an existing Cloud9 EnvironmentEC2 without creating a new one.
+Create a Cloud9 environment that integrates with a Git repository.
 
 ```ts
-const adoptedEnvironment = await AWS.Cloud9.EnvironmentEC2("adoptedEnvironment", {
-  imageId: "ami-12345678", // Specify a valid AMI ID
-  instanceType: "t2.micro",
-  adopt: true, // Adopt existing resource if it already exists
-  name: "MyAdoptedEnvironment" // Name your environment
+const RepoIntegratedEnvironment = await AWS.Cloud9.EnvironmentEC2("RepoIntegratedEnvironment", {
+  ImageId: "ubuntu:latest",
+  InstanceType: "t2.medium",
+  Repositories: [
+    {
+      RepositoryUrl: "https://github.com/myorg/myrepo.git",
+      PathComponent: "src"
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Development" }
+  ]
 });
 ```

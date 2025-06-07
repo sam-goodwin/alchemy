@@ -5,61 +5,59 @@ description: Learn how to create, update, and manage AWS Logs SubscriptionFilter
 
 # SubscriptionFilter
 
-The SubscriptionFilter resource allows you to manage [AWS Logs SubscriptionFilters](https://docs.aws.amazon.com/logs/latest/userguide/) for streaming log data to various destinations such as Amazon Kinesis or Lambda functions.
+The SubscriptionFilter resource lets you manage [AWS Logs SubscriptionFilters](https://docs.aws.amazon.com/logs/latest/userguide/) for filtering log events in your AWS CloudWatch Logs.
 
 ## Minimal Example
 
-Create a basic subscription filter to stream logs from a log group to a specified destination.
+Create a basic subscription filter that captures all logs from a specified log group.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const minimalSubscriptionFilter = await AWS.Logs.SubscriptionFilter("basicFilter", {
-  FilterPattern: "[host, ident, auth, timestamp, request]",
-  LogGroupName: "my-log-group",
-  DestinationArn: "arn:aws:lambda:us-west-2:123456789012:function:myLambdaFunction",
-  ApplyOnTransformedLogs: true
+const BasicSubscriptionFilter = await AWS.Logs.SubscriptionFilter("BasicFilter", {
+  LogGroupName: "MyLogGroup",
+  FilterPattern: "{ $.level = * }",
+  DestinationArn: "arn:aws:lambda:us-west-2:123456789012:function:MyLambdaFunction",
+  FilterName: "BasicFilter"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a subscription filter with advanced options like custom filter name and distribution method.
+Create a subscription filter with additional options such as applying on transformed logs.
 
 ```ts
-const advancedSubscriptionFilter = await AWS.Logs.SubscriptionFilter("advancedFilter", {
-  FilterPattern: "{ $.level = \"ERROR\" }",
-  LogGroupName: "my-log-group",
-  DestinationArn: "arn:aws:kinesis:us-west-2:123456789012:stream/myKinesisStream",
-  FilterName: "ErrorFilter",
+const AdvancedSubscriptionFilter = await AWS.Logs.SubscriptionFilter("AdvancedFilter", {
+  LogGroupName: "MyLogGroup",
+  FilterPattern: "{ $.level = ERROR }",
+  DestinationArn: "arn:aws:lambda:us-west-2:123456789012:function:MyLambdaFunction",
+  ApplyOnTransformedLogs: true,
   Distribution: "ByLogStream"
 });
 ```
 
-## Filtering Specific Log Patterns
+## Using IAM Role for Permissions
 
-Set up a subscription filter to capture logs matching a specific pattern for a Lambda function.
+Configure a subscription filter that uses an IAM role for permissions.
 
 ```ts
-const lambdaFilter = await AWS.Logs.SubscriptionFilter("lambdaErrorFilter", {
-  FilterPattern: "{ $.error = true }",
-  LogGroupName: "application-log-group",
-  DestinationArn: "arn:aws:lambda:us-west-2:123456789012:function:errorHandler",
-  FilterName: "LambdaErrorHandler",
-  ApplyOnTransformedLogs: false
+const RoleBasedSubscriptionFilter = await AWS.Logs.SubscriptionFilter("RoleBasedFilter", {
+  LogGroupName: "MyLogGroup",
+  FilterPattern: "{ $.level = WARN }",
+  DestinationArn: "arn:aws:lambda:us-west-2:123456789012:function:MyLambdaFunction",
+  RoleArn: "arn:aws:iam::123456789012:role/MyLambdaExecutionRole"
 });
 ```
 
-## Streaming Logs to Kinesis
+## Adoption of Existing Resources
 
-Create a subscription filter that streams log data to a Kinesis stream for real-time processing.
+If you want to adopt an existing subscription filter instead of creating a new one, you can set the `adopt` property.
 
 ```ts
-const kinesisFilter = await AWS.Logs.SubscriptionFilter("kinesisLogFilter", {
-  FilterPattern: "[ip, timestamp, request]",
-  LogGroupName: "web-application-logs",
-  DestinationArn: "arn:aws:kinesis:us-west-2:123456789012:stream/webAppLogsStream",
-  FilterName: "WebLogsToKinesis",
-  Distribution: "Random"
+const AdoptExistingFilter = await AWS.Logs.SubscriptionFilter("AdoptExistingFilter", {
+  LogGroupName: "MyLogGroup",
+  FilterPattern: "{ $.level = INFO }",
+  DestinationArn: "arn:aws:lambda:us-west-2:123456789012:function:MyExistingLambdaFunction",
+  adopt: true
 });
 ```

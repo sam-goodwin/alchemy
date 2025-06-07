@@ -5,73 +5,43 @@ description: Learn how to create, update, and manage AWS CleanRoomsML TrainingDa
 
 # TrainingDataset
 
-The TrainingDataset resource lets you manage [AWS CleanRoomsML TrainingDatasets](https://docs.aws.amazon.com/cleanroomsml/latest/userguide/) which are essential for training machine learning models in a secured environment.
+The TrainingDataset resource lets you create and manage [AWS CleanRoomsML TrainingDatasets](https://docs.aws.amazon.com/cleanroomsml/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cleanroomsml-trainingdataset.html
 
 ## Minimal Example
-
-Create a basic training dataset with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const trainingDataset = await AWS.CleanRoomsML.TrainingDataset("basicTrainingDataset", {
-  name: "CustomerBehaviorDataset",
-  description: "Dataset containing customer behavior data for model training.",
-  trainingData: [
-    {
-      dataSource: "S3",
-      path: "s3://my-bucket/customer-data/",
-      format: "CSV"
-    }
-  ],
-  roleArn: "arn:aws:iam::123456789012:role/CleanRoomsMLRole"
+const trainingdataset = await AWS.CleanRoomsML.TrainingDataset("trainingdataset-example", {
+  TrainingData: [],
+  RoleArn: "example-rolearn",
+  Name: "trainingdataset-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A trainingdataset resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a training dataset with multiple data sources and tagging for better organization:
+Create a trainingdataset with additional configuration:
 
 ```ts
-const advancedTrainingDataset = await AWS.CleanRoomsML.TrainingDataset("advancedTrainingDataset", {
-  name: "SalesForecastDataset",
-  description: "Dataset for sales forecasting using multiple data sources.",
-  trainingData: [
-    {
-      dataSource: "S3",
-      path: "s3://my-bucket/sales-data/",
-      format: "CSV"
-    },
-    {
-      dataSource: "S3",
-      path: "s3://my-bucket/external-sales-data/",
-      format: "JSON"
-    }
-  ],
-  roleArn: "arn:aws:iam::123456789012:role/CleanRoomsMLRole",
-  tags: [
-    { key: "Project", value: "SalesForecasting" },
-    { key: "Environment", value: "Production" }
-  ]
+import AWS from "alchemy/aws/control";
+
+const advancedTrainingDataset = await AWS.CleanRoomsML.TrainingDataset("advanced-trainingdataset", {
+  TrainingData: [],
+  RoleArn: "example-rolearn",
+  Name: "trainingdataset-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A trainingdataset resource managed by Alchemy",
 });
 ```
 
-## Adoption of Existing Resource
-
-If you want to adopt an existing training dataset instead of failing when it already exists, you can set the `adopt` property:
-
-```ts
-const existingTrainingDataset = await AWS.CleanRoomsML.TrainingDataset("existingTrainingDataset", {
-  name: "ExistingCustomerDataset",
-  description: "Adopting an existing dataset for customer analysis.",
-  trainingData: [
-    {
-      dataSource: "S3",
-      path: "s3://my-bucket/existing-customer-data/",
-      format: "CSV"
-    }
-  ],
-  roleArn: "arn:aws:iam::123456789012:role/CleanRoomsMLRole",
-  adopt: true
-});
-```

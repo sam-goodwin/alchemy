@@ -5,55 +5,56 @@ description: Learn how to create, update, and manage AWS Application Load Balanc
 
 # ListenerCertificate
 
-The `ListenerCertificate` resource allows you to manage SSL/TLS certificates for your AWS Application Load Balancer listeners. This enables secure communication for your applications. For more information, refer to the [AWS Application Load Balancer ListenerCertificates](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/).
+The ListenerCertificate resource allows you to manage SSL/TLS certificates for AWS Application Load Balancer listeners. This enables secure connections for your applications by allowing you to specify the certificates used for SSL termination. For more information, refer to the [AWS Application Load Balancer ListenerCertificates documentation](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic listener certificate for an Application Load Balancer listener with required properties.
+Create a basic ListenerCertificate with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const listenerCertificate = await AWS.ElasticLoadBalancingV2.ListenerCertificate("myListenerCertificate", {
+const BasicListenerCertificate = await AWS.ElasticLoadBalancingV2.ListenerCertificate("basic-listener-cert", {
   Certificates: [
     {
-      CertificateArn: "arn:aws:acm:us-west-2:123456789012:certificate/abcd1234-56ef-78gh-90ij-klmnopqrstuv"
+      CertificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/example-cert-id"
     }
   ],
-  ListenerArn: "arn:aws:elasticloadbalancing:us-west-2:123456789012:listener/app/my-load-balancer/50dc6c495c0c9188/6c2e0f6a1c3c6f10"
+  ListenerArn: "arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/example-load-balancer/50dc6c495c0c9188"
 });
 ```
 
 ## Advanced Configuration
 
-Add multiple certificates to a listener for more robust SSL/TLS management.
+Add multiple certificates to a ListenerCertificate for enhanced security.
 
 ```ts
-const advancedListenerCertificate = await AWS.ElasticLoadBalancingV2.ListenerCertificate("advancedListenerCertificate", {
+const AdvancedListenerCertificate = await AWS.ElasticLoadBalancingV2.ListenerCertificate("advanced-listener-cert", {
   Certificates: [
     {
-      CertificateArn: "arn:aws:acm:us-west-2:123456789012:certificate/abcd1234-56ef-78gh-90ij-klmnopqrstuv"
+      CertificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/example-cert-id-1"
     },
     {
-      CertificateArn: "arn:aws:acm:us-west-2:123456789012:certificate/wxyz5678-90ab-cdef-ghij-klmnopqrstuv"
+      CertificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/example-cert-id-2"
     }
   ],
-  ListenerArn: "arn:aws:elasticloadbalancing:us-west-2:123456789012:listener/app/my-load-balancer/50dc6c495c0c9188/6c2e0f6a1c3c6f10",
-  adopt: true // Adopt existing resource if it already exists
+  ListenerArn: "arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/example-load-balancer/50dc6c495c0c9188",
+  adopt: true // Adopts existing resource instead of failing if it already exists
 });
 ```
 
-## Updating Certificates
+## Conditional Adoption Example
 
-Update the listener certificate by replacing an existing certificate with a new one.
+Use the adopt property to handle existing resources gracefully.
 
 ```ts
-const updateListenerCertificate = await AWS.ElasticLoadBalancingV2.ListenerCertificate("updateListenerCertificate", {
+const ConditionalListenerCertificate = await AWS.ElasticLoadBalancingV2.ListenerCertificate("conditional-listener-cert", {
   Certificates: [
     {
-      CertificateArn: "arn:aws:acm:us-west-2:123456789012:certificate/newcert-5678-90ab-cdef-ghij-klmnopqrstuv"
+      CertificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/example-cert-id-3"
     }
   ],
-  ListenerArn: "arn:aws:elasticloadbalancing:us-west-2:123456789012:listener/app/my-load-balancer/50dc6c495c0c9188/6c2e0f6a1c3c6f10"
+  ListenerArn: "arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/example-load-balancer/50dc6c495c0c9188",
+  adopt: true // Will not fail if resource already exists
 });
 ```

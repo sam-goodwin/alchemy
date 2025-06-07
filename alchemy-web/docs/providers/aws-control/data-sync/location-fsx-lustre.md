@@ -5,53 +5,62 @@ description: Learn how to create, update, and manage AWS DataSync LocationFSxLus
 
 # LocationFSxLustre
 
-The LocationFSxLustre resource allows you to manage [AWS DataSync Location FSx Lustre](https://docs.aws.amazon.com/datasync/latest/userguide/) for transferring data to and from Amazon FSx for Lustre file systems.
+The LocationFSxLustre resource lets you manage [AWS DataSync LocationFSxLustres](https://docs.aws.amazon.com/datasync/latest/userguide/) for data transfer between on-premises storage and AWS services. This resource facilitates the integration of FSx for Lustre file systems into your data workflows.
 
 ## Minimal Example
 
-Create a basic DataSync LocationFSxLustre with required properties and one optional property.
+Create a basic FSx Lustre location with essential properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const locationFSxLustre = await AWS.DataSync.LocationFSxLustre("myLocationFSxLustre", {
-  FsxFilesystemArn: "arn:aws:fsx:us-west-2:123456789012:file-system/fs-0123456789abcdef0",
+const BasicLocationFSxLustre = await AWS.DataSync.LocationFSxLustre("BasicFSxLustreLocation", {
+  FsxFilesystemArn: "arn:aws:fsx:us-east-1:123456789012:file-system/fs-0123456789abcdef0",
   SecurityGroupArns: [
-    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-0123456789abcdef0"
+    "arn:aws:ec2:us-east-1:123456789012:security-group/sg-0123456789abcdef0"
   ],
-  Subdirectory: "/data"
+  Subdirectory: "/data",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataSync" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DataSync LocationFSxLustre with tags for better resource management.
+Enhance the FSx Lustre location with additional security group ARNs, and specify tags for better organization:
 
 ```ts
-const taggedLocationFSxLustre = await AWS.DataSync.LocationFSxLustre("taggedLocationFSxLustre", {
-  FsxFilesystemArn: "arn:aws:fsx:us-west-2:123456789012:file-system/fs-0123456789abcdef0",
+const AdvancedLocationFSxLustre = await AWS.DataSync.LocationFSxLustre("AdvancedFSxLustreLocation", {
+  FsxFilesystemArn: "arn:aws:fsx:us-east-1:123456789012:file-system/fs-0123456789abcdef0",
   SecurityGroupArns: [
-    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-0123456789abcdef0"
+    "arn:aws:ec2:us-east-1:123456789012:security-group/sg-0123456789abcdef0",
+    "arn:aws:ec2:us-east-1:123456789012:security-group/sg-0abcdef1234567890"
   ],
   Subdirectory: "/data",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DataPipeline" }
-  ]
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataOps" }
+  ],
+  adopt: true
 });
 ```
 
-## Adopting Existing Resources
+## Specific Use Case: Data Migration
 
-If you want to adopt an existing DataSync LocationFSxLustre resource instead of failing when it already exists, set the `adopt` property to true.
+Set up a location for migrating data from an on-premises file system to an FSx Lustre file system:
 
 ```ts
-const existingLocationFSxLustre = await AWS.DataSync.LocationFSxLustre("existingLocationFSxLustre", {
-  FsxFilesystemArn: "arn:aws:fsx:us-west-2:123456789012:file-system/fs-0123456789abcdef0",
+const MigrationLocationFSxLustre = await AWS.DataSync.LocationFSxLustre("MigrationFSxLustreLocation", {
+  FsxFilesystemArn: "arn:aws:fsx:us-east-1:123456789012:file-system/fs-0123456789abcdef0",
   SecurityGroupArns: [
-    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-0123456789abcdef0"
+    "arn:aws:ec2:us-east-1:123456789012:security-group/sg-0123456789abcdef0"
   ],
-  Subdirectory: "/existing-data",
-  adopt: true
+  Subdirectory: "/migrate",
+  Tags: [
+    { Key: "Purpose", Value: "data-migration" },
+    { Key: "Owner", Value: "DataTeam" }
+  ]
 });
 ```

@@ -5,96 +5,87 @@ description: Learn how to create, update, and manage AWS RAM Permissions using A
 
 # Permission
 
-The Permission resource allows you to manage [AWS RAM Permissions](https://docs.aws.amazon.com/ram/latest/userguide/) that define the policies associated with resource sharing. This enables you to control access to shared resources effectively.
+The Permission resource allows you to manage [AWS RAM Permissions](https://docs.aws.amazon.com/ram/latest/userguide/) that define what actions can be performed on shared resources. This resource is essential for controlling access to AWS resources that are shared across accounts.
 
 ## Minimal Example
 
-Create a basic RAM Permission with required properties and a common optional tag.
+Create a basic permission that allows access to a specific resource type.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const ramPermission = await AWS.RAM.Permission("basicRamPermission", {
-  resourceType: "AWS::S3::Bucket",
-  policyTemplate: {
+const BasicPermission = await AWS.RAM.Permission("BasicPermission", {
+  ResourceType: "ec2:instance",
+  PolicyTemplate: JSON.stringify({
     Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: "s3:GetObject",
-        Resource: "arn:aws:s3:::my-example-bucket/*"
-      }
-    ]
-  },
-  tags: [
-    {
-      Key: "Environment",
-      Value: "Development"
-    }
-  ],
-  name: "BasicPermission"
+    Statement: [{
+      Effect: "Allow",
+      Action: "ec2:StartInstances",
+      Resource: "*"
+    }]
+  }),
+  Name: "BasicInstanceStartPermission",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Infrastructure" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a RAM Permission with a more complex policy template and multiple tags.
+Configure a permission with more complex IAM policy statements for multiple actions.
 
 ```ts
-const advancedRamPermission = await AWS.RAM.Permission("advancedRamPermission", {
-  resourceType: "AWS::EC2::Instance",
-  policyTemplate: {
+const AdvancedPermission = await AWS.RAM.Permission("AdvancedPermission", {
+  ResourceType: "s3:bucket",
+  PolicyTemplate: JSON.stringify({
     Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: ["ec2:StartInstances", "ec2:StopInstances"],
-        Resource: "arn:aws:ec2:us-west-2:123456789012:instance/*"
-      },
-      {
-        Effect: "Allow",
-        Action: "ec2:DescribeInstances",
-        Resource: "*"
-      }
-    ]
-  },
-  tags: [
-    {
-      Key: "Project",
-      Value: "CloudMigration"
-    },
-    {
-      Key: "Owner",
-      Value: "DevTeam"
-    }
+    Statement: [{
+      Effect: "Allow",
+      Action: [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      Resource: "arn:aws:s3:::my-example-bucket/*"
+    }]
+  }),
+  Name: "AdvancedS3Permission",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Data" }
   ],
-  name: "AdvancedPermission"
+  adopt: true // Adopt existing permission if it already exists
 });
 ```
 
-## Custom Policy Example
+## Specific Use Case for Cross-Account Access
 
-Create a RAM Permission with a custom policy template that allows specific actions on a DynamoDB table.
+Create a permission that allows access to a resource type across AWS accounts.
 
 ```ts
-const dynamoDbPermission = await AWS.RAM.Permission("dynamoDbPermission", {
-  resourceType: "AWS::DynamoDB::Table",
-  policyTemplate: {
+const CrossAccountPermission = await AWS.RAM.Permission("CrossAccountPermission", {
+  ResourceType: "lambda:function",
+  PolicyTemplate: JSON.stringify({
     Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: ["dynamodb:PutItem", "dynamodb:GetItem"],
-        Resource: "arn:aws:dynamodb:us-east-1:123456789012:table/MyExampleTable"
+    Statement: [{
+      Effect: "Allow",
+      Action: "lambda:InvokeFunction",
+      Resource: "arn:aws:lambda:us-west-2:123456789012:function:MyFunction",
+      Condition: {
+        "StringEquals": {
+          "aws:SourceAccount": "098765432109"
+        }
       }
-    ]
-  },
-  tags: [
-    {
-      Key: "Service",
-      Value: "DataProcessing"
-    }
-  ],
-  name: "DynamoDbPermission"
+    }]
+  }),
+  Name: "CrossAccountLambdaInvokePermission",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Dev" }
+  ]
 });
 ```
+
+In each example above, the `Permission` resource is utilized to set up various access permissions tailored to specific AWS resource requirements, enhancing security and resource management within AWS accounts.

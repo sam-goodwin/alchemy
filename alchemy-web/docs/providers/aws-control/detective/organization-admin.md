@@ -5,50 +5,51 @@ description: Learn how to create, update, and manage AWS Detective OrganizationA
 
 # OrganizationAdmin
 
-The OrganizationAdmin resource lets you manage [AWS Detective OrganizationAdmins](https://docs.aws.amazon.com/detective/latest/userguide/) and their configurations. This resource helps in managing the administrator account for AWS Detective.
+The OrganizationAdmin resource allows you to manage AWS Detective OrganizationAdmins, facilitating the administration of AWS Detective across your organization. For more detailed information, refer to the [AWS Detective OrganizationAdmins documentation](https://docs.aws.amazon.com/detective/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic OrganizationAdmin with required properties.
+Create a basic OrganizationAdmin resource with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const organizationAdmin = await AWS.Detective.OrganizationAdmin("myOrganizationAdmin", {
+const BasicOrganizationAdmin = await AWS.Detective.OrganizationAdmin("BasicOrgAdmin", {
   AccountId: "123456789012",
-  adopt: true // Adopt existing resource if it already exists
+  adopt: true
 });
 ```
 
 ## Advanced Configuration
 
-Here is an example of creating an OrganizationAdmin with minimal properties along with the adoption feature.
+Configure an OrganizationAdmin resource with additional properties to better manage your setup.
 
 ```ts
-const advancedOrganizationAdmin = await AWS.Detective.OrganizationAdmin("advancedOrgAdmin", {
-  AccountId: "987654321098",
-  adopt: true // Adopt the existing resource
+const AdvancedOrganizationAdmin = await AWS.Detective.OrganizationAdmin("AdvancedOrgAdmin", {
+  AccountId: "123456789012",
+  adopt: false
 });
 ```
 
-## Handling Existing Resources
+## Additional Example: Using IAM Policy
 
-If you want to ensure that your OrganizationAdmin resource does not fail when the resource already exists, you can set the `adopt` property to true.
-
-```ts
-const adoptedOrganizationAdmin = await AWS.Detective.OrganizationAdmin("existingOrgAdmin", {
-  AccountId: "555555555555",
-  adopt: true // This will allow the resource to be adopted instead of failing
-});
-```
-
-## Resource Lifecycle Management
-
-You can also manage the lifecycle of the OrganizationAdmin resource by specifying properties that handle creation and updates.
+Demonstrate setting up an OrganizationAdmin with IAM policies by integrating the necessary permissions.
 
 ```ts
-const lifecycleManagedAdmin = await AWS.Detective.OrganizationAdmin("lifecycleOrgAdmin", {
-  AccountId: "333333333333",
-  adopt: false // Do not adopt existing resources
+const PolicyOrganizationAdmin = await AWS.Detective.OrganizationAdmin("PolicyOrgAdmin", {
+  AccountId: "123456789012",
+  adopt: true
 });
+
+// Example IAM policy structure for the OrganizationAdmin
+const iamPolicy = {
+  Version: "2012-10-17",
+  Statement: [
+    {
+      Effect: "Allow",
+      Action: "detective:*",
+      Resource: "*"
+    }
+  ]
+};
 ```

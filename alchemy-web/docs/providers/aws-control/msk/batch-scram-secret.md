@@ -5,62 +5,51 @@ description: Learn how to create, update, and manage AWS MSK BatchScramSecrets u
 
 # BatchScramSecret
 
-The BatchScramSecret resource allows you to manage [AWS MSK BatchScramSecrets](https://docs.aws.amazon.com/msk/latest/userguide/) which are used for SCRAM authentication in Amazon MSK clusters.
+The BatchScramSecret resource allows you to manage AWS MSK Batch Scram Secrets effectively. This resource is essential for enabling secure communication in Amazon Managed Streaming for Apache Kafka (MSK) clusters. For more information, refer to the [AWS MSK BatchScramSecrets documentation](https://docs.aws.amazon.com/msk/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic BatchScramSecret associated with an MSK cluster.
+Create a basic BatchScramSecret with required properties and one optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const batchScramSecret = await AWS.MSK.BatchScramSecret("myBatchScramSecret", {
-  ClusterArn: "arn:aws:kafka:us-west-2:123456789012:cluster/my-cluster/abcd1234-efgh-5678-ijkl-90mnopqrst",
+const BasicBatchScramSecret = await AWS.MSK.BatchScramSecret("BasicBatchScramSecret", {
+  ClusterArn: "arn:aws:kafka:us-west-2:123456789012:cluster/MyKafkaCluster/abcdef12-3456-7890-abcd-ef1234567890-1",
   SecretArnList: [
-    "arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecret1",
-    "arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecret2"
-  ],
-  adopt: true // Allows adoption of existing resources
+    "arn:aws:secretsmanager:us-west-2:123456789012:secret:MySecret1",
+    "arn:aws:secretsmanager:us-west-2:123456789012:secret:MySecret2"
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a BatchScramSecret with additional properties for existing resources.
+Configure a BatchScramSecret with the adoption feature enabled:
 
 ```ts
-const existingBatchScramSecret = await AWS.MSK.BatchScramSecret("existingBatchScramSecret", {
-  ClusterArn: "arn:aws:kafka:us-west-2:123456789012:cluster/my-cluster/abcd1234-efgh-5678-ijkl-90mnopqrst",
+const AdvancedBatchScramSecret = await AWS.MSK.BatchScramSecret("AdvancedBatchScramSecret", {
+  ClusterArn: "arn:aws:kafka:us-west-2:123456789012:cluster/MyKafkaCluster/abcdef12-3456-7890-abcd-ef1234567890-1",
   SecretArnList: [
-    "arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecret3",
-    "arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecret4"
+    "arn:aws:secretsmanager:us-west-2:123456789012:secret:MySecret1"
   ],
-  adopt: true // Adopt existing resource if it already exists
+  adopt: true
 });
 ```
 
-## BatchScramSecret with Only Required Properties
+## Using Multiple Secrets
 
-Create a BatchScramSecret using only the required properties.
+Demonstrate how to manage multiple secrets for enhanced security:
 
 ```ts
-const minimalBatchScramSecret = await AWS.MSK.BatchScramSecret("minimalBatchScramSecret", {
-  ClusterArn: "arn:aws:kafka:us-west-2:123456789012:cluster/my-cluster/abcd1234-efgh-5678-ijkl-90mnopqrst"
+const MultiSecretBatchScramSecret = await AWS.MSK.BatchScramSecret("MultiSecretBatchScramSecret", {
+  ClusterArn: "arn:aws:kafka:us-west-2:123456789012:cluster/MyKafkaCluster/abcdef12-3456-7890-abcd-ef1234567890-1",
+  SecretArnList: [
+    "arn:aws:secretsmanager:us-west-2:123456789012:secret:MySecret1",
+    "arn:aws:secretsmanager:us-west-2:123456789012:secret:MySecret2",
+    "arn:aws:secretsmanager:us-west-2:123456789012:secret:MySecret3"
+  ]
 });
 ```
 
-## BatchScramSecret for Multiple Clusters
-
-Create separate BatchScramSecrets for multiple MSK clusters by using different configurations.
-
-```ts
-const batchScramSecretForClusterA = await AWS.MSK.BatchScramSecret("batchScramSecretA", {
-  ClusterArn: "arn:aws:kafka:us-west-2:123456789012:cluster/my-cluster-a/abcd1234-efgh-5678-ijkl-90mnopqrst",
-  SecretArnList: ["arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecretA"]
-});
-
-const batchScramSecretForClusterB = await AWS.MSK.BatchScramSecret("batchScramSecretB", {
-  ClusterArn: "arn:aws:kafka:us-west-2:123456789012:cluster/my-cluster-b/abcd1234-efgh-5678-ijkl-90mnopqrst",
-  SecretArnList: ["arn:aws:secretsmanager:us-west-2:123456789012:secret:mySecretB"]
-});
-```
+This example illustrates the creation of a BatchScramSecret that utilizes multiple secret ARNs, which enhances the security posture of your Kafka cluster.

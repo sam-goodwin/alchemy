@@ -5,88 +5,37 @@ description: Learn how to create, update, and manage AWS IoTWireless TaskDefinit
 
 # TaskDefinition
 
-The TaskDefinition resource allows you to create and manage [AWS IoTWireless TaskDefinitions](https://docs.aws.amazon.com/iotwireless/latest/userguide/) which are used to define tasks for LoRaWAN gateways, including updates and task creation.
+The TaskDefinition resource lets you create and manage [AWS IoTWireless TaskDefinitions](https://docs.aws.amazon.com/iotwireless/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iotwireless-taskdefinition.html
 
 ## Minimal Example
-
-Create a basic TaskDefinition with the required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicTaskDefinition = await AWS.IoTWireless.TaskDefinition("basicTaskDefinition", {
+const taskdefinition = await AWS.IoTWireless.TaskDefinition("taskdefinition-example", {
   AutoCreateTasks: true,
-  Name: "MyBasicTaskDefinition",
-  TaskDefinitionType: "UPDATE",
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
-  ]
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TaskDefinition with a LoRaWAN update gateway task entry, allowing you to specify detailed updates for your gateways.
+Create a taskdefinition with additional configuration:
 
 ```ts
-const advancedTaskDefinition = await AWS.IoTWireless.TaskDefinition("advancedTaskDefinition", {
+import AWS from "alchemy/aws/control";
+
+const advancedTaskDefinition = await AWS.IoTWireless.TaskDefinition("advanced-taskdefinition", {
   AutoCreateTasks: true,
-  Name: "MyAdvancedTaskDefinition",
-  LoRaWANUpdateGatewayTaskEntry: {
-    Update: {
-      GatewayId: "Gateway123",
-      UpdateType: "FIRMWARE",
-      FirmwareVersion: "1.0.0"
-    }
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Tags: [
-    {
-      Key: "Project",
-      Value: "IoTDeployment"
-    }
-  ]
 });
 ```
 
-## Custom Update Configuration
-
-Create a TaskDefinition that specifies a custom update, including a different task entry.
-
-```ts
-const customUpdateTaskDefinition = await AWS.IoTWireless.TaskDefinition("customUpdateTaskDefinition", {
-  AutoCreateTasks: false,
-  Name: "MyCustomUpdateTaskDefinition",
-  Update: {
-    UpdateType: "FIRMWARE",
-    GatewayId: "CustomGateway123",
-    FirmwareVersion: "2.0.1"
-  },
-  Tags: [
-    {
-      Key: "Department",
-      Value: "Engineering"
-    }
-  ]
-});
-```
-
-## Adoption of Existing Resources
-
-Create a TaskDefinition that adopts an existing resource instead of failing if it already exists.
-
-```ts
-const adoptExistingTaskDefinition = await AWS.IoTWireless.TaskDefinition("adoptTaskDefinition", {
-  AutoCreateTasks: true,
-  Name: "MyAdoptedTaskDefinition",
-  adopt: true,
-  Tags: [
-    {
-      Key: "Status",
-      Value: "Adopted"
-    }
-  ]
-});
-```

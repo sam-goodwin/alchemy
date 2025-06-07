@@ -5,61 +5,60 @@ description: Learn how to create, update, and manage AWS Transfer Certificates u
 
 # Certificate
 
-The Certificate resource allows you to manage [AWS Transfer Certificates](https://docs.aws.amazon.com/transfer/latest/userguide/) for secure data transfer. This resource supports the creation and management of SSL/TLS certificates for AWS Transfer Family.
+The Certificate resource allows you to create and manage [AWS Transfer Certificates](https://docs.aws.amazon.com/transfer/latest/userguide/) for secure data transmission. This resource is essential for ensuring secure communications in AWS Transfer Family services.
 
 ## Minimal Example
 
-Create a basic AWS Transfer Certificate with required properties and one optional property.
+Create a basic transfer certificate with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const transferCertificate = await AWS.Transfer.Certificate("myTransferCertificate", {
-  Certificate: "-----BEGIN CERTIFICATE-----\nMIID...AB\n-----END CERTIFICATE-----",
-  PrivateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvA...IDAQAB\n-----END PRIVATE KEY-----",
-  Usage: "ENCRYPTION", // Common usage type
+const TransferCertificate = await AWS.Transfer.Certificate("MyTransferCertificate", {
+  Certificate: "-----BEGIN CERTIFICATE-----\nMIID...YourCertificate...\n-----END CERTIFICATE-----",
+  Usage: "ENCRYPTION",
+  ActiveDate: new Date().toISOString(),
+  Description: "My transfer certificate for secure file transfers",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AWS Transfer Certificate with additional properties such as description and tags.
+Configure a transfer certificate with additional optional properties for enhanced management.
 
 ```ts
-const advancedTransferCertificate = await AWS.Transfer.Certificate("advancedTransferCertificate", {
-  Certificate: "-----BEGIN CERTIFICATE-----\nMIID...AB\n-----END CERTIFICATE-----",
-  PrivateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvA...IDAQAB\n-----END PRIVATE KEY-----",
+const AdvancedTransferCertificate = await AWS.Transfer.Certificate("AdvancedTransferCertificate", {
+  Certificate: "-----BEGIN CERTIFICATE-----\nMIID...YourCertificate...\n-----END CERTIFICATE-----",
+  PrivateKey: "-----BEGIN PRIVATE KEY-----\nMIIE...YourPrivateKey...\n-----END PRIVATE KEY-----",
   Usage: "ENCRYPTION",
-  Description: "This is a certificate for secure data transfer.",
+  ActiveDate: new Date().toISOString(),
+  InactiveDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // Valid for 1 year
+  Description: "Advanced transfer certificate with private key",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "Data Transfer" }
-  ],
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Security" }
+  ]
 });
 ```
 
-## Inactive Certificate
+## Certificate Chain Example
 
-Create an AWS Transfer Certificate that specifies an inactive date.
-
-```ts
-const inactiveTransferCertificate = await AWS.Transfer.Certificate("inactiveTransferCertificate", {
-  Certificate: "-----BEGIN CERTIFICATE-----\nMIID...AB\n-----END CERTIFICATE-----",
-  PrivateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvA...IDAQAB\n-----END PRIVATE KEY-----",
-  Usage: "ENCRYPTION",
-  InactiveDate: "2023-12-31T23:59:59Z", // Example inactive date
-});
-```
-
-## Certificate Chain
-
-Create an AWS Transfer Certificate with a certificate chain for enhanced security.
+Demonstrate how to create a transfer certificate with a certificate chain.
 
 ```ts
-const certificateChainTransferCertificate = await AWS.Transfer.Certificate("certificateChainTransferCertificate", {
-  Certificate: "-----BEGIN CERTIFICATE-----\nMIID...AB\n-----END CERTIFICATE-----",
-  PrivateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvA...IDAQAB\n-----END PRIVATE KEY-----",
+const CertificateChainExample = await AWS.Transfer.Certificate("CertificateChainExample", {
+  Certificate: "-----BEGIN CERTIFICATE-----\nMIID...YourCertificate...\n-----END CERTIFICATE-----",
+  CertificateChain: "-----BEGIN CERTIFICATE-----\nMIID...YourIntermediateCertificate...\n-----END CERTIFICATE-----",
   Usage: "ENCRYPTION",
-  CertificateChain: "-----BEGIN CERTIFICATE-----\nMIID...AB\n-----END CERTIFICATE-----", // Example certificate chain
+  ActiveDate: new Date().toISOString(),
+  Description: "Transfer certificate with certificate chain for validation",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Compliance", Value: "PCI-DSS" }
+  ]
 });
 ```

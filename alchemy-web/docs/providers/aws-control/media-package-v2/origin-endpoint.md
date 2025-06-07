@@ -5,89 +5,45 @@ description: Learn how to create, update, and manage AWS MediaPackageV2 OriginEn
 
 # OriginEndpoint
 
-The OriginEndpoint resource allows you to manage [AWS MediaPackageV2 OriginEndpoints](https://docs.aws.amazon.com/mediapackagev2/latest/userguide/) for delivering video content. This resource enables the configuration of various settings such as manifests, segmentation, and channel associations.
+The OriginEndpoint resource lets you create and manage [AWS MediaPackageV2 OriginEndpoints](https://docs.aws.amazon.com/mediapackagev2/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-mediapackagev2-originendpoint.html
 
 ## Minimal Example
-
-Create a basic OriginEndpoint with required properties and one optional property for description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicOriginEndpoint = await AWS.MediaPackageV2.OriginEndpoint("basicEndpoint", {
-  ChannelName: "liveChannel",
-  ContainerType: "MPEG-DASH",
-  OriginEndpointName: "basic-endpoint",
-  ChannelGroupName: "liveChannelGroup",
-  Description: "A basic OriginEndpoint for live streaming"
+const originendpoint = await AWS.MediaPackageV2.OriginEndpoint("originendpoint-example", {
+  ChannelName: "originendpoint-channel",
+  ContainerType: "example-containertype",
+  OriginEndpointName: "originendpoint-originendpoint",
+  ChannelGroupName: "originendpoint-channelgroup",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A originendpoint resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an OriginEndpoint with advanced settings, including HLS manifests and low latency configurations.
+Create a originendpoint with additional configuration:
 
 ```ts
-const advancedOriginEndpoint = await AWS.MediaPackageV2.OriginEndpoint("advancedEndpoint", {
-  ChannelName: "liveChannel",
-  ContainerType: "HLS",
-  OriginEndpointName: "advanced-endpoint",
-  ChannelGroupName: "liveChannelGroup",
-  HlsManifests: [{
-    ManifestName: "hls-manifest",
-    AdMarkers: "NONE",
-    ProgramDateTime: "INCLUDE",
-    PlaylistType: "EVENT"
-  }],
-  LowLatencyHlsManifests: [{
-    ManifestName: "low-latency-hls",
-    AdMarkers: "NONE",
-    ProgramDateTime: "INCLUDE",
-    PlaylistType: "EVENT"
-  }],
-  StartoverWindowSeconds: 3600
+import AWS from "alchemy/aws/control";
+
+const advancedOriginEndpoint = await AWS.MediaPackageV2.OriginEndpoint("advanced-originendpoint", {
+  ChannelName: "originendpoint-channel",
+  ContainerType: "example-containertype",
+  OriginEndpointName: "originendpoint-originendpoint",
+  ChannelGroupName: "originendpoint-channelgroup",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A originendpoint resource managed by Alchemy",
 });
 ```
 
-## Force Endpoint Error Configuration
-
-Create an OriginEndpoint with a force endpoint error configuration to handle errors effectively.
-
-```ts
-const errorConfiguredEndpoint = await AWS.MediaPackageV2.OriginEndpoint("errorConfiguredEndpoint", {
-  ChannelName: "liveChannel",
-  ContainerType: "MPEG-DASH",
-  OriginEndpointName: "error-configured-endpoint",
-  ChannelGroupName: "liveChannelGroup",
-  ForceEndpointErrorConfiguration: {
-    ErrorResponses: [{
-      HttpStatusCode: 404,
-      ResponseType: "NO_AUTH",
-      ErrorResponse: {
-        ErrorCode: "404",
-        ErrorMessage: "Content not found"
-      }
-    }]
-  }
-});
-```
-
-## Tagging for Resource Management
-
-Create an OriginEndpoint with tags for easier resource management and organization.
-
-```ts
-const taggedOriginEndpoint = await AWS.MediaPackageV2.OriginEndpoint("taggedEndpoint", {
-  ChannelName: "liveChannel",
-  ContainerType: "HLS",
-  OriginEndpointName: "tagged-endpoint",
-  ChannelGroupName: "liveChannelGroup",
-  Tags: [{
-    Key: "Environment",
-    Value: "Production"
-  }, {
-    Key: "Project",
-    Value: "LiveStreaming"
-  }]
-});
-```

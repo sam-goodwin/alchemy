@@ -5,66 +5,63 @@ description: Learn how to create, update, and manage AWS EC2 SecurityGroupEgress
 
 # SecurityGroupEgress
 
-The SecurityGroupEgress resource allows you to manage outbound rules for AWS EC2 Security Groups. For more details, refer to the [AWS EC2 SecurityGroupEgress documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The SecurityGroupEgress resource allows you to configure outbound rules for an AWS EC2 security group. You can specify the traffic that can leave instances associated with the security group. For more details, refer to the [AWS EC2 SecurityGroupEgress documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic SecurityGroupEgress rule allowing outbound traffic to a specific CIDR block.
+Create a basic SecurityGroupEgress with the required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const egressRule = await AWS.EC2.SecurityGroupEgress("egressRule", {
-  GroupId: "sg-123abc45", // ID of the security group
+const MySecurityGroupEgress = await AWS.EC2.SecurityGroupEgress("MyEgressRule", {
+  GroupId: "sg-0abcd1234efgh5678",
   IpProtocol: "tcp",
-  FromPort: 80, // Allow outbound traffic on port 80
+  FromPort: 80,
   ToPort: 80,
-  CidrIp: "192.168.1.0/24" // Allow outbound traffic to this CIDR block
+  CidrIp: "0.0.0.0/0"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SecurityGroupEgress rule to allow outbound traffic to another security group and specify a description.
+Configure a SecurityGroupEgress with additional options for more specific outbound traffic control.
 
 ```ts
-const advancedEgressRule = await AWS.EC2.SecurityGroupEgress("advancedEgressRule", {
-  GroupId: "sg-123abc45",
+const AdvancedSecurityGroupEgress = await AWS.EC2.SecurityGroupEgress("AdvancedEgressRule", {
+  GroupId: "sg-0abcd1234efgh5678",
   IpProtocol: "tcp",
-  FromPort: 443, // Allow outbound traffic on port 443
+  FromPort: 443,
   ToPort: 443,
-  DestinationSecurityGroupId: "sg-678def90", // Allow traffic to another security group
-  Description: "Allow outbound HTTPS traffic to internal service"
+  CidrIp: "192.168.1.0/24",
+  Description: "Allow HTTPS traffic to my internal network"
 });
 ```
 
-## IPv6 Configuration
+## Egress with Destination Security Group
 
-Create a SecurityGroupEgress rule specifically for IPv6 traffic.
+Create a SecurityGroupEgress that allows traffic to another security group.
 
 ```ts
-const ipv6EgressRule = await AWS.EC2.SecurityGroupEgress("ipv6EgressRule", {
-  GroupId: "sg-123abc45",
+const PeerSecurityGroupEgress = await AWS.EC2.SecurityGroupEgress("PeerEgressRule", {
+  GroupId: "sg-0abcd1234efgh5678",
   IpProtocol: "tcp",
-  FromPort: 22, // Allow outbound SSH traffic
+  FromPort: 22,
   ToPort: 22,
-  CidrIpv6: "2001:0db8:85a3:0000:0000:8a2e:0370:7334/128", // Allow outbound traffic to this IPv6 address
-  Description: "Allow outbound SSH to specific IPv6 address"
+  DestinationSecurityGroupId: "sg-0ijkl9012mnop3456",
+  Description: "Allow SSH traffic to another security group"
 });
 ```
 
-## CIDR and Prefix List Example
+## Egress with IPv6 Configuration
 
-Allow outgoing traffic to a specific CIDR and a prefix list.
+Set up a SecurityGroupEgress rule that allows outbound IPv6 traffic.
 
 ```ts
-const cidrAndPrefixEgressRule = await AWS.EC2.SecurityGroupEgress("cidrAndPrefixEgressRule", {
-  GroupId: "sg-123abc45",
-  IpProtocol: "udp",
-  FromPort: 53, // Allow DNS queries
-  ToPort: 53,
-  CidrIp: "10.0.0.0/16", // Allow outbound traffic to this CIDR block
-  DestinationPrefixListId: "pl-abcde123", // Reference to a prefix list
-  Description: "Allow DNS outbound traffic"
+const IPv6SecurityGroupEgress = await AWS.EC2.SecurityGroupEgress("IPv6EgressRule", {
+  GroupId: "sg-0abcd1234efgh5678",
+  IpProtocol: "icmpv6",
+  CidrIpv6: "2001:0db8:85a3:0000:0000:8a2e:0370:7334/128",
+  Description: "Allow ICMPv6 traffic"
 });
 ```

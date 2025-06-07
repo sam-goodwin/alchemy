@@ -5,68 +5,78 @@ description: Learn how to create, update, and manage AWS AppSync FunctionConfigu
 
 # FunctionConfiguration
 
-The FunctionConfiguration resource allows you to define and manage [AWS AppSync FunctionConfigurations](https://docs.aws.amazon.com/appsync/latest/userguide/) that are used to handle request and response mapping templates for AWS AppSync resolvers.
+The FunctionConfiguration resource allows you to define and manage AWS AppSync function configurations, which are used to execute business logic as part of a GraphQL API. For more information, refer to the [AWS AppSync FunctionConfigurations documentation](https://docs.aws.amazon.com/appsync/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic FunctionConfiguration with required properties and a common optional property.
+Create a basic FunctionConfiguration with the required properties `Name`, `ApiId`, and `DataSourceName`, along with a `Description`.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicFunctionConfig = await AWS.AppSync.FunctionConfiguration("basicFunctionConfig", {
-  apiId: "myApiId",
-  name: "MyFunction",
-  dataSourceName: "myDataSource",
-  requestMappingTemplate: "{ \"version\": \"2018-05-29\", \"operation\": \"Query\" }",
-  responseMappingTemplate: "$util.toJson($ctx.result)"
+const basicFunctionConfig = await AWS.AppSync.FunctionConfiguration("BasicFunctionConfig", {
+  Name: "BasicFunction",
+  ApiId: "your-api-id",
+  DataSourceName: "your-data-source",
+  Description: "A basic function configuration for AppSync."
 });
 ```
 
 ## Advanced Configuration
 
-Configure a FunctionConfiguration with additional options such as a maximum batch size and a description.
+Define a FunctionConfiguration with additional options such as `RequestMappingTemplate`, `ResponseMappingTemplate`, and `MaxBatchSize`.
 
 ```ts
-const advancedFunctionConfig = await AWS.AppSync.FunctionConfiguration("advancedFunctionConfig", {
-  apiId: "myApiId",
-  name: "AdvancedFunction",
-  dataSourceName: "myDataSource",
-  requestMappingTemplate: "{ \"version\": \"2018-05-29\", \"operation\": \"GetItem\" }",
-  responseMappingTemplate: "$util.toJson($ctx.result)",
-  maxBatchSize: 10,
-  description: "This function handles complex queries."
+const advancedFunctionConfig = await AWS.AppSync.FunctionConfiguration("AdvancedFunctionConfig", {
+  Name: "AdvancedFunction",
+  ApiId: "your-api-id",
+  DataSourceName: "your-data-source",
+  RequestMappingTemplate: `{
+    "version": "2018-05-29",
+    "operation": "Query",
+    "query": {
+      "expression": "id = :id",
+      "expressionValues": {
+        ":id": {
+          "S": "$ctx.args.id"
+        }
+      }
+    }
+  }`,
+  ResponseMappingTemplate: `$util.toJson($ctx.result)`,
+  MaxBatchSize: 10,
+  Description: "An advanced function configuration with mapping templates."
 });
 ```
 
-## Using S3 for Mapping Templates
+## Using S3 Locations for Templates
 
-Demonstrate how to specify S3 locations for the request and response mapping templates.
+Configure a FunctionConfiguration that references mapping templates stored in S3 using `RequestMappingTemplateS3Location` and `ResponseMappingTemplateS3Location`.
 
 ```ts
-const s3FunctionConfig = await AWS.AppSync.FunctionConfiguration("s3FunctionConfig", {
-  apiId: "myApiId",
-  name: "S3Function",
-  dataSourceName: "myDataSource",
-  requestMappingTemplateS3Location: "s3://my-bucket/request-mapping-template.vtl",
-  responseMappingTemplateS3Location: "s3://my-bucket/response-mapping-template.vtl"
+const s3FunctionConfig = await AWS.AppSync.FunctionConfiguration("S3FunctionConfig", {
+  Name: "S3Function",
+  ApiId: "your-api-id",
+  DataSourceName: "your-data-source",
+  RequestMappingTemplateS3Location: "s3://your-bucket/request-mapping-template.vtl",
+  ResponseMappingTemplateS3Location: "s3://your-bucket/response-mapping-template.vtl",
+  Description: "A function configuration using S3 for mapping templates."
 });
 ```
 
-## Incorporating Sync Configurations
+## Using Sync Configuration
 
-Show how to include a sync configuration in the FunctionConfiguration.
+Define a FunctionConfiguration that includes a `SyncConfig` for real-time data synchronization.
 
 ```ts
-const syncConfigFunctionConfig = await AWS.AppSync.FunctionConfiguration("syncConfigFunctionConfig", {
-  apiId: "myApiId",
-  name: "SyncConfigFunction",
-  dataSourceName: "myDataSource",
-  requestMappingTemplate: "{ \"version\": \"2018-05-29\", \"operation\": \"Query\" }",
-  responseMappingTemplate: "$util.toJson($ctx.result)",
-  syncConfig: {
-    conflictHandler: "AUTOMERGE",
-    conflictDetection: "VERSION"
-  }
+const syncFunctionConfig = await AWS.AppSync.FunctionConfiguration("SyncFunctionConfig", {
+  Name: "SyncFunction",
+  ApiId: "your-api-id",
+  DataSourceName: "your-data-source",
+  SyncConfig: {
+    ConflictHandler: "AUTOMERGE",
+    ConflictDetection: "VERSION",
+  },
+  Description: "A function configuration with sync capabilities."
 });
 ```

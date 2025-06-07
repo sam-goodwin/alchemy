@@ -5,38 +5,48 @@ description: Learn how to create, update, and manage AWS EC2 LaunchTemplates usi
 
 # LaunchTemplate
 
-The LaunchTemplate resource lets you manage [AWS EC2 LaunchTemplates](https://docs.aws.amazon.com/ec2/latest/userguide/) for configuring EC2 instance settings, including instance type, key pairs, security groups, and more.
+The LaunchTemplate resource lets you manage [AWS EC2 LaunchTemplates](https://docs.aws.amazon.com/ec2/latest/userguide/) for configuring instance settings and launching EC2 instances.
 
 ## Minimal Example
 
-Create a basic LaunchTemplate with required properties and a common optional property.
+Create a basic LaunchTemplate with required properties and a common optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const simpleLaunchTemplate = await AWS.EC2.LaunchTemplate("simpleLaunchTemplate", {
-  LaunchTemplateName: "MyFirstLaunchTemplate",
+const BasicLaunchTemplate = await AWS.EC2.LaunchTemplate("BasicLaunchTemplate", {
+  LaunchTemplateName: "MyBasicLaunchTemplate",
   LaunchTemplateData: {
     InstanceType: "t2.micro",
-    KeyName: "my-key-pair",
-    SecurityGroupIds: ["sg-0123456789abcdef0"],
-    ImageId: "ami-0123456789abcdef0" // Amazon Linux 2 AMI
-  }
+    ImageId: "ami-0abcdef1234567890", // Replace with a valid AMI ID
+    KeyName: "my-key-pair", // Replace with your key pair name
+    SecurityGroupIds: ["sg-0123456789abcdef0"], // Replace with a valid security group ID
+  },
+  TagSpecifications: [
+    {
+      ResourceType: "launch-template",
+      Tags: [
+        { Key: "Environment", Value: "development" },
+        { Key: "Team", Value: "DevOps" }
+      ]
+    }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a LaunchTemplate with advanced options, including block device mappings and user data.
+Configure a LaunchTemplate with additional settings like block device mappings and user data.
 
 ```ts
-const advancedLaunchTemplate = await AWS.EC2.LaunchTemplate("advancedLaunchTemplate", {
+const AdvancedLaunchTemplate = await AWS.EC2.LaunchTemplate("AdvancedLaunchTemplate", {
   LaunchTemplateName: "MyAdvancedLaunchTemplate",
   LaunchTemplateData: {
     InstanceType: "t3.medium",
-    KeyName: "my-key-pair",
-    SecurityGroupIds: ["sg-0123456789abcdef0"],
-    ImageId: "ami-0123456789abcdef0",
+    ImageId: "ami-0abcdef1234567890", // Replace with a valid AMI ID
+    KeyName: "my-key-pair", // Replace with your key pair name
+    SecurityGroupIds: ["sg-0123456789abcdef0"], // Replace with a valid security group ID
+    UserData: Buffer.from("#!/bin/bash\necho 'Hello World' > /var/tmp/hello.txt").toString('base64'),
     BlockDeviceMappings: [
       {
         DeviceName: "/dev/sda1",
@@ -46,57 +56,54 @@ const advancedLaunchTemplate = await AWS.EC2.LaunchTemplate("advancedLaunchTempl
           DeleteOnTermination: true
         }
       }
-    ],
-    UserData: Buffer.from("#!/bin/bash\nyum update -y").toString("base64") // Base64-encoded user data
-  },
-  VersionDescription: "Initial version with advanced settings"
+    ]
+  }
 });
 ```
 
-## Using Tag Specifications
+## Specific Use Case: Spot Instances
 
-Create a LaunchTemplate with Tag Specifications to help organize resources.
+Create a LaunchTemplate specifically for launching Spot Instances with a specified price.
 
 ```ts
-const taggedLaunchTemplate = await AWS.EC2.LaunchTemplate("taggedLaunchTemplate", {
-  LaunchTemplateName: "MyTaggedLaunchTemplate",
+const SpotInstanceLaunchTemplate = await AWS.EC2.LaunchTemplate("SpotInstanceLaunchTemplate", {
+  LaunchTemplateName: "MySpotInstanceLaunchTemplate",
   LaunchTemplateData: {
-    InstanceType: "t3.small",
-    KeyName: "my-key-pair",
-    SecurityGroupIds: ["sg-0123456789abcdef0"],
-    ImageId: "ami-0123456789abcdef0"
-  },
-  TagSpecifications: [
-    {
-      ResourceType: "launch-template",
-      Tags: [
-        {
-          Key: "Environment",
-          Value: "Development"
-        },
-        {
-          Key: "Project",
-          Value: "MyAwesomeProject"
-        }
-      ]
+    InstanceType: "t3.large",
+    ImageId: "ami-0abcdef1234567890", // Replace with a valid AMI ID
+    KeyName: "my-key-pair", // Replace with your key pair name
+    SecurityGroupIds: ["sg-0123456789abcdef0"], // Replace with a valid security group ID
+    InstanceMarketOptions: {
+      MarketType: "spot",
+      SpotOptions: {
+        MaxPrice: "0.05" // Set desired max price for the Spot Instance
+      }
     }
-  ]
+  }
 });
 ```
 
-## Adoption of Existing Resources
+## Specific Use Case: Auto-Scaling
 
-Create a LaunchTemplate that adopts an existing resource if it already exists.
+Create a LaunchTemplate optimized for use with Auto Scaling groups.
 
 ```ts
-const adoptedLaunchTemplate = await AWS.EC2.LaunchTemplate("adoptedLaunchTemplate", {
-  LaunchTemplateName: "MyExistingLaunchTemplate",
+const AutoScalingLaunchTemplate = await AWS.EC2.LaunchTemplate("AutoScalingLaunchTemplate", {
+  LaunchTemplateName: "MyAutoScalingLaunchTemplate",
   LaunchTemplateData: {
-    InstanceType: "t2.micro",
-    KeyName: "my-key-pair",
-    SecurityGroupIds: ["sg-0123456789abcdef0"],
-    ImageId: "ami-0123456789abcdef0"
-  },
-  adopt: true // Adopt existing resource instead of failing
+    InstanceType: "m5.large",
+    ImageId: "ami-0abcdef1234567890", // Replace with a valid AMI ID
+    KeyName: "my-key-pair", // Replace with your key pair name
+    SecurityGroupIds: ["sg-0123456789abcdef0"], // Replace with a valid security group ID
+    TagSpecifications: [
+      {
+        ResourceType: "instance",
+        Tags: [
+          { Key: "Environment", Value: "production" },
+          { Key: "Application", Value: "web-app" }
+        ]
+      }
+    ]
+  }
 });
 ```

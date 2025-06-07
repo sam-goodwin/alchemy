@@ -5,58 +5,62 @@ description: Learn how to create, update, and manage AWS KinesisVideo SignalingC
 
 # SignalingChannel
 
-The SignalingChannel resource allows you to manage [AWS KinesisVideo SignalingChannels](https://docs.aws.amazon.com/kinesisvideo/latest/userguide/) for real-time communication between devices and applications.
+The SignalingChannel resource allows you to create and manage signaling channels in AWS Kinesis Video Streams, enabling real-time communication between clients. For more information, refer to the [AWS KinesisVideo SignalingChannels](https://docs.aws.amazon.com/kinesisvideo/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic signaling channel with a specified name and message TTL.
+Create a basic signaling channel with a specified name and type.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const signalingChannel = await AWS.KinesisVideo.SignalingChannel("mySignalingChannel", {
-  name: "MySignalingChannel",
-  messageTtlSeconds: 300, // TTL of 5 minutes
+const BasicSignalingChannel = await AWS.KinesisVideo.SignalingChannel("BasicSignalingChannel", {
+  Name: "MySignalingChannel",
+  Type: "SINGLE_MASTER",
+  MessageTtlSeconds: 300,
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "VideoStream" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a signaling channel with additional options like the type and tags.
+Configure a signaling channel with custom message TTL and additional tags for better resource management.
 
 ```ts
-const advancedSignalingChannel = await AWS.KinesisVideo.SignalingChannel("advancedChannel", {
-  name: "AdvancedSignalingChannel",
-  type: "SINGLE_MASTER", // Specify the type of signaling channel
-  messageTtlSeconds: 600, // TTL of 10 minutes
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "App", value: "VideoStreaming" }
-  ],
+const AdvancedSignalingChannel = await AWS.KinesisVideo.SignalingChannel("AdvancedSignalingChannel", {
+  Name: "AdvancedSignalingChannel",
+  Type: "SINGLE_MASTER",
+  MessageTtlSeconds: 600,
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "VideoStream" },
+    { Key: "Project", Value: "RealTimeChat" }
+  ]
 });
 ```
 
-## Adoption of Existing Resource
+## Utilizing Existing Resources
 
-If you want to adopt an existing signaling channel instead of failing when the resource already exists, you can set the adopt property.
+If you want to adopt an existing signaling channel instead of creating a new one, you can set the `adopt` property to true.
 
 ```ts
-const adoptExistingChannel = await AWS.KinesisVideo.SignalingChannel("existingChannel", {
-  name: "ExistingSignalingChannel",
-  adopt: true // Adopts existing resource if it already exists
+const AdoptExistingSignalingChannel = await AWS.KinesisVideo.SignalingChannel("AdoptExistingSignalingChannel", {
+  Name: "ExistingChannel",
+  adopt: true
 });
 ```
 
-## Create with Custom Tags
+## Custom Message TTL Configuration
 
-Create a signaling channel while applying custom tags for better organization and management.
+Create a signaling channel with a custom message TTL of 120 seconds, suitable for short-lived signaling messages.
 
 ```ts
-const taggedSignalingChannel = await AWS.KinesisVideo.SignalingChannel("taggedChannel", {
-  name: "TaggedSignalingChannel",
-  tags: [
-    { key: "Project", value: "KinesisVideoDemo" },
-    { key: "Owner", value: "DevTeam" }
-  ],
+const ShortLivedSignalingChannel = await AWS.KinesisVideo.SignalingChannel("ShortLivedSignalingChannel", {
+  Name: "ShortLivedChannel",
+  Type: "SINGLE_MASTER",
+  MessageTtlSeconds: 120
 });
 ```

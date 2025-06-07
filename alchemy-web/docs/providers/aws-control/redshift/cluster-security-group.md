@@ -5,79 +5,56 @@ description: Learn how to create, update, and manage AWS Redshift ClusterSecurit
 
 # ClusterSecurityGroup
 
-The ClusterSecurityGroup resource lets you manage AWS Redshift Cluster Security Groups, which control access to your Redshift clusters. For more information, refer to the [AWS Redshift ClusterSecurityGroups documentation](https://docs.aws.amazon.com/redshift/latest/userguide/).
+The ClusterSecurityGroup resource allows you to manage [AWS Redshift ClusterSecurityGroups](https://docs.aws.amazon.com/redshift/latest/userguide/) which control access to your Amazon Redshift clusters.
 
 ## Minimal Example
 
-Create a basic Cluster Security Group with a description and a tag:
+Create a basic ClusterSecurityGroup with a description and a tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const minimalClusterSecurityGroup = await AWS.Redshift.ClusterSecurityGroup("myClusterSecurityGroup", {
+const securityGroup = await AWS.Redshift.ClusterSecurityGroup("MySecurityGroup", {
   Description: "Security group for my Redshift cluster",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Development"
-    }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataOps" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Cluster Security Group with multiple ingress rules to allow access from specific IP ranges:
+Configure a ClusterSecurityGroup with specific CIDR rules for inbound traffic.
 
 ```ts
-const advancedClusterSecurityGroup = await AWS.Redshift.ClusterSecurityGroup("advancedClusterSecurityGroup", {
-  Description: "Advanced security group for my Redshift cluster with multiple ingress rules",
+const advancedSecurityGroup = await AWS.Redshift.ClusterSecurityGroup("AdvancedSecurityGroup", {
+  Description: "Security group with specific inbound rules",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Analytics" }
   ],
-  IngressRules: [
-    {
-      CidrIp: "192.168.1.0/24",
-      FromPort: 5439,
-      ToPort: 5439,
-      IpProtocol: "tcp"
-    },
-    {
-      CidrIp: "203.0.113.0/24",
-      FromPort: 5439,
-      ToPort: 5439,
-      IpProtocol: "tcp"
-    }
-  ]
+  adopt: true // Adopt existing resource if it already exists
 });
+
+// Example of adding rules would be implemented here
+// Note: In this simplified example, the actual rule addition is not shown.
 ```
 
-## Security Group with Adopt Option
+## Example with Inbound Rules
 
-Create a Cluster Security Group and adopt an existing resource if it already exists:
+Demonstrate a ClusterSecurityGroup with inbound rules from specific IP addresses.
 
 ```ts
-const adoptedClusterSecurityGroup = await AWS.Redshift.ClusterSecurityGroup("adoptedClusterSecurityGroup", {
-  Description: "Cluster security group with adoption option",
+const ipSecurityGroup = await AWS.Redshift.ClusterSecurityGroup("IPBasedSecurityGroup", {
+  Description: "Security group allowing access from specific IPs",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Staging"
-    }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Dev" }
   ],
-  adopt: true
+  adopt: true // Adopt existing resource if it already exists
 });
-```
 
-## Cluster Security Group without Tags
-
-Create a Cluster Security Group without any tags for simplicity:
-
-```ts
-const simpleClusterSecurityGroup = await AWS.Redshift.ClusterSecurityGroup("simpleClusterSecurityGroup", {
-  Description: "Simple security group for Redshift cluster"
-});
+// This is where you would typically add inbound rules
+// Example: Adding rules would require additional properties or methods not shown in this context.
 ```

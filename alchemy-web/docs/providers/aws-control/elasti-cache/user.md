@@ -5,67 +5,70 @@ description: Learn how to create, update, and manage AWS ElastiCache Users using
 
 # User
 
-The User resource allows you to manage [AWS ElastiCache Users](https://docs.aws.amazon.com/elasticache/latest/userguide/) for Redis and Memcached, providing the ability to control access and permissions for caching resources.
+The User resource lets you manage [AWS ElastiCache Users](https://docs.aws.amazon.com/elasticache/latest/userguide/) for your Redis and Memcached clusters, allowing for fine-grained access control.
 
 ## Minimal Example
 
-Create a basic ElastiCache User with required properties and a common optional property.
+Create a basic ElastiCache User with required properties and one optional property for authentication mode.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicUser = await AWS.ElastiCache.User("basicUser", {
+const basicElastiCacheUser = await AWS.ElastiCache.User("BasicElastiCacheUser", {
   UserName: "defaultUser",
-  UserId: "user-1234",
   Engine: "redis",
-  AccessString: "on ~* +@all"
+  AuthenticationMode: {
+    Type: "password",
+    Passwords: ["securePassword123"],
+  },
+  NoPasswordRequired: false,
+  UserId: "user-01"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an ElastiCache User with authentication mode and password settings for enhanced security.
+Configure an ElastiCache User with specific access permissions and tags.
 
 ```ts
-const secureUser = await AWS.ElastiCache.User("secureUser", {
-  UserName: "secureUser",
-  UserId: "user-5678",
+const advancedElastiCacheUser = await AWS.ElastiCache.User("AdvancedElastiCacheUser", {
+  UserName: "adminUser",
   Engine: "redis",
   AuthenticationMode: {
     Type: "password",
-    Passwords: ["StrongPassword123!"]
+    Passwords: ["anotherSecurePassword456"],
   },
-  AccessString: "on ~* +@all"
-});
-```
-
-## No Password Required
-
-Create an ElastiCache User that does not require a password, useful for certain configurations.
-
-```ts
-const noPasswordUser = await AWS.ElastiCache.User("noPasswordUser", {
-  UserName: "guestUser",
-  UserId: "user-91011",
-  Engine: "redis",
-  NoPasswordRequired: true,
-  AccessString: "on ~* +@all"
-});
-```
-
-## With Tags
-
-Create an ElastiCache User with tags for better resource management and organization.
-
-```ts
-const taggedUser = await AWS.ElastiCache.User("taggedUser", {
-  UserName: "taggedUser",
-  UserId: "user-121314",
-  Engine: "memcached",
   AccessString: "on ~* +@all",
+  UserId: "user-admin",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "CachingSystem" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
   ]
+});
+```
+
+## User Without Password
+
+Create an ElastiCache User that does not require a password, suitable for specific use cases.
+
+```ts
+const userWithoutPassword = await AWS.ElastiCache.User("UserWithoutPassword", {
+  UserName: "noPasswordUser",
+  Engine: "memcached",
+  NoPasswordRequired: true,
+  UserId: "user-nopass"
+});
+```
+
+## Adoption of Existing User
+
+Adopt an existing ElastiCache User instead of failing if the user already exists, using the `adopt` property.
+
+```ts
+const existingUser = await AWS.ElastiCache.User("ExistingUser", {
+  UserName: "existingUser",
+  Engine: "redis",
+  UserId: "user-exist",
+  adopt: true
 });
 ```

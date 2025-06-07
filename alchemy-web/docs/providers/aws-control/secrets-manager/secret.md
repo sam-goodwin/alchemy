@@ -5,79 +5,64 @@ description: Learn how to create, update, and manage AWS SecretsManager Secrets 
 
 # Secret
 
-The Secret resource allows you to manage [AWS SecretsManager Secrets](https://docs.aws.amazon.com/secretsmanager/latest/userguide/) for storing and retrieving sensitive information, such as API keys or passwords.
+The Secret resource allows you to manage [AWS SecretsManager Secrets](https://docs.aws.amazon.com/secretsmanager/latest/userguide/) for securely storing and accessing sensitive information such as passwords, API keys, and other secrets.
 
 ## Minimal Example
 
-Create a basic secret with a name and secret string.
+Create a basic Secret with a name and a secret string.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSecret = await AWS.SecretsManager.Secret("basicSecret", {
+const mySecret = await AWS.SecretsManager.Secret("MySecret", {
   Name: "MyDatabasePassword",
-  SecretString: JSON.stringify({
-    username: "dbUser",
-    password: "SuperSecretPassword123"
-  }),
-  Description: "This secret holds the database credentials."
+  SecretString: "SuperSecretPassword123"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a secret with KMS encryption and automatic secret rotation.
+Configure a Secret with encryption using a KMS key and additional tags.
 
 ```ts
-const advancedSecret = await AWS.SecretsManager.Secret("advancedSecret", {
-  Name: "MyAPIKey",
-  SecretString: JSON.stringify({
-    apiKey: "12345-ABCDE-67890-FGHIJ"
-  }),
+const advancedSecret = await AWS.SecretsManager.Secret("AdvancedSecret", {
+  Name: "MyAdvancedSecret",
+  SecretString: "AnotherSuperSecretPassword!",
   KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
-  Description: "This secret holds the API key for external service.",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Project", Value: "MyApp" }
+  ]
+});
+```
+
+## Generating Secret Strings
+
+Create a Secret that generates a secret string with specific requirements.
+
+```ts
+const generatedSecret = await AWS.SecretsManager.Secret("GeneratedSecret", {
+  Name: "DynamicSecret",
   GenerateSecretString: {
-    SecretStringTemplate: JSON.stringify({ prefix: "api_" }),
-    GenerateStringKey: "apiKey",
-    PasswordLength: 16,
-    ExcludeCharacters: "!@#$%^&*()"
+    SecretStringTemplate: '{"username":"admin"}',
+    GenerateStringKey: "password",
+    PasswordLength: 12,
+    ExcludeCharacters: "'\"\\"
   }
 });
 ```
 
-## With Replica Regions
+## Replica Regions
 
-Create a secret that is replicated across multiple regions for disaster recovery.
+Configure a Secret that is replicated across multiple regions.
 
 ```ts
-const replicatedSecret = await AWS.SecretsManager.Secret("replicatedSecret", {
-  Name: "MyGlobalSecret",
-  SecretString: JSON.stringify({
-    globalKey: "GlobalSecretValue"
-  }),
+const replicatedSecret = await AWS.SecretsManager.Secret("ReplicatedSecret", {
+  Name: "GlobalSecret",
+  SecretString: "GlobalSecretValue",
   ReplicaRegions: [
-    { Region: "us-east-1" },
-    { Region: "eu-west-1" }
-  ],
-  Description: "This secret is replicated across multiple regions."
-});
-```
-
-## Using Tags for Organization
-
-Create a secret with tags for better organization and management.
-
-```ts
-const taggedSecret = await AWS.SecretsManager.Secret("taggedSecret", {
-  Name: "MyServiceCredentials",
-  SecretString: JSON.stringify({
-    serviceUser: "serviceUser",
-    servicePassword: "ServicePassword123"
-  }),
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyAwesomeProject" }
-  ],
-  Description: "This secret holds credentials for My Awesome Project service."
+    { Region: "us-west-2" },
+    { Region: "eu-central-1" }
+  ]
 });
 ```

@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS PinpointEmail Dedicated
 
 # DedicatedIpPool
 
-The DedicatedIpPool resource lets you manage [AWS PinpointEmail Dedicated IP Pools](https://docs.aws.amazon.com/pinpointemail/latest/userguide/) which are used to send email using dedicated IP addresses. This can enhance your email deliverability and reputation.
+The DedicatedIpPool resource allows you to manage dedicated IP pools in AWS Pinpoint Email, which can help improve email deliverability by managing your sending IPs. For more information, visit the [AWS PinpointEmail DedicatedIpPools](https://docs.aws.amazon.com/pinpointemail/latest/userguide/) documentation.
 
 ## Minimal Example
 
@@ -14,56 +14,41 @@ Create a basic dedicated IP pool with a specified name.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dedicatedIpPool = await AWS.PinpointEmail.DedicatedIpPool("myDedicatedIpPool", {
-  PoolName: "MyDedicatedIpPool",
+const MyDedicatedIpPool = await AWS.PinpointEmail.DedicatedIpPool("MyDedicatedIpPool", {
+  PoolName: "MyDedicatedPool",
   Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "EmailMarketing" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a dedicated IP pool with additional tags for better resource management.
+This example shows how to create a dedicated IP pool with additional properties, including tags.
 
 ```ts
-const advancedIpPool = await AWS.PinpointEmail.DedicatedIpPool("advancedDedicatedIpPool", {
-  PoolName: "AdvancedDedicatedIpPool",
+const AdvancedDedicatedIpPool = await AWS.PinpointEmail.DedicatedIpPool("AdvancedDedicatedIpPool", {
+  PoolName: "AdvancedDedicatedPool",
   Tags: [
-    { Key: "Project", Value: "EmailCampaign" },
-    { Key: "Owner", Value: "MarketingTeam" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "EmailOperations" }
   ],
-  adopt: true // This allows adopting an existing resource if it already exists
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Example with Resource Adoption
+## Using Tags for Resource Management
 
-Create a dedicated IP pool while allowing adoption of an existing resource.
-
-```ts
-const adoptiveIpPool = await AWS.PinpointEmail.DedicatedIpPool("adoptiveDedicatedIpPool", {
-  PoolName: "AdoptiveDedicatedIpPool",
-  Tags: [
-    { Key: "Status", Value: "Active" }
-  ],
-  adopt: true // If the resource already exists, it will be adopted instead of failing
-});
-```
-
-## Example with Additional Properties
-
-Create a dedicated IP pool and log its ARN and creation time after creation.
+Here’s how to create a dedicated IP pool with multiple tags for better resource management.
 
 ```ts
-const detailedIpPool = await AWS.PinpointEmail.DedicatedIpPool("detailedDedicatedIpPool", {
-  PoolName: "DetailedDedicatedIpPool",
+const TaggedDedicatedIpPool = await AWS.PinpointEmail.DedicatedIpPool("TaggedDedicatedIpPool", {
+  PoolName: "TaggedPool",
   Tags: [
-    { Key: "UseCase", Value: "TransactionalEmails" }
+    { Key: "Project", Value: "QuarterlyCampaign" },
+    { Key: "Owner", Value: "JohnDoe" },
+    { Key: "Region", Value: "us-west-2" }
   ]
 });
-
-// Log the ARN and creation time
-console.log(`ARN: ${detailedIpPool.Arn}`);
-console.log(`Created At: ${detailedIpPool.CreationTime}`);
 ```

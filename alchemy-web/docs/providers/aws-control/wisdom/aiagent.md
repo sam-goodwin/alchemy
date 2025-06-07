@@ -5,88 +5,43 @@ description: Learn how to create, update, and manage AWS Wisdom AIAgents using A
 
 # AIAgent
 
-The AIAgent resource allows you to manage [AWS Wisdom AIAgents](https://docs.aws.amazon.com/wisdom/latest/userguide/) which are designed to assist in providing intelligent recommendations and insights based on the data available in your AWS environment.
+The AIAgent resource lets you create and manage [AWS Wisdom AIAgents](https://docs.aws.amazon.com/wisdom/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wisdom-aiagent.html
 
 ## Minimal Example
-
-Create a basic AIAgent with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAIAgent = await AWS.Wisdom.AIAgent("basicAIAgent", {
-  Type: "support",
-  Description: "Basic AIAgent for customer support",
-  Configuration: {
-    // Example configuration details
-    language: "en",
-    model: "customer-support-v1"
-  },
-  AssistantId: "customerSupportAssistant"
+const aiagent = await AWS.Wisdom.AIAgent("aiagent-example", {
+  Type: "example-type",
+  Configuration: "example-configuration",
+  AssistantId: "example-assistantid",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A aiagent resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AIAgent with additional options such as tags and a custom name.
+Create a aiagent with additional configuration:
 
 ```ts
-const advancedAIAgent = await AWS.Wisdom.AIAgent("advancedAIAgent", {
-  Type: "support",
-  Description: "Advanced AIAgent with custom settings",
-  Configuration: {
-    language: "en",
-    model: "customer-support-advanced-v1",
-    features: {
-      contextAware: true,
-      proactiveSuggestions: true
-    }
-  },
-  AssistantId: "customerSupportAssistant",
+import AWS from "alchemy/aws/control";
+
+const advancedAIAgent = await AWS.Wisdom.AIAgent("advanced-aiagent", {
+  Type: "example-type",
+  Configuration: "example-configuration",
+  AssistantId: "example-assistantid",
   Tags: {
-    project: "customer-support",
-    environment: "production"
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Name: "AdvancedCustomerSupportAgent"
+  Description: "A aiagent resource managed by Alchemy",
 });
 ```
 
-## Using Existing Resources
-
-Create an AIAgent that adopts an existing resource if it already exists.
-
-```ts
-const adoptExistingAIAgent = await AWS.Wisdom.AIAgent("existingAIAgent", {
-  Type: "support",
-  Configuration: {
-    language: "en",
-    model: "customer-support-adopted-v1"
-  },
-  AssistantId: "customerSupportAssistant",
-  adopt: true // Adopt the existing resource if it exists
-});
-```
-
-## Custom Configuration for Different Use Cases
-
-Set up a specialized AIAgent for technical support with specific configurations.
-
-```ts
-const techSupportAIAgent = await AWS.Wisdom.AIAgent("techSupportAIAgent", {
-  Type: "technicalSupport",
-  Description: "AIAgent tailored for technical support queries",
-  Configuration: {
-    language: "en",
-    model: "technical-support-v1",
-    features: {
-      contextAware: true,
-      knowledgeBaseIntegration: true
-    }
-  },
-  AssistantId: "techSupportAssistant",
-  Tags: {
-    useCase: "technical-support",
-    priority: "high"
-  }
-});
-```

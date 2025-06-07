@@ -1,84 +1,37 @@
 ---
-title: Managing AWS Lex BotAliases with Alchemy
-description: Learn how to create, update, and manage AWS Lex BotAliases using Alchemy Cloud Control.
+title: Managing AWS Lex BotAliass with Alchemy
+description: Learn how to create, update, and manage AWS Lex BotAliass using Alchemy Cloud Control.
 ---
 
 # BotAlias
 
-The BotAlias resource allows you to manage [AWS Lex BotAliases](https://docs.aws.amazon.com/lex/latest/userguide/) which are used to define specific configurations for your bots, enabling different versions and settings for your Amazon Lex chatbots.
+The BotAlias resource lets you create and manage [AWS Lex BotAliass](https://docs.aws.amazon.com/lex/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lex-botalias.html
 
 ## Minimal Example
-
-Create a basic BotAlias with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicBotAlias = await AWS.Lex.BotAlias("basicBotAlias", {
-  BotId: "myBotId",
-  BotAliasName: "myBotAlias",
-  BotVersion: "1",
-  Description: "This is a basic BotAlias for my bot."
+const botalias = await AWS.Lex.BotAlias("botalias-example", {
+  BotId: "example-botid",
+  BotAliasName: "botalias-botalias",
+  Description: "A botalias resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a BotAlias with conversation log settings and sentiment analysis.
+Create a botalias with additional configuration:
 
 ```ts
-const advancedBotAlias = await AWS.Lex.BotAlias("advancedBotAlias", {
-  BotId: "myBotId",
-  BotAliasName: "myAdvancedBotAlias",
-  BotVersion: "1",
-  Description: "This BotAlias includes advanced settings.",
-  ConversationLogSettings: {
-    LogSettings: {
-      Enabled: true,
-      S3BucketArn: "arn:aws:s3:::my-log-bucket",
-      KmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/my-key"
-    }
-  },
-  SentimentAnalysisSettings: {
-    DetectSentiment: true
-  }
+import AWS from "alchemy/aws/control";
+
+const advancedBotAlias = await AWS.Lex.BotAlias("advanced-botalias", {
+  BotId: "example-botid",
+  BotAliasName: "botalias-botalias",
+  Description: "A botalias resource managed by Alchemy",
 });
 ```
 
-## Locales Configuration
-
-Create a BotAlias with locale-specific settings.
-
-```ts
-const localizedBotAlias = await AWS.Lex.BotAlias("localizedBotAlias", {
-  BotId: "myBotId",
-  BotAliasName: "myLocalizedBotAlias",
-  BotVersion: "1",
-  BotAliasLocaleSettings: [
-    {
-      LocaleId: "en_US",
-      NluIntentConfidenceThreshold: 0.8
-    },
-    {
-      LocaleId: "es_ES",
-      NluIntentConfidenceThreshold: 0.75
-    }
-  ]
-});
-```
-
-## Tagging Example
-
-Create a BotAlias and apply tags for better resource management.
-
-```ts
-const taggedBotAlias = await AWS.Lex.BotAlias("taggedBotAlias", {
-  BotId: "myBotId",
-  BotAliasName: "myTaggedBotAlias",
-  BotVersion: "1",
-  BotAliasTags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "CustomerSupport" }
-  ]
-});
-```

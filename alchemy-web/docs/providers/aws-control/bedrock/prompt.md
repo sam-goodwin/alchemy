@@ -5,74 +5,39 @@ description: Learn how to create, update, and manage AWS Bedrock Prompts using A
 
 # Prompt
 
-The Prompt resource allows you to create and manage [AWS Bedrock Prompts](https://docs.aws.amazon.com/bedrock/latest/userguide/) for generating and customizing prompts in AI applications.
+The Prompt resource lets you create and manage [AWS Bedrock Prompts](https://docs.aws.amazon.com/bedrock/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-bedrock-prompt.html
 
 ## Minimal Example
-
-Create a basic prompt with a name and a default variant.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const simplePrompt = await AWS.Bedrock.Prompt("simple-prompt", {
-  name: "Simple Prompt",
-  defaultVariant: "basic-variant",
-  description: "A simple prompt for testing purposes."
+const prompt = await AWS.Bedrock.Prompt("prompt-example", {
+  Name: "prompt-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A prompt resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a prompt with multiple variants and customer encryption key.
+Create a prompt with additional configuration:
 
 ```ts
+import AWS from "alchemy/aws/control";
+
 const advancedPrompt = await AWS.Bedrock.Prompt("advanced-prompt", {
-  name: "Advanced Prompt",
-  defaultVariant: "detailed-variant",
-  description: "An advanced prompt with multiple variants.",
-  variants: [
-    {
-      name: "basic-variant",
-      data: {
-        promptText: "What is the capital of France?"
-      }
-    },
-    {
-      name: "detailed-variant",
-      data: {
-        promptText: "Provide a detailed explanation of the capital of France."
-      }
-    }
-  ],
-  customerEncryptionKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst"
+  Name: "prompt-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
+  Description: "A prompt resource managed by Alchemy",
 });
 ```
 
-## Using Tags
-
-Create a prompt with metadata tags for better organization.
-
-```ts
-const taggedPrompt = await AWS.Bedrock.Prompt("tagged-prompt", {
-  name: "Tagged Prompt",
-  defaultVariant: "tagged-variant",
-  description: "A prompt with tagging for better management.",
-  tags: {
-    environment: "production",
-    project: "AI Research"
-  }
-});
-```
-
-## Adopting Existing Resources
-
-Adopt an existing prompt if it already exists instead of failing.
-
-```ts
-const adoptedPrompt = await AWS.Bedrock.Prompt("existing-prompt", {
-  name: "Existing Prompt",
-  defaultVariant: "existing-variant",
-  description: "This prompt adopts an existing resource.",
-  adopt: true
-});
-```

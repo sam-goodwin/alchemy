@@ -5,66 +5,64 @@ description: Learn how to create, update, and manage AWS ServiceCatalog Portfoli
 
 # Portfolio
 
-The Portfolio resource allows you to manage [AWS ServiceCatalog Portfolios](https://docs.aws.amazon.com/servicecatalog/latest/userguide/) for organizing and managing product offerings within your AWS environment.
+The Portfolio resource allows you to manage [AWS ServiceCatalog Portfolios](https://docs.aws.amazon.com/servicecatalog/latest/userguide/) which serve as containers for organizing and managing your AWS service offerings.
 
 ## Minimal Example
 
-Create a basic portfolio with essential properties.
+Create a basic portfolio with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPortfolio = await AWS.ServiceCatalog.Portfolio("basic-portfolio", {
-  ProviderName: "Tech Innovations Inc.",
-  DisplayName: "Tech Innovations Portfolio",
-  Description: "A portfolio for managing innovative tech products",
-  AcceptLanguage: "en",
+const BasicPortfolio = await AWS.ServiceCatalog.Portfolio("BasicPortfolio", {
+  ProviderName: "MyCompany",
+  DisplayName: "My Company Portfolio",
+  Description: "A portfolio for managing our company offerings",
   Tags: [
-    { Key: "Department", Value: "Engineering" },
-    { Key: "Project", Value: "Cloud Solutions" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Product" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a portfolio with additional properties like tags and language preferences.
+Configure a portfolio with additional properties such as language support.
 
 ```ts
-const advancedPortfolio = await AWS.ServiceCatalog.Portfolio("advanced-portfolio", {
-  ProviderName: "Global Solutions Corp.",
-  DisplayName: "Global Solutions Portfolio",
-  Description: "A comprehensive portfolio for global solutions",
-  AcceptLanguage: "fr",
+const AdvancedPortfolio = await AWS.ServiceCatalog.Portfolio("AdvancedPortfolio", {
+  ProviderName: "MyCompany",
+  DisplayName: "Advanced Portfolio",
+  Description: "An advanced portfolio with multiple features",
+  AcceptLanguage: "en",
   Tags: [
-    { Key: "Region", Value: "EMEA" },
-    { Key: "Compliance", Value: "GDPR" }
-  ],
-  adopt: true // Adopt an existing resource if one already exists
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Development" }
+  ]
 });
 ```
 
-## Collaboration with Product
+## Adoption of Existing Resources
 
-Create a portfolio and associate it with multiple products for better management.
+Create a portfolio that adopts existing resources instead of failing if the resource already exists.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const productPortfolio = await AWS.ServiceCatalog.Portfolio("product-portfolio", {
-  ProviderName: "Innovative Designs LLC",
-  DisplayName: "Design Products Portfolio",
-  Description: "A portfolio for managing design-related products",
-  AcceptLanguage: "es",
-  Tags: [
-    { Key: "Category", Value: "Design" }
-  ]
+const AdoptedPortfolio = await AWS.ServiceCatalog.Portfolio("AdoptedPortfolio", {
+  ProviderName: "MyCompany",
+  DisplayName: "Adopted Portfolio",
+  Description: "This portfolio adopts existing resources",
+  adopt: true
 });
+```
 
-// Assuming you have a product created already
-const productId = "prod-123456";
-await AWS.ServiceCatalog.AssociateProductWithPortfolio("associate-product", {
-  PortfolioId: productPortfolio.id, // Reference the generated portfolio ID
-  ProductId: productId
+## Portfolio with No Tags
+
+Here’s how to create a portfolio without any tags.
+
+```ts
+const UntaggedPortfolio = await AWS.ServiceCatalog.Portfolio("UntaggedPortfolio", {
+  ProviderName: "MyCompany",
+  DisplayName: "Untagged Portfolio",
+  Description: "A portfolio without any tags"
 });
 ```

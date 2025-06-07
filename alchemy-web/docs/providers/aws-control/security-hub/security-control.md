@@ -5,63 +5,68 @@ description: Learn how to create, update, and manage AWS SecurityHub SecurityCon
 
 # SecurityControl
 
-The SecurityControl resource lets you manage [AWS SecurityHub SecurityControls](https://docs.aws.amazon.com/securityhub/latest/userguide/) for enhancing your cloud security posture.
+The SecurityControl resource lets you manage [AWS SecurityHub SecurityControls](https://docs.aws.amazon.com/securityhub/latest/userguide/) for your AWS account, including configuration and compliance settings.
 
 ## Minimal Example
 
-Create a basic SecurityControl with required properties and some optional ones.
+Create a basic SecurityControl with required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const securityControl = await AWS.SecurityHub.SecurityControl("basicSecurityControl", {
+const BasicSecurityControl = await AWS.SecurityHub.SecurityControl("BasicSecurityControl", {
   Parameters: {
-    severity: "HIGH",
-    description: "Ensure that MFA is enabled for all IAM users."
-  },
-  LastUpdateReason: "Initial creation of the security control."
+    ControlStatus: "ENABLED",
+    Severity: "HIGH"
+  }
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SecurityControl with additional parameters and adopt existing resources.
+Configure a SecurityControl with additional options, such as a custom LastUpdateReason and SecurityControlId:
 
 ```ts
-const advancedSecurityControl = await AWS.SecurityHub.SecurityControl("advancedSecurityControl", {
-  SecurityControlId: "mfa-enabled-control",
+const AdvancedSecurityControl = await AWS.SecurityHub.SecurityControl("AdvancedSecurityControl", {
+  SecurityControlId: "custom-security-control-123",
+  LastUpdateReason: "Initial setup",
   Parameters: {
-    severity: "CRITICAL",
-    description: "This control ensures that MFA is enabled for all IAM users.",
-    remediation: {
-      instructions: "Enable MFA for all IAM users in your AWS account."
+    ControlStatus: "ENABLED",
+    Severity: "CRITICAL",
+    Compliance: {
+      Standards: ["CIS"],
+      Status: "COMPLIANT"
     }
-  },
-  LastUpdateReason: "Updated to include remediation instructions.",
-  adopt: true
+  }
 });
 ```
 
-## Custom Control with Specific Parameters
+## Adoption of Existing Controls
 
-Demonstrate creating a SecurityControl that includes custom parameters for a specific compliance requirement.
+Adopt an existing SecurityControl instead of failing if it already exists:
 
 ```ts
-const complianceSecurityControl = await AWS.SecurityHub.SecurityControl("complianceSecurityControl", {
-  SecurityControlId: "compliance-1234",
+const AdoptExistingControl = await AWS.SecurityHub.SecurityControl("AdoptExistingControl", {
+  adopt: true,
+  SecurityControlId: "existing-control-456",
   Parameters: {
-    complianceStandard: "CIS AWS Foundations Benchmark",
-    checks: [
-      {
-        id: "check-1",
-        description: "Check for IAM password policy compliance."
-      },
-      {
-        id: "check-2",
-        description: "Ensure CloudTrail is enabled in all regions."
-      }
-    ]
+    ControlStatus: "DISABLED",
+    Severity: "LOW"
+  }
+});
+```
+
+## Custom Parameters
+
+Create a SecurityControl with specific parameters tailored to your organization's needs:
+
+```ts
+const CustomParametersControl = await AWS.SecurityHub.SecurityControl("CustomParametersControl", {
+  Parameters: {
+    ControlStatus: "ENABLED",
+    Severity: "MEDIUM",
+    CustomParameter: "value"
   },
-  LastUpdateReason: "Initial creation for compliance checks."
+  LastUpdateReason: "Updated for compliance"
 });
 ```

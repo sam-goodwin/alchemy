@@ -5,120 +5,41 @@ description: Learn how to create, update, and manage AWS CloudFormation StackSet
 
 # StackSet
 
-The StackSet resource lets you manage [AWS CloudFormation StackSets](https://docs.aws.amazon.com/cloudformation/latest/userguide/) for deploying stacks across multiple accounts and regions.
+The StackSet resource lets you create and manage [AWS CloudFormation StackSets](https://docs.aws.amazon.com/cloudformation/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudformation-stackset.html
 
 ## Minimal Example
-
-Create a basic StackSet with required properties and a description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const stackSet = await AWS.CloudFormation.StackSet("myStackSet", {
-  StackSetName: "MyStackSet",
-  Description: "This StackSet deploys a sample resource stack to multiple accounts.",
-  PermissionModel: "SERVICE_MANAGED",
-  TemplateBody: JSON.stringify({
-    Resources: {
-      MyS3Bucket: {
-        Type: "AWS::S3::Bucket",
-        Properties: {
-          BucketName: "my-sample-bucket"
-        }
-      }
-    }
-  })
+const stackset = await AWS.CloudFormation.StackSet("stackset-example", {
+  StackSetName: "stackset-stackset",
+  PermissionModel: "example-permissionmodel",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A stackset resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a StackSet with parameters, tags, and auto-deployment settings for better management:
+Create a stackset with additional configuration:
 
 ```ts
-const advancedStackSet = await AWS.CloudFormation.StackSet("advancedStackSet", {
-  StackSetName: "AdvancedStackSet",
-  Description: "This StackSet includes parameters and auto-deployment features.",
-  PermissionModel: "SERVICE_MANAGED",
-  TemplateBody: JSON.stringify({
-    Resources: {
-      MyDynamoDBTable: {
-        Type: "AWS::DynamoDB::Table",
-        Properties: {
-          TableName: "MySampleTable",
-          AttributeDefinitions: [
-            {
-              AttributeName: "Id",
-              AttributeType: "S"
-            }
-          ],
-          KeySchema: [
-            {
-              AttributeName: "Id",
-              KeyType: "HASH"
-            }
-          ],
-          ProvisionedThroughput: {
-            ReadCapacityUnits: 5,
-            WriteCapacityUnits: 5
-          }
-        }
-      }
-    }
-  }),
-  Parameters: [
-    {
-      ParameterKey: "Environment",
-      ParameterValue: "Production"
-    }
-  ],
-  AutoDeployment: {
-    Enabled: true,
-    RetainStacksOnAccountRemoval: false
+import AWS from "alchemy/aws/control";
+
+const advancedStackSet = await AWS.CloudFormation.StackSet("advanced-stackset", {
+  StackSetName: "stackset-stackset",
+  PermissionModel: "example-permissionmodel",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  Tags: [
-    {
-      Key: "Owner",
-      Value: "DevTeam"
-    },
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
-  ]
+  Description: "A stackset resource managed by Alchemy",
 });
 ```
 
-## Deploying to Multiple Accounts
-
-Set up a StackSet that deploys a simple EC2 instance stack across multiple accounts with a specified instance type:
-
-```ts
-const multiAccountStackSet = await AWS.CloudFormation.StackSet("multiAccountStackSet", {
-  StackSetName: "MultiAccountStackSet",
-  Description: "Deploys EC2 instances across multiple accounts.",
-  PermissionModel: "SERVICE_MANAGED",
-  TemplateBody: JSON.stringify({
-    Resources: {
-      MyEC2Instance: {
-        Type: "AWS::EC2::Instance",
-        Properties: {
-          InstanceType: "t2.micro",
-          ImageId: "ami-0abcdef1234567890", // Replace with a valid AMI ID in your region
-          KeyName: "my-key-pair" // Replace with your key pair name
-        }
-      }
-    }
-  }),
-  StackInstancesGroup: [
-    {
-      AccountId: "123456789012",
-      Region: "us-east-1"
-    },
-    {
-      AccountId: "098765432109",
-      Region: "us-west-2"
-    }
-  ]
-});
-```

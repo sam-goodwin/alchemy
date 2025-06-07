@@ -5,70 +5,68 @@ description: Learn how to create, update, and manage AWS Glue SecurityConfigurat
 
 # SecurityConfiguration
 
-The SecurityConfiguration resource lets you manage [AWS Glue SecurityConfigurations](https://docs.aws.amazon.com/glue/latest/userguide/) for encrypting data at rest and in transit within your Glue jobs and crawlers.
+The SecurityConfiguration resource allows you to manage security configurations for AWS Glue, including encryption settings for data at rest and in transit. For more detailed information, you can refer to the [AWS Glue SecurityConfigurations documentation](https://docs.aws.amazon.com/glue/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic security configuration with encryption settings.
+Create a basic security configuration with encryption settings for S3.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSecurityConfig = await AWS.Glue.SecurityConfiguration("basicSecurityConfig", {
-  name: "basic_security_config",
-  encryptionConfiguration: {
-    // Using S3 encryption
-    s3Encryption: [{
-      encryptionMode: "SSE-S3",
-      location: "s3://my-encrypted-bucket"
-    }],
-    // Optionally add other encryption settings here
-  },
-  adopt: true // Allows adopting existing resource if it already exists
+const BasicSecurityConfiguration = await AWS.Glue.SecurityConfiguration("BasicSecurityConfig", {
+  Name: "BasicSecurityConfig",
+  EncryptionConfiguration: {
+    S3Encryptions: [{
+      S3EncryptionMode: "DISABLED"
+    }]
+  }
 });
 ```
 
 ## Advanced Configuration
 
-Configure a security configuration with multiple encryption modes for different data sources.
+Configure a security configuration with multiple encryption settings for S3, including KMS key usage.
 
 ```ts
-const advancedSecurityConfig = await AWS.Glue.SecurityConfiguration("advancedSecurityConfig", {
-  name: "advanced_security_config",
-  encryptionConfiguration: {
-    s3Encryption: [{
-      encryptionMode: "SSE-KMS",
-      kmsKeyArn: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-12ab-34cd-56ef-1234567890ab",
-      location: "s3://my-advanced-bucket"
-    }],
-    // Configure other encryption settings as needed
-    cloudWatchEncryption: {
-      cloudWatchEncryptionMode: "DISABLED"
-    },
-    jobBookmarksEncryption: {
-      jobBookmarksEncryptionMode: "DISABLED"
-    }
+const AdvancedSecurityConfiguration = await AWS.Glue.SecurityConfiguration("AdvancedSecurityConfig", {
+  Name: "AdvancedSecurityConfig",
+  EncryptionConfiguration: {
+    S3Encryptions: [{
+      S3EncryptionMode: "SSE-KMS",
+      KmsKeyArn: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef"
+    }]
   }
 });
 ```
 
-## Use Case: Job Specific Security Configuration
+## Development Environment Configuration
 
-Create a security configuration tailored for a specific job that requires enhanced encryption.
+Set up a security configuration for a development environment with minimal encryption settings.
 
 ```ts
-const jobSpecificSecurityConfig = await AWS.Glue.SecurityConfiguration("jobSpecificSecurityConfig", {
-  name: "job_specific_security_config",
-  encryptionConfiguration: {
-    s3Encryption: [{
-      encryptionMode: "SSE-KMS",
-      kmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-12ab-34cd-56ef-1234567890ab",
-      location: "s3://my-job-specific-bucket"
-    }],
-    cloudWatchEncryption: {
-      cloudWatchEncryptionMode: "SSE-KMS",
-      kmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-12ab-34cd-56ef-1234567890ab"
-    }
+const DevSecurityConfiguration = await AWS.Glue.SecurityConfiguration("DevSecurityConfig", {
+  Name: "DevSecurityConfig",
+  EncryptionConfiguration: {
+    S3Encryptions: [{
+      S3EncryptionMode: "DISABLED"
+    }]
+  }
+});
+```
+
+## Production Environment Configuration
+
+Establish a security configuration optimized for production with strict encryption policies.
+
+```ts
+const ProdSecurityConfiguration = await AWS.Glue.SecurityConfiguration("ProdSecurityConfig", {
+  Name: "ProdSecurityConfig",
+  EncryptionConfiguration: {
+    S3Encryptions: [{
+      S3EncryptionMode: "SSE-KMS",
+      KmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef"
+    }]
   }
 });
 ```

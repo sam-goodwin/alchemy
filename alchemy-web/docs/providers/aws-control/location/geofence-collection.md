@@ -5,64 +5,59 @@ description: Learn how to create, update, and manage AWS Location GeofenceCollec
 
 # GeofenceCollection
 
-The GeofenceCollection resource allows you to manage [GeofenceCollections](https://docs.aws.amazon.com/location/latest/userguide/) in AWS Location Service, enabling you to define geofences for location-based applications.
+The GeofenceCollection resource lets you manage [AWS Location GeofenceCollections](https://docs.aws.amazon.com/location/latest/userguide/) for tracking geofences, which can be used to monitor location-based events.
 
 ## Minimal Example
 
-Create a basic GeofenceCollection with a name and description:
+Create a basic GeofenceCollection with a name and description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const geofenceCollection = await AWS.Location.GeofenceCollection("myGeofenceCollection", {
-  CollectionName: "UserAreas",
-  Description: "A collection of user-defined geofences for tracking activity.",
-  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
+const BasicGeofenceCollection = await AWS.Location.GeofenceCollection("BasicGeofenceCollection", {
+  CollectionName: "MyGeofenceCollection",
+  Description: "This collection tracks geofences for our application.",
   Tags: [
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Geolocation" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a GeofenceCollection with an optional KMS key for encryption:
+Configure a GeofenceCollection with server-side encryption using a KMS key.
 
 ```ts
-const secureGeofenceCollection = await AWS.Location.GeofenceCollection("secureGeofenceCollection", {
-  CollectionName: "SecureUserAreas",
-  Description: "A secure collection of geofences with encryption.",
-  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
+const EncryptedGeofenceCollection = await AWS.Location.GeofenceCollection("EncryptedGeofenceCollection", {
+  CollectionName: "SecureGeofenceCollection",
+  Description: "This collection tracks geofences with encryption.",
+  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-key-id",
   Tags: [
-    { Key: "Project", Value: "GeofencingApp" },
-    { Key: "Owner", Value: "TeamAlpha" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Geolocation" }
   ]
 });
 ```
 
-## Adoption of Existing Resources
+## Adoption of Existing Resource
 
-Create a GeofenceCollection while adopting an existing resource if it already exists:
+Adopt an existing GeofenceCollection if it already exists, instead of creating a new one.
 
 ```ts
-const existingGeofenceCollection = await AWS.Location.GeofenceCollection("existingGeofenceCollection", {
-  CollectionName: "ExistingUserAreas",
-  adopt: true // Adopts the existing resource if found
+const AdoptExistingGeofenceCollection = await AWS.Location.GeofenceCollection("AdoptExistingGeofenceCollection", {
+  CollectionName: "ExistingGeofenceCollection",
+  adopt: true
 });
 ```
 
-## Using Tags for Resource Management
+## Updating a GeofenceCollection
 
-Create a GeofenceCollection with multiple tags for better resource management:
+Update the description of an existing GeofenceCollection.
 
 ```ts
-const taggedGeofenceCollection = await AWS.Location.GeofenceCollection("taggedGeofenceCollection", {
-  CollectionName: "TaggedUserAreas",
-  Description: "A collection of geofences tagged for better management.",
-  Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Owner", Value: "DevTeam" },
-    { Key: "UseCase", Value: "Testing" }
-  ]
+const UpdatedGeofenceCollection = await AWS.Location.GeofenceCollection("UpdatedGeofenceCollection", {
+  CollectionName: "MyGeofenceCollection",
+  Description: "Updated description for tracking geofences."
 });
 ```

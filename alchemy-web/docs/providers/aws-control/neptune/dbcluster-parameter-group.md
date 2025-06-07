@@ -5,59 +5,67 @@ description: Learn how to create, update, and manage AWS Neptune DBClusterParame
 
 # DBClusterParameterGroup
 
-The DBClusterParameterGroup resource lets you manage [AWS Neptune DBClusterParameterGroups](https://docs.aws.amazon.com/neptune/latest/userguide/) and their configuration settings.
+The DBClusterParameterGroup resource lets you manage [AWS Neptune DBClusterParameterGroups](https://docs.aws.amazon.com/neptune/latest/userguide/) which are used to define specific parameters and configuration settings for your Amazon Neptune database clusters.
 
 ## Minimal Example
 
-Create a basic DBClusterParameterGroup with required properties and one optional tag.
+Create a basic DBClusterParameterGroup with required properties and common optional values.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbClusterParameterGroup = await AWS.Neptune.DBClusterParameterGroup("myDbClusterParameterGroup", {
-  Description: "Parameter group for my Neptune DB cluster",
+const BasicDBClusterParameterGroup = await AWS.Neptune.DBClusterParameterGroup("BasicDBClusterParameterGroup", {
+  Description: "Basic parameter group for Neptune",
   Parameters: {
-    "neptune_query_timeout": "120"
+    "max_connections": "100",
+    "query_timeout": "300"
   },
   Family: "neptune1",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Development"
-    }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Database" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Set up a DBClusterParameterGroup with additional parameters for enhanced performance.
+Configure a DBClusterParameterGroup with additional parameters for advanced settings.
 
 ```ts
-const advancedDbClusterParameterGroup = await AWS.Neptune.DBClusterParameterGroup("advancedDbClusterParameterGroup", {
-  Description: "Advanced parameter group for production Neptune DB cluster",
+const AdvancedDBClusterParameterGroup = await AWS.Neptune.DBClusterParameterGroup("AdvancedDBClusterParameterGroup", {
+  Description: "Advanced parameter group for Neptune with optimized settings",
   Parameters: {
-    "neptune_query_timeout": "300",
-    "neptune_enable_audit_log": "true",
-    "neptune_max_connections": "500"
+    "max_connections": "200",
+    "query_timeout": "600",
+    "neptune_query_timeout": "1200"
   },
-  Family: "neptune1"
+  Family: "neptune1",
+  Name: "AdvancedNeptuneParams",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataOps" }
+  ]
 });
 ```
 
-## Custom Parameter Group for Read Replicas
+## Custom Parameter Configuration
 
-Create a custom DBClusterParameterGroup specifically for read replicas with a unique configuration.
+Create a DBClusterParameterGroup with custom parameters for specific use cases.
 
 ```ts
-const readReplicaDbClusterParameterGroup = await AWS.Neptune.DBClusterParameterGroup("readReplicaDbClusterParameterGroup", {
-  Description: "Parameter group for Neptune read replicas",
+const CustomParameterGroup = await AWS.Neptune.DBClusterParameterGroup("CustomParameterGroup", {
+  Description: "Custom parameter group for specialized configurations",
   Parameters: {
-    "neptune_query_timeout": "180",
-    "neptune_enable_audit_log": "false",
-    "neptune_max_connections": "300"
+    "max_connections": "150",
+    "query_timeout": "500",
+    "neptune_enable_audit_logging": "true"
   },
   Family: "neptune1",
-  Name: "ReadReplicaGroup"
+  Name: "CustomNeptuneParams",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```

@@ -5,79 +5,46 @@ description: Learn how to create, update, and manage AWS Comprehend DocumentClas
 
 # DocumentClassifier
 
-The DocumentClassifier resource allows you to create and manage document classifiers in [AWS Comprehend](https://docs.aws.amazon.com/comprehend/latest/userguide/). Document classifiers use machine learning to categorize documents based on their content.
+The DocumentClassifier resource lets you create and manage [AWS Comprehend DocumentClassifiers](https://docs.aws.amazon.com/comprehend/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-comprehend-documentclassifier.html
 
 ## Minimal Example
-
-Create a basic document classifier with required properties and a couple of optional configurations.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const documentClassifier = await AWS.Comprehend.DocumentClassifier("basicClassifier", {
-  LanguageCode: "en",
-  DataAccessRoleArn: "arn:aws:iam::123456789012:role/service-role/comprehend-access",
-  InputDataConfig: {
-    S3Uri: "s3://my-bucket/training-data/",
-    InputFormat: "ONE_DOC_PER_FILE"
-  },
-  OutputDataConfig: {
-    S3Uri: "s3://my-bucket/output/",
-  },
-  DocumentClassifierName: "BasicClassifier"
+const documentclassifier = await AWS.Comprehend.DocumentClassifier("documentclassifier-example", {
+  LanguageCode: "example-languagecode",
+  DataAccessRoleArn: "example-dataaccessrolearn",
+  DocumentClassifierName: "documentclassifier-documentclassifier",
+  InputDataConfig: "example-inputdataconfig",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a document classifier with advanced settings including VPC configuration and model policies for enhanced control.
+Create a documentclassifier with additional configuration:
 
 ```ts
-const advancedClassifier = await AWS.Comprehend.DocumentClassifier("advancedClassifier", {
-  LanguageCode: "es",
-  DataAccessRoleArn: "arn:aws:iam::123456789012:role/service-role/comprehend-access",
-  InputDataConfig: {
-    S3Uri: "s3://my-bucket/training-data/",
-    InputFormat: "ONE_DOC_PER_FILE"
-  },
-  OutputDataConfig: {
-    S3Uri: "s3://my-bucket/output/",
-  },
-  DocumentClassifierName: "AdvancedClassifier",
-  VpcConfig: {
-    SecurityGroupIds: ["sg-0123456789abcdef0"],
-    Subnets: ["subnet-0123456789abcdef0"],
-  },
-  ModelPolicy: JSON.stringify({
-    Version: "2012-10-17",
-    Statement: [{
-      Effect: "Allow",
-      Action: "comprehend:DetectSentiment",
-      Resource: "*"
-    }]
-  })
-});
+import AWS from "alchemy/aws/control";
+
+const advancedDocumentClassifier = await AWS.Comprehend.DocumentClassifier(
+  "advanced-documentclassifier",
+  {
+    LanguageCode: "example-languagecode",
+    DataAccessRoleArn: "example-dataaccessrolearn",
+    DocumentClassifierName: "documentclassifier-documentclassifier",
+    InputDataConfig: "example-inputdataconfig",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+  }
+);
 ```
 
-## Custom Classifier with Tags
-
-Create a document classifier with specific tags for resource organization and management.
-
-```ts
-const taggedClassifier = await AWS.Comprehend.DocumentClassifier("taggedClassifier", {
-  LanguageCode: "fr",
-  DataAccessRoleArn: "arn:aws:iam::123456789012:role/service-role/comprehend-access",
-  InputDataConfig: {
-    S3Uri: "s3://my-bucket/training-data/",
-    InputFormat: "ONE_DOC_PER_FILE"
-  },
-  OutputDataConfig: {
-    S3Uri: "s3://my-bucket/output/",
-  },
-  DocumentClassifierName: "TaggedClassifier",
-  Tags: [
-    { Key: "Project", Value: "NLP" },
-    { Key: "Environment", Value: "Production" }
-  ]
-});
-```

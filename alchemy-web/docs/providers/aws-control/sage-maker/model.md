@@ -5,20 +5,20 @@ description: Learn how to create, update, and manage AWS SageMaker Models using 
 
 # Model
 
-The Model resource allows you to create and manage [AWS SageMaker Models](https://docs.aws.amazon.com/sagemaker/latest/userguide/) for deploying machine learning algorithms and workflows.
+The Model resource lets you manage [AWS SageMaker Models](https://docs.aws.amazon.com/sagemaker/latest/userguide/) for deploying machine learning models in a scalable manner.
 
 ## Minimal Example
 
-Create a basic SageMaker model with required properties and one optional property.
+Create a basic SageMaker model with required properties and one optional property for execution role:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const simpleModel = await AWS.SageMaker.Model("simpleModel", {
-  ModelName: "simple-model",
-  ExecutionRoleArn: "arn:aws:iam::123456789012:role/SageMakerExecutionRole",
+const SageMakerModel = await AWS.SageMaker.Model("mySageMakerModel", {
+  ModelName: "MyModel",
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/service-role/MySageMakerRole",
   PrimaryContainer: {
-    Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-image:latest",
+    Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-model-image:latest",
     ModelDataUrl: "s3://my-bucket/model.tar.gz"
   }
 });
@@ -26,63 +26,69 @@ const simpleModel = await AWS.SageMaker.Model("simpleModel", {
 
 ## Advanced Configuration
 
-Configure a SageMaker model with VPC settings and tags for better resource management.
+Configure a SageMaker model with network isolation and VPC settings:
 
 ```ts
-const advancedModel = await AWS.SageMaker.Model("advancedModel", {
-  ModelName: "advanced-model",
-  ExecutionRoleArn: "arn:aws:iam::123456789012:role/SageMakerExecutionRole",
-  PrimaryContainer: {
-    Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-advanced-image:latest",
-    ModelDataUrl: "s3://my-bucket/advanced-model.tar.gz"
-  },
+import AWS from "alchemy/aws/control";
+
+const VpcSageMakerModel = await AWS.SageMaker.Model("vpcSageMakerModel", {
+  ModelName: "VpcModel",
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/service-role/MySageMakerRole",
+  EnableNetworkIsolation: true,
   VpcConfig: {
     SecurityGroupIds: ["sg-0123456789abcdef0"],
     Subnets: ["subnet-0123456789abcdef0"]
   },
-  Tags: [
+  PrimaryContainer: {
+    Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-secure-model-image:latest",
+    ModelDataUrl: "s3://my-secure-bucket/model.tar.gz"
+  }
+});
+```
+
+## Using Multiple Containers
+
+Deploy a model that uses multiple containers for inference:
+
+```ts
+import AWS from "alchemy/aws/control";
+
+const MultiContainerModel = await AWS.SageMaker.Model("multiContainerModel", {
+  ModelName: "MultiContainerModel",
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/service-role/MySageMakerRole",
+  Containers: [
     {
-      Key: "Environment",
-      Value: "Production"
+      Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-first-container:latest",
+      ModelDataUrl: "s3://my-bucket/first-container-model.tar.gz"
     },
     {
-      Key: "Project",
-      Value: "MachineLearning"
+      Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-second-container:latest",
+      ModelDataUrl: "s3://my-bucket/second-container-model.tar.gz"
     }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataScience" }
   ]
 });
 ```
 
-## Network Isolation
+## Inference Execution Configuration
 
-Create a SageMaker model with network isolation enabled for enhanced security during inference.
-
-```ts
-const isolatedModel = await AWS.SageMaker.Model("isolatedModel", {
-  ModelName: "isolated-model",
-  ExecutionRoleArn: "arn:aws:iam::123456789012:role/SageMakerExecutionRole",
-  PrimaryContainer: {
-    Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-isolated-image:latest",
-    ModelDataUrl: "s3://my-bucket/isolated-model.tar.gz"
-  },
-  EnableNetworkIsolation: true
-});
-```
-
-## Custom Inference Execution Configuration
-
-Define a custom inference execution configuration for a SageMaker model to specify execution settings.
+Set up a model with specific inference execution configuration:
 
 ```ts
-const customInferenceModel = await AWS.SageMaker.Model("customInferenceModel", {
-  ModelName: "custom-inference-model",
-  ExecutionRoleArn: "arn:aws:iam::123456789012:role/SageMakerExecutionRole",
-  PrimaryContainer: {
-    Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-custom-image:latest",
-    ModelDataUrl: "s3://my-bucket/custom-inference-model.tar.gz"
-  },
+import AWS from "alchemy/aws/control";
+
+const InferenceConfigModel = await AWS.SageMaker.Model("inferenceConfigModel", {
+  ModelName: "InferenceConfigModel",
+  ExecutionRoleArn: "arn:aws:iam::123456789012:role/service-role/MySageMakerRole",
   InferenceExecutionConfig: {
-    Mode: "SingleModel" // Options: "SingleModel", "MultiModel"
+    Mode: "MULTI_MODEL" // Use multi-model endpoint configuration
+  },
+  PrimaryContainer: {
+    Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-inference-image:latest",
+    ModelDataUrl: "s3://my-bucket/inference-model.tar.gz"
   }
 });
 ```

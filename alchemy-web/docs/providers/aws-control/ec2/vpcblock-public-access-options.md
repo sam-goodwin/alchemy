@@ -1,54 +1,54 @@
 ---
-title: Managing AWS EC2 VPCBlockPublicAccessOptions with Alchemy
-description: Learn how to create, update, and manage AWS EC2 VPCBlockPublicAccessOptions using Alchemy Cloud Control.
+title: Managing AWS EC2 VPCBlockPublicAccessOptionss with Alchemy
+description: Learn how to create, update, and manage AWS EC2 VPCBlockPublicAccessOptionss using Alchemy Cloud Control.
 ---
 
 # VPCBlockPublicAccessOptions
 
-The VPCBlockPublicAccessOptions resource allows you to manage the public access settings for your Amazon EC2 VPCs. This resource helps ensure that your VPCs are configured to block public access as per your security requirements. For more information, refer to the [AWS EC2 VPCBlockPublicAccessOptions documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The VPCBlockPublicAccessOptions resource allows you to manage the public access options for Virtual Private Clouds (VPCs) in AWS EC2. This resource helps in controlling whether or not public access is allowed to resources within your VPC. For more information, refer to the [AWS EC2 VPCBlockPublicAccessOptions documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic VPCBlockPublicAccessOptions resource with the required properties.
+Create a basic VPCBlockPublicAccessOptions resource with the required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const vpcOptions = await AWS.EC2.VPCBlockPublicAccessOptions("vpcBlockPublicAccessOptions", {
-  InternetGatewayBlockMode: "block", // Set to 'block' or 'allow'
-  adopt: false // Default is false: does not adopt existing resources
+const vpcBlockPublicAccessOptions = await AWS.EC2.VPCBlockPublicAccessOptions("MyVPCBlockPublicAccessOptions", {
+  InternetGatewayBlockMode: "block",
+  adopt: true // Allows adopting existing VPCBlockPublicAccessOptions
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VPCBlockPublicAccessOptions resource with an existing resource adoption.
+Configure a VPCBlockPublicAccessOptions resource with additional properties:
 
 ```ts
-const existingVpcOptions = await AWS.EC2.VPCBlockPublicAccessOptions("existingVpcBlockPublicAccessOptions", {
-  InternetGatewayBlockMode: "allow", // Allow public access through the internet gateway
-  adopt: true // Adopt existing resource if it already exists
+const advancedVpcBlockPublicAccessOptions = await AWS.EC2.VPCBlockPublicAccessOptions("AdvancedVPCOptions", {
+  InternetGatewayBlockMode: "allow",
+  adopt: false // Do not adopt existing resources
 });
 ```
 
-## Specific Use Case: Enforcing Block Public Access
+## Use Case: Restricting Public Access
 
-Set up a VPCBlockPublicAccessOptions resource to enforce stricter security by blocking all public access.
+This example demonstrates how to restrict public access to a specific VPC by setting the Internet Gateway Block Mode to block:
 
 ```ts
-const secureVpcOptions = await AWS.EC2.VPCBlockPublicAccessOptions("secureVpcBlockPublicAccessOptions", {
-  InternetGatewayBlockMode: "block", // Block all public access
-  adopt: false // Ensure it's a new resource, not adopting
+const restrictedVpcOptions = await AWS.EC2.VPCBlockPublicAccessOptions("RestrictedVPCOptions", {
+  InternetGatewayBlockMode: "block",
+  adopt: false
 });
 ```
 
-## Specific Use Case: Allowing Select Public Access
+## Use Case: Allowing Public Access
 
-Create a VPCBlockPublicAccessOptions resource that allows certain configurations for public access.
+In this example, public access is allowed to the resources in the VPC by setting the Internet Gateway Block Mode to allow:
 
 ```ts
-const selectiveVpcOptions = await AWS.EC2.VPCBlockPublicAccessOptions("selectiveVpcBlockPublicAccessOptions", {
-  InternetGatewayBlockMode: "allow", // Allow public access through the internet gateway
-  adopt: true // Adopt existing configurations if available
+const publicVpcOptions = await AWS.EC2.VPCBlockPublicAccessOptions("PublicVPCOptions", {
+  InternetGatewayBlockMode: "allow",
+  adopt: true // Adopts existing VPCBlockPublicAccessOptions if present
 });
 ```

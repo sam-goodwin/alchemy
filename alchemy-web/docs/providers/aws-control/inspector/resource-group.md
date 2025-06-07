@@ -5,64 +5,67 @@ description: Learn how to create, update, and manage AWS Inspector ResourceGroup
 
 # ResourceGroup
 
-The ResourceGroup resource lets you manage [AWS Inspector ResourceGroups](https://docs.aws.amazon.com/inspector/latest/userguide/) for organizing resources to be assessed for security vulnerabilities.
+The ResourceGroup resource lets you manage [AWS Inspector ResourceGroups](https://docs.aws.amazon.com/inspector/latest/userguide/) that group AWS resources for assessment. This helps you streamline the process of identifying and assessing security vulnerabilities across your resources.
 
 ## Minimal Example
 
-Create a basic ResourceGroup with required tags:
+Create a basic AWS Inspector ResourceGroup with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const resourceGroup = await AWS.Inspector.ResourceGroup("myResourceGroup", {
+const BasicResourceGroup = await AWS.Inspector.ResourceGroup("BasicResourceGroup", {
   ResourceGroupTags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "WebApp" }
+    { Key: "Department", Value: "Security" }
   ],
-  adopt: false // Optional: Set to true to adopt existing resource
+  adopt: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ResourceGroup with additional tags and the adopt property set to true:
+Configure a ResourceGroup to adopt existing resources and include additional tags for more granular management.
 
 ```ts
-const advancedResourceGroup = await AWS.Inspector.ResourceGroup("advancedResourceGroup", {
+const AdvancedResourceGroup = await AWS.Inspector.ResourceGroup("AdvancedResourceGroup", {
   ResourceGroupTags: [
     { Key: "Environment", Value: "Staging" },
-    { Key: "Compliance", Value: "PCI-DSS" }
+    { Key: "Team", Value: "DevOps" },
+    { Key: "Project", Value: "SecurityAudit" }
   ],
-  adopt: true // Optional: Adopt existing resource if it already exists
+  adopt: true
 });
 ```
 
-## Resource Group with Multiple Tags
+## Grouping Multiple Resources
 
-Create a ResourceGroup that includes multiple tags for better organization:
+Create a ResourceGroup that groups multiple types of resources for comprehensive security assessments.
 
 ```ts
-const multiTagResourceGroup = await AWS.Inspector.ResourceGroup("multiTagResourceGroup", {
+const MultiResourceGroup = await AWS.Inspector.ResourceGroup("MultiResourceGroup", {
   ResourceGroupTags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Team", Value: "DevOps" },
-    { Key: "Application", Value: "APIService" }
+    { Key: "Environment", Value: "Testing" },
+    { Key: "Service", Value: "WebApp" }
   ],
   adopt: false
 });
+
+// Add logic to associate EC2 instances and Lambda functions to this ResourceGroup
 ```
 
-## Resource Group for Specific Assessment
+## Using ResourceGroup in Security Assessments
 
-Set up a ResourceGroup specifically for an assessment of a web application:
+Demonstrate how to use the ResourceGroup in conducting security assessments.
 
 ```ts
-const webAppResourceGroup = await AWS.Inspector.ResourceGroup("webAppResourceGroup", {
+const SecurityAssessmentGroup = await AWS.Inspector.ResourceGroup("SecurityAssessmentGroup", {
   ResourceGroupTags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Application", Value: "ECommerce" },
-    { Key: "Criticality", Value: "High" }
+    { Key: "Compliance", Value: "PCI-DSS" }
   ],
-  adopt: false
+  adopt: true
 });
+
+// Logic for triggering an assessment run goes here
 ```

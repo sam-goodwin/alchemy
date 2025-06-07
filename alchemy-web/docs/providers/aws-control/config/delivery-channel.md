@@ -5,61 +5,59 @@ description: Learn how to create, update, and manage AWS Config DeliveryChannels
 
 # DeliveryChannel
 
-The DeliveryChannel resource lets you manage [AWS Config DeliveryChannels](https://docs.aws.amazon.com/config/latest/userguide/) which are responsible for delivering configuration snapshots and configuration history to an Amazon S3 bucket and notifying you of changes via Amazon SNS.
+The DeliveryChannel resource lets you manage [AWS Config DeliveryChannels](https://docs.aws.amazon.com/config/latest/userguide/) for delivering configuration snapshots and configuration history to Amazon S3 and Amazon SNS.
 
 ## Minimal Example
 
-Create a basic DeliveryChannel with required properties and one optional property.
+Create a basic DeliveryChannel with required properties and some common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const deliveryChannel = await AWS.Config.DeliveryChannel("basicDeliveryChannel", {
+const BasicDeliveryChannel = await AWS.Config.DeliveryChannel("BasicDeliveryChannel", {
   S3BucketName: "my-config-bucket",
-  S3KeyPrefix: "config-snapshots",
-  ConfigSnapshotDeliveryProperties: {
-    DeliveryFrequency: "One_Hour"
-  }
+  S3KeyPrefix: "config-snapshots/",
+  SnsTopicARN: "arn:aws:sns:us-west-2:123456789012:MySNSTopic"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DeliveryChannel with additional options such as a KMS key for encryption and SNS notifications.
+Configure a DeliveryChannel with advanced settings including snapshot delivery properties.
 
 ```ts
-const advancedDeliveryChannel = await AWS.Config.DeliveryChannel("advancedDeliveryChannel", {
-  S3BucketName: "my-secure-config-bucket",
-  S3KeyPrefix: "secure-config-snapshots",
-  S3KmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/my-key-id",
-  SnsTopicARN: "arn:aws:sns:us-east-1:123456789012:my-config-topic",
+const AdvancedDeliveryChannel = await AWS.Config.DeliveryChannel("AdvancedDeliveryChannel", {
+  S3BucketName: "my-config-bucket",
+  S3KeyPrefix: "config-snapshots/",
+  SnsTopicARN: "arn:aws:sns:us-west-2:123456789012:MySNSTopic",
   ConfigSnapshotDeliveryProperties: {
-    DeliveryFrequency: "Six_Hours"
+    DeliveryFrequency: "Six_Hours" // Valid options include One_Hour, Three_Hours, Six_Hours, Twelve_Hours, and TwentyFour_Hours
   }
 });
 ```
 
-## Adoption of Existing Resources
+## Adoption of Existing Resource
 
-If you want to adopt an existing DeliveryChannel instead of failing when one already exists, you can set the `adopt` property to true.
+If you want to adopt an existing DeliveryChannel rather than failing if it already exists, you can set the adopt property to true.
 
 ```ts
-const adoptDeliveryChannel = await AWS.Config.DeliveryChannel("adoptExistingChannel", {
-  S3BucketName: "my-existing-config-bucket",
+const AdoptedDeliveryChannel = await AWS.Config.DeliveryChannel("AdoptedDeliveryChannel", {
+  S3BucketName: "my-config-bucket",
+  S3KeyPrefix: "existing-config-snapshots/",
+  SnsTopicARN: "arn:aws:sns:us-west-2:123456789012:MySNSTopic",
   adopt: true
 });
 ```
 
-## Custom Configuration Snapshot Delivery Properties
+## Custom KMS Key for Encryption
 
-Customize the delivery properties for more tailored delivery of configuration snapshots.
+You can also specify a KMS key for encrypting your S3 bucket contents.
 
 ```ts
-const customSnapshotDeliveryChannel = await AWS.Config.DeliveryChannel("customSnapshotChannel", {
-  S3BucketName: "my-custom-config-bucket",
-  ConfigSnapshotDeliveryProperties: {
-    DeliveryFrequency: "Thirty_Minutes",
-    SnsTopicARN: "arn:aws:sns:us-east-1:123456789012:my-custom-topic"
-  }
+const SecureDeliveryChannel = await AWS.Config.DeliveryChannel("SecureDeliveryChannel", {
+  S3BucketName: "my-secure-config-bucket",
+  S3KeyPrefix: "secure-config-snapshots/",
+  SnsTopicARN: "arn:aws:sns:us-west-2:123456789012:MySNSTopic",
+  S3KmsKeyArn: "arn:aws:kms:us-west-2:123456789012:key/my-key-id"
 });
 ```

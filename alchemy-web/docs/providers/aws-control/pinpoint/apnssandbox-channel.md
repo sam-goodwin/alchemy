@@ -5,53 +5,64 @@ description: Learn how to create, update, and manage AWS Pinpoint APNSSandboxCha
 
 # APNSSandboxChannel
 
-The APNSSandboxChannel resource allows you to manage the Apple Push Notification service (APNs) sandbox channel in AWS Pinpoint. This enables you to send push notifications to iOS devices for testing purposes. For more information, refer to the [AWS Pinpoint APNSSandboxChannels documentation](https://docs.aws.amazon.com/pinpoint/latest/userguide/).
+The APNSSandboxChannel resource allows you to configure the Apple Push Notification Service (APNS) sandbox channel for your AWS Pinpoint application. This resource is essential for sending notifications to iOS devices during the development phase. For more information, refer to the [AWS Pinpoint APNSSandboxChannels documentation](https://docs.aws.amazon.com/pinpoint/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic APNSSandboxChannel with required properties and a couple of common optional settings.
+Create a basic APNSSandboxChannel with required properties and a couple of common optional ones.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const apnsSandboxChannel = await AWS.Pinpoint.APNSSandboxChannel("MyAPNSSandboxChannel", {
-  ApplicationId: "your-application-id",
-  BundleId: "com.example.app",
-  Certificate: "YOUR_CERTIFICATE_CONTENT",
-  PrivateKey: "YOUR_PRIVATE_KEY_CONTENT",
+const MyAPNSSandboxChannel = await AWS.Pinpoint.APNSSandboxChannel("MyAPNSSandboxChannel", {
+  ApplicationId: "my-application-id",
+  BundleId: "com.example.myapp",
+  Certificate: "my-certificate-content",
+  PrivateKey: "my-private-key-content",
   Enabled: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure an APNSSandboxChannel with additional security settings and authentication methods.
+Configure the APNSSandboxChannel with additional settings, including a default authentication method and team ID.
 
 ```ts
-const advancedApnsSandboxChannel = await AWS.Pinpoint.APNSSandboxChannel("AdvancedAPNSSandboxChannel", {
-  ApplicationId: "your-application-id",
-  BundleId: "com.example.app",
-  Certificate: "YOUR_CERTIFICATE_CONTENT",
-  PrivateKey: "YOUR_PRIVATE_KEY_CONTENT",
+const AdvancedAPNSSandboxChannel = await AWS.Pinpoint.APNSSandboxChannel("AdvancedAPNSSandboxChannel", {
+  ApplicationId: "my-application-id",
+  BundleId: "com.example.myapp",
+  Certificate: "my-certificate-content",
+  PrivateKey: "my-private-key-content",
   Enabled: true,
-  DefaultAuthenticationMethod: "key",
-  TeamId: "YOUR_TEAM_ID",
-  TokenKey: "YOUR_TOKEN_KEY_CONTENT",
-  TokenKeyId: "YOUR_TOKEN_KEY_ID"
+  DefaultAuthenticationMethod: "key", // or "certificate"
+  TeamId: "my-team-id"
 });
 ```
 
-## Example with Resource Adoption
+## Token-Based Authentication
 
-Adopt an existing APNSSandboxChannel resource instead of failing if it already exists.
+Create an APNSSandboxChannel that utilizes token-based authentication with a token key and token key ID.
 
 ```ts
-const adoptedApnsSandboxChannel = await AWS.Pinpoint.APNSSandboxChannel("AdoptedAPNSSandboxChannel", {
-  ApplicationId: "your-application-id",
-  BundleId: "com.example.app",
-  Certificate: "YOUR_CERTIFICATE_CONTENT",
-  PrivateKey: "YOUR_PRIVATE_KEY_CONTENT",
+const TokenBasedAPNSSandboxChannel = await AWS.Pinpoint.APNSSandboxChannel("TokenBasedAPNSSandboxChannel", {
+  ApplicationId: "my-application-id",
+  TokenKey: "my-token-key",
+  TokenKeyId: "my-token-key-id",
+  Enabled: true
+});
+```
+
+## Adoption of Existing Resource
+
+If you need to adopt an existing APNSSandboxChannel instead of failing when it already exists, you can set the adopt property to true.
+
+```ts
+const AdoptExistingAPNSSandboxChannel = await AWS.Pinpoint.APNSSandboxChannel("AdoptExistingAPNSSandboxChannel", {
+  ApplicationId: "my-application-id",
+  BundleId: "com.example.myapp",
+  Certificate: "my-certificate-content",
+  PrivateKey: "my-private-key-content",
   Enabled: true,
-  adopt: true // Allows adopting existing resource
+  adopt: true
 });
 ```

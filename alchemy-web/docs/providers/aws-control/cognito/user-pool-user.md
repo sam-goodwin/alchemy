@@ -5,74 +5,77 @@ description: Learn how to create, update, and manage AWS Cognito UserPoolUsers u
 
 # UserPoolUser
 
-The UserPoolUser resource allows you to manage [AWS Cognito UserPoolUsers](https://docs.aws.amazon.com/cognito/latest/userguide/) that represent individual users in your Cognito User Pool.
+The UserPoolUser resource lets you manage [AWS Cognito UserPoolUsers](https://docs.aws.amazon.com/cognito/latest/userguide/) for user authentication and management within your applications.
 
 ## Minimal Example
 
-Create a basic UserPoolUser with required properties and one optional property:
+Create a basic Cognito UserPoolUser with required properties and one common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const userPoolUser = await AWS.Cognito.UserPoolUser("newUser", {
-  UserPoolId: "us-east-1_examplepool",
-  Username: "john.doe@example.com",
+const NewUser = await AWS.Cognito.UserPoolUser("NewUser", {
+  UserPoolId: "us-west-2_aBcDeFgHi",
+  Username: "johndoe",
   UserAttributes: [
-    { Name: "email", Value: "john.doe@example.com" },
-    { Name: "phone_number", Value: "+15555551234" }
+    {
+      Name: "email",
+      Value: "johndoe@example.com"
+    },
+    {
+      Name: "phone_number",
+      Value: "+11234567890"
+    }
+  ],
+  ValidationData: [
+    {
+      Name: "custom:company",
+      Value: "ExampleCorp"
+    }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Create a UserPoolUser with additional configurations including validation data and message action:
+Configure a UserPoolUser with additional settings like message action and client metadata.
 
 ```ts
-const advancedUserPoolUser = await AWS.Cognito.UserPoolUser("advancedUser", {
-  UserPoolId: "us-east-1_examplepool",
-  Username: "jane.doe@example.com",
+const AdvancedUser = await AWS.Cognito.UserPoolUser("AdvancedUser", {
+  UserPoolId: "us-east-1_xYzAbCdEf",
+  Username: "janedoe",
   UserAttributes: [
-    { Name: "email", Value: "jane.doe@example.com" },
-    { Name: "name", Value: "Jane Doe" }
+    {
+      Name: "email",
+      Value: "janedoe@example.com"
+    }
   ],
-  ValidationData: [
-    { Name: "custom:role", Value: "admin" }
-  ],
-  MessageAction: "SUPPRESS" // Suppresses the welcome message
-});
-```
-
-## User with Alias Creation
-
-Create a UserPoolUser with alias creation enabled for seamless sign-in:
-
-```ts
-const aliasUser = await AWS.Cognito.UserPoolUser("aliasUser", {
-  UserPoolId: "us-east-1_examplepool",
-  Username: "alias@example.com",
-  UserAttributes: [
-    { Name: "email", Value: "alias@example.com" },
-    { Name: "preferred_username", Value: "aliasUser" }
-  ],
-  ForceAliasCreation: true // Forces alias creation for the user
-});
-```
-
-## User with Custom Client Metadata
-
-Create a UserPoolUser while passing client metadata for custom handling in your application:
-
-```ts
-const metadataUser = await AWS.Cognito.UserPoolUser("metadataUser", {
-  UserPoolId: "us-east-1_examplepool",
-  Username: "metadata@example.com",
-  UserAttributes: [
-    { Name: "email", Value: "metadata@example.com" }
-  ],
+  MessageAction: "SUPPRESS", // Suppresses sending the welcome message
   ClientMetadata: {
-    source: "signupForm",
-    referralCode: "REF123"
+    source: "mobile_app",
+    version: "1.0"
   }
+});
+```
+
+## Creating User with Alias
+
+Create a UserPoolUser while allowing for alias creation.
+
+```ts
+const UserWithAlias = await AWS.Cognito.UserPoolUser("UserWithAlias", {
+  UserPoolId: "us-west-2_aBcDeFgHi",
+  Username: "aliasuser",
+  UserAttributes: [
+    {
+      Name: "email",
+      Value: "aliasuser@example.com"
+    },
+    {
+      Name: "preferred_username",
+      Value: "aliasuser123"
+    }
+  ],
+  ForceAliasCreation: true // Forces the creation of an alias
 });
 ```

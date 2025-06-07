@@ -5,100 +5,75 @@ description: Learn how to create, update, and manage AWS ECS CapacityProviders u
 
 # CapacityProvider
 
-The CapacityProvider resource lets you manage [AWS ECS CapacityProviders](https://docs.aws.amazon.com/ecs/latest/userguide/) for your containerized applications, enabling you to control the scaling and availability of your resources.
+The CapacityProvider resource allows you to manage [AWS ECS CapacityProviders](https://docs.aws.amazon.com/ecs/latest/userguide/) for your container orchestration needs, enabling automatic scaling of your cluster.
 
 ## Minimal Example
 
-Create a basic ECS CapacityProvider with an Auto Scaling Group provider and a name:
+Create a basic ECS CapacityProvider with an Auto Scaling Group provider and a tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicCapacityProvider = await AWS.ECS.CapacityProvider("basicCapacityProvider", {
-  autoScalingGroupProvider: {
-    autoScalingGroupArn: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:abcd1234-abcd-1234-abcd-123456789012:autoScalingGroupName/my-asg",
-    managedScaling: {
-      status: "ENABLED",
-      targetCapacity: 80,
-      minimumScalingStepSize: 1,
-      maximumScalingStepSize: 100
-    },
-    managedTerminationProtection: "ENABLED"
+const MyCapacityProvider = await AWS.ECS.CapacityProvider("MyCapacityProvider", {
+  AutoScalingGroupProvider: {
+    AutoScalingGroupArn: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:abcd1234-abcd-1234-abcd-1234567890ab:autoScalingGroupName/MyAutoScalingGroup",
+    ManagedScaling: {
+      Status: "ENABLED",
+      TargetCapacity: 80,
+      MinimumScalingStepSize: 1,
+      MaximumScalingStepSize: 100
+    }
   },
-  name: "BasicCapacityProvider"
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "DevOps" }
+  ],
+  Name: "MyCapacityProvider"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an ECS CapacityProvider with tags to help organize your resources:
+Configure a CapacityProvider with additional settings for managed scaling and a more complex Auto Scaling Group provider.
 
 ```ts
-const advancedCapacityProvider = await AWS.ECS.CapacityProvider("advancedCapacityProvider", {
-  autoScalingGroupProvider: {
-    autoScalingGroupArn: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:abcd1234-abcd-1234-abcd-123456789012:autoScalingGroupName/my-asg",
-    managedScaling: {
-      status: "ENABLED",
-      targetCapacity: 90,
-      minimumScalingStepSize: 1,
-      maximumScalingStepSize: 50
+const AdvancedCapacityProvider = await AWS.ECS.CapacityProvider("AdvancedCapacityProvider", {
+  AutoScalingGroupProvider: {
+    AutoScalingGroupArn: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:abcd1234-abcd-1234-abcd-1234567890ab:autoScalingGroupName/MyAdvancedAutoScalingGroup",
+    ManagedScaling: {
+      Status: "ENABLED",
+      TargetCapacity: 100,
+      MinimumScalingStepSize: 2,
+      MaximumScalingStepSize: 50
     },
-    managedTerminationProtection: "DISABLED"
+    ManagedTerminationProtection: "ENABLED"
   },
-  tags: [
-    {
-      key: "Environment",
-      value: "Production"
-    },
-    {
-      key: "Project",
-      value: "MyECSProject"
-    }
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Platform" }
   ],
-  name: "AdvancedCapacityProvider"
+  Name: "AdvancedCapacityProvider"
 });
 ```
 
-## Scaling Configuration
+## Example with Existing Resource Adoption
 
-Create a capacity provider that specifies scaling configurations for better cost management:
+Create a CapacityProvider that adopts an existing Auto Scaling Group if it already exists.
 
 ```ts
-const scalingCapacityProvider = await AWS.ECS.CapacityProvider("scalingCapacityProvider", {
-  autoScalingGroupProvider: {
-    autoScalingGroupArn: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:abcd1234-abcd-1234-abcd-123456789012:autoScalingGroupName/my-asg",
-    managedScaling: {
-      status: "ENABLED",
-      targetCapacity: 70,
-      minimumScalingStepSize: 1,
-      maximumScalingStepSize: 10
-    },
-    managedTerminationProtection: "ENABLED"
-  },
-  tags: [
-    {
-      key: "Environment",
-      value: "Staging"
+const AdoptedCapacityProvider = await AWS.ECS.CapacityProvider("AdoptedCapacityProvider", {
+  AutoScalingGroupProvider: {
+    AutoScalingGroupArn: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:abcd1234-abcd-1234-abcd-1234567890ab:autoScalingGroupName/MyAdoptedAutoScalingGroup",
+    ManagedScaling: {
+      Status: "ENABLED",
+      TargetCapacity: 75
     }
-  ],
-  name: "ScalingCapacityProvider"
-});
-```
-
-## Using Existing Resources
-
-Adopt an existing ECS CapacityProvider instead of failing when the resource already exists:
-
-```ts
-const existingCapacityProvider = await AWS.ECS.CapacityProvider("existingCapacityProvider", {
-  autoScalingGroupProvider: {
-    autoScalingGroupArn: "arn:aws:autoscaling:us-west-2:123456789012:autoScalingGroup:abcd1234-abcd-1234-abcd-123456789012:autoScalingGroupName/my-existing-asg",
-    managedScaling: {
-      status: "DISABLED"
-    },
-    managedTerminationProtection: "DISABLED"
   },
-  adopt: true,
-  name: "ExistingCapacityProvider"
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "QA" }
+  ],
+  Name: "AdoptedCapacityProvider",
+  adopt: true
 });
 ```

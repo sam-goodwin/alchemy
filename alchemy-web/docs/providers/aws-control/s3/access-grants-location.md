@@ -5,59 +5,63 @@ description: Learn how to create, update, and manage AWS S3 AccessGrantsLocation
 
 # AccessGrantsLocation
 
-The AccessGrantsLocation resource allows you to define access grants for specific locations in Amazon S3. This resource is useful for managing permissions and access control at a granular level for S3 buckets. For more information, refer to the AWS documentation on [AWS S3 AccessGrantsLocations](https://docs.aws.amazon.com/s3/latest/userguide/).
+The AccessGrantsLocation resource lets you manage access grants for S3 buckets in AWS, providing a way to specify IAM roles and locations for granting access. For more information, visit the [AWS S3 AccessGrantsLocations](https://docs.aws.amazon.com/s3/latest/userguide/).
 
 ## Minimal Example
 
-This example demonstrates how to create a basic `AccessGrantsLocation` resource with required properties and one optional property.
+Create a basic AccessGrantsLocation with essential properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const accessGrantsLocation = await AWS.S3.AccessGrantsLocation("myAccessGrantsLocation", {
-  LocationScope: "bucket",
-  IamRoleArn: "arn:aws:iam::123456789012:role/SampleRole"
+const accessGrantsLocation = await AWS.S3.AccessGrantsLocation("BasicAccessGrantsLocation", {
+  LocationScope: "Bucket",
+  IamRoleArn: "arn:aws:iam::123456789012:role/MyS3AccessRole",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we configure the `AccessGrantsLocation` resource with tags and enable resource adoption if it already exists.
+Configure an AccessGrantsLocation with additional options such as adopting existing resources:
 
 ```ts
-const advancedAccessGrantsLocation = await AWS.S3.AccessGrantsLocation("advancedAccessGrantsLocation", {
-  LocationScope: "object",
-  IamRoleArn: "arn:aws:iam::123456789012:role/AnotherSampleRole",
+const advancedAccessGrantsLocation = await AWS.S3.AccessGrantsLocation("AdvancedAccessGrantsLocation", {
+  LocationScope: "Object",
+  IamRoleArn: "arn:aws:iam::123456789012:role/MyS3ReadOnlyRole",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "S3AccessControl" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataScience" }
   ],
-  adopt: true
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Resource with Custom IAM Role
+## Example with Custom IAM Role
 
-This example shows how to create an `AccessGrantsLocation` that specifies a custom IAM role for access management.
+Demonstrate how to create an AccessGrantsLocation with a specific IAM role and no tags:
 
 ```ts
-const customIamRoleAccessGrantsLocation = await AWS.S3.AccessGrantsLocation("customIamRoleAccessGrantsLocation", {
-  LocationScope: "bucket",
-  IamRoleArn: "arn:aws:iam::123456789012:role/CustomAccessRole",
+const customRoleAccessGrantsLocation = await AWS.S3.AccessGrantsLocation("CustomRoleAccessGrantsLocation", {
+  LocationScope: "Bucket",
+  IamRoleArn: "arn:aws:iam::123456789012:role/MyCustomS3Role"
+});
+```
+
+## Example for Tagging and Resource Management
+
+Create an AccessGrantsLocation while managing tags for better resource organization:
+
+```ts
+const taggedAccessGrantsLocation = await AWS.S3.AccessGrantsLocation("TaggedAccessGrantsLocation", {
+  LocationScope: "Object",
+  IamRoleArn: "arn:aws:iam::123456789012:role/MyTaggedS3Role",
   Tags: [
-    { Key: "Purpose", Value: "Custom IAM Role for S3 Access" }
+    { Key: "Project", Value: "DataMigration" },
+    { Key: "Owner", Value: "JohnDoe" }
   ]
-});
-```
-
-## Adoption of Existing Resource
-
-In this example, we demonstrate how to adopt an existing `AccessGrantsLocation` resource instead of failing if it already exists.
-
-```ts
-const adoptedAccessGrantsLocation = await AWS.S3.AccessGrantsLocation("adoptedAccessGrantsLocation", {
-  LocationScope: "object",
-  IamRoleArn: "arn:aws:iam::123456789012:role/AdoptedRole",
-  adopt: true
 });
 ```

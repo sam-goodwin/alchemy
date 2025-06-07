@@ -5,53 +5,55 @@ description: Learn how to create, update, and manage AWS EC2 TrafficMirrorTarget
 
 # TrafficMirrorTarget
 
-The TrafficMirrorTarget resource allows you to create and manage AWS EC2 Traffic Mirror Targets, which are used to specify the destination for mirrored traffic. For detailed information, refer to the [AWS EC2 TrafficMirrorTargets documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The TrafficMirrorTarget resource allows you to create and manage [AWS EC2 TrafficMirrorTargets](https://docs.aws.amazon.com/ec2/latest/userguide/) for traffic mirroring in your AWS environment. This enables you to capture and inspect network traffic for analysis or monitoring.
 
 ## Minimal Example
 
-Create a basic TrafficMirrorTarget with a Network Load Balancer ARN and a description.
+Create a basic TrafficMirrorTarget using a network interface ID and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const trafficMirrorTarget = await AWS.EC2.TrafficMirrorTarget("basicTrafficMirrorTarget", {
-  NetworkLoadBalancerArn: "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/my-load-balancer/50dc6c495c0c9188",
-  Description: "Basic Traffic Mirror Target for Load Balancer"
+const BasicTrafficMirrorTarget = await AWS.EC2.TrafficMirrorTarget("BasicTrafficMirrorTarget", {
+  NetworkInterfaceId: "eni-12345678",
+  Description: "Basic Traffic Mirror Target for capturing traffic",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Network" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TrafficMirrorTarget with additional options, including a specific Network Interface ID and tagging.
+Configure a TrafficMirrorTarget with a network load balancer ARN and gateway load balancer endpoint ID for more advanced traffic routing.
 
 ```ts
-const advancedTrafficMirrorTarget = await AWS.EC2.TrafficMirrorTarget("advancedTrafficMirrorTarget", {
-  NetworkInterfaceId: "eni-1234567890abcdef0",
+const AdvancedTrafficMirrorTarget = await AWS.EC2.TrafficMirrorTarget("AdvancedTrafficMirrorTarget", {
+  NetworkLoadBalancerArn: "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/net/my-nlb/50dc6c495c0c9188",
+  GatewayLoadBalancerEndpointId: "gwlbe-12345678",
+  Description: "Advanced Traffic Mirror Target for enhanced traffic management",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "TrafficMonitoring" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
   ]
 });
 ```
 
-## Gateway Load Balancer Endpoint Example
+## Using Multiple Targets
 
-Create a TrafficMirrorTarget that uses a Gateway Load Balancer Endpoint.
+Demonstrate creating multiple TrafficMirrorTargets to capture traffic from different sources.
 
 ```ts
-const gwTrafficMirrorTarget = await AWS.EC2.TrafficMirrorTarget("gatewayTrafficMirrorTarget", {
-  GatewayLoadBalancerEndpointId: "gwe-1234567890abcdef0",
-  Description: "Traffic Mirror Target using Gateway Load Balancer Endpoint"
+const TrafficMirrorTarget1 = await AWS.EC2.TrafficMirrorTarget("TrafficMirrorTarget1", {
+  NetworkInterfaceId: "eni-12345678",
+  Description: "First Traffic Mirror Target",
+  Tags: [{ Key: "Environment", Value: "production" }]
 });
-```
 
-## Adoption of Existing Resource
-
-Use the `adopt` property to adopt an existing TrafficMirrorTarget instead of failing if it already exists.
-
-```ts
-const adoptedTrafficMirrorTarget = await AWS.EC2.TrafficMirrorTarget("adoptedTrafficMirrorTarget", {
-  NetworkLoadBalancerArn: "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/my-existing-load-balancer/50dc6c495c0c9188",
-  adopt: true
+const TrafficMirrorTarget2 = await AWS.EC2.TrafficMirrorTarget("TrafficMirrorTarget2", {
+  NetworkLoadBalancerArn: "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/net/my-nlb/50dc6c495c0c9188",
+  Description: "Second Traffic Mirror Target",
+  Tags: [{ Key: "Environment", Value: "staging" }]
 });
 ```

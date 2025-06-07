@@ -5,65 +5,74 @@ description: Learn how to create, update, and manage AWS DataSync LocationFSxONT
 
 # LocationFSxONTAP
 
-The LocationFSxONTAP resource allows you to manage [AWS DataSync Location FSx for ONTAP](https://docs.aws.amazon.com/datasync/latest/userguide/) configurations, enabling data transfer between on-premises storage and AWS cloud storage.
+The LocationFSxONTAP resource allows you to manage AWS DataSync locations for FSx for ONTAP file systems. This resource enables you to efficiently transfer data between your on-premises storage and AWS. For more information, visit the [AWS DataSync LocationFSxONTAPs](https://docs.aws.amazon.com/datasync/latest/userguide/) documentation.
 
 ## Minimal Example
 
-Create a basic LocationFSxONTAP with required properties and one optional property.
+Create a basic FSx for ONTAP location with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const locationFsxOntap = await AWS.DataSync.LocationFSxONTAP("fsxLocation", {
-  StorageVirtualMachineArn: "arn:aws:fsx:us-west-2:123456789012:storage-virtual-machine:fsx-svm",
-  Subdirectory: "/data",
+const BasicLocationFSxONTAP = await AWS.DataSync.LocationFSxONTAP("BasicLocation", {
+  StorageVirtualMachineArn: "arn:aws:fsx:us-west-2:123456789012:storage-virtual-machine:fsx-svm-12345678",
   SecurityGroupArns: [
-    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-abc123"
+    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-12345678"
+  ],
+  Subdirectory: "/data",
+  Tags: [
+    { Key: "Purpose", Value: "DataSync" },
+    { Key: "Owner", Value: "DataTeam" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a LocationFSxONTAP with additional protocol and tags.
+Configure an FSx for ONTAP location with additional protocol options and security settings.
 
 ```ts
-const advancedFsxLocation = await AWS.DataSync.LocationFSxONTAP("advancedFsxLocation", {
-  StorageVirtualMachineArn: "arn:aws:fsx:us-west-2:123456789012:storage-virtual-machine:fsx-svm",
+const AdvancedLocationFSxONTAP = await AWS.DataSync.LocationFSxONTAP("AdvancedLocation", {
+  StorageVirtualMachineArn: "arn:aws:fsx:us-west-2:123456789012:storage-virtual-machine:fsx-svm-87654321",
+  SecurityGroupArns: [
+    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-87654321"
+  ],
   Subdirectory: "/data/advanced",
   Protocol: {
-    Nfs: {
+    NFS: {
       MountOptions: {
-        Version: "NFS3"
+        Version: "3"
       }
     }
   },
-  SecurityGroupArns: [
-    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-def456"
-  ],
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Project",
-      Value: "DataMigration"
-    }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DataOps" }
   ]
 });
 ```
 
-## Adoption of Existing Resources
+## Security Group Configuration
 
-Create a LocationFSxONTAP while adopting an existing resource if it already exists.
+Create an FSx for ONTAP location with a specific security group to control access.
 
 ```ts
-const adoptFsxLocation = await AWS.DataSync.LocationFSxONTAP("adoptFsxLocation", {
-  StorageVirtualMachineArn: "arn:aws:fsx:us-west-2:123456789012:storage-virtual-machine:fsx-svm",
+const SecuredLocationFSxONTAP = await AWS.DataSync.LocationFSxONTAP("SecuredLocation", {
+  StorageVirtualMachineArn: "arn:aws:fsx:us-west-2:123456789012:storage-virtual-machine:fsx-svm-11223344",
   SecurityGroupArns: [
-    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-ghi789"
+    "arn:aws:ec2:us-west-2:123456789012:security-group/sg-11223344"
   ],
-  adopt: true // Enables adoption of an existing resource
+  Subdirectory: "/data/secured",
+  Protocol: {
+    NFS: {
+      MountOptions: {
+        Version: "4"
+      }
+    }
+  },
+  Tags: [
+    { Key: "Security", Value: "high" },
+    { Key: "Project", Value: "DataMigration" }
+  ]
 });
 ```

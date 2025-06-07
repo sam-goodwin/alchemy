@@ -5,58 +5,37 @@ description: Learn how to create, update, and manage AWS MediaPackage PackagingG
 
 # PackagingGroup
 
-The PackagingGroup resource lets you manage [AWS MediaPackage PackagingGroups](https://docs.aws.amazon.com/mediapackage/latest/userguide/) for organizing your media packaging configurations.
+The PackagingGroup resource lets you create and manage [AWS MediaPackage PackagingGroups](https://docs.aws.amazon.com/mediapackage/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-mediapackage-packaginggroup.html
 
 ## Minimal Example
-
-Create a basic PackagingGroup with a unique ID and no optional configurations:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPackagingGroup = await AWS.MediaPackage.PackagingGroup("basic-packaging-group", {
-  Id: "basic-group-id"
+const packaginggroup = await AWS.MediaPackage.PackagingGroup("packaginggroup-example", {
+  Id: "example-id",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
-## Enhanced Logging Configuration
+## Advanced Configuration
 
-Configure a PackagingGroup with Egress Access Logs for tracking access:
+Create a packaginggroup with additional configuration:
 
 ```ts
-const loggingPackagingGroup = await AWS.MediaPackage.PackagingGroup("logging-packaging-group", {
-  Id: "logging-group-id",
-  EgressAccessLogs: {
-    LogGroupName: "media-package-logs",
-    LogRoleArn: "arn:aws:iam::123456789012:role/MediaPackageLoggingRole"
-  }
+import AWS from "alchemy/aws/control";
+
+const advancedPackagingGroup = await AWS.MediaPackage.PackagingGroup("advanced-packaginggroup", {
+  Id: "example-id",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
 
-## Authorization Settings
-
-Set up a PackagingGroup with authorization settings for secure content delivery:
-
-```ts
-const authorizedPackagingGroup = await AWS.MediaPackage.PackagingGroup("authorized-packaging-group", {
-  Id: "authorized-group-id",
-  Authorization: {
-    CdnIdentifierSecret: "your-cdn-secret",
-    SecretsRoleArn: "arn:aws:iam::123456789012:role/MediaPackageAuthorizationRole"
-  }
-});
-```
-
-## Tagging for Resource Management
-
-Create a PackagingGroup with tags for easier resource management and categorization:
-
-```ts
-const taggedPackagingGroup = await AWS.MediaPackage.PackagingGroup("tagged-packaging-group", {
-  Id: "tagged-group-id",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "Media" }
-  ]
-});
-```

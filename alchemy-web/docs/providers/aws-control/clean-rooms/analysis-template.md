@@ -5,106 +5,48 @@ description: Learn how to create, update, and manage AWS CleanRooms AnalysisTemp
 
 # AnalysisTemplate
 
-The AnalysisTemplate resource allows you to create and manage [AWS CleanRooms AnalysisTemplates](https://docs.aws.amazon.com/cleanrooms/latest/userguide/) for conducting collaborative analytics in a secure environment.
+The AnalysisTemplate resource lets you create and manage [AWS CleanRooms AnalysisTemplates](https://docs.aws.amazon.com/cleanrooms/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cleanrooms-analysistemplate.html
 
 ## Minimal Example
-
-Create a basic AnalysisTemplate with required properties and one optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicTemplate = await AWS.CleanRooms.AnalysisTemplate("basic-template", {
-  MembershipIdentifier: "membership-12345",
-  Description: "A basic analysis template for collaboration.",
-  Format: "JSON",
-  Source: {
-    Type: "data_source_type",
-    Properties: {
-      SourceIdentifier: "source-identifier"
-    }
-  },
-  Name: "BasicAnalysisTemplate"
+const analysistemplate = await AWS.CleanRooms.AnalysisTemplate("analysistemplate-example", {
+  MembershipIdentifier: "example-membershipidentifier",
+  Format: "example-format",
+  Source: "example-source",
+  Name: "analysistemplate-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A analysistemplate resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AnalysisTemplate with additional parameters including schema and tags for better organization.
+Create a analysistemplate with additional configuration:
 
 ```ts
-const advancedTemplate = await AWS.CleanRooms.AnalysisTemplate("advanced-template", {
-  MembershipIdentifier: "membership-67890",
-  Description: "An advanced analysis template with detailed parameters.",
-  Format: "Parquet",
-  Source: {
-    Type: "data_source_type",
-    Properties: {
-      SourceIdentifier: "source-identifier"
-    }
-  },
-  Schema: {
-    Columns: [
-      { Name: "column1", Type: "string" },
-      { Name: "column2", Type: "int" }
-    ]
-  },
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "DataScience" }
-  ],
-  Name: "AdvancedAnalysisTemplate"
-});
+import AWS from "alchemy/aws/control";
+
+const advancedAnalysisTemplate = await AWS.CleanRooms.AnalysisTemplate(
+  "advanced-analysistemplate",
+  {
+    MembershipIdentifier: "example-membershipidentifier",
+    Format: "example-format",
+    Source: "example-source",
+    Name: "analysistemplate-",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+    Description: "A analysistemplate resource managed by Alchemy",
+  }
+);
 ```
 
-## Using Source Metadata
-
-Create an AnalysisTemplate that includes source metadata for detailed data analytics.
-
-```ts
-const templateWithSourceMetadata = await AWS.CleanRooms.AnalysisTemplate("template-with-metadata", {
-  MembershipIdentifier: "membership-54321",
-  Format: "CSV",
-  SourceMetadata: {
-    SourceType: "external_database",
-    ConnectionDetails: {
-      Host: "database.example.com",
-      Port: 5432,
-      Database: "analytics_db",
-      User: "db_user",
-      Password: "db_password"
-    }
-  },
-  Source: {
-    Type: "data_source_type",
-    Properties: {
-      SourceIdentifier: "source-identifier"
-    }
-  },
-  Name: "TemplateWithSourceMetadata"
-});
-```
-
-## Including Analysis Parameters
-
-Create an AnalysisTemplate that includes specific analysis parameters tailored to your analytical needs.
-
-```ts
-const templateWithParameters = await AWS.CleanRooms.AnalysisTemplate("template-with-parameters", {
-  MembershipIdentifier: "membership-67890",
-  Format: "JSON",
-  AnalysisParameters: [
-    { Name: "parameter1", Value: "value1" },
-    { Name: "parameter2", Value: "value2" }
-  ],
-  Source: {
-    Type: "data_source_type",
-    Properties: {
-      SourceIdentifier: "source-identifier"
-    }
-  },
-  Name: "TemplateWithParameters"
-});
-``` 
-
-This documentation provides a comprehensive overview of how to manage AWS CleanRooms AnalysisTemplates using Alchemy, showcasing practical examples for various use cases.

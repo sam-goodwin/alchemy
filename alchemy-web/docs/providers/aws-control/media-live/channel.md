@@ -5,118 +5,109 @@ description: Learn how to create, update, and manage AWS MediaLive Channels usin
 
 # Channel
 
-The Channel resource allows you to create and manage [AWS MediaLive Channels](https://docs.aws.amazon.com/medialive/latest/userguide/) for live video streaming. This resource provides various configurations to adapt to different streaming requirements.
+The Channel resource lets you manage [AWS MediaLive Channels](https://docs.aws.amazon.com/medialive/latest/userguide/) for live video processing and broadcasting.
 
 ## Minimal Example
 
-This example demonstrates how to create a basic MediaLive Channel with required properties and some common optional ones.
+Create a basic MediaLive Channel with essential properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const mediaLiveChannel = await AWS.MediaLive.Channel("basicChannel", {
-  InputAttachments: [{
-    InputId: "input-12345",
-    InputSettings: {
-      SourceEndBehavior: "CONTINUE",
-      InputFilter: "AUTO",
-      // Additional input settings can be specified here
-    }
-  }],
-  Destinations: [{
-    Id: "destination-1",
-    Settings: [{
-      Url: "rtmp://example.com/live",
-      Username: "user",
-      PasswordParam: alchemy.secret(process.env.STREAM_PASSWORD!)
-    }]
-  }],
+const MediaLiveChannel = await AWS.MediaLive.Channel("basicChannel", {
+  Name: "BasicLiveChannel",
+  RoleArn: "arn:aws:iam::123456789012:role/MediaLiveAccessRole",
   EncoderSettings: {
-    OutputGroups: [{
-      Name: "streamingGroup",
-      Outputs: [{
-        VideoDescriptionName: "video_1",
-        AudioDescriptionNames: ["audio_1"],
-        Destination: {
-          DestinationRefId: "destination-1"
-        }
-      }]
-    }],
-    // Additional encoder settings can be specified here
+    // Encoder settings would be placed here
   },
-  Name: "MyMediaLiveChannel"
+  Destinations: [
+    {
+      Id: "destination1",
+      Settings: [
+        {
+          Url: "rtmp://destination-url/live"
+        }
+      ]
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "Media" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-In this example, we configure a MediaLive Channel with advanced settings including VPC configuration and logging.
+Configure a MediaLive Channel with VPC settings and enhanced logging:
 
 ```ts
-const advancedMediaLiveChannel = await AWS.MediaLive.Channel("advancedChannel", {
-  InputAttachments: [{
-    InputId: "input-54321"
-  }],
-  Destinations: [{
-    Id: "destination-2",
-    Settings: [{
-      Url: "rtmp://another-example.com/live",
-      Username: "admin",
-      PasswordParam: alchemy.secret(process.env.STREAM_PASSWORD!)
-    }]
-  }],
+const AdvancedMediaLiveChannel = await AWS.MediaLive.Channel("advancedChannel", {
+  Name: "AdvancedLiveChannel",
+  RoleArn: "arn:aws:iam::123456789012:role/MediaLiveAccessRole",
   EncoderSettings: {
-    OutputGroups: [{
-      Name: "advancedGroup",
-      Outputs: [{
-        VideoDescriptionName: "video_advanced",
-        AudioDescriptionNames: ["audio_advanced"],
-        Destination: {
-          DestinationRefId: "destination-2"
-        }
-      }]
-    }]
+    // Encoder settings would be configured here
   },
+  Destinations: [
+    {
+      Id: "destination2",
+      Settings: [
+        {
+          Url: "rtmp://another-destination-url/live"
+        }
+      ]
+    }
+  ],
   Vpc: {
-    SubnetIds: ["subnet-12345678", "subnet-87654321"],
+    SubnetIds: ["subnet-abc123", "subnet-def456"],
     SecurityGroupIds: ["sg-12345678"]
   },
   LogLevel: "INFO",
-  Name: "AdvancedMediaLiveChannel"
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Media" }
+  ]
 });
 ```
 
-## Multi-Input Channel Configuration
+## Input Attachments
 
-This example illustrates how to set up a MediaLive Channel with multiple input attachments.
+Create a MediaLive Channel with input attachments for multiple video sources:
 
 ```ts
-const multiInputChannel = await AWS.MediaLive.Channel("multiInputChannel", {
-  InputAttachments: [{
-    InputId: "input-11111"
-  }, {
-    InputId: "input-22222"
-  }],
-  Destinations: [{
-    Id: "destination-3",
-    Settings: [{
-      Url: "rtmp://multi-input-example.com/live",
-      Username: "streamer",
-      PasswordParam: alchemy.secret(process.env.STREAM_PASSWORD!)
-    }]
-  }],
+const InputAttachedMediaLiveChannel = await AWS.MediaLive.Channel("inputAttachedChannel", {
+  Name: "InputAttachedChannel",
+  RoleArn: "arn:aws:iam::123456789012:role/MediaLiveAccessRole",
+  InputAttachments: [
+    {
+      InputId: "input1",
+      InputSettings: {
+        // Input settings would be defined here
+      }
+    },
+    {
+      InputId: "input2",
+      InputSettings: {
+        // Additional input settings would be defined here
+      }
+    }
+  ],
   EncoderSettings: {
-    OutputGroups: [{
-      Name: "multiOutputGroup",
-      Outputs: [{
-        VideoDescriptionName: "multi_video",
-        AudioDescriptionNames: ["multi_audio"],
-        Destination: {
-          DestinationRefId: "destination-3"
-        }
-      }]
-    }]
+    // Encoder settings would be set here
   },
-  Name: "MultiInputMediaLiveChannel"
+  Destinations: [
+    {
+      Id: "destination3",
+      Settings: [
+        {
+          Url: "rtmp://multiple-inputs-url/live"
+        }
+      ]
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "Testing" },
+    { Key: "Team", Value: "Media" }
+  ]
 });
 ```

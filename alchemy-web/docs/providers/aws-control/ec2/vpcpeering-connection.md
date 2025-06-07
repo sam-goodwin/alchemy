@@ -5,62 +5,63 @@ description: Learn how to create, update, and manage AWS EC2 VPCPeeringConnectio
 
 # VPCPeeringConnection
 
-The VPCPeeringConnection resource allows you to create and manage [AWS EC2 VPC Peering Connections](https://docs.aws.amazon.com/ec2/latest/userguide/) which enable networking between two VPCs, allowing instances in either VPC to communicate with each other as if they were within the same network.
+The VPCPeeringConnection resource allows you to create and manage [AWS EC2 VPC Peering Connections](https://docs.aws.amazon.com/ec2/latest/userguide/) between two Virtual Private Clouds (VPCs). This enables networking capabilities across different VPCs, facilitating resource communication.
 
 ## Minimal Example
 
-Create a basic VPC Peering Connection between two VPCs with minimal required properties.
+Create a basic VPC Peering Connection with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const vpcPeeringConnection = await AWS.EC2.VPCPeeringConnection("myVpcPeeringConnection", {
+const PeeringConnection = await AWS.EC2.VPCPeeringConnection("MyVPCPeeringConnection", {
   VpcId: "vpc-12345678",
   PeerVpcId: "vpc-87654321",
-  PeerRoleArn: "arn:aws:iam::123456789012:role/PeeringRole"
+  PeerRoleArn: "arn:aws:iam::123456789012:role/MyPeeringRole"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VPC Peering Connection with additional properties such as region and owner ID for more control over the peering connection.
+Configure a VPC Peering Connection with additional parameters such as tags and region.
 
 ```ts
-const advancedVpcPeeringConnection = await AWS.EC2.VPCPeeringConnection("advancedVpcPeeringConnection", {
+const AdvancedPeeringConnection = await AWS.EC2.VPCPeeringConnection("AdvancedVPCPeeringConnection", {
   VpcId: "vpc-12345678",
   PeerVpcId: "vpc-87654321",
+  PeerRoleArn: "arn:aws:iam::123456789012:role/MyPeeringRole",
   PeerRegion: "us-west-2",
-  PeerOwnerId: "123456789012",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "VPCConnectivity" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Network" }
   ]
 });
 ```
 
-## Using Existing Resources
+## Using Existing VPC Peering Connection
 
-If you want to adopt an existing VPC Peering Connection instead of creating a new one, you can set the `adopt` property to true.
+Adopt an existing VPC Peering Connection instead of creating a new one.
 
 ```ts
-const adoptedVpcPeeringConnection = await AWS.EC2.VPCPeeringConnection("adoptedVpcPeeringConnection", {
+const ExistingPeeringConnection = await AWS.EC2.VPCPeeringConnection("AdoptExistingVPCPeeringConnection", {
   VpcId: "vpc-12345678",
   PeerVpcId: "vpc-87654321",
   adopt: true
 });
 ```
 
-## Tags for Resource Management
+## Monitoring Connection Status
 
-Utilize tags for better resource management and cost allocation in your AWS environment.
+Retrieve the status of a VPC Peering Connection, including creation and last update time.
 
 ```ts
-const taggedVpcPeeringConnection = await AWS.EC2.VPCPeeringConnection("taggedVpcPeeringConnection", {
+const PeeringConnectionDetails = await AWS.EC2.VPCPeeringConnection("GetPeeringConnectionDetails", {
   VpcId: "vpc-12345678",
-  PeerVpcId: "vpc-87654321",
-  Tags: [
-    { Key: "Department", Value: "Engineering" },
-    { Key: "CostCenter", Value: "CC1001" }
-  ]
+  PeerVpcId: "vpc-87654321"
 });
+
+// Log the connection details
+console.log(`Peering Connection ARN: ${PeeringConnectionDetails.Arn}`);
+console.log(`Created At: ${PeeringConnectionDetails.CreationTime}`);
+console.log(`Last Updated At: ${PeeringConnectionDetails.LastUpdateTime}`);
 ```

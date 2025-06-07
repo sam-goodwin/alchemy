@@ -5,65 +5,69 @@ description: Learn how to create, update, and manage AWS IoT SoftwarePackages us
 
 # SoftwarePackage
 
-The SoftwarePackage resource lets you manage [AWS IoT SoftwarePackages](https://docs.aws.amazon.com/iot/latest/userguide/) for deploying and maintaining software on IoT devices.
+The SoftwarePackage resource allows you to manage [AWS IoT SoftwarePackages](https://docs.aws.amazon.com/iot/latest/userguide/) that can be used to define and deploy software components on IoT devices.
 
 ## Minimal Example
 
-Create a basic SoftwarePackage with required properties and a description.
+Create a basic SoftwarePackage with a name and description:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSoftwarePackage = await AWS.IoT.SoftwarePackage("basicSoftwarePackage", {
+const BasicSoftwarePackage = await AWS.IoT.SoftwarePackage("BasicSoftwarePackage", {
   PackageName: "MyIoTSoftware",
-  Description: "This package includes essential software for IoT devices."
+  Description: "This is a basic software package for IoT devices.",
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "IoT" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SoftwarePackage with tags and additional information.
+Configure a SoftwarePackage with additional properties such as tags:
 
 ```ts
-const advancedSoftwarePackage = await AWS.IoT.SoftwarePackage("advancedSoftwarePackage", {
+const AdvancedSoftwarePackage = await AWS.IoT.SoftwarePackage("AdvancedSoftwarePackage", {
   PackageName: "AdvancedIoTSoftware",
-  Description: "This package contains advanced features for IoT management.",
+  Description: "This package includes advanced features for IoT devices.",
   Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "IoTDevelopment" }
+    { Key: "Team", Value: "IoT" },
+    { Key: "Version", Value: "1.0.0" }
   ],
-  adopt: true // Adopt existing resource if it already exists
+  adopt: true // Allows adoption of an existing resource if it already exists
 });
 ```
 
-## Versioning and Updates
+## Using SoftwarePackage with Adoption
 
-Create a SoftwarePackage that allows for versioning and updating existing software.
+Demonstrate how to create a SoftwarePackage that adopts an existing resource:
 
 ```ts
-const versionedSoftwarePackage = await AWS.IoT.SoftwarePackage("versionedSoftwarePackage", {
-  PackageName: "VersionedIoTSoftware",
-  Description: "This package supports versioning for seamless updates.",
+const AdoptedSoftwarePackage = await AWS.IoT.SoftwarePackage("AdoptedSoftwarePackage", {
+  PackageName: "ExistingIoTSoftware",
+  Description: "This package is adopted from an existing resource.",
   Tags: [
-    { Key: "Version", Value: "1.0.0" },
-    { Key: "Status", Value: "Stable" }
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "IoT" }
   ],
-  adopt: true
+  adopt: true // Enables adoption of an existing SoftwarePackage
 });
 ```
 
-## Resource Metadata
+## Updating a SoftwarePackage
 
-Access metadata such as ARN and timestamps for a SoftwarePackage.
+Show how to update an existing SoftwarePackage:
 
 ```ts
-const softwarePackageMetadata = await AWS.IoT.SoftwarePackage("softwarePackageMetadata", {
-  PackageName: "MetadataIoTSoftware",
-  Description: "This package demonstrates how to access metadata.",
-  Tags: [{ Key: "Info", Value: "Contains metadata information" }]
+const UpdatedSoftwarePackage = await AWS.IoT.SoftwarePackage("UpdatedSoftwarePackage", {
+  PackageName: "ExistingIoTSoftware",
+  Description: "Updated description for the existing software package.",
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Version", Value: "1.1.0" }
+  ]
 });
-
-// Log the ARN and creation time
-console.log(`ARN: ${softwarePackageMetadata.Arn}`);
-console.log(`Created At: ${softwarePackageMetadata.CreationTime}`);
 ```

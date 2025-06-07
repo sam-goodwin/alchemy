@@ -5,50 +5,58 @@ description: Learn how to create, update, and manage AWS AppStream StackFleetAss
 
 # StackFleetAssociation
 
-The StackFleetAssociation resource allows you to associate an AppStream stack with a fleet, enabling the distribution of resources across your application. For more details, refer to the [AWS AppStream StackFleetAssociations](https://docs.aws.amazon.com/appstream/latest/userguide/).
+The StackFleetAssociation resource lets you manage the association between an AppStream stack and fleet. This allows you to define which fleet is associated with which stack, enabling users to stream applications from that fleet. For more details, refer to the [AWS AppStream StackFleetAssociations documentation](https://docs.aws.amazon.com/appstream/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic StackFleetAssociation with required properties.
+Create a basic StackFleetAssociation linking a stack to a fleet with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAssociation = await AWS.AppStream.StackFleetAssociation("basic-association", {
+const BasicStackFleetAssociation = await AWS.AppStream.StackFleetAssociation("BasicAssociation", {
   FleetName: "MyFleet",
   StackName: "MyStack",
-  adopt: true // If true, adopts existing resource instead of failing if it already exists
+  adopt: true // Allows adoption of existing resource if it exists
 });
 ```
 
 ## Advanced Configuration
 
-You can create a StackFleetAssociation and access additional properties like ARN, creation time, and last update time.
+Configure an association with additional properties such as adopting existing resources.
 
 ```ts
-const advancedAssociation = await AWS.AppStream.StackFleetAssociation("advanced-association", {
+const AdvancedStackFleetAssociation = await AWS.AppStream.StackFleetAssociation("AdvancedAssociation", {
   FleetName: "AdvancedFleet",
   StackName: "AdvancedStack",
-  adopt: false // Default is false
+  adopt: true // Adopt existing resource instead of failing
 });
-
-// Accessing additional properties
-console.log(`ARN: ${advancedAssociation.Arn}`);
-console.log(`Created At: ${advancedAssociation.CreationTime}`);
-console.log(`Last Updated At: ${advancedAssociation.LastUpdateTime}`);
 ```
 
-## Specific Use Case: Handling Existing Resources
+## Distinct Use Case: Updating an Association
 
-If you are working in an environment where resources may already exist, you can adopt them instead of creating new associations.
+Update an existing StackFleetAssociation by modifying its properties.
 
 ```ts
-const existingAssociation = await AWS.AppStream.StackFleetAssociation("existing-association", {
-  FleetName: "ExistingFleet",
-  StackName: "ExistingStack",
-  adopt: true // This will adopt the existing resource
+const UpdatedStackFleetAssociation = await AWS.AppStream.StackFleetAssociation("UpdatedAssociation", {
+  FleetName: "UpdatedFleet",
+  StackName: "UpdatedStack",
+  adopt: true // Ensures the resource is adopted if it exists
+});
+```
+
+## Monitoring StackFleetAssociation Lifecycle
+
+Monitor the creation time and last update time of the StackFleetAssociation.
+
+```ts
+const MonitoredStackFleetAssociation = await AWS.AppStream.StackFleetAssociation("MonitoredAssociation", {
+  FleetName: "MonitoringFleet",
+  StackName: "MonitoringStack",
+  adopt: false // Default setting, will fail if resource exists
 });
 
-// Confirming the association
-console.log(`Successfully associated: ${existingAssociation.FleetName} with ${existingAssociation.StackName}`);
+// Log creation and update times
+console.log(`Created at: ${MonitoredStackFleetAssociation.CreationTime}`);
+console.log(`Last updated at: ${MonitoredStackFleetAssociation.LastUpdateTime}`);
 ```

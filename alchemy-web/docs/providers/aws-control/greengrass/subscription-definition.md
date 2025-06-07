@@ -5,101 +5,40 @@ description: Learn how to create, update, and manage AWS Greengrass Subscription
 
 # SubscriptionDefinition
 
-The SubscriptionDefinition resource allows you to manage [AWS Greengrass SubscriptionDefinitions](https://docs.aws.amazon.com/greengrass/latest/userguide/) that enable communication between Greengrass components.
+The SubscriptionDefinition resource lets you create and manage [AWS Greengrass SubscriptionDefinitions](https://docs.aws.amazon.com/greengrass/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-greengrass-subscriptiondefinition.html
 
 ## Minimal Example
-
-Create a basic SubscriptionDefinition with required properties and one optional parameter.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const subscriptionDefinition = await AWS.Greengrass.SubscriptionDefinition("mySubscriptionDefinition", {
-  Name: "MySubscriptionDefinition",
-  InitialVersion: {
-    Subscriptions: [
-      {
-        Id: "mySubscription",
-        Source: "myPublisher",
-        Subject: "my/topic",
-        Target: "mySubscriber"
-      }
-    ]
-  }
-});
+const subscriptiondefinition = await AWS.Greengrass.SubscriptionDefinition(
+  "subscriptiondefinition-example",
+  { Name: "subscriptiondefinition-", Tags: { Environment: "production", ManagedBy: "Alchemy" } }
+);
 ```
 
 ## Advanced Configuration
 
-Configure a SubscriptionDefinition with multiple subscriptions and tags for better management.
+Create a subscriptiondefinition with additional configuration:
 
 ```ts
-const advancedSubscriptionDefinition = await AWS.Greengrass.SubscriptionDefinition("advancedSubscriptionDefinition", {
-  Name: "AdvancedSubscriptionDefinition",
-  Tags: {
-    Environment: "Production",
-    Project: "MyGreengrassProject"
-  },
-  InitialVersion: {
-    Subscriptions: [
-      {
-        Id: "subscription1",
-        Source: "publisher1",
-        Subject: "topic1",
-        Target: "subscriber1"
-      },
-      {
-        Id: "subscription2",
-        Source: "publisher2",
-        Subject: "topic2",
-        Target: "subscriber2"
-      }
-    ]
+import AWS from "alchemy/aws/control";
+
+const advancedSubscriptionDefinition = await AWS.Greengrass.SubscriptionDefinition(
+  "advanced-subscriptiondefinition",
+  {
+    Name: "subscriptiondefinition-",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
   }
-});
+);
 ```
 
-## Using Tags for Resource Management
-
-Manage resources effectively by adding tags to the SubscriptionDefinition.
-
-```ts
-const taggedSubscriptionDefinition = await AWS.Greengrass.SubscriptionDefinition("taggedSubscriptionDefinition", {
-  Name: "TaggedSubscriptionDefinition",
-  Tags: {
-    Owner: "Dev Team",
-    CostCenter: "12345"
-  },
-  InitialVersion: {
-    Subscriptions: [
-      {
-        Id: "taggedSubscription",
-        Source: "taggedPublisher",
-        Subject: "tagged/topic",
-        Target: "taggedSubscriber"
-      }
-    ]
-  }
-});
-```
-
-## Adoption of Existing Resources
-
-Configure the SubscriptionDefinition to adopt an existing resource if it already exists.
-
-```ts
-const adoptExistingSubscriptionDefinition = await AWS.Greengrass.SubscriptionDefinition("existingSubscriptionDefinition", {
-  Name: "ExistingSubscriptionDefinition",
-  adopt: true,
-  InitialVersion: {
-    Subscriptions: [
-      {
-        Id: "existingSubscription",
-        Source: "existingPublisher",
-        Subject: "existing/topic",
-        Target: "existingSubscriber"
-      }
-    ]
-  }
-});
-```

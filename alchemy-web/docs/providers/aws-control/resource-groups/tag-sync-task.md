@@ -5,44 +5,50 @@ description: Learn how to create, update, and manage AWS ResourceGroups TagSyncT
 
 # TagSyncTask
 
-The `TagSyncTask` resource allows you to manage AWS ResourceGroups TagSync tasks, which synchronize specified tags across AWS resources in a resource group. For more information, refer to the [AWS ResourceGroups TagSyncTasks](https://docs.aws.amazon.com/resourcegroups/latest/userguide/).
+The TagSyncTask resource allows you to manage tagging synchronization tasks for AWS Resource Groups. This resource helps you ensure that your AWS resources are organized and tagged consistently across your organization. For more information, refer to the [AWS ResourceGroups TagSyncTasks documentation](https://docs.aws.amazon.com/resourcegroups/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic TagSyncTask with required properties.
+Create a basic TagSyncTask that associates a specific tag with a resource group.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const tagSyncTask = await AWS.ResourceGroups.TagSyncTask("myTagSyncTask", {
-  Group: "my-resource-group",
+const basicTagSyncTask = await AWS.ResourceGroups.TagSyncTask("BasicTagSyncTask", {
+  Group: "MyResourceGroup",
   TagKey: "Environment",
   TagValue: "Production",
-  RoleArn: "arn:aws:iam::123456789012:role/tagSyncRole"
+  RoleArn: "arn:aws:iam::123456789012:role/my-tag-sync-role"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a TagSyncTask with the option to adopt existing resources instead of failing when a resource already exists.
+Configure a TagSyncTask that adopts existing resources and includes specific tags.
 
 ```ts
-const advancedTagSyncTask = await AWS.ResourceGroups.TagSyncTask("advancedTagSyncTask", {
-  Group: "my-resource-group",
-  TagKey: "Environment",
-  TagValue: "Staging",
-  RoleArn: "arn:aws:iam::123456789012:role/tagSyncRole",
-  adopt: true // Allows adoption of existing resources
+const advancedTagSyncTask = await AWS.ResourceGroups.TagSyncTask("AdvancedTagSyncTask", {
+  Group: "MyResourceGroup",
+  TagKey: "Team",
+  TagValue: "DevOps",
+  RoleArn: "arn:aws:iam::123456789012:role/my-tag-sync-role",
+  adopt: true
 });
 ```
 
-## Usage with IAM Role
+## Using IAM Role for Permissions
 
-Create a TagSyncTask that requires a specific IAM role to perform tagging operations. Ensure the role has the necessary permissions.
+Create a TagSyncTask that ensures the task is executed with the appropriate permissions defined in the IAM role.
 
 ```ts
-const iamRoleArn = "arn:aws:iam::123456789012:role/tagSyncRole";
+const permissionsTagSyncTask = await AWS.ResourceGroups.TagSyncTask("PermissionsTagSyncTask", {
+  Group: "MyResourceGroup",
+  TagKey: "Stage",
+  TagValue: "Testing",
+  RoleArn: "arn:aws:iam::123456789012:role/my-tag-sync-role"
+});
 
+// The IAM Role needs to have policies allowing tagging resources
 const iamPolicy = {
   Version: "2012-10-17",
   Statement: [
@@ -56,32 +62,18 @@ const iamPolicy = {
     }
   ]
 };
-
-const taskWithIamRole = await AWS.ResourceGroups.TagSyncTask("iamTagSyncTask", {
-  Group: "my-resource-group",
-  TagKey: "Department",
-  TagValue: "Engineering",
-  RoleArn: iamRoleArn
-});
 ```
 
-## Synchronize Multiple Tags
+## Cleaning Up Resources
 
-Create a TagSyncTask to synchronize multiple tags across resources in a resource group.
+When the TagSyncTask is no longer needed, you can create a task to clean up by removing specific tags from resources.
 
 ```ts
-const multiTagSyncTask = await AWS.ResourceGroups.TagSyncTask("multiTagSyncTask", {
-  Group: "my-resource-group",
-  TagKey: "Owner",
-  TagValue: "TeamA",
-  RoleArn: "arn:aws:iam::123456789012:role/tagSyncRole"
-});
-
-// Assuming a similar task for another tag
-const anotherTagSyncTask = await AWS.ResourceGroups.TagSyncTask("anotherTagSyncTask", {
-  Group: "my-resource-group",
-  TagKey: "Project",
-  TagValue: "ProjectX",
-  RoleArn: "arn:aws:iam::123456789012:role/tagSyncRole"
+const cleanupTagSyncTask = await AWS.ResourceGroups.TagSyncTask("CleanupTagSyncTask", {
+  Group: "MyResourceGroup",
+  TagKey: "Environment",
+  TagValue: "Staging",
+  RoleArn: "arn:aws:iam::123456789012:role/my-tag-sync-role",
+  adopt: false // This will fail if resources with the given tag do not exist
 });
 ```

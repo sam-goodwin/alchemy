@@ -5,74 +5,29 @@ description: Learn how to create, update, and manage AWS QuickSight Topics using
 
 # Topic
 
-The Topic resource lets you manage [AWS QuickSight Topics](https://docs.aws.amazon.com/quicksight/latest/userguide/) for organizing and managing data sets in your QuickSight environment.
+The Topic resource lets you create and manage [AWS QuickSight Topics](https://docs.aws.amazon.com/quicksight/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-quicksight-topic.html
 
 ## Minimal Example
-
-Create a basic QuickSight Topic with a name, description, and a dataset.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const quickSightTopic = await AWS.QuickSight.Topic("basicTopic", {
-  Name: "Sales Insights",
-  Description: "A topic for analyzing sales data",
-  AwsAccountId: "123456789012",
-  TopicId: "sales-insights",
-  DataSets: [
-    {
-      Arn: "arn:aws:quicksight:us-east-1:123456789012:dataset/sales-data"
-    }
-  ]
+const topic = await AWS.QuickSight.Topic("topic-example", {
+  Description: "A topic resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a QuickSight Topic with folder ARNs and user experience version.
+Create a topic with additional configuration:
 
 ```ts
-const advancedQuickSightTopic = await AWS.QuickSight.Topic("advancedTopic", {
-  Name: "Marketing Insights",
-  Description: "A topic for analyzing marketing campaigns",
-  AwsAccountId: "123456789012",
-  TopicId: "marketing-insights",
-  DataSets: [
-    {
-      Arn: "arn:aws:quicksight:us-east-1:123456789012:dataset/marketing-data"
-    }
-  ],
-  FolderArns: [
-    "arn:aws:quicksight:us-east-1:123456789012:folder/marketing-reports"
-  ],
-  UserExperienceVersion: "V2",
-  ConfigOptions: {
-    // Additional configuration options can be added here
-  }
+import AWS from "alchemy/aws/control";
+
+const advancedTopic = await AWS.QuickSight.Topic("advanced-topic", {
+  Description: "A topic resource managed by Alchemy",
 });
 ```
 
-## Using Config Options
-
-Create a QuickSight Topic that includes specific configuration options.
-
-```ts
-const configQuickSightTopic = await AWS.QuickSight.Topic("configTopic", {
-  Name: "Finance Insights",
-  Description: "A topic for analyzing financial reports",
-  AwsAccountId: "123456789012",
-  TopicId: "finance-insights",
-  DataSets: [
-    {
-      Arn: "arn:aws:quicksight:us-east-1:123456789012:dataset/finance-data"
-    }
-  ],
-  ConfigOptions: {
-    // Example config options
-    EnableRowLevelSecurity: true,
-    SecurityConfiguration: {
-      // Define security configurations as needed
-    }
-  }
-});
-```

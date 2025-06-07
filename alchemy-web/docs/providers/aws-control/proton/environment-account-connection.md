@@ -5,54 +5,64 @@ description: Learn how to create, update, and manage AWS Proton EnvironmentAccou
 
 # EnvironmentAccountConnection
 
-The EnvironmentAccountConnection resource lets you manage [AWS Proton EnvironmentAccountConnections](https://docs.aws.amazon.com/proton/latest/userguide/) that facilitate the connection between a management account and an environment account.
+The EnvironmentAccountConnection resource allows you to manage connections between AWS Proton environments and accounts. This resource is essential for establishing the necessary permissions and configurations for environments in AWS Proton. For more details, visit the [AWS Proton EnvironmentAccountConnections documentation](https://docs.aws.amazon.com/proton/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic EnvironmentAccountConnection with required properties and some common optional settings.
+Create a basic EnvironmentAccountConnection with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicConnection = await AWS.Proton.EnvironmentAccountConnection("basicConnection", {
-  EnvironmentName: "ProductionEnvironment",
-  ComponentRoleArn: "arn:aws:iam::123456789012:role/ProtonComponentRole",
+const environmentAccountConnection = await AWS.Proton.EnvironmentAccountConnection("MyEnvironmentConnection", {
+  EnvironmentName: "MyEnvironment",
   ManagementAccountId: "123456789012",
-  CodebuildRoleArn: "arn:aws:iam::123456789012:role/ProtonCodeBuildRole",
-  EnvironmentAccountId: "098765432109"
+  ComponentRoleArn: "arn:aws:iam::123456789012:role/MyComponentRole"
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EnvironmentAccountConnection with additional tags for better management and identification.
+Configure an EnvironmentAccountConnection with additional properties such as CodeBuild role and tags.
 
 ```ts
-const advancedConnection = await AWS.Proton.EnvironmentAccountConnection("advancedConnection", {
-  EnvironmentName: "StagingEnvironment",
-  ComponentRoleArn: "arn:aws:iam::123456789012:role/ProtonComponentRole",
+const advancedEnvironmentAccountConnection = await AWS.Proton.EnvironmentAccountConnection("AdvancedEnvironmentConnection", {
+  EnvironmentName: "AdvancedEnvironment",
   ManagementAccountId: "123456789012",
-  CodebuildRoleArn: "arn:aws:iam::123456789012:role/ProtonCodeBuildRole",
-  EnvironmentAccountId: "098765432109",
-  RoleArn: "arn:aws:iam::123456789012:role/ProtonRole",
+  ComponentRoleArn: "arn:aws:iam::123456789012:role/MyComponentRole",
+  CodebuildRoleArn: "arn:aws:iam::123456789012:role/MyCodeBuildRole",
+  EnvironmentAccountId: "987654321098",
   Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Project", Value: "WebApp" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
 ## Adoption of Existing Resources
 
-Adopt an existing EnvironmentAccountConnection instead of failing if it already exists.
+If you want to adopt an existing EnvironmentAccountConnection, you can set the `adopt` property to true.
 
 ```ts
-const adoptConnection = await AWS.Proton.EnvironmentAccountConnection("adoptConnection", {
+const adoptedEnvironmentAccountConnection = await AWS.Proton.EnvironmentAccountConnection("AdoptedEnvironmentConnection", {
   EnvironmentName: "ExistingEnvironment",
-  ComponentRoleArn: "arn:aws:iam::123456789012:role/ProtonComponentRole",
   ManagementAccountId: "123456789012",
-  CodebuildRoleArn: "arn:aws:iam::123456789012:role/ProtonCodeBuildRole",
-  EnvironmentAccountId: "098765432109",
   adopt: true
+});
+```
+
+## Role Associations
+
+Define role associations for the EnvironmentAccountConnection, allowing for specific permissions to be set.
+
+```ts
+const roleAssociatedEnvironmentAccountConnection = await AWS.Proton.EnvironmentAccountConnection("RoleAssociatedConnection", {
+  EnvironmentName: "RoleAssociatedEnvironment",
+  ManagementAccountId: "123456789012",
+  RoleArn: "arn:aws:iam::123456789012:role/MyRole",
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```

@@ -5,54 +5,81 @@ description: Learn how to create, update, and manage AWS SageMaker UserProfiles 
 
 # UserProfile
 
-The UserProfile resource lets you manage [AWS SageMaker UserProfiles](https://docs.aws.amazon.com/sagemaker/latest/userguide/) which are used to provide a unique environment for each user in a SageMaker domain.
+The UserProfile resource allows you to manage [AWS SageMaker UserProfiles](https://docs.aws.amazon.com/sagemaker/latest/userguide/) which provide an environment for users to work with SageMaker resources and settings.
 
 ## Minimal Example
 
-Create a basic SageMaker UserProfile with required properties and one optional property.
+Create a basic UserProfile with required properties and one optional setting.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const userProfile = await AWS.SageMaker.UserProfile("default-user-profile", {
-  DomainId: "d-1234567890",
-  UserProfileName: "defaultUser",
-  SingleSignOnUserValue: "user@example.com"
+const basicUserProfile = await AWS.SageMaker.UserProfile("BasicUserProfile", {
+  DomainId: "d-1234567890", // Replace with your actual Domain ID
+  UserProfileName: "JaneDoe",
+  SingleSignOnUserValue: "jane.doe@example.com" // Optional: Single Sign-On user value
 });
 ```
 
 ## Advanced Configuration
 
-Configure a UserProfile with additional settings including user settings and tags.
+Configure a UserProfile with advanced options, including user settings and tags.
 
 ```ts
-const advancedUserProfile = await AWS.SageMaker.UserProfile("advanced-user-profile", {
-  DomainId: "d-1234567890",
-  UserProfileName: "advancedUser",
-  SingleSignOnUserValue: "admin@example.com",
+const advancedUserProfile = await AWS.SageMaker.UserProfile("AdvancedUserProfile", {
+  DomainId: "d-0987654321", // Replace with your actual Domain ID
+  UserProfileName: "JohnSmith",
   UserSettings: {
     JupyterServerAppSettings: {
       DefaultResourceSpec: {
-        SageMakerImageArn: "arn:aws:sagemaker:us-west-2:123456789012:image/my-custom-image",
-        SageMakerImageVersionArn: "arn:aws:sagemaker:us-west-2:123456789012:image-version/my-custom-image:1"
+        SageMakerImageArn: "arn:aws:sagemaker:us-east-1:123456789012:image/my-custom-image",
+        SageMakerImageVersionArn: "arn:aws:sagemaker:us-east-1:123456789012:image-version/my-custom-image:1"
       }
     }
   },
   Tags: [
-    { Key: "Project", Value: "MachineLearning" },
-    { Key: "Environment", Value: "Development" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DataScience" }
   ]
 });
 ```
 
-## User Profile Adoption
+## Custom User Settings
 
-Create a UserProfile that adopts an existing resource if it already exists.
+Create a UserProfile with specific user settings tailored for a Jupyter Notebook environment.
 
 ```ts
-const adoptedUserProfile = await AWS.SageMaker.UserProfile("existing-user-profile", {
-  DomainId: "d-1234567890",
-  UserProfileName: "existingUser",
-  adopt: true // Adopt existing resource instead of failing
+const jupyterUserProfile = await AWS.SageMaker.UserProfile("JupyterUserProfile", {
+  DomainId: "d-1234567890", // Replace with your actual Domain ID
+  UserProfileName: "AliceJohnson",
+  UserSettings: {
+    JupyterServerAppSettings: {
+      DefaultResourceSpec: {
+        SageMakerImageArn: "arn:aws:sagemaker:us-west-2:123456789012:image/my-jupyter-image",
+        SageMakerImageVersionArn: "arn:aws:sagemaker:us-west-2:123456789012:image-version/my-jupyter-image:1"
+      }
+    },
+    KernelGatewayAppSettings: {
+      DefaultResourceSpec: {
+        SageMakerImageArn: "arn:aws:sagemaker:us-west-2:123456789012:image/my-kernel-image",
+        SageMakerImageVersionArn: "arn:aws:sagemaker:us-west-2:123456789012:image-version/my-kernel-image:1"
+      }
+    }
+  }
+});
+```
+
+## Tagging Best Practices
+
+Demonstrate how to create a UserProfile with meaningful tags for better resource management.
+
+```ts
+const taggedUserProfile = await AWS.SageMaker.UserProfile("TaggedUserProfile", {
+  DomainId: "d-4567890123", // Replace with your actual Domain ID
+  UserProfileName: "BobWilliams",
+  Tags: [
+    { Key: "Project", Value: "AIResearch" },
+    { Key: "Department", Value: "MachineLearning" }
+  ]
 });
 ```

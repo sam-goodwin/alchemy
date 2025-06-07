@@ -5,44 +5,43 @@ description: Learn how to create, update, and manage AWS Logs QueryDefinitions u
 
 # QueryDefinition
 
-The QueryDefinition resource lets you manage [AWS Logs QueryDefinitions](https://docs.aws.amazon.com/logs/latest/userguide/) for defining queries on log data. 
+The QueryDefinition resource allows you to manage [AWS Logs QueryDefinitions](https://docs.aws.amazon.com/logs/latest/userguide/) for creating and storing log queries. This resource enables you to define the queries that can be run against your log data in CloudWatch Logs.
 
 ## Minimal Example
 
-Create a basic query definition with required properties and a common optional property:
+Create a basic QueryDefinition with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicQueryDefinition = await AWS.Logs.QueryDefinition("basicQuery", {
-  Name: "ErrorLogQuery",
-  QueryString: "fields @timestamp, @message | sort @timestamp desc | limit 20",
-  LogGroupNames: ["application-logs"]
+const basicQueryDefinition = await AWS.Logs.QueryDefinition("BasicQuery", {
+  QueryString: "fields @timestamp, @message | sort @timestamp desc",
+  LogGroupNames: ["my-log-group"],
+  Name: "MyBasicQuery"
 });
 ```
 
 ## Advanced Configuration
 
-Define a query with additional configuration such as specifying the query language:
+Configure a QueryDefinition with additional options such as query language.
 
 ```ts
-const advancedQueryDefinition = await AWS.Logs.QueryDefinition("advancedQuery", {
-  Name: "DebugLogQuery",
-  QueryString: "fields @timestamp, @message | filter @message like /DEBUG/ | sort @timestamp desc | limit 20",
-  LogGroupNames: ["application-logs", "system-logs"],
-  QueryLanguage: "SQL"
+const advancedQueryDefinition = await AWS.Logs.QueryDefinition("AdvancedQuery", {
+  QueryString: "fields @timestamp, @message | filter @message like 'Error' | sort @timestamp desc",
+  LogGroupNames: ["my-log-group"],
+  QueryLanguage: "pql",
+  Name: "MyAdvancedQuery"
 });
 ```
 
-## Query with Adoption
+## Adopt Existing Resource
 
-Create a query definition that adopts an existing resource if it already exists:
+If you want to adopt an existing QueryDefinition instead of creating a new one, you can set the adopt option to true.
 
 ```ts
-const adoptedQueryDefinition = await AWS.Logs.QueryDefinition("adoptedQuery", {
-  Name: "AdoptedErrorLogQuery",
-  QueryString: "fields @timestamp, @message | filter @message like /ERROR/",
-  LogGroupNames: ["application-logs"],
+const adoptQueryDefinition = await AWS.Logs.QueryDefinition("AdoptExistingQuery", {
+  QueryString: "fields @timestamp, @message",
+  Name: "AdoptedQuery",
   adopt: true
 });
 ```

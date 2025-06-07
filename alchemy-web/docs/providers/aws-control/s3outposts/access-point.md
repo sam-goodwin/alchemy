@@ -5,86 +5,37 @@ description: Learn how to create, update, and manage AWS S3Outposts AccessPoints
 
 # AccessPoint
 
-The AccessPoint resource lets you manage [AWS S3Outposts AccessPoints](https://docs.aws.amazon.com/s3outposts/latest/userguide/) for your S3Outposts buckets, providing specific access control and network configuration.
+The AccessPoint resource lets you create and manage [AWS S3Outposts AccessPoints](https://docs.aws.amazon.com/s3outposts/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-s3outposts-accesspoint.html
 
 ## Minimal Example
-
-Create a basic S3Outposts AccessPoint with required properties and a simple policy:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const accessPoint = await AWS.S3Outposts.AccessPoint("myAccessPoint", {
-  bucket: "myS3OutpostBucket",
-  vpcConfiguration: {
-    vpcId: "vpc-0abcd1234efgh5678",
-    subnetIds: ["subnet-0abcd1234efgh5678"],
-    securityGroupIds: ["sg-0abcd1234efgh5678"]
-  },
-  name: "MyAccessPoint",
-  policy: {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Principal: "*",
-        Action: "s3:GetObject",
-        Resource: "arn:aws:s3-outposts:us-west-2:123456789012:outpost/myS3OutpostBucket/*"
-      }
-    ]
-  }
+const accesspoint = await AWS.S3Outposts.AccessPoint("accesspoint-example", {
+  Bucket: "example-bucket",
+  VpcConfiguration: "example-vpcconfiguration",
+  Name: "accesspoint-",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AccessPoint with additional settings such as a more complex policy and multiple network configurations:
+Create a accesspoint with additional configuration:
 
 ```ts
-const advancedAccessPoint = await AWS.S3Outposts.AccessPoint("advancedAccessPoint", {
-  bucket: "myAdvancedS3OutpostBucket",
-  vpcConfiguration: {
-    vpcId: "vpc-0abcd1234efgh5678",
-    subnetIds: ["subnet-0abcd1234efgh5678", "subnet-0ijkl9012mnop3456"],
-    securityGroupIds: ["sg-0abcd1234efgh5678", "sg-0ijkl9012mnop3456"]
-  },
-  name: "AdvancedAccessPoint",
-  policy: {
+import AWS from "alchemy/aws/control";
+
+const advancedAccessPoint = await AWS.S3Outposts.AccessPoint("advanced-accesspoint", {
+  Bucket: "example-bucket",
+  VpcConfiguration: "example-vpcconfiguration",
+  Name: "accesspoint-",
+  Policy: {
     Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Principal: {
-          AWS: "arn:aws:iam::123456789012:role/MyRole"
-        },
-        Action: "s3:*",
-        Resource: "arn:aws:s3-outposts:us-west-2:123456789012:outpost/myAdvancedS3OutpostBucket/*"
-      },
-      {
-        Effect: "Deny",
-        Principal: "*",
-        Action: "s3:DeleteObject",
-        Resource: "arn:aws:s3-outposts:us-west-2:123456789012:outpost/myAdvancedS3OutpostBucket/sensitive-data/*"
-      }
-    ]
-  }
-});
-```
-
-## VPC Configuration Example
-
-Demonstrate creating an AccessPoint with a focus on the VPC configuration:
-
-```ts
-const vpcAccessPoint = await AWS.S3Outposts.AccessPoint("vpcAccessPoint", {
-  bucket: "myVpcAccessBucket",
-  vpcConfiguration: {
-    vpcId: "vpc-0abcd1234efgh5678",
-    subnetIds: ["subnet-0abcd1234efgh5678"],
-    securityGroupIds: ["sg-0abcd1234efgh5678"]
+    Statement: [{ Effect: "Allow", Action: ["s3:GetObject"], Resource: "*" }],
   },
-  name: "VpcAccessPoint"
 });
 ```
 
-This example highlights how to set up an AccessPoint within a specific VPC, ensuring that only resources within that VPC can access the bucket.

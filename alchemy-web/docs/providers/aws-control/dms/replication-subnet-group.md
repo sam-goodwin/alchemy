@@ -5,77 +5,60 @@ description: Learn how to create, update, and manage AWS DMS ReplicationSubnetGr
 
 # ReplicationSubnetGroup
 
-The ReplicationSubnetGroup resource allows you to define a [Replication Subnet Group](https://docs.aws.amazon.com/dms/latest/userguide/) for AWS Database Migration Service (DMS) to specify which subnets to use for replication instances. This resource helps ensure that your replication instances can communicate with your data sources and targets in a secure manner.
+The ReplicationSubnetGroup resource lets you manage [AWS DMS Replication Subnet Groups](https://docs.aws.amazon.com/dms/latest/userguide/) which define a collection of subnets that can be used for replication tasks.
 
 ## Minimal Example
 
-Create a basic replication subnet group with required properties.
+Create a basic replication subnet group with required properties and one optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const replicationSubnetGroup = await AWS.DMS.ReplicationSubnetGroup("myReplicationSubnetGroup", {
-  ReplicationSubnetGroupDescription: "My Replication Subnet Group for DMS",
-  SubnetIds: [
-    "subnet-0abcdef1234567890",
-    "subnet-1abcdef1234567890"
-  ],
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "DatabaseMigration" }
-  ]
+const basicReplicationSubnetGroup = await AWS.DMS.ReplicationSubnetGroup("basicReplicationSubnetGroup", {
+  ReplicationSubnetGroupDescription: "My subnet group for replication",
+  SubnetIds: ["subnet-0123456789abcdef0", "subnet-0abcdef0123456789"],
+  ReplicationSubnetGroupIdentifier: "my-replication-subnet-group"
 });
 ```
 
 ## Advanced Configuration
 
-Customize the replication subnet group with an identifier and additional tags.
+Configure a replication subnet group with tags to help organize resources:
 
 ```ts
-const advancedReplicationSubnetGroup = await AWS.DMS.ReplicationSubnetGroup("advancedReplicationSubnetGroup", {
-  ReplicationSubnetGroupDescription: "Advanced Replication Subnet Group for DMS",
-  ReplicationSubnetGroupIdentifier: "advanced-replication-subnet-group",
-  SubnetIds: [
-    "subnet-2abcdef1234567890",
-    "subnet-3abcdef1234567890"
-  ],
+const taggedReplicationSubnetGroup = await AWS.DMS.ReplicationSubnetGroup("taggedReplicationSubnetGroup", {
+  ReplicationSubnetGroupDescription: "Subnet group with tags for better management",
+  SubnetIds: ["subnet-0123456789abcdef0", "subnet-0abcdef0123456789"],
   Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Owner", Value: "DevTeam" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
   ]
 });
 ```
 
-## Using Existing Resources
+## Adoption of Existing Resources
 
-This example demonstrates how to adopt an existing replication subnet group if it already exists.
+Create a replication subnet group that adopts an existing resource instead of failing:
 
 ```ts
-const adoptExistingReplicationSubnetGroup = await AWS.DMS.ReplicationSubnetGroup("existingReplicationSubnetGroup", {
-  ReplicationSubnetGroupDescription: "Adopting an existing Replication Subnet Group",
-  SubnetIds: [
-    "subnet-4abcdef1234567890",
-    "subnet-5abcdef1234567890"
-  ],
+const adoptedReplicationSubnetGroup = await AWS.DMS.ReplicationSubnetGroup("adoptedReplicationSubnetGroup", {
+  ReplicationSubnetGroupDescription: "Adopting existing replication subnet group",
+  SubnetIds: ["subnet-0123456789abcdef0", "subnet-0abcdef0123456789"],
   adopt: true
 });
 ```
 
-## Tagging Best Practices
+## Using Multiple Subnets
 
-Demonstrate how to effectively use tags for organization and management.
+Define a replication subnet group using multiple subnets across different availability zones for high availability:
 
 ```ts
-const taggedReplicationSubnetGroup = await AWS.DMS.ReplicationSubnetGroup("taggedReplicationSubnetGroup", {
-  ReplicationSubnetGroupDescription: "Replication Subnet Group with best practices tagging",
+const multiSubnetReplicationSubnetGroup = await AWS.DMS.ReplicationSubnetGroup("multiSubnetReplicationSubnetGroup", {
+  ReplicationSubnetGroupDescription: "Replication subnet group with multiple subnets",
   SubnetIds: [
-    "subnet-6abcdef1234567890",
-    "subnet-7abcdef1234567890"
-  ],
-  Tags: [
-    { Key: "CostCenter", Value: "12345" },
-    { Key: "Department", Value: "Engineering" },
-    { Key: "Project", Value: "DataMigration2023" }
+    "subnet-0123456789abcdef0", // Availability Zone 1
+    "subnet-0abcdef0123456789", // Availability Zone 2
+    "subnet-1234567890abcdef1"  // Availability Zone 3
   ]
 });
 ```

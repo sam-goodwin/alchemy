@@ -5,98 +5,87 @@ description: Learn how to create, update, and manage AWS Organizations ResourceP
 
 # ResourcePolicy
 
-The ResourcePolicy resource lets you manage [AWS Organizations ResourcePolicys](https://docs.aws.amazon.com/organizations/latest/userguide/) to define permissions for your AWS accounts and organizational units.
+The ResourcePolicy resource allows you to manage [AWS Organizations ResourcePolicies](https://docs.aws.amazon.com/organizations/latest/userguide/) to control access to your AWS resources across your organization.
 
 ## Minimal Example
 
-Create a basic resource policy with necessary content and tags.
+Create a basic ResourcePolicy with required properties and a couple of common optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const resourcePolicy = await AWS.Organizations.ResourcePolicy("basicResourcePolicy", {
+const basicResourcePolicy = await AWS.Organizations.ResourcePolicy("BasicResourcePolicy", {
   Content: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
         Principal: "*",
-        Action: "organizations:DescribeAccounts",
+        Action: "sts:AssumeRole",
         Resource: "*"
       }
     ]
   },
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Development"
-    }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Engineering" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Define a more complex resource policy with multiple statements and additional properties.
+Configure a ResourcePolicy with a more complex policy statement and additional properties.
 
 ```ts
-const advancedResourcePolicy = await AWS.Organizations.ResourcePolicy("advancedResourcePolicy", {
+const advancedResourcePolicy = await AWS.Organizations.ResourcePolicy("AdvancedResourcePolicy", {
   Content: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
         Principal: {
-          Service: "cloudformation.amazonaws.com"
+          Service: "ec2.amazonaws.com"
         },
-        Action: "organizations:ListAccounts",
-        Resource: "*"
-      },
-      {
-        Effect: "Deny",
-        Principal: {
-          AWS: "arn:aws:iam::123456789012:root"
-        },
-        Action: "organizations:DeleteOrganization",
-        Resource: "*"
+        Action: "sts:AssumeRole",
+        Resource: "arn:aws:iam::123456789012:role/MyRole",
+        Condition: {
+          StringEquals: {
+            "aws:SourceAccount": "123456789012"
+          }
+        }
       }
     ]
   },
   Tags: [
-    {
-      Key: "Project",
-      Value: "ResourceManagement"
-    }
-  ],
-  adopt: true
+    { Key: "Environment", Value: "Production" },
+    { Key: "Compliance", Value: "PCI-DSS" }
+  ]
 });
 ```
 
-## Use Case: Restricting Access
+## Policy with Multiple Statements
 
-Implement a resource policy to restrict access to a specific account.
+Demonstrate a ResourcePolicy that includes multiple statements for different services.
 
 ```ts
-const restrictedAccessPolicy = await AWS.Organizations.ResourcePolicy("restrictedAccessPolicy", {
+const multiStatementPolicy = await AWS.Organizations.ResourcePolicy("MultiStatementPolicy", {
   Content: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Principal: {
-          AWS: "arn:aws:iam::098765432109:user/SpecificUser"
-        },
-        Action: [
-          "organizations:DescribeOrganizationalUnits",
-          "organizations:ListAccounts"
-        ],
-        Resource: "*"
+        Principal: "*",
+        Action: "s3:GetObject",
+        Resource: "arn:aws:s3:::my-bucket/*"
       },
       {
-        Effect: "Deny",
-        Principal: "*",
-        Action: "organizations:DescribeOrganizationalUnits",
-        Resource: "arn:aws:organizations::123456789012:ou/o-exampleorgid/ou-exampleouid"
+        Effect: "Allow",
+        Principal: {
+          AWS: "arn:aws:iam::123456789012:user/Alice"
+        },
+        Action: "dynamodb:PutItem",
+        Resource: "arn:aws:dynamodb:us-west-2:123456789012:table/MyTable"
       }
     ]
   }

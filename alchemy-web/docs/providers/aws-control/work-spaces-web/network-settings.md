@@ -1,74 +1,61 @@
 ---
-title: Managing AWS WorkSpacesWeb NetworkSettings with Alchemy
-description: Learn how to create, update, and manage AWS WorkSpacesWeb NetworkSettings using Alchemy Cloud Control.
+title: Managing AWS WorkSpacesWeb NetworkSettingss with Alchemy
+description: Learn how to create, update, and manage AWS WorkSpacesWeb NetworkSettingss using Alchemy Cloud Control.
 ---
 
 # NetworkSettings
 
-The NetworkSettings resource allows you to manage the network settings for AWS WorkSpacesWeb, including the VPC, security groups, and subnets. For more details, visit the [AWS WorkSpacesWeb NetworkSettings documentation](https://docs.aws.amazon.com/workspacesweb/latest/userguide/).
+The NetworkSettings resource allows you to manage network configurations for AWS WorkSpacesWeb, including VPC and security group settings. For more detailed information, refer to the [AWS WorkSpacesWeb NetworkSettings documentation](https://docs.aws.amazon.com/workspacesweb/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic NetworkSettings resource with required properties and one optional tag.
+This example demonstrates how to create a basic NetworkSettings resource with required properties and a couple of optional tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicNetworkSettings = await AWS.WorkSpacesWeb.NetworkSettings("basicNetworkSettings", {
-  VpcId: "vpc-12345678",
-  SecurityGroupIds: ["sg-12345678"],
-  SubnetIds: ["subnet-12345678", "subnet-87654321"],
-  Tags: [{
-    Key: "Environment",
-    Value: "Development"
-  }]
+const BasicNetworkSettings = await AWS.WorkSpacesWeb.NetworkSettings("BasicNetworkSettings", {
+  VpcId: "vpc-0123456789abcdef0",
+  SecurityGroupIds: ["sg-0123456789abcdef0"],
+  SubnetIds: ["subnet-0123456789abcdef0"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a NetworkSettings resource with multiple security groups and a set of tags for better management.
+In this example, we demonstrate how to create NetworkSettings with additional properties by using multiple security groups and subnets.
 
 ```ts
-const advancedNetworkSettings = await AWS.WorkSpacesWeb.NetworkSettings("advancedNetworkSettings", {
-  VpcId: "vpc-87654321",
-  SecurityGroupIds: ["sg-87654321", "sg-12345678"],
-  SubnetIds: ["subnet-11223344", "subnet-44332211"],
-  Tags: [{
-    Key: "Project",
-    Value: "WorkSpacesWeb"
-  }, {
-    Key: "Owner",
-    Value: "Team Alpha"
-  }]
+const AdvancedNetworkSettings = await AWS.WorkSpacesWeb.NetworkSettings("AdvancedNetworkSettings", {
+  VpcId: "vpc-abcdef0123456789",
+  SecurityGroupIds: [
+    "sg-abcdef0123456789",
+    "sg-1234567890abcdef"
+  ],
+  SubnetIds: [
+    "subnet-abcdef0123456789",
+    "subnet-1234567890abcdef"
+  ],
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Development" }
+  ]
 });
 ```
 
-## Using Existing Resources
+## Adoption of Existing Resource
 
-If you have existing network settings that you want to adopt rather than recreate, you can set the `adopt` property to true.
-
-```ts
-const adoptExistingNetworkSettings = await AWS.WorkSpacesWeb.NetworkSettings("adoptExistingNetworkSettings", {
-  VpcId: "vpc-12345678",
-  SecurityGroupIds: ["sg-12345678"],
-  SubnetIds: ["subnet-12345678"],
-  adopt: true
-});
-```
-
-## Example with Multiple Subnets
-
-Create a NetworkSettings resource that specifies multiple subnets for a more distributed architecture.
+This example shows how to adopt an existing NetworkSettings resource instead of creating a new one if it already exists.
 
 ```ts
-const distributedNetworkSettings = await AWS.WorkSpacesWeb.NetworkSettings("distributedNetworkSettings", {
-  VpcId: "vpc-98765432",
-  SecurityGroupIds: ["sg-98765432"],
-  SubnetIds: ["subnet-11111111", "subnet-22222222", "subnet-33333333"],
-  Tags: [{
-    Key: "Type",
-    Value: "Production"
-  }]
+const ExistingNetworkSettings = await AWS.WorkSpacesWeb.NetworkSettings("ExistingNetworkSettings", {
+  VpcId: "vpc-0987654321fedcba0",
+  SecurityGroupIds: ["sg-0987654321fedcba0"],
+  SubnetIds: ["subnet-0987654321fedcba0"],
+  adopt: true // Indicates that we want to adopt the existing resource
 });
 ```

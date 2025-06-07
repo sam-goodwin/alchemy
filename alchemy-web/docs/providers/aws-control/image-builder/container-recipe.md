@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS ImageBuilder ContainerR
 
 # ContainerRecipe
 
-The ContainerRecipe resource lets you manage [AWS ImageBuilder ContainerRecipes](https://docs.aws.amazon.com/imagebuilder/latest/userguide/) for building and customizing container images.
+The ContainerRecipe resource lets you create and manage container build recipes in AWS ImageBuilder, which simplify the process of creating container images. For more detailed information, refer to the [AWS ImageBuilder ContainerRecipes](https://docs.aws.amazon.com/imagebuilder/latest/userguide/) documentation.
 
 ## Minimal Example
 
@@ -14,81 +14,93 @@ Create a basic container recipe with required properties and a common optional p
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicContainerRecipe = await AWS.ImageBuilder.ContainerRecipe("myContainerRecipe", {
-  parentImage: "my-docker-repo/my-base-image:latest",
-  containerType: "DOCKER",
-  name: "MyContainerRecipe",
-  version: "1.0.0",
-  components: [
+const basicContainerRecipe = await AWS.ImageBuilder.ContainerRecipe("BasicContainerRecipe", {
+  ParentImage: "amazonlinux:latest",
+  ContainerType: "EXPRESS",
+  Name: "BasicContainerRecipe",
+  Components: [
     {
-      type: "BUILD",
-      uri: "my-docker-repo/my-component:latest"
+      ComponentArn: "arn:aws:imagebuilder:us-west-2:123456789012:component/my-component/1.0.0"
     }
   ],
-  targetRepository: {
-    service: "ECR",
-    repository: "my-docker-repo",
-    imageTag: "latest"
-  }
+  TargetRepository: {
+    RepositoryName: "my-repo",
+    Service: "ECR"
+  },
+  Version: "1.0.0"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a container recipe with additional options such as KMS key for encryption and instance configuration.
+Configure a container recipe with more advanced settings, including a custom working directory and KMS key for encryption.
 
 ```ts
-const advancedContainerRecipe = await AWS.ImageBuilder.ContainerRecipe("advancedContainerRecipe", {
-  parentImage: "my-docker-repo/my-base-image:latest",
-  containerType: "DOCKER",
-  name: "AdvancedContainerRecipe",
-  version: "1.0.1",
-  components: [
+const advancedContainerRecipe = await AWS.ImageBuilder.ContainerRecipe("AdvancedContainerRecipe", {
+  ParentImage: "ubuntu:20.04",
+  ContainerType: "DOCKER",
+  Name: "AdvancedContainerRecipe",
+  Components: [
     {
-      type: "BUILD",
-      uri: "my-docker-repo/my-component:latest"
+      ComponentArn: "arn:aws:imagebuilder:us-west-2:123456789012:component/my-advanced-component/1.0.0"
     }
   ],
-  targetRepository: {
-    service: "ECR",
-    repository: "my-docker-repo",
-    imageTag: "latest"
+  TargetRepository: {
+    RepositoryName: "my-advanced-repo",
+    Service: "ECR"
   },
-  kmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-a123-456a-a12b-a123b4cd56ef",
-  instanceConfiguration: {
-    instanceType: "t2.micro",
-    ami: "ami-0abc12345def67890"
-  }
+  Version: "2.0.0",
+  WorkingDirectory: "/app",
+  KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-key"
 });
 ```
 
-## Using Dockerfile Template
+## Custom Dockerfile Configuration
 
-Create a container recipe using a Dockerfile template for more complex image builds.
+Create a container recipe that uses a custom Dockerfile template for building the image.
 
 ```ts
-const dockerfileTemplateContainerRecipe = await AWS.ImageBuilder.ContainerRecipe("dockerfileTemplateContainerRecipe", {
-  parentImage: "my-docker-repo/my-base-image:latest",
-  containerType: "DOCKER",
-  name: "DockerfileTemplateContainerRecipe",
-  version: "1.0.2",
-  components: [
+const dockerfileContainerRecipe = await AWS.ImageBuilder.ContainerRecipe("DockerfileContainerRecipe", {
+  ParentImage: "debian:bullseye",
+  ContainerType: "DOCKER",
+  Name: "DockerfileContainerRecipe",
+  Components: [
     {
-      type: "BUILD",
-      uri: "my-docker-repo/my-component:latest"
+      ComponentArn: "arn:aws:imagebuilder:us-west-2:123456789012:component/my-docker-component/1.0.0"
     }
   ],
-  targetRepository: {
-    service: "ECR",
-    repository: "my-docker-repo",
-    imageTag: "latest"
+  TargetRepository: {
+    RepositoryName: "my-docker-repo",
+    Service: "ECR"
   },
-  dockerfileTemplateData: `
-    FROM node:14
-    COPY . /app
-    WORKDIR /app
-    RUN npm install
-    CMD ["npm", "start"]
-  `
+  Version: "1.1.0",
+  DockerfileTemplateUri: "s3://my-bucket/dockerfile-template",
+  DockerfileTemplateData: "FROM debian:bullseye\nRUN apt-get update && apt-get install -y nginx"
+});
+```
+
+## Tagging for Organization
+
+Create a container recipe and apply tags for better organization and management.
+
+```ts
+const taggedContainerRecipe = await AWS.ImageBuilder.ContainerRecipe("TaggedContainerRecipe", {
+  ParentImage: "fedora:latest",
+  ContainerType: "DOCKER",
+  Name: "TaggedContainerRecipe",
+  Components: [
+    {
+      ComponentArn: "arn:aws:imagebuilder:us-west-2:123456789012:component/my-tagged-component/1.0.0"
+    }
+  ],
+  TargetRepository: {
+    RepositoryName: "my-tagged-repo",
+    Service: "ECR"
+  },
+  Version: "3.0.0",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```

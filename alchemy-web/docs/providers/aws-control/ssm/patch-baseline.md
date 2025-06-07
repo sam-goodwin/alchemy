@@ -5,81 +5,110 @@ description: Learn how to create, update, and manage AWS SSM PatchBaselines usin
 
 # PatchBaseline
 
-The PatchBaseline resource allows you to manage [AWS SSM PatchBaselines](https://docs.aws.amazon.com/ssm/latest/userguide/) for automating the patching of your managed instances. Patch baselines define which patches should be approved for installation on your instances, helping ensure that they remain secure and up-to-date.
+The PatchBaseline resource lets you manage [AWS SSM PatchBaselines](https://docs.aws.amazon.com/ssm/latest/userguide/) for automating the process of patching your managed instances. Patch baselines specify which patches are approved for installation and provide rules for patch compliance.
 
 ## Minimal Example
 
-Create a basic PatchBaseline with the required properties and a few common optional settings.
+Create a basic patch baseline with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicPatchBaseline = await AWS.SSM.PatchBaseline("basicPatchBaseline", {
+const BasicPatchBaseline = await AWS.SSM.PatchBaseline("BasicPatchBaseline", {
   Name: "MyPatchBaseline",
   OperatingSystem: "WINDOWS",
-  Description: "A baseline for Windows patches",
-  ApprovedPatches: ["KB4484070", "KB4474419"],
-  RejectedPatches: ["KB4487018"]
+  ApprovalRules: {
+    PatchRules: [
+      {
+        PatchFilterGroup: {
+          PatchFilters: [
+            {
+              Key: "PRODUCT",
+              Values: ["WindowsServer2019"]
+            }
+          ]
+        },
+        ApproveAfterDays: 7,
+        ComplianceLevel: "CRITICAL"
+      }
+    ]
+  },
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a PatchBaseline with advanced settings, including approval rules and global filters.
+Configure a patch baseline with advanced settings, including rejected patches and global filters.
 
 ```ts
-const advancedPatchBaseline = await AWS.SSM.PatchBaseline("advancedPatchBaseline", {
-  Name: "AdvancedPatchBaseline",
+const AdvancedPatchBaseline = await AWS.SSM.PatchBaseline("AdvancedPatchBaseline", {
+  Name: "MyAdvancedPatchBaseline",
   OperatingSystem: "LINUX",
-  Description: "An advanced baseline for Linux patches",
   ApprovalRules: {
-    PatchRules: [{
-      PatchFilterGroup: {
-        PatchFilters: [{
-          Key: "PRODUCT",
-          Values: ["Amazon Linux 2"]
-        }]
-      },
-      ApproveAfterDays: 7
-    }]
+    PatchRules: [
+      {
+        PatchFilterGroup: {
+          PatchFilters: [
+            {
+              Key: "PRODUCT",
+              Values: ["AmazonLinux2"]
+            }
+          ]
+        },
+        ApproveAfterDays: 5,
+        ComplianceLevel: "HIGH"
+      }
+    ]
   },
-  ApprovedPatches: ["kernel-4.14.209-160.646.amzn2.x86_64"],
-  RejectedPatchesAction: "ALLOW_AS_DEPENDENCY",
+  RejectedPatches: ["Patch-ID-1234"],
   GlobalFilters: {
-    PatchFilters: [{
-      Key: "CLASSIFICATION",
-      Values: ["Security"]
-    }]
-  }
+    PatchFilters: [
+      {
+        Key: "CLASSIFICATION",
+        Values: ["Security"]
+      }
+    ]
+  },
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Infrastructure" }
+  ]
 });
 ```
 
-## Using Patch Groups
+## Custom Patch Groups
 
-Create a PatchBaseline specifically for a set of instances grouped together.
-
-```ts
-const patchGroupBaseline = await AWS.SSM.PatchBaseline("patchGroupBaseline", {
-  Name: "PatchGroupBaseline",
-  OperatingSystem: "WINDOWS",
-  Description: "A baseline for a specific patch group",
-  PatchGroups: ["MyPatchGroup"],
-  ApprovedPatches: ["KB5003637"],
-  RejectedPatches: ["KB5003645"]
-});
-```
-
-## Default Baseline Configuration
-
-Set a PatchBaseline as the default baseline for your environment.
+Create a patch baseline tailored for specific patch groups.
 
 ```ts
-const defaultPatchBaseline = await AWS.SSM.PatchBaseline("defaultPatchBaseline", {
-  Name: "DefaultPatchBaseline",
+const CustomPatchGroupBaseline = await AWS.SSM.PatchBaseline("CustomPatchGroupBaseline", {
+  Name: "MyCustomPatchGroupBaseline",
   OperatingSystem: "WINDOWS",
-  Description: "Default baseline for Windows instances",
-  DefaultBaseline: true,
-  ApprovedPatches: ["KB5003637", "KB5003640"],
-  RejectedPatches: ["KB5003638"]
+  PatchGroups: ["MyWindowsPatchGroup"],
+  ApprovalRules: {
+    PatchRules: [
+      {
+        PatchFilterGroup: {
+          PatchFilters: [
+            {
+              Key: "CLASSIFICATION",
+              Values: ["CriticalUpdates"]
+            }
+          ]
+        },
+        ApproveAfterDays: 10,
+        ComplianceLevel: "CRITICAL"
+      }
+    ]
+  },
+  ApprovedPatches: ["Patch-ID-5678"],
+  Tags: [
+    { Key: "Environment", Value: "qa" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```

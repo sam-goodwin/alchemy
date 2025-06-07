@@ -5,78 +5,38 @@ description: Learn how to create, update, and manage AWS IoT DomainConfiguration
 
 # DomainConfiguration
 
-The DomainConfiguration resource allows you to manage [AWS IoT DomainConfigurations](https://docs.aws.amazon.com/iot/latest/userguide/), enabling you to set up custom domains for your AWS IoT endpoints.
+The DomainConfiguration resource lets you create and manage [AWS IoT DomainConfigurations](https://docs.aws.amazon.com/iot/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iot-domainconfiguration.html
 
 ## Minimal Example
-
-Create a basic DomainConfiguration with required properties and one common optional property:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const domainConfig = await AWS.IoT.DomainConfiguration("myDomainConfig", {
-  DomainConfigurationName: "myIoTDomains",
-  DomainName: "iot.mydomain.com",
-  ApplicationProtocol: "http",
-  Tags: [{
-    Key: "Environment",
-    Value: "Production"
-  }]
+const domainconfiguration = await AWS.IoT.DomainConfiguration("domainconfiguration-example", {
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DomainConfiguration with additional security settings, including custom certificates:
+Create a domainconfiguration with additional configuration:
 
 ```ts
-const secureDomainConfig = await AWS.IoT.DomainConfiguration("secureDomainConfig", {
-  DomainConfigurationName: "secureIoTDomains",
-  DomainName: "secure.iot.mydomain.com",
-  ApplicationProtocol: "mqtts",
-  ClientCertificateConfig: {
-    // Example of client certificate configuration
-    CertificateArn: "arn:aws:iot:us-west-2:123456789012:cert/abcdef12-3456-7890-abcd-ef1234567890",
-    Status: "ACTIVE"
-  },
-  ServerCertificateConfig: {
-    // Example of server certificate configuration
-    ServerCertificateArn: "arn:aws:iot:us-west-2:123456789012:cert/abcdef12-3456-7890-abcd-ef1234567890",
-    Status: "ACTIVE"
+import AWS from "alchemy/aws/control";
+
+const advancedDomainConfiguration = await AWS.IoT.DomainConfiguration(
+  "advanced-domainconfiguration",
+  {
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
   }
-});
+);
 ```
 
-## Custom TLS Configuration
-
-Set up a DomainConfiguration with specific TLS settings to enhance security:
-
-```ts
-const tlsDomainConfig = await AWS.IoT.DomainConfiguration("tlsDomainConfig", {
-  DomainConfigurationName: "tlsIoTDomains",
-  DomainName: "tls.iot.mydomain.com",
-  TlsConfig: {
-    InsecureSkipVerification: false,
-    ServerCertificateArns: [
-      "arn:aws:iot:us-west-2:123456789012:cert/abcdef12-3456-7890-abcd-ef1234567890"
-    ]
-  },
-  ValidationCertificateArn: "arn:aws:iot:us-west-2:123456789012:cert/abcdef12-3456-7890-abcd-ef1234567890"
-});
-```
-
-## Using Tags for Organization
-
-Create a DomainConfiguration with multiple tags for better resource organization:
-
-```ts
-const taggedDomainConfig = await AWS.IoT.DomainConfiguration("taggedDomainConfig", {
-  DomainConfigurationName: "taggedIoTDomains",
-  DomainName: "tagged.iot.mydomain.com",
-  Tags: [
-    { Key: "Project", Value: "IoTProject" },
-    { Key: "Owner", Value: "DevTeam" },
-    { Key: "Department", Value: "Engineering" }
-  ]
-});
-```

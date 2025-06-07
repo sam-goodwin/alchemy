@@ -5,87 +5,37 @@ description: Learn how to create, update, and manage AWS Transfer WebApps using 
 
 # WebApp
 
-The WebApp resource lets you manage [AWS Transfer WebApps](https://docs.aws.amazon.com/transfer/latest/userguide/) for file transfer services, providing a customizable web interface for your users.
+The WebApp resource lets you create and manage [AWS Transfer WebApps](https://docs.aws.amazon.com/transfer/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-transfer-webapp.html
 
 ## Minimal Example
-
-Create a basic AWS Transfer WebApp with essential properties and one optional customization.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicWebApp = await AWS.Transfer.WebApp("basicWebApp", {
-  IdentityProviderDetails: {
-    ProviderType: "SERVICE_MANAGED"
-  },
-  WebAppCustomization: {
-    Title: "My WebApp",
-    Logo: "https://example.com/logo.png"
-  }
+const webapp = await AWS.Transfer.WebApp("webapp-example", {
+  IdentityProviderDetails: "example-identityproviderdetails",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AWS Transfer WebApp with advanced settings including a custom endpoint policy and additional web app units.
+Create a webapp with additional configuration:
 
 ```ts
-const advancedWebApp = await AWS.Transfer.WebApp("advancedWebApp", {
-  IdentityProviderDetails: {
-    ProviderType: "API_GATEWAY",
-    Url: "https://example.com/auth"
+import AWS from "alchemy/aws/control";
+
+const advancedWebApp = await AWS.Transfer.WebApp("advanced-webapp", {
+  IdentityProviderDetails: "example-identityproviderdetails",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  WebAppUnits: {
-    User: {
-      Enable: true,
-      MaxSize: 5000
-    }
-  },
-  WebAppEndpointPolicy: JSON.stringify({
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Action: "transfer:ListUsers",
-        Resource: "*"
-      }
-    ]
-  }),
-  Tags: [
-    {
-      Key: "Project",
-      Value: "WebAppProject"
-    }
-  ]
 });
 ```
 
-## Custom Access Endpoint
-
-Set up a web app with a specific access endpoint to control user access.
-
-```ts
-const customAccessWebApp = await AWS.Transfer.WebApp("customAccessWebApp", {
-  IdentityProviderDetails: {
-    ProviderType: "SERVICE_MANAGED"
-  },
-  AccessEndpoint: "https://transfer.example.com",
-  WebAppCustomization: {
-    Title: "Custom Access WebApp",
-    Logo: "https://example.com/custom-logo.png"
-  }
-});
-```
-
-## Adoption of Existing Resource
-
-If you need to adopt an existing AWS Transfer WebApp instead of creating a new one, set the adopt property to true.
-
-```ts
-const adoptedWebApp = await AWS.Transfer.WebApp("adoptedWebApp", {
-  IdentityProviderDetails: {
-    ProviderType: "SERVICE_MANAGED"
-  },
-  adopt: true
-});
-```

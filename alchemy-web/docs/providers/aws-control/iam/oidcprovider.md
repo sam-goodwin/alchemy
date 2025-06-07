@@ -5,59 +5,52 @@ description: Learn how to create, update, and manage AWS IAM OIDCProviders using
 
 # OIDCProvider
 
-The OIDCProvider resource allows you to create and manage [AWS IAM OIDCProviders](https://docs.aws.amazon.com/iam/latest/userguide/), enabling identity federation and access management for applications that use OpenID Connect (OIDC) authentication.
+The OIDCProvider resource allows you to manage [AWS IAM OIDCProviders](https://docs.aws.amazon.com/iam/latest/userguide/) for authentication with OpenID Connect. This resource enables you to link external identity providers with AWS IAM roles.
 
 ## Minimal Example
 
-Create a basic OIDC provider with required properties and a couple of optional settings:
+Create a basic OIDCProvider with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const oidcProvider = await AWS.IAM.OIDCProvider("myOIDCProvider", {
-  Url: "https://example-oidc-provider.com",
-  ClientIdList: ["myClientId"],
-  ThumbprintList: ["abcd1234abcd1234abcd1234abcd1234abcd1234"] // Example thumbprint
+const BasicOIDCProvider = await AWS.IAM.OIDCProvider("BasicOIDCProvider", {
+  Url: "https://oidc.example.com",
+  ClientIdList: ["client-id-1", "client-id-2"],
+  ThumbprintList: ["abc123def456ghi789jkl012mno345pqrs678tuv"],
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Identity" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an OIDC provider with additional tags and multiple client IDs:
+Configure an OIDCProvider with additional options, such as specific tags and a thumbprint list.
 
 ```ts
-const advancedOIDCProvider = await AWS.IAM.OIDCProvider("advancedOIDCProvider", {
-  Url: "https://advanced-oidc-provider.com",
-  ClientIdList: ["myClientId1", "myClientId2"],
-  ThumbprintList: ["abcd1234abcd1234abcd1234abcd1234abcd1234"],
+const AdvancedOIDCProvider = await AWS.IAM.OIDCProvider("AdvancedOIDCProvider", {
+  Url: "https://secure.oidc.example.com",
+  ClientIdList: ["advanced-client-id-1", "advanced-client-id-2"],
+  ThumbprintList: ["def456ghi789jkl012mno345pqrs678tuvabc123"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "IdentityManagement" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" },
+    { Key: "Project", Value: "OIDCIntegration" }
   ]
 });
 ```
 
-## Adoption of Existing OIDC Provider
+## Using Existing OIDC Providers
 
-If an OIDC provider already exists and you want to adopt it instead of creating a new one, you can set the `adopt` property to true:
+You can adopt an existing OIDCProvider instead of creating a new one.
 
 ```ts
-const existingOIDCProvider = await AWS.IAM.OIDCProvider("existingOIDCProvider", {
-  Url: "https://existing-oidc-provider.com",
-  ClientIdList: ["existingClientId"],
-  ThumbprintList: ["abcd1234abcd1234abcd1234abcd1234abcd1234"],
+const AdoptedOIDCProvider = await AWS.IAM.OIDCProvider("AdoptedOIDCProvider", {
+  Url: "https://oidc.existing-provider.com",
+  ClientIdList: ["existing-client-id"],
+  ThumbprintList: ["123abc456def789ghi012jkl345mno678pqr"],
   adopt: true
-});
-```
-
-## Updating an OIDC Provider
-
-To update an existing OIDC provider, you can modify its properties. Here’s how to add a new client ID:
-
-```ts
-const updatedOIDCProvider = await AWS.IAM.OIDCProvider("updatedOIDCProvider", {
-  Url: "https://updated-oidc-provider.com",
-  ClientIdList: ["myClientId", "newClientId"], // Adding a new client ID
-  ThumbprintList: ["abcd1234abcd1234abcd1234abcd1234abcd1234"]
 });
 ```

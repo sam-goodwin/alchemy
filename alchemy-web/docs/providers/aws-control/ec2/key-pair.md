@@ -5,53 +5,65 @@ description: Learn how to create, update, and manage AWS EC2 KeyPairs using Alch
 
 # KeyPair
 
-The KeyPair resource lets you manage [AWS EC2 KeyPairs](https://docs.aws.amazon.com/ec2/latest/userguide/) used for secure access to your EC2 instances.
+The KeyPair resource lets you manage [AWS EC2 KeyPairs](https://docs.aws.amazon.com/ec2/latest/userguide/) for securely accessing your EC2 instances.
 
 ## Minimal Example
 
-Create a basic EC2 KeyPair with a specified name and default options.
+Create a basic EC2 KeyPair with a specified name and a public key material:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicKeyPair = await AWS.EC2.KeyPair("myKeyPair", {
-  KeyName: "my-key-pair",
-  KeyType: "rsa" // Optional: Specifies the type of key
+const MyKeyPair = await AWS.EC2.KeyPair("MyKeyPair", {
+  KeyName: "MyFirstKeyPair",
+  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3... user@hostname",
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "DevTeam" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Create an EC2 KeyPair with a public key material to import an existing key.
+Create an EC2 KeyPair with additional configurations such as key type and format:
 
 ```ts
-const importedKeyPair = await AWS.EC2.KeyPair("importedKeyPair", {
-  KeyName: "imported-key-pair",
-  PublicKeyMaterial: "ssh-rsa AAAAB3...your-public-key..." // Replace with your actual public key
-});
-```
-
-## Using Tags for Resource Management
-
-Create a KeyPair and apply tags for better resource management.
-
-```ts
-const taggedKeyPair = await AWS.EC2.KeyPair("taggedKeyPair", {
-  KeyName: "tagged-key-pair",
+const AdvancedKeyPair = await AWS.EC2.KeyPair("AdvancedKeyPair", {
+  KeyName: "AdvancedKeyPair",
+  KeyType: "rsa",
+  KeyFormat: "pem",
+  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3... user@hostname",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "WebApp" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Backend" }
   ]
 });
 ```
 
-## Adopting an Existing KeyPair
+## Adopting Existing KeyPair
 
-If you want to adopt an existing EC2 KeyPair without failing if it already exists, set the adopt property to true.
+If you want to adopt an existing KeyPair without failing if it already exists, use the `adopt` property:
 
 ```ts
-const adoptedKeyPair = await AWS.EC2.KeyPair("adoptedKeyPair", {
-  KeyName: "existing-key-pair",
-  adopt: true // Set to true to adopt an existing resource
+const AdoptedKeyPair = await AWS.EC2.KeyPair("AdoptedKeyPair", {
+  KeyName: "ExistingKeyPair",
+  adopt: true
+});
+```
+
+## KeyPair with Custom Tagging
+
+Create a KeyPair and apply custom tags for better resource management:
+
+```ts
+const TaggedKeyPair = await AWS.EC2.KeyPair("TaggedKeyPair", {
+  KeyName: "MyTaggedKeyPair",
+  PublicKeyMaterial: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3... user@hostname",
+  Tags: [
+    { Key: "Purpose", Value: "testing" },
+    { Key: "Owner", Value: "QA" },
+    { Key: "Project", Value: "CloudMigration" }
+  ]
 });
 ```

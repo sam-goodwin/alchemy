@@ -5,62 +5,43 @@ description: Learn how to create, update, and manage AWS RefactorSpaces Applicat
 
 # Application
 
-The Application resource allows you to manage [AWS RefactorSpaces Applications](https://docs.aws.amazon.com/refactorspaces/latest/userguide/) for microservices development and deployment. This resource provides a streamlined way to create and configure applications within the RefactorSpaces environment.
+The Application resource lets you create and manage [AWS RefactorSpaces Applications](https://docs.aws.amazon.com/refactorspaces/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-refactorspaces-application.html
 
 ## Minimal Example
-
-Create a basic application with required properties and common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const myApplication = await AWS.RefactorSpaces.Application("my-app", {
-  environmentIdentifier: "env-123456",
-  vpcId: "vpc-abcde123",
-  proxyType: "ApiGateway",
-  name: "MyApplication",
-  apiGatewayProxy: {
-    apiGatewayId: "api-123456"
-  },
-  tags: [
-    { key: "Environment", value: "Development" },
-    { key: "Project", value: "MyProject" }
-  ]
+const application = await AWS.RefactorSpaces.Application("application-example", {
+  EnvironmentIdentifier: "example-environmentidentifier",
+  VpcId: "example-vpcid",
+  ProxyType: "example-proxytype",
+  Name: "application-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an application with more detailed settings, including a specific proxy configuration.
+Create a application with additional configuration:
 
 ```ts
-const advancedApplication = await AWS.RefactorSpaces.Application("advanced-app", {
-  environmentIdentifier: "env-654321",
-  vpcId: "vpc-xyz9876",
-  proxyType: "ApiGateway",
-  name: "AdvancedApplication",
-  apiGatewayProxy: {
-    apiGatewayId: "api-654321",
-    stage: "prod",
-    endpointType: "regional"
+import AWS from "alchemy/aws/control";
+
+const advancedApplication = await AWS.RefactorSpaces.Application("advanced-application", {
+  EnvironmentIdentifier: "example-environmentidentifier",
+  VpcId: "example-vpcid",
+  ProxyType: "example-proxytype",
+  Name: "application-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  tags: [
-    { key: "Environment", value: "Production" },
-    { key: "Team", value: "DevOps" }
-  ]
 });
 ```
 
-## Resource Adoption
-
-Create an application while adopting an existing resource if it already exists.
-
-```ts
-const adoptExistingApplication = await AWS.RefactorSpaces.Application("existing-app", {
-  environmentIdentifier: "env-789012",
-  vpcId: "vpc-uvw456",
-  proxyType: "ApiGateway",
-  name: "ExistingApplication",
-  adopt: true // Adopt existing resource if it already exists
-});
-```

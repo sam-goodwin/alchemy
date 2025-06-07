@@ -5,75 +5,61 @@ description: Learn how to create, update, and manage AWS Organizations Accounts 
 
 # Account
 
-The Account resource lets you manage [AWS Organizations Accounts](https://docs.aws.amazon.com/organizations/latest/userguide/) and their configurations within your AWS Organization.
+The Account resource lets you manage [AWS Organizations Accounts](https://docs.aws.amazon.com/organizations/latest/userguide/) and their configurations within your AWS environment.
 
 ## Minimal Example
 
-Create a basic AWS Organization account with required properties and an optional role name.
+Create a basic AWS Organizations Account with required properties and one optional tag:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const organizationAccount = await AWS.Organizations.Account("new-account", {
-  Email: "new-account@example.com",
-  AccountName: "NewAccount",
-  RoleName: "OrganizationAccountAccessRole"
+const NewAccount = await AWS.Organizations.Account("NewAccount", {
+  Email: "user@example.com",
+  AccountName: "UserAccount",
+  RoleName: "OrganizationAccountAccessRole",
+  Tags: [{ Key: "Environment", Value: "Development" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an account with additional tags for better resource management.
+Configure an account with multiple optional properties, including parent IDs and additional tags:
 
 ```ts
-const taggedAccount = await AWS.Organizations.Account("tagged-account", {
-  Email: "tagged-account@example.com",
-  AccountName: "TaggedAccount",
+const AdvancedAccount = await AWS.Organizations.Account("AdvancedAccount", {
+  Email: "admin@example.com",
+  AccountName: "AdminAccount",
+  RoleName: "AdminRole",
+  ParentIds: ["ou-abcdefgh", "ou-ijklmnop"],
   Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Department", Value: "Engineering" }
-  ]
-});
-```
-
-## Creating Account in a Specific Organizational Unit
-
-Create an account under a specific parent organizational unit (OU).
-
-```ts
-const parentId = "ou-1234-5678"; // Replace with a valid Parent ID
-
-const ouAccount = await AWS.Organizations.Account("ou-account", {
-  Email: "ou-account@example.com",
-  AccountName: "OUAccount",
-  ParentIds: [parentId]
-});
-```
-
-## Adoption of Existing Account
-
-Adopt an existing AWS account without failing if it already exists.
-
-```ts
-const existingAccount = await AWS.Organizations.Account("existing-account", {
-  Email: "existing-account@example.com",
-  AccountName: "ExistingAccount",
+    { Key: "Environment", Value: "Production" },
+    { Key: "Team", Value: "DevOps" }
+  ],
   adopt: true
 });
 ```
 
-## Account Creation with Additional Properties
+## Creating an Account Without Tags
 
-Create an account while also retrieving its ARN and timestamps for tracking.
+Create an account without specifying any tags, showing another use case for the resource:
 
 ```ts
-const detailedAccount = await AWS.Organizations.Account("detailed-account", {
-  Email: "detailed-account@example.com",
-  AccountName: "DetailedAccount",
-  RoleName: "OrganizationAccountAccessRole"
+const NoTagAccount = await AWS.Organizations.Account("NoTagAccount", {
+  Email: "no-tag@example.com",
+  AccountName: "NoTagAccount",
+  RoleName: "NoTagRole"
 });
+```
 
-// Log the account ARN and creation time
-console.log(`Account ARN: ${detailedAccount.Arn}`);
-console.log(`Creation Time: ${detailedAccount.CreationTime}`);
+## Account Adoption Example
+
+Demonstrate adopting an existing account with the `adopt` property set to true:
+
+```ts
+const AdoptedAccount = await AWS.Organizations.Account("AdoptedAccount", {
+  Email: "existing@example.com",
+  AccountName: "ExistingAccount",
+  adopt: true
+});
 ```

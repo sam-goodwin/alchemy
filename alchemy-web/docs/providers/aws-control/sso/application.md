@@ -5,80 +5,43 @@ description: Learn how to create, update, and manage AWS SSO Applications using 
 
 # Application
 
-The Application resource lets you manage [AWS SSO Applications](https://docs.aws.amazon.com/sso/latest/userguide/) for your organization's Single Sign-On configuration.
+The Application resource lets you create and manage [AWS SSO Applications](https://docs.aws.amazon.com/sso/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-sso-application.html
 
 ## Minimal Example
-
-Create a basic AWS SSO Application with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const ssoApplication = await AWS.SSO.Application("mySsoApplication", {
-  applicationProviderArn: "arn:aws:sso:::application-provider/my-application-provider",
-  instanceArn: "arn:aws:sso:::instance/my-sso-instance",
-  name: "MySSOApp",
-  status: "ACTIVE" // Optional
+const application = await AWS.SSO.Application("application-example", {
+  ApplicationProviderArn: "example-applicationproviderarn",
+  InstanceArn: "example-instancearn",
+  Name: "application-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A application resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AWS SSO Application with additional properties such as portal options and tags.
+Create a application with additional configuration:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const advancedSsoApplication = await AWS.SSO.Application("advancedSsoApplication", {
-  applicationProviderArn: "arn:aws:sso:::application-provider/my-advanced-provider",
-  instanceArn: "arn:aws:sso:::instance/my-sso-instance",
-  name: "AdvancedSSOApp",
-  description: "An advanced AWS SSO Application",
-  portalOptions: {
-    // Example portal options configuration
-    logo: "https://example.com/logo.png",
-    displayName: "Advanced MySSOApp"
+const advancedApplication = await AWS.SSO.Application("advanced-application", {
+  ApplicationProviderArn: "example-applicationproviderarn",
+  InstanceArn: "example-instancearn",
+  Name: "application-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  tags: [
-    {
-      key: "Environment",
-      value: "Production"
-    },
-    {
-      key: "Team",
-      value: "DevOps"
-    }
-  ]
+  Description: "A application resource managed by Alchemy",
 });
 ```
 
-## Adoption of Existing Resource
-
-Adopt an existing AWS SSO Application instead of failing if the resource already exists.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const adoptedSsoApplication = await AWS.SSO.Application("adoptedSsoApplication", {
-  applicationProviderArn: "arn:aws:sso:::application-provider/my-existing-provider",
-  instanceArn: "arn:aws:sso:::instance/my-sso-instance",
-  name: "AdoptedSSOApp",
-  adopt: true // Enable adoption of an existing resource
-});
-```
-
-## Resource Update Example
-
-Update an existing AWS SSO Application configuration.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const updatedSsoApplication = await AWS.SSO.Application("existingSsoApplication", {
-  applicationProviderArn: "arn:aws:sso:::application-provider/my-updated-provider",
-  instanceArn: "arn:aws:sso:::instance/my-sso-instance",
-  name: "UpdatedSSOApp",
-  status: "INACTIVE", // Changing status to INACTIVE
-  description: "Updated description for the SSO Application"
-});
-```

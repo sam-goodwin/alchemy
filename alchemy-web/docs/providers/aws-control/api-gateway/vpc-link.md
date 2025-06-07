@@ -5,51 +5,57 @@ description: Learn how to create, update, and manage AWS ApiGateway VpcLinks usi
 
 # VpcLink
 
-The VpcLink resource allows you to manage [AWS ApiGateway VpcLinks](https://docs.aws.amazon.com/apigateway/latest/userguide/) which enable private integration between your API Gateway and resources in your Virtual Private Cloud (VPC).
+The VpcLink resource lets you create and manage [AWS ApiGateway VpcLinks](https://docs.aws.amazon.com/apigateway/latest/userguide/) for connecting your API Gateway to resources in your VPC.
 
 ## Minimal Example
 
-Create a basic VpcLink with required properties and one optional description:
+Create a basic VpcLink with a description and target ARNs.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const vpcLink = await AWS.ApiGateway.VpcLink("myVpcLink", {
+const BasicVpcLink = await AWS.ApiGateway.VpcLink("basicVpcLink", {
   Name: "MyVpcLink",
+  Description: "A VPC link for my API Gateway",
   TargetArns: [
-    "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/my-load-balancer/50dc6c495c0c9188"
+    "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/net/my-load-balancer/50dc6c495c0c9188"
   ],
-  Description: "This VpcLink connects to my private load balancer."
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "API Team" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VpcLink with additional tags for better resource management:
+Create a VpcLink with additional tags and no description for cleaner organization.
 
 ```ts
-const taggedVpcLink = await AWS.ApiGateway.VpcLink("taggedVpcLink", {
-  Name: "TaggedVpcLink",
+const AdvancedVpcLink = await AWS.ApiGateway.VpcLink("advancedVpcLink", {
+  Name: "AdvancedVpcLink",
   TargetArns: [
-    "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/net/my-private-lb/50dc6c495c0c9188"
+    "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/net/my-other-load-balancer/50dc6c495c0c9189"
   ],
   Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "Engineering" }
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Adopting Existing Resources
+## Using Existing VpcLink
 
-If you want to adopt an existing VpcLink instead of failing when it already exists, you can set the `adopt` property to true:
+If you need to adopt an existing VpcLink rather than creating a new one, set the `adopt` property to true.
 
 ```ts
-const existingVpcLink = await AWS.ApiGateway.VpcLink("existingVpcLink", {
+const ExistingVpcLink = await AWS.ApiGateway.VpcLink("existingVpcLink", {
   Name: "ExistingVpcLink",
   TargetArns: [
-    "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/my-existing-lb/50dc6c495c0c9188"
+    "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/net/my-legacy-load-balancer/50dc6c495c0c9190"
   ],
   adopt: true
 });
 ```
+
+This example demonstrates how to configure an existing VpcLink, allowing you to manage it without creating duplicates.

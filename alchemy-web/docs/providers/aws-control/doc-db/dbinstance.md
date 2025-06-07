@@ -5,70 +5,73 @@ description: Learn how to create, update, and manage AWS DocDB DBInstances using
 
 # DBInstance
 
-The DBInstance resource lets you manage [AWS DocumentDB DBInstances](https://docs.aws.amazon.com/docdb/latest/userguide/) for your database applications.
+The DBInstance resource allows you to manage [AWS DocumentDB DBInstances](https://docs.aws.amazon.com/docdb/latest/userguide/) for your database needs, providing options for configuration, scaling, and maintenance.
 
 ## Minimal Example
 
-Create a basic DocumentDB instance with required properties and a common optional property.
+Create a basic AWS DocumentDB DBInstance with required properties and a couple of optional configurations.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const docDbInstance = await AWS.DocDB.DBInstance("myDocDbInstance", {
+const BasicDBInstance = await AWS.DocDB.DBInstance("BasicDBInstance", {
   DBInstanceClass: "db.r5.large",
-  DBClusterIdentifier: "myDocDbCluster",
+  DBClusterIdentifier: "my-docdb-cluster",
   EnablePerformanceInsights: true,
   Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "AlchemyDemo" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "Database" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DocumentDB instance with additional settings such as maintenance window and security options.
+Configure an AWS DocumentDB DBInstance with advanced settings such as maintenance window and certificate rotation.
 
 ```ts
-const advancedDocDbInstance = await AWS.DocDB.DBInstance("advancedDocDbInstance", {
+const AdvancedDBInstance = await AWS.DocDB.DBInstance("AdvancedDBInstance", {
   DBInstanceClass: "db.r5.2xlarge",
-  DBClusterIdentifier: "myDocDbCluster",
-  PreferredMaintenanceWindow: "Mon:00:00-Mon:00:30",
-  AutoMinorVersionUpgrade: true,
+  DBClusterIdentifier: "my-docdb-cluster",
+  PreferredMaintenanceWindow: "sun:23:00-mon:01:00",
   CertificateRotationRestart: true,
-  CACertificateIdentifier: "rds-ca-2019",
+  AutoMinorVersionUpgrade: true,
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "AlchemyDemo" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Creating an Instance in a Specific Availability Zone
+## High Availability Configuration
 
-This example demonstrates how to create a DocumentDB instance in a specific availability zone to optimize latency.
+Create a DBInstance configured for high availability by specifying an Availability Zone.
 
 ```ts
-const azDocDbInstance = await AWS.DocDB.DBInstance("azDocDbInstance", {
+const HighAvailabilityDBInstance = await AWS.DocDB.DBInstance("HighAvailabilityDBInstance", {
   DBInstanceClass: "db.r5.large",
-  DBClusterIdentifier: "myDocDbCluster",
-  AvailabilityZone: "us-east-1a", // Specify the availability zone
+  DBClusterIdentifier: "my-docdb-cluster",
+  AvailabilityZone: "us-west-2a",
   EnablePerformanceInsights: true,
   Tags: [
-    { Key: "Environment", Value: "Staging" },
-    { Key: "Project", Value: "AlchemyDemo" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "HighAvailability" }
   ]
 });
 ```
 
-## Adoption of Existing Resource
+## Adoption of Existing Resources
 
-This example illustrates how to adopt an existing DocumentDB instance rather than creating a new one.
+Adopt an existing DBInstance instead of failing if the resource already exists.
 
 ```ts
-const adoptDocDbInstance = await AWS.DocDB.DBInstance("existingDocDbInstance", {
+const AdoptExistingDBInstance = await AWS.DocDB.DBInstance("AdoptExistingDBInstance", {
   DBInstanceClass: "db.r5.large",
-  DBClusterIdentifier: "myDocDbCluster",
-  adopt: true // Adopt existing resource instead of failing
+  DBClusterIdentifier: "my-docdb-cluster",
+  adopt: true,
+  Tags: [
+    { Key: "Environment", Value: "testing" },
+    { Key: "Team", Value: "Adoption" }
+  ]
 });
 ```

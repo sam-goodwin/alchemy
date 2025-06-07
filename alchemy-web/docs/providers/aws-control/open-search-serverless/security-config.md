@@ -5,65 +5,30 @@ description: Learn how to create, update, and manage AWS OpenSearchServerless Se
 
 # SecurityConfig
 
-The SecurityConfig resource lets you manage [AWS OpenSearchServerless SecurityConfigs](https://docs.aws.amazon.com/opensearchserverless/latest/userguide/) for securing your OpenSearchServerless applications.
+The SecurityConfig resource lets you create and manage [AWS OpenSearchServerless SecurityConfigs](https://docs.aws.amazon.com/opensearchserverless/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-opensearchserverless-securityconfig.html
 
 ## Minimal Example
-
-Create a basic SecurityConfig with essential properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSecurityConfig = await AWS.OpenSearchServerless.SecurityConfig("basicSecurityConfig", {
-  Type: "default",
-  Description: "Basic security configuration for OpenSearchServerless",
-  Name: "BasicSecurityConfig"
+const securityconfig = await AWS.OpenSearchServerless.SecurityConfig("securityconfig-example", {
+  Description: "A securityconfig resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SecurityConfig with SAML options for enhanced security.
+Create a securityconfig with additional configuration:
 
 ```ts
-const advancedSecurityConfig = await AWS.OpenSearchServerless.SecurityConfig("advancedSecurityConfig", {
-  Type: "SAML",
-  Description: "Advanced security configuration with SAML options",
-  Name: "AdvancedSecurityConfig",
-  SamlOptions: {
-    Idp: "https://idp.example.com",
-    Audience: "https://opensearch.example.com",
-    Certificate: "-----BEGIN CERTIFICATE-----\nMIID...==\n-----END CERTIFICATE-----"
-  }
-});
+import AWS from "alchemy/aws/control";
+
+const advancedSecurityConfig = await AWS.OpenSearchServerless.SecurityConfig(
+  "advanced-securityconfig",
+  { Description: "A securityconfig resource managed by Alchemy" }
+);
 ```
 
-## IAM Identity Center Options
-
-This example demonstrates how to configure IAM Identity Center options in a SecurityConfig.
-
-```ts
-const iamIdentityCenterConfig = await AWS.OpenSearchServerless.SecurityConfig("iamIdentityCenterConfig", {
-  Type: "IAM",
-  Description: "Security configuration with IAM Identity Center",
-  Name: "IAMIdentityCenterConfig",
-  IamIdentityCenterOptions: {
-    IdentityStoreId: "identity-store-id",
-    UserPoolId: "user-pool-id",
-    ClientId: "client-id"
-  }
-});
-```
-
-## Adoption of Existing Resources
-
-This example illustrates how to adopt an existing SecurityConfig instead of failing if it already exists.
-
-```ts
-const adoptExistingSecurityConfig = await AWS.OpenSearchServerless.SecurityConfig("adoptExistingSecurityConfig", {
-  Type: "default",
-  Description: "Adopting existing security configuration",
-  Name: "AdoptedSecurityConfig",
-  adopt: true
-});
-```

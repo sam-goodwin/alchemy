@@ -5,59 +5,47 @@ description: Learn how to create, update, and manage AWS IoTFleetWise Fleets usi
 
 # Fleet
 
-The Fleet resource allows you to manage [AWS IoTFleetWise Fleets](https://docs.aws.amazon.com/iotfleetwise/latest/userguide/) for collecting and processing vehicle data efficiently.
+The Fleet resource lets you manage [AWS IoTFleetWise Fleets](https://docs.aws.amazon.com/iotfleetwise/latest/userguide/) for organizing and managing vehicle data collection.
 
 ## Minimal Example
 
-Create a basic fleet with essential properties.
+Create a basic fleet with required properties and an optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicFleet = await AWS.IoTFleetWise.Fleet("my-basic-fleet", {
-  Id: "fleet-12345",
-  SignalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog:catalog-1",
-  Description: "A simple fleet for demonstration purposes."
+const BasicFleet = await AWS.IoTFleetWise.Fleet("BasicFleet", {
+  Id: "Fleet123",
+  SignalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog/SignalCatalog123",
+  Description: "This is a basic fleet for vehicle data collection"
 });
 ```
 
 ## Advanced Configuration
 
-Create a fleet with custom tags for better resource management.
+Configure a fleet with tags for better resource management and identification.
 
 ```ts
-const advancedFleet = await AWS.IoTFleetWise.Fleet("my-advanced-fleet", {
-  Id: "fleet-67890",
-  SignalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog:catalog-2",
-  Description: "An advanced fleet with tags.",
+const TaggedFleet = await AWS.IoTFleetWise.Fleet("TaggedFleet", {
+  Id: "Fleet456",
+  SignalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog/SignalCatalog456",
+  Description: "This fleet has specific tags for management",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "FleetManagement" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
   ]
 });
 ```
 
-## Adoption of Existing Resource
+## Adoption of Existing Resources
 
-Create a fleet while adopting an existing resource instead of failing if it already exists.
+Create a fleet that adopts an existing resource instead of failing if the resource already exists.
 
 ```ts
-const adoptedFleet = await AWS.IoTFleetWise.Fleet("my-adopted-fleet", {
-  Id: "fleet-11223",
-  SignalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog:catalog-3",
-  Description: "An adopted fleet configuration.",
+const AdoptedFleet = await AWS.IoTFleetWise.Fleet("AdoptedFleet", {
+  Id: "Fleet789",
+  SignalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog/SignalCatalog789",
+  Description: "This fleet adopts an existing resource",
   adopt: true
-});
-```
-
-## Update Fleet Configuration
-
-Update an existing fleet's description.
-
-```ts
-const updatedFleet = await AWS.IoTFleetWise.Fleet("my-updated-fleet", {
-  Id: "fleet-12345",
-  SignalCatalogArn: "arn:aws:iotfleetwise:us-west-2:123456789012:signal-catalog:catalog-1",
-  Description: "Updated description for the fleet."
 });
 ```

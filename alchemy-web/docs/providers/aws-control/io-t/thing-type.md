@@ -5,65 +5,76 @@ description: Learn how to create, update, and manage AWS IoT ThingTypes using Al
 
 # ThingType
 
-The ThingType resource allows you to manage [AWS IoT ThingTypes](https://docs.aws.amazon.com/iot/latest/userguide/) which are used to define the characteristics of a group of devices in AWS IoT. This resource can be utilized to create, update, and deprecate ThingTypes for your IoT devices.
+The ThingType resource allows you to manage [AWS IoT ThingTypes](https://docs.aws.amazon.com/iot/latest/userguide/) which define the specifications for a group of IoT Things. This resource helps in organizing and managing your IoT devices effectively.
 
 ## Minimal Example
 
-Create a basic ThingType with a specified name and optional properties.
+Create a basic ThingType with a name and properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicThingType = await AWS.IoT.ThingType("basicThingType", {
+const BasicThingType = await AWS.IoT.ThingType("BasicThingType", {
   ThingTypeName: "TemperatureSensor",
   ThingTypeProperties: {
-    searchableAttributes: ["location", "status"]
-  }
+    // Additional properties can be added here
+  },
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "DeviceType", Value: "Sensor" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ThingType with deprecation settings and tags for better organization.
+Configure a ThingType with deprecation and specific properties.
 
 ```ts
-const advancedThingType = await AWS.IoT.ThingType("advancedThingType", {
-  ThingTypeName: "HumiditySensor",
+const AdvancedThingType = await AWS.IoT.ThingType("AdvancedThingType", {
+  ThingTypeName: "SmartLight",
   ThingTypeProperties: {
-    searchableAttributes: ["location", "model"]
+    // Here, you can define properties specific to your ThingType
+    // For example: 
+    // "Description": "A smart light bulb that can be controlled via IoT"
   },
-  DeprecateThingType: true,
+  DeprecateThingType: false,
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Type", Value: "Sensor" }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "IoT" }
   ]
 });
 ```
 
 ## Deprecating a ThingType
 
-Deprecate an existing ThingType that is no longer needed.
+Demonstrate how to deprecate an existing ThingType.
 
 ```ts
-const deprecateThingType = await AWS.IoT.ThingType("deprecateThingType", {
+const DeprecateThingType = await AWS.IoT.ThingType("DeprecateThingType", {
   ThingTypeName: "OldTemperatureSensor",
-  DeprecateThingType: true
+  DeprecateThingType: true,
+  Tags: [
+    { Key: "Status", Value: "Deprecated" }
+  ]
 });
 ```
 
-## Creating with Tags
+## Updating a ThingType
 
-Create a ThingType that includes multiple tags for better management and identification.
+Show how to update the properties of an existing ThingType.
 
 ```ts
-const taggedThingType = await AWS.IoT.ThingType("taggedThingType", {
-  ThingTypeName: "PressureSensor",
+const UpdateThingType = await AWS.IoT.ThingType("UpdateThingType", {
+  ThingTypeName: "TemperatureSensor",
   ThingTypeProperties: {
-    searchableAttributes: ["location", "model"]
+    // Update properties as needed
+    // For example: 
+    // "Description": "Updated description for temperature sensors"
   },
   Tags: [
-    { Key: "Department", Value: "Engineering" },
-    { Key: "Usage", Value: "Research" }
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "IoT" }
   ]
 });
 ```

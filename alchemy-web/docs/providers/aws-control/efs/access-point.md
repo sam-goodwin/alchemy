@@ -5,16 +5,16 @@ description: Learn how to create, update, and manage AWS EFS AccessPoints using 
 
 # AccessPoint
 
-The AccessPoint resource allows you to manage [AWS EFS AccessPoints](https://docs.aws.amazon.com/efs/latest/userguide/) that simplify the management of file system permissions and access for your applications.
+The AccessPoint resource lets you manage [AWS EFS AccessPoints](https://docs.aws.amazon.com/efs/latest/userguide/) which provide applications with a specific entry point to an Amazon EFS file system.
 
 ## Minimal Example
 
-Create a basic EFS AccessPoint with required properties and one optional root directory.
+Create a basic EFS AccessPoint with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAccessPoint = await AWS.EFS.AccessPoint("basicAccessPoint", {
+const BasicAccessPoint = await AWS.EFS.AccessPoint("BasicAccessPoint", {
   FileSystemId: "fs-12345678",
   RootDirectory: {
     Path: "/data",
@@ -29,41 +29,46 @@ const basicAccessPoint = await AWS.EFS.AccessPoint("basicAccessPoint", {
 
 ## Advanced Configuration
 
-Configure an AccessPoint with advanced settings like POSIX user and tags.
+Configure an AccessPoint with additional settings such as client token and POSIX user.
 
 ```ts
-const advancedAccessPoint = await AWS.EFS.AccessPoint("advancedAccessPoint", {
-  FileSystemId: "fs-12345678",
+const AdvancedAccessPoint = await AWS.EFS.AccessPoint("AdvancedAccessPoint", {
+  FileSystemId: "fs-87654321",
+  RootDirectory: {
+    Path: "/app",
+    CreationInfo: {
+      OwnerUid: "1000",
+      OwnerGid: "1000",
+      Permissions: "750"
+    }
+  },
+  ClientToken: "unique-client-token-123",
   PosixUser: {
-    Gid: "1001",
-    Uid: "1001",
-    SecondaryGid: ["1002"]
+    Gid: "1000",
+    Uid: "1000",
+    SecondaryGids: ["1001", "1002"]
+  }
+});
+```
+
+## Custom Tags
+
+Create an AccessPoint with custom tags to manage resources effectively.
+
+```ts
+const TaggedAccessPoint = await AWS.EFS.AccessPoint("TaggedAccessPoint", {
+  FileSystemId: "fs-11223344",
+  RootDirectory: {
+    Path: "/uploads",
+    CreationInfo: {
+      OwnerUid: "1002",
+      OwnerGid: "1002",
+      Permissions: "755"
+    }
   },
   AccessPointTags: [
-    { Key: "Environment", Value: "Production" },
+    { Key: "Environment", Value: "production" },
     { Key: "Team", Value: "DevOps" }
   ]
-});
-```
-
-## Adoption of Existing Resources
-
-Demonstrate how to adopt an existing EFS AccessPoint if it already exists.
-
-```ts
-const adoptExistingAccessPoint = await AWS.EFS.AccessPoint("existingAccessPoint", {
-  FileSystemId: "fs-12345678",
-  adopt: true
-});
-```
-
-## Client Token Usage
-
-Create an AccessPoint while using a client token for idempotency.
-
-```ts
-const accessPointWithClientToken = await AWS.EFS.AccessPoint("clientTokenAccessPoint", {
-  FileSystemId: "fs-12345678",
-  ClientToken: "unique-client-token-12345"
 });
 ```

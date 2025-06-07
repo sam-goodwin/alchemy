@@ -5,54 +5,54 @@ description: Learn how to create, update, and manage AWS ApiGatewayV2 Authorizer
 
 # Authorizer
 
-The Authorizer resource allows you to manage [AWS ApiGatewayV2 Authorizers](https://docs.aws.amazon.com/apigatewayv2/latest/userguide/) to control access to your API Gateway APIs.
+The Authorizer resource allows you to manage [AWS ApiGatewayV2 Authorizers](https://docs.aws.amazon.com/apigatewayv2/latest/userguide/) that control access to your APIs by validating incoming requests.
 
 ## Minimal Example
 
-Create a basic Authorizer that uses a Lambda function as the authorizer and defines a simple identity source.
+Create a basic Authorizer for an API using JWT validation.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAuthorizer = await AWS.ApiGatewayV2.Authorizer("basicAuthorizer", {
+const BasicAuthorizer = await AWS.ApiGatewayV2.Authorizer("BasicJwtAuthorizer", {
   ApiId: "myApiId",
-  Name: "MyBasicAuthorizer",
-  AuthorizerType: "REQUEST",
+  Name: "BasicJWTAuth",
+  AuthorizerType: "JWT",
   IdentitySource: ["$request.header.Authorization"],
-  AuthorizerUri: "arn:aws:lambda:us-east-1:123456789012:function:myAuthFunction"
+  JwtConfiguration: {
+    Audience: ["myAudience"],
+    Issuer: "https://myissuer.com"
+  }
 });
 ```
 
 ## Advanced Configuration
 
-Configure an Authorizer with JWT validation and a custom identity validation expression.
+Configure an Authorizer with a custom URI and result TTL settings.
 
 ```ts
-const jwtAuthorizer = await AWS.ApiGatewayV2.Authorizer("jwtAuthorizer", {
+const AdvancedAuthorizer = await AWS.ApiGatewayV2.Authorizer("AdvancedCustomUriAuthorizer", {
   ApiId: "myApiId",
-  Name: "MyJWTAuthorizer",
-  AuthorizerType: "JWT",
-  JwtConfiguration: {
-    Audience: ["my-audience"],
-    Issuer: "https://my-issuer.com/"
-  },
+  Name: "AdvancedCustomAuth",
+  AuthorizerType: "REQUEST",
+  AuthorizerUri: "https://custom-auth-endpoint.com/auth",
+  AuthorizerCredentialsArn: "arn:aws:iam::123456789012:role/myAuthRole",
+  AuthorizerResultTtlInSeconds: 300,
   IdentitySource: ["$request.header.Authorization"],
-  AuthorizerResultTtlInSeconds: 300 // Cache results for 5 minutes
+  EnableSimpleResponses: true
 });
 ```
 
-## Custom Authorizer with Credentials
+## Using Identity Validation Expression
 
-Create a custom Authorizer that uses IAM roles for execution.
+This example demonstrates creating an Authorizer that uses an identity validation expression to validate incoming requests.
 
 ```ts
-const customAuthorizer = await AWS.ApiGatewayV2.Authorizer("customAuthorizer", {
+const ValidationExpressionAuthorizer = await AWS.ApiGatewayV2.Authorizer("ValidationExpressionAuth", {
   ApiId: "myApiId",
-  Name: "MyCustomAuthorizer",
+  Name: "ValidationExpressionAuth",
   AuthorizerType: "REQUEST",
-  AuthorizerCredentialsArn: "arn:aws:iam::123456789012:role/myAuthorizerRole",
-  IdentitySource: ["$request.header.Authorization"],
-  AuthorizerUri: "arn:aws:lambda:us-east-1:123456789012:function:myCustomAuthFunction",
-  EnableSimpleResponses: true
+  IdentityValidationExpression: "Bearer [A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+",
+  IdentitySource: ["$request.header.Authorization"]
 });
 ```

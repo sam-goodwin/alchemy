@@ -5,25 +5,21 @@ description: Learn how to create, update, and manage AWS Shield ProactiveEngagem
 
 # ProactiveEngagement
 
-The ProactiveEngagement resource allows you to configure AWS Shield Proactive Engagement settings, which enable you to receive alerts and notifications during DDoS attacks. This resource is essential for maintaining the security and availability of your applications by ensuring that your emergency contacts are promptly notified. For more information, refer to the [AWS Shield ProactiveEngagements documentation](https://docs.aws.amazon.com/shield/latest/userguide/).
+The ProactiveEngagement resource allows you to manage proactive engagement settings for AWS Shield, helping you to configure and handle emergency contacts for DDoS response. For more information, refer to the [AWS Shield ProactiveEngagements](https://docs.aws.amazon.com/shield/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic Proactive Engagement configuration with required properties.
+This example demonstrates how to create a basic ProactiveEngagement configuration with the required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const proactiveEngagement = await AWS.Shield.ProactiveEngagement("defaultProactiveEngagement", {
+const BasicProactiveEngagement = await AWS.Shield.ProactiveEngagement("BasicEngagement", {
   ProactiveEngagementStatus: "ENABLED",
   EmergencyContactList: [
     {
-      EmailAddress: "ops-team@example.com",
-      ContactId: "1234567890"
-    },
-    {
-      EmailAddress: "security-team@example.com",
-      ContactId: "0987654321"
+      EmailAddress: "admin@example.com",
+      PhoneNumber: "+12065551234"
     }
   ]
 });
@@ -31,57 +27,45 @@ const proactiveEngagement = await AWS.Shield.ProactiveEngagement("defaultProacti
 
 ## Advanced Configuration
 
-Configure a Proactive Engagement with additional optional properties such as adopting existing resources.
+In this example, we configure the ProactiveEngagement resource with additional properties, such as adopting an existing resource and providing multiple emergency contacts.
 
 ```ts
-const advancedProactiveEngagement = await AWS.Shield.ProactiveEngagement("advancedProactiveEngagement", {
+const AdvancedProactiveEngagement = await AWS.Shield.ProactiveEngagement("AdvancedEngagement", {
   ProactiveEngagementStatus: "ENABLED",
   EmergencyContactList: [
     {
-      EmailAddress: "devops@example.com",
-      ContactId: "1122334455"
+      EmailAddress: "secops@example.com",
+      PhoneNumber: "+12065559876"
+    },
+    {
+      EmailAddress: "it-support@example.com",
+      PhoneNumber: "+12065552345"
     }
   ],
-  adopt: true // Allows adopting an existing resource instead of failing
+  adopt: true
 });
 ```
 
-## Handling Multiple Contacts
+## Custom Emergency Contact Configuration
 
-Set up multiple emergency contacts to ensure redundancy in notifications.
+This example outlines how to set up a ProactiveEngagement with a detailed emergency contact list, tailored for a specific operational team.
 
 ```ts
-const multiContactProactiveEngagement = await AWS.Shield.ProactiveEngagement("multiContactProactiveEngagement", {
+const CustomContactEngagement = await AWS.Shield.ProactiveEngagement("CustomContactEngagement", {
   ProactiveEngagementStatus: "ENABLED",
   EmergencyContactList: [
     {
-      EmailAddress: "contact1@example.com",
-      ContactId: "abc123"
+      EmailAddress: "emergency@example.com",
+      PhoneNumber: "+12065557654"
     },
     {
-      EmailAddress: "contact2@example.com",
-      ContactId: "def456"
-    },
-    {
-      EmailAddress: "contact3@example.com",
-      ContactId: "ghi789"
+      EmailAddress: "on-call@example.com",
+      PhoneNumber: "+12065553210"
     }
   ]
 });
 ```
 
-## Disabling Proactive Engagement
+## Summary
 
-Example of disabling Proactive Engagement while retaining the emergency contacts.
-
-```ts
-const disableProactiveEngagement = await AWS.Shield.ProactiveEngagement("disableProactiveEngagement", {
-  ProactiveEngagementStatus: "DISABLED",
-  EmergencyContactList: [
-    {
-      EmailAddress: "retained-contact@example.com",
-      ContactId: "xyz123"
-    }
-  ]
-});
-```
+The ProactiveEngagement resource is essential for organizations that want to ensure rapid response to DDoS attacks through proper emergency contact management. By utilizing the examples above, you can effectively configure and manage ProactiveEngagement settings tailored to your operational needs.

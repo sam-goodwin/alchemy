@@ -5,61 +5,56 @@ description: Learn how to create, update, and manage AWS Bedrock FlowVersions us
 
 # FlowVersion
 
-The FlowVersion resource allows you to manage [AWS Bedrock FlowVersions](https://docs.aws.amazon.com/bedrock/latest/userguide/) for your applications. This resource enables you to define, update, and deploy specific versions of flows within AWS Bedrock.
+The FlowVersion resource allows you to create and manage versions of AWS Bedrock workflows. You can define different versions of your workflows and easily switch between them as needed. For more information, refer to the [AWS Bedrock FlowVersions](https://docs.aws.amazon.com/bedrock/latest/userguide/) documentation.
 
 ## Minimal Example
 
-Create a basic FlowVersion with required and common optional properties.
+Create a basic FlowVersion with the required properties and a common optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicFlowVersion = await AWS.Bedrock.FlowVersion("basic-flow-version", {
-  FlowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/my-flow",
-  Description: "Initial version of my flow"
+const BasicFlowVersion = await AWS.Bedrock.FlowVersion("BasicFlowVersion", {
+  FlowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/my-first-flow",
+  Description: "This is the first version of my workflow"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a FlowVersion with additional properties, including the ability to adopt an existing resource.
+Configure a FlowVersion with additional properties for better management and tracking.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const advancedFlowVersion = await AWS.Bedrock.FlowVersion("advanced-flow-version", {
-  FlowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/my-advanced-flow",
-  Description: "Advanced configuration of my flow",
-  adopt: true // Allows adoption of an existing FlowVersion
+const AdvancedFlowVersion = await AWS.Bedrock.FlowVersion("AdvancedFlowVersion", {
+  FlowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/my-first-flow",
+  Description: "This version includes additional features and optimizations",
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Resource Updating Example
+## Version Adoption
 
-Update an existing FlowVersion to modify its description without changing other properties.
+Demonstrate how to adopt an existing FlowVersion instead of failing if it already exists.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const updatedFlowVersion = await AWS.Bedrock.FlowVersion("updated-flow-version", {
-  FlowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/my-flow",
-  Description: "Updated version of my flow for new features"
+const AdoptedFlowVersion = await AWS.Bedrock.FlowVersion("AdoptedFlowVersion", {
+  FlowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/my-first-flow",
+  Description: "Adopting existing workflow version",
+  adopt: true
 });
 ```
 
-## Retrieving FlowVersion Information
+## Resource Outputs
 
-Retrieve the details of a FlowVersion including its creation and last update timestamps.
+Access the outputs of the created FlowVersion resource for further use.
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const flowVersionDetails = await AWS.Bedrock.FlowVersion("retrieve-flow-version", {
-  FlowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/my-flow"
+const FlowVersionOutput = await AWS.Bedrock.FlowVersion("FlowVersionOutput", {
+  FlowArn: "arn:aws:bedrock:us-west-2:123456789012:flow/my-first-flow",
+  Description: "Getting outputs of the FlowVersion"
 });
 
-// Accessing additional properties
-console.log(`Flow Version ARN: ${flowVersionDetails.Arn}`);
-console.log(`Created At: ${flowVersionDetails.CreationTime}`);
-console.log(`Last Updated At: ${flowVersionDetails.LastUpdateTime}`);
+// Example of accessing the ARN and creation time
+console.log("FlowVersion ARN:", FlowVersionOutput.Arn);
+console.log("FlowVersion Created At:", FlowVersionOutput.CreationTime);
 ```

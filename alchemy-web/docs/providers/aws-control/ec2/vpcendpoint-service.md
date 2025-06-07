@@ -5,65 +5,78 @@ description: Learn how to create, update, and manage AWS EC2 VPCEndpointServices
 
 # VPCEndpointService
 
-The VPCEndpointService resource lets you create and manage [AWS EC2 VPCEndpointServices](https://docs.aws.amazon.com/ec2/latest/userguide/) that enable private connectivity between VPCs and services without exposing the services to the public internet.
+The VPCEndpointService resource allows you to create and manage [AWS EC2 VPCEndpointServices](https://docs.aws.amazon.com/ec2/latest/userguide/), which enable you to connect your Virtual Private Cloud (VPC) to supported AWS services and VPC endpoint services.
 
 ## Minimal Example
 
-Create a basic VPC Endpoint Service using a Network Load Balancer.
+Create a basic VPC Endpoint Service with a specified Network Load Balancer ARN:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const vpcEndpointService = await AWS.EC2.VPCEndpointService("myVpcEndpointService", {
+const VpcEndpointService = await AWS.EC2.VPCEndpointService("MyVpcEndpointService", {
   NetworkLoadBalancerArns: [
-    "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/my-load-balancer/50dc6c495c0c9188"
+    "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/net/MyLoadBalancer/50dc6c495c0c9188"
   ],
-  AcceptanceRequired: false
+  AcceptanceRequired: false,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Networking" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VPC Endpoint Service with additional options like contributor insights and tags.
+Configure a VPC Endpoint Service with additional options like Contributor Insights and Gateway Load Balancer ARNs:
 
 ```ts
-const advancedVpcEndpointService = await AWS.EC2.VPCEndpointService("advancedVpcEndpointService", {
+const AdvancedVpcEndpointService = await AWS.EC2.VPCEndpointService("AdvancedVpcEndpointService", {
   NetworkLoadBalancerArns: [
-    "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/my-load-balancer/50dc6c495c0c9188"
+    "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/MyAdvancedLoadBalancer/12345abcdef"
+  ],
+  GatewayLoadBalancerArns: [
+    "arn:aws:elasticloadbalancing:us-east-1:123456789012:gateway-load-balancer/MyGatewayLoadBalancer"
   ],
   ContributorInsightsEnabled: true,
+  SupportedIpAddressTypes: ["ipv4"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyProject" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Using Gateway Load Balancers
+## Custom Acceptance Required
 
-Create a VPC Endpoint Service that uses a Gateway Load Balancer for connecting to services.
+Create a VPC Endpoint Service that requires acceptance from service consumers:
 
 ```ts
-const gatewayVpcEndpointService = await AWS.EC2.VPCEndpointService("gatewayVpcEndpointService", {
-  GatewayLoadBalancerArns: [
-    "arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/gateway/my-gateway-lb/1234567890abcdef"
+const AcceptanceRequiredVpcEndpointService = await AWS.EC2.VPCEndpointService("AcceptanceRequiredVpcEndpointService", {
+  NetworkLoadBalancerArns: [
+    "arn:aws:elasticloadbalancing:us-west-1:123456789012:loadbalancer/net/MyAcceptanceLoadBalancer/67890fghijk"
   ],
-  PayerResponsibility: "ServiceOwner"
+  AcceptanceRequired: true,
+  Tags: [
+    { Key: "Environment", Value: "testing" },
+    { Key: "Owner", Value: "JohnDoe" }
+  ]
 });
 ```
 
-## Specifying Supported Regions
+## Multiple Regions Support
 
-Set up a VPC Endpoint Service that specifies supported regions for the service.
+Create a VPC Endpoint Service that supports multiple regions:
 
 ```ts
-const regionalVpcEndpointService = await AWS.EC2.VPCEndpointService("regionalVpcEndpointService", {
+const MultiRegionVpcEndpointService = await AWS.EC2.VPCEndpointService("MultiRegionVpcEndpointService", {
   NetworkLoadBalancerArns: [
-    "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/my-load-balancer/50dc6c495c0c9188"
+    "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/MyMultiRegionLoadBalancer/abcde12345"
   ],
-  SupportedRegions: [
-    "us-east-1",
-    "us-west-2"
+  SupportedRegions: ["us-east-1", "us-west-2"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Project", Value: "CrossRegionService" }
   ]
 });
 ```

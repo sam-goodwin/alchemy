@@ -5,84 +5,103 @@ description: Learn how to create, update, and manage AWS WAFRegional SizeConstra
 
 # SizeConstraintSet
 
-The SizeConstraintSet resource allows you to create and manage [AWS WAFRegional SizeConstraintSets](https://docs.aws.amazon.com/wafregional/latest/userguide/), which are used to specify size constraints for web requests.
+The SizeConstraintSet resource lets you define a set of size constraints for your AWS WAFRegional web ACLs. This allows you to specify rules based on the size of specified request components. For more information, visit the [AWS WAFRegional SizeConstraintSets](https://docs.aws.amazon.com/wafregional/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic SizeConstraintSet with required properties and a common optional property.
+Create a basic SizeConstraintSet with required properties and common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSizeConstraintSet = await AWS.WAFRegional.SizeConstraintSet("basicSizeConstraintSet", {
-  name: "BasicSizeConstraintSet",
-  sizeConstraints: [
+const BasicSizeConstraintSet = await AWS.WAFRegional.SizeConstraintSet("BasicSizeConstraintSet", {
+  Name: "MySizeConstraintSet",
+  SizeConstraints: [
     {
-      fieldToMatch: { type: "URI" },
-      comparisonOperator: "GT",
-      size: 1024,
-      textTransformation: "NONE"
+      ComparisonOperator: "GT",
+      Size: 100,
+      FieldToMatch: {
+        Type: "HEADER",
+        Data: "Content-Length"
+      },
+      TextTransformation: "NONE"
     }
-  ]
+  ],
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SizeConstraintSet with multiple size constraints and various fields.
+Configure a SizeConstraintSet with multiple size constraints for different fields.
 
 ```ts
-const advancedSizeConstraintSet = await AWS.WAFRegional.SizeConstraintSet("advancedSizeConstraintSet", {
-  name: "AdvancedSizeConstraintSet",
-  sizeConstraints: [
+const AdvancedSizeConstraintSet = await AWS.WAFRegional.SizeConstraintSet("AdvancedSizeConstraintSet", {
+  Name: "AdvancedSizeConstraintSet",
+  SizeConstraints: [
     {
-      fieldToMatch: { type: "HEADER", data: "User-Agent" },
-      comparisonOperator: "EQ",
-      size: 256,
-      textTransformation: "NONE"
+      ComparisonOperator: "LE",
+      Size: 200,
+      FieldToMatch: {
+        Type: "QUERY_STRING",
+        Data: "param1"
+      },
+      TextTransformation: "URL_DECODE"
     },
     {
-      fieldToMatch: { type: "BODY" },
-      comparisonOperator: "LE",
-      size: 2048,
-      textTransformation: "NONE"
+      ComparisonOperator: "EQ",
+      Size: 150,
+      FieldToMatch: {
+        Type: "BODY",
+        Data: ""
+      },
+      TextTransformation: "HTML_ENTITY_DECODE"
     }
-  ]
+  ],
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Use Case: Blocking Large Requests
+## Use Case: Enforcing Size Limits
 
-Create a SizeConstraintSet to block requests with a body larger than a specified size.
+Create a SizeConstraintSet to enforce limits on request body sizes for security purposes.
 
 ```ts
-const blockLargeRequestsSet = await AWS.WAFRegional.SizeConstraintSet("blockLargeRequestsSet", {
-  name: "BlockLargeRequestsSet",
-  sizeConstraints: [
+const SecuritySizeConstraintSet = await AWS.WAFRegional.SizeConstraintSet("SecuritySizeConstraintSet", {
+  Name: "SecuritySizeLimits",
+  SizeConstraints: [
     {
-      fieldToMatch: { type: "BODY" },
-      comparisonOperator: "GT",
-      size: 4096,
-      textTransformation: "NONE"
+      ComparisonOperator: "GT",
+      Size: 5120, // Limit to 5 KB
+      FieldToMatch: {
+        Type: "BODY",
+        Data: ""
+      },
+      TextTransformation: "NONE"
     }
-  ]
+  ],
+  adopt: false // Fail if resource already exists
 });
 ```
 
-## Use Case: Limiting Header Size
+## Use Case: Filtering Based on Header Size
 
-Create a SizeConstraintSet to limit the size of a specific header.
+Define a SizeConstraintSet that checks the size of a custom header.
 
 ```ts
-const limitHeaderSizeSet = await AWS.WAFRegional.SizeConstraintSet("limitHeaderSizeSet", {
-  name: "LimitHeaderSizeSet",
-  sizeConstraints: [
+const HeaderSizeConstraintSet = await AWS.WAFRegional.SizeConstraintSet("HeaderSizeConstraintSet", {
+  Name: "HeaderSizeConstraints",
+  SizeConstraints: [
     {
-      fieldToMatch: { type: "HEADER", data: "Content-Length" },
-      comparisonOperator: "GT",
-      size: 512,
-      textTransformation: "NONE"
+      ComparisonOperator: "EQ",
+      Size: 50,
+      FieldToMatch: {
+        Type: "HEADER",
+        Data: "X-Custom-Header"
+      },
+      TextTransformation: "NONE"
     }
-  ]
+  ],
+  adopt: true // Adopt existing resource if it already exists
 });
 ```

@@ -5,39 +5,53 @@ description: Learn how to create, update, and manage AWS CloudFormation Publishe
 
 # Publisher
 
-The Publisher resource lets you manage [AWS CloudFormation Publishers](https://docs.aws.amazon.com/cloudformation/latest/userguide/) which are used to publish CloudFormation templates for public use.
+The Publisher resource allows you to create and manage AWS CloudFormation Publishers, enabling you to publish your CloudFormation templates for use in AWS. For more details, refer to the [AWS CloudFormation Publishers documentation](https://docs.aws.amazon.com/cloudformation/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic CloudFormation Publisher with the required properties and an optional connection ARN:
+Create a basic CloudFormation Publisher with the required properties:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const cloudFormationPublisher = await AWS.CloudFormation.Publisher("myPublisher", {
-  AcceptTermsAndConditions: true,
-  ConnectionArn: "arn:aws:codestar-connections:us-west-2:123456789012:connection/abcd1234-56ef-78gh-90ij-klmnopqrstuv"
+const basicPublisher = await AWS.CloudFormation.Publisher("BasicPublisher", {
+  AcceptTermsAndConditions: true // Accept the terms and conditions
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CloudFormation Publisher with the adoption property set to true, allowing it to adopt existing resources:
+Configure a CloudFormation Publisher with additional options, including a connection ARN:
 
 ```ts
-const existingPublisher = await AWS.CloudFormation.Publisher("existingPublisher", {
-  AcceptTermsAndConditions: true,
-  adopt: true
+const advancedPublisher = await AWS.CloudFormation.Publisher("AdvancedPublisher", {
+  AcceptTermsAndConditions: true, // Accept the terms and conditions
+  ConnectionArn: "arn:aws:codestar-connections:us-east-1:123456789012:connection/abcd1234-5678-90ab-cdef-EXAMPLE11111"
 });
 ```
 
-## Publish with Connection
+## Adoption of Existing Resources
 
-Create a CloudFormation Publisher that specifies a connection ARN for integration with other AWS services:
+Use the adoption feature to manage an existing CloudFormation Publisher without failing if it already exists:
 
 ```ts
-const connectedPublisher = await AWS.CloudFormation.Publisher("connectedPublisher", {
+const adoptedPublisher = await AWS.CloudFormation.Publisher("AdoptedPublisher", {
   AcceptTermsAndConditions: true,
-  ConnectionArn: "arn:aws:codestar-connections:us-east-1:987654321098:connection/wxyz9876-54ts-32rq-10po-nmabcdefghij"
+  adopt: true // Adopt existing resource instead of failing
 });
+```
+
+## Publisher with Additional Metadata
+
+Create a CloudFormation Publisher while also retrieving its ARN and creation time:
+
+```ts
+const publisherWithMetadata = await AWS.CloudFormation.Publisher("PublisherWithMetadata", {
+  AcceptTermsAndConditions: true
+});
+
+// Accessing the ARN and creation time
+const publisherArn = publisherWithMetadata.Arn;
+const creationTime = publisherWithMetadata.CreationTime;
+console.log(`Publisher ARN: ${publisherArn}, Created At: ${creationTime}`);
 ```

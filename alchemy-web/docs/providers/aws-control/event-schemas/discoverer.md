@@ -5,52 +5,45 @@ description: Learn how to create, update, and manage AWS EventSchemas Discoverer
 
 # Discoverer
 
-The Discoverer resource lets you manage [AWS EventSchemas Discoverers](https://docs.aws.amazon.com/eventschemas/latest/userguide/) to facilitate the discovery of event schemas in your AWS environment.
+The Discoverer resource allows you to create and manage [AWS EventSchemas Discoverers](https://docs.aws.amazon.com/eventschemas/latest/userguide/) which are essential for discovering and managing event schemas in AWS.
 
 ## Minimal Example
 
-Create a basic EventSchemas Discoverer with essential properties:
+This example demonstrates how to create a basic EventSchemas Discoverer with required properties and a description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicDiscoverer = await AWS.EventSchemas.Discoverer("basic-discoverer", {
+const BasicDiscoverer = await AWS.EventSchemas.Discoverer("BasicDiscoverer", {
   SourceArn: "arn:aws:events:us-west-2:123456789012:event-bus/default",
-  Description: "This discoverer is for the default event bus.",
-  CrossAccount: false
+  Description: "A basic discoverer for event schemas"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a Discoverer with additional tags and cross-account access:
+In this example, we configure a Discoverer with cross-account capabilities and tags for better resource management.
 
 ```ts
-const advancedDiscoverer = await AWS.EventSchemas.Discoverer("advanced-discoverer", {
-  SourceArn: "arn:aws:events:us-west-2:123456789012:event-bus/custom-bus",
-  Description: "This discoverer supports cross-account access.",
+const AdvancedDiscoverer = await AWS.EventSchemas.Discoverer("AdvancedDiscoverer", {
+  SourceArn: "arn:aws:events:us-west-2:123456789012:event-bus/default",
   CrossAccount: true,
+  Description: "An advanced discoverer for event schemas with cross-account access",
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Department",
-      Value: "Finance"
-    }
+    { Key: "Environment", Value: "development" },
+    { Key: "Owner", Value: "EventTeam" }
   ]
 });
 ```
 
 ## Adoption of Existing Resource
 
-Create a Discoverer that adopts an existing resource if it already exists:
+This example shows how to adopt an existing Discoverer resource instead of failing if it already exists. It uses the `adopt` property to ensure seamless resource management.
 
 ```ts
-const adoptDiscoverer = await AWS.EventSchemas.Discoverer("adopt-discoverer", {
-  SourceArn: "arn:aws:events:us-west-2:123456789012:event-bus/adopt-bus",
-  Description: "This discoverer will adopt the existing resource.",
+const AdoptedDiscoverer = await AWS.EventSchemas.Discoverer("AdoptedDiscoverer", {
+  SourceArn: "arn:aws:events:us-west-2:123456789012:event-bus/default",
+  Description: "An adopted discoverer that manages existing resources",
   adopt: true
 });
 ```

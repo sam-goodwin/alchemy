@@ -5,78 +5,42 @@ description: Learn how to create, update, and manage AWS SQS QueuePolicies using
 
 # QueuePolicy
 
-The QueuePolicy resource allows you to manage the permissions for Amazon SQS queues, enabling you to control access and define who can send messages to your queues. For detailed information, refer to the [AWS SQS QueuePolicies documentation](https://docs.aws.amazon.com/sqs/latest/userguide/).
+The QueuePolicy resource allows you to manage [AWS SQS QueuePolicies](https://docs.aws.amazon.com/sqs/latest/userguide/) for your Amazon Simple Queue Service (SQS) queues. This resource enables you to set permissions for your queues, allowing you to control access and manage security effectively.
 
 ## Minimal Example
 
-Create a basic SQS QueuePolicy that allows specific AWS accounts to send messages to an SQS queue.
+Create a basic SQS QueuePolicy that allows specific actions on a queue.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const queuePolicy = await AWS.SQS.QueuePolicy("basicQueuePolicy", {
+const BasicQueuePolicy = await AWS.SQS.QueuePolicy("BasicQueuePolicy", {
   PolicyDocument: {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Principal: {
-          AWS: [
-            "arn:aws:iam::123456789012:root"
-          ]
-        },
+        Principal: "*",
         Action: "SQS:SendMessage",
-        Resource: "arn:aws:sqs:us-east-1:123456789012:myQueue"
-      }
-    ]
-  },
-  Queues: [
-    "arn:aws:sqs:us-east-1:123456789012:myQueue"
-  ],
-  adopt: true
-});
-```
-
-## Advanced Configuration
-
-Configure a queue policy that allows multiple principals and conditions to send messages based on specific attributes.
-
-```ts
-const advancedQueuePolicy = await AWS.SQS.QueuePolicy("advancedQueuePolicy", {
-  PolicyDocument: {
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Principal: {
-          AWS: [
-            "arn:aws:iam::123456789012:role/MyRole",
-            "arn:aws:iam::987654321098:root"
-          ]
-        },
-        Action: "SQS:SendMessage",
-        Resource: "arn:aws:sqs:us-east-1:123456789012:myQueue",
+        Resource: "*",
         Condition: {
           "StringEquals": {
-            "aws:SourceArn": "arn:aws:lambda:us-east-1:123456789012:function:myFunction"
+            "AWS:SourceAccount": "123456789012"
           }
         }
       }
     ]
   },
-  Queues: [
-    "arn:aws:sqs:us-east-1:123456789012:myQueue"
-  ],
-  adopt: false
+  Queues: ["MyQueue"]
 });
 ```
 
-## Example with Multiple Queues
+## Advanced Configuration
 
-Create a policy that applies to multiple SQS queues, allowing a specific IAM role to send messages.
+Configure a QueuePolicy with multiple statements and conditions for enhanced security.
 
 ```ts
-const multiQueuePolicy = await AWS.SQS.QueuePolicy("multiQueuePolicy", {
+const AdvancedQueuePolicy = await AWS.SQS.QueuePolicy("AdvancedQueuePolicy", {
   PolicyDocument: {
     Version: "2012-10-17",
     Statement: [
@@ -85,19 +49,53 @@ const multiQueuePolicy = await AWS.SQS.QueuePolicy("multiQueuePolicy", {
         Principal: {
           AWS: "arn:aws:iam::123456789012:role/MyRole"
         },
-        Action: "SQS:SendMessage",
-        Resource: [
-          "arn:aws:sqs:us-east-1:123456789012:myQueue1",
-          "arn:aws:sqs:us-east-1:123456789012:myQueue2"
-        ]
+        Action: "SQS:ReceiveMessage",
+        Resource: "arn:aws:sqs:us-west-2:123456789012:MyQueue",
+        Condition: {
+          "StringEquals": {
+            "AWS:SourceAccount": "123456789012"
+          }
+        }
+      },
+      {
+        Effect: "Deny",
+        Principal: "*",
+        Action: "SQS:DeleteMessage",
+        Resource: "arn:aws:sqs:us-west-2:123456789012:MyQueue",
+        Condition: {
+          "StringEquals": {
+            "AWS:SourceAccount": "987654321098"
+          }
+        }
       }
     ]
   },
-  Queues: [
-    "arn:aws:sqs:us-east-1:123456789012:myQueue1",
-    "arn:aws:sqs:us-east-1:123456789012:myQueue2"
-  ]
+  Queues: ["MyQueue"]
 });
 ```
 
-These examples demonstrate how to effectively manage SQS QueuePolicies using Alchemy, enabling you to control access to your SQS resources with precision.
+## Restrict Access by IP
+
+Set a QueuePolicy that restricts access based on IP address.
+
+```ts
+const IpRestrictedQueuePolicy = await AWS.SQS.QueuePolicy("IpRestrictedQueuePolicy", {
+  PolicyDocument: {
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: "*",
+        Action: "SQS:SendMessage",
+        Resource: "arn:aws:sqs:us-west-2:123456789012:MyQueue",
+        Condition: {
+          "IpAddress": {
+            "aws:SourceIp": "203.0.113.0/24"
+          }
+        }
+      }
+    ]
+  },
+  Queues: ["MyQueue"]
+});
+```

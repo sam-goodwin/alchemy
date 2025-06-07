@@ -5,57 +5,64 @@ description: Learn how to create, update, and manage AWS MediaLive ChannelPlacem
 
 # ChannelPlacementGroup
 
-The ChannelPlacementGroup resource allows you to manage [AWS MediaLive ChannelPlacementGroups](https://docs.aws.amazon.com/medialive/latest/userguide/) to optimize the placement of your media live channels.
+The ChannelPlacementGroup resource allows you to manage [AWS MediaLive ChannelPlacementGroups](https://docs.aws.amazon.com/medialive/latest/userguide/) for organizing your MediaLive channels into a placement group, optimizing their placement across the resources in your cluster.
 
 ## Minimal Example
 
-Create a basic ChannelPlacementGroup with required properties and one optional tag.
+Create a basic ChannelPlacementGroup with necessary properties and one optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const channelPlacementGroup = await AWS.MediaLive.ChannelPlacementGroup("basicPlacementGroup", {
-  clusterId: "myClusterId",
-  tags: [{
-    Key: "Environment",
-    Value: "Production"
-  }]
+const MinimalChannelPlacementGroup = await AWS.MediaLive.ChannelPlacementGroup("MyPlacementGroup", {
+  Name: "PrimaryPlacementGroup",
+  ClusterId: "arn:aws:medialive:us-east-1:123456789012:cluster:my-cluster",
+  Tags: [
+    { Key: "Environment", Value: "Production" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ChannelPlacementGroup with multiple nodes and a specific name.
+Configure a ChannelPlacementGroup with additional nodes and multiple tags for better management.
 
 ```ts
-const advancedChannelPlacementGroup = await AWS.MediaLive.ChannelPlacementGroup("advancedPlacementGroup", {
-  clusterId: "myClusterId",
-  nodes: ["node1", "node2", "node3"],
-  name: "AdvancedGroup"
+const AdvancedChannelPlacementGroup = await AWS.MediaLive.ChannelPlacementGroup("AdvancedPlacementGroup", {
+  Name: "AdvancedPlacementGroup",
+  ClusterId: "arn:aws:medialive:us-east-1:123456789012:cluster:my-cluster",
+  Nodes: ["Node1", "Node2"],
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Media" }
+  ]
 });
 ```
 
 ## Adoption of Existing Resources
 
-Create a ChannelPlacementGroup that adopts an existing resource instead of failing if it already exists.
+If you need to adopt an existing ChannelPlacementGroup instead of failing when it already exists, use the `adopt` property.
 
 ```ts
-const adoptedChannelPlacementGroup = await AWS.MediaLive.ChannelPlacementGroup("adoptedPlacementGroup", {
-  clusterId: "existingClusterId",
+const AdoptExistingPlacementGroup = await AWS.MediaLive.ChannelPlacementGroup("ExistingPlacementGroup", {
+  Name: "ExistingPlacementGroup",
+  ClusterId: "arn:aws:medialive:us-east-1:123456789012:cluster:my-cluster",
   adopt: true
 });
 ```
 
-## Tagging for Resource Management
+## Multi-Node Configuration
 
-Create a ChannelPlacementGroup with multiple tags for better resource management.
+Set up a ChannelPlacementGroup with multiple nodes for high availability.
 
 ```ts
-const taggedChannelPlacementGroup = await AWS.MediaLive.ChannelPlacementGroup("taggedPlacementGroup", {
-  clusterId: "myClusterId",
-  tags: [
-    { Key: "Project", Value: "MediaProject" },
-    { Key: "Owner", Value: "TeamA" }
+const MultiNodeChannelPlacementGroup = await AWS.MediaLive.ChannelPlacementGroup("MultiNodePlacementGroup", {
+  Name: "MultiNodePlacementGroup",
+  ClusterId: "arn:aws:medialive:us-east-1:123456789012:cluster:my-cluster",
+  Nodes: ["Node1", "Node2", "Node3"],
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Dev" }
   ]
 });
 ```

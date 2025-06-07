@@ -5,65 +5,65 @@ description: Learn how to create, update, and manage AWS EC2 VolumeAttachments u
 
 # VolumeAttachment
 
-The VolumeAttachment resource lets you manage the attachment of Amazon EC2 volumes to instances. For more detailed information, you can refer to the [AWS EC2 VolumeAttachments documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The VolumeAttachment resource allows you to manage the attachment of Amazon Elastic Block Store (EBS) volumes to EC2 instances. This is essential for configuring storage for your EC2 instances. For more details, refer to the [AWS EC2 VolumeAttachments documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic volume attachment by specifying the required properties: `VolumeId` and `InstanceId`. Optionally, you can also specify the `Device` to be used.
+This example demonstrates how to attach an EBS volume to an EC2 instance with the required properties and an optional device name.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const volumeAttachment = await AWS.EC2.VolumeAttachment("myVolumeAttachment", {
-  VolumeId: "vol-0abcd1234efgh5678", // Replace with your actual volume ID
-  InstanceId: "i-0abcd1234efgh5678", // Replace with your actual instance ID
-  Device: "/dev/sdf" // Optional device name
+const volumeAttachment = await AWS.EC2.VolumeAttachment("MyVolumeAttachment", {
+  VolumeId: "vol-0abcd1234efgh5678", // The ID of the volume to attach
+  InstanceId: "i-0abcd1234efgh5678", // The ID of the instance to attach to
+  Device: "/dev/sdf" // Optional: The device name
 });
 ```
 
 ## Advanced Configuration
 
-In addition to the basic properties, you can enable the adoption of an existing resource by setting the `adopt` property to `true`. This is useful when you want to attach a volume that already exists.
+In this example, we demonstrate how to attach a volume to an instance while adopting an existing resource if it already exists.
 
 ```ts
-const adoptedVolumeAttachment = await AWS.EC2.VolumeAttachment("adoptedVolumeAttachment", {
-  VolumeId: "vol-0abcd1234efgh5678",
-  InstanceId: "i-0abcd1234efgh5678",
-  Device: "/dev/sdg", // Optional device name
-  adopt: true // Enable adoption of existing resource
+const advancedVolumeAttachment = await AWS.EC2.VolumeAttachment("AdvancedVolumeAttachment", {
+  VolumeId: "vol-0abcd1234efgh5678", // The ID of the volume to attach
+  InstanceId: "i-0abcd1234efgh5678", // The ID of the instance to attach to
+  Device: "/dev/sdf", // Optional: The device name
+  adopt: true // If true, adopt existing resource instead of failing when resource already exists
 });
 ```
 
-## Error Handling Example
+## Use Case: Attaching Multiple Volumes
 
-Handle potential errors by wrapping the resource creation in a try-catch block to manage exceptions gracefully.
-
-```ts
-try {
-  const errorHandledVolumeAttachment = await AWS.EC2.VolumeAttachment("errorHandledVolumeAttachment", {
-    VolumeId: "vol-0abcd1234efgh5678",
-    InstanceId: "i-0abcd1234efgh5678",
-    Device: "/dev/sdh"
-  });
-} catch (error) {
-  console.error("Failed to attach volume:", error);
-}
-```
-
-## Multiple Attachments Example
-
-You can create multiple volume attachments for different instances by repeating the resource creation process with different parameters.
+Here’s how to attach multiple volumes to a single EC2 instance, demonstrating the flexibility of using multiple VolumeAttachment resources.
 
 ```ts
-const volumeAttachment1 = await AWS.EC2.VolumeAttachment("volumeAttachment1", {
+const volumeAttachment1 = await AWS.EC2.VolumeAttachment("VolumeAttachment1", {
   VolumeId: "vol-0abcd1234efgh5678",
   InstanceId: "i-0abcd1234efgh5678",
-  Device: "/dev/sdi"
+  Device: "/dev/sdf"
 });
 
-const volumeAttachment2 = await AWS.EC2.VolumeAttachment("volumeAttachment2", {
-  VolumeId: "vol-0abcd1234efgh5678",
-  InstanceId: "i-1abcd2345efgh6789",
-  Device: "/dev/sdj"
+const volumeAttachment2 = await AWS.EC2.VolumeAttachment("VolumeAttachment2", {
+  VolumeId: "vol-0ijklmnop1234qrst",
+  InstanceId: "i-0abcd1234efgh5678",
+  Device: "/dev/sdg" // Attaching another volume
 });
+```
+
+## Use Case: Managing Volume Attachment Lifecycle
+
+This example illustrates how to detach a volume from an EC2 instance by first creating an attachment and then simulating a detach operation.
+
+```ts
+const volumeAttachment = await AWS.EC2.VolumeAttachment("DetachVolumeAttachment", {
+  VolumeId: "vol-0abcd1234efgh5678",
+  InstanceId: "i-0abcd1234efgh5678",
+  Device: "/dev/sdf"
+});
+
+// Simulate detaching the volume (this is a conceptual step; actual detach would require a different method)
+console.log(`Volume ${volumeAttachment.VolumeId} attached to instance ${volumeAttachment.InstanceId} at device ${volumeAttachment.Device}.`);
+// Code to detach the volume would be added here in practical applications
 ```

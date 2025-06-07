@@ -5,57 +5,45 @@ description: Learn how to create, update, and manage AWS CloudFormation WaitCond
 
 # WaitConditionHandle
 
-The WaitConditionHandle resource in AWS CloudFormation allows you to create a handle that can be used with a WaitCondition to wait for a signal before proceeding with resource creation. This is particularly useful in scenarios where you need to wait for resources to be fully provisioned or initialized before continuing. For more information, see the [AWS CloudFormation WaitConditionHandles documentation](https://docs.aws.amazon.com/cloudformation/latest/userguide/).
+The WaitConditionHandle resource allows you to manage [AWS CloudFormation WaitConditionHandles](https://docs.aws.amazon.com/cloudformation/latest/userguide/), which are used to coordinate the creation of AWS resources by signaling when a given condition is met. This is particularly useful in scenarios where you need to wait for an asynchronous process to complete before proceeding with stack creation.
 
 ## Minimal Example
 
-Create a basic WaitConditionHandle with default properties.
+Create a basic WaitConditionHandle with the default properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const waitConditionHandle = await AWS.CloudFormation.WaitConditionHandle("BasicWaitHandle", {
-  adopt: false // This handle will not adopt existing resources
+const BasicWaitConditionHandle = await AWS.CloudFormation.WaitConditionHandle("BasicWaitConditionHandle", {
+  adopt: false // Default is false: Do not adopt existing resources
 });
 ```
 
 ## Advanced Configuration
 
-Configure a WaitConditionHandle to adopt an existing resource if it already exists.
+Configure a WaitConditionHandle with the adoption of existing resources.
 
 ```ts
-const advancedWaitConditionHandle = await AWS.CloudFormation.WaitConditionHandle("AdvancedWaitHandle", {
-  adopt: true // This handle will adopt an existing resource if found
+const AdvancedWaitConditionHandle = await AWS.CloudFormation.WaitConditionHandle("AdvancedWaitConditionHandle", {
+  adopt: true // Adopt an existing resource if it already exists
 });
 ```
 
-## Usage with WaitCondition
+## Use Case with Wait Conditions
 
-This example demonstrates how to use a WaitConditionHandle with a WaitCondition to ensure resources are created in a specific order.
+Create a WaitConditionHandle that can be used to signal the completion of a resource creation process.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const waitHandle = await AWS.CloudFormation.WaitConditionHandle("MyWaitHandle", {
+const ResourceWaitConditionHandle = await AWS.CloudFormation.WaitConditionHandle("ResourceWaitConditionHandle", {
   adopt: false
 });
 
-const waitCondition = await AWS.CloudFormation.WaitCondition("MyWaitCondition", {
-  handle: waitHandle.arn, // Reference the ARN of the WaitConditionHandle
-  timeout: "300", // Wait for a maximum of 300 seconds
-  count: 1 // Wait for one signal
+// Use this handle in conjunction with a WaitCondition resource
+const WaitCondition = await AWS.CloudFormation.WaitCondition("MyWaitCondition", {
+  Handle: ResourceWaitConditionHandle.Arn,
+  Timeout: "300", // Timeout in seconds
+  Count: 1 // Number of signals to wait for
 });
-```
-
-## Monitoring Creation Time
-
-Here's how to access the creation time of the WaitConditionHandle after it's been created.
-
-```ts
-const waitHandle = await AWS.CloudFormation.WaitConditionHandle("MonitoringWaitHandle", {
-  adopt: false
-});
-
-// Accessing the creation time
-console.log(`WaitConditionHandle Created At: ${waitHandle.creationTime}`);
 ```

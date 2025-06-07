@@ -5,50 +5,46 @@ description: Learn how to create, update, and manage AWS Lambda LayerVersionPerm
 
 # LayerVersionPermission
 
-The LayerVersionPermission resource allows you to manage permissions for AWS Lambda Layer Versions, enabling you to control which AWS accounts or organizations can use a specific layer version. For more detailed information, refer to the [AWS Lambda LayerVersionPermissions documentation](https://docs.aws.amazon.com/lambda/latest/userguide/).
+The LayerVersionPermission resource allows you to grant permission to a specific account or organization to use a specific version of an AWS Lambda layer. For more details, refer to the [AWS Lambda LayerVersionPermissions documentation](https://docs.aws.amazon.com/lambda/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic LayerVersionPermission that allows a specific AWS account to use a layer version.
+Create a basic LayerVersionPermission to allow a specific AWS account to use the layer version.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const layerPermission = await AWS.Lambda.LayerVersionPermission("exampleLayerPermission", {
+const LayerPermission = await AWS.Lambda.LayerVersionPermission("MyLayerPermission", {
   Action: "lambda:GetLayerVersion",
-  LayerVersionArn: "arn:aws:lambda:us-west-2:123456789012:layer:my-layer:1",
-  Principal: "123456789012", // AWS Account ID
-  adopt: true // Adopt existing resource if it already exists
+  LayerVersionArn: "arn:aws:lambda:us-east-1:123456789012:layer:my-layer:1",
+  Principal: "123456789012" // AWS Account ID
 });
 ```
 
 ## Advanced Configuration
 
-Configure LayerVersionPermission to allow an entire organization to access a layer version.
+Configure LayerVersionPermission to allow an entire organization to access the layer version.
 
 ```ts
-const orgLayerPermission = await AWS.Lambda.LayerVersionPermission("orgLayerPermission", {
+const OrgLayerPermission = await AWS.Lambda.LayerVersionPermission("OrgLayerPermission", {
   Action: "lambda:GetLayerVersion",
-  LayerVersionArn: "arn:aws:lambda:us-west-2:123456789012:layer:my-layer:1",
-  Principal: "*", // Allow all principals
-  OrganizationId: "o-12345678" // Example Organization ID
+  LayerVersionArn: "arn:aws:lambda:us-east-1:123456789012:layer:my-layer:1",
+  Principal: "*", // Allows all principals
+  OrganizationId: "o-1234567890", // Your organization ID
+  adopt: true
 });
 ```
 
-## Specific Use Case: Grant Access to Multiple Accounts
+## Grant Access with Policy
 
-You can set permissions for multiple AWS accounts by creating multiple LayerVersionPermission resources.
+Define a LayerVersionPermission that uses an IAM policy to grant more specific access, such as invoking the layer.
 
 ```ts
-const account1Permission = await AWS.Lambda.LayerVersionPermission("account1Permission", {
-  Action: "lambda:GetLayerVersion",
-  LayerVersionArn: "arn:aws:lambda:us-west-2:123456789012:layer:my-layer:1",
-  Principal: "111111111111" // First AWS Account ID
-});
-
-const account2Permission = await AWS.Lambda.LayerVersionPermission("account2Permission", {
-  Action: "lambda:GetLayerVersion",
-  LayerVersionArn: "arn:aws:lambda:us-west-2:123456789012:layer:my-layer:1",
-  Principal: "222222222222" // Second AWS Account ID
+const PolicyLayerPermission = await AWS.Lambda.LayerVersionPermission("PolicyLayerPermission", {
+  Action: "lambda:InvokeFunction",
+  LayerVersionArn: "arn:aws:lambda:us-east-1:123456789012:layer:my-layer:1",
+  Principal: "arn:aws:iam::123456789012:role/MyExecutionRole", // IAM Role ARN
+  OrganizationId: "o-1234567890", // Your organization ID
+  adopt: false
 });
 ```

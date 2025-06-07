@@ -5,110 +5,93 @@ description: Learn how to create, update, and manage AWS AppSync Resolvers using
 
 # Resolver
 
-The Resolver resource lets you manage [AWS AppSync Resolvers](https://docs.aws.amazon.com/appsync/latest/userguide/) for connecting GraphQL operations to data sources.
+The Resolver resource allows you to manage [AWS AppSync Resolvers](https://docs.aws.amazon.com/appsync/latest/userguide/) which are responsible for connecting your GraphQL fields to data sources.
 
 ## Minimal Example
 
-Create a basic AppSync resolver with required properties and a common optional property:
+Create a basic Resolver to connect a GraphQL field to a data source:
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicResolver = await AWS.AppSync.Resolver("basicResolver", {
+const BasicResolver = await AWS.AppSync.Resolver("BasicResolver", {
+  ApiId: "your-api-id",
   TypeName: "Query",
   FieldName: "getUser",
-  ApiId: "your-api-id",
   DataSourceName: "UserDataSource",
-  RequestMappingTemplate: `
-    {
-      "version": "2017-02-28",
-      "operation": "GetItem",
-      "key": {
-        "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
-      }
+  RequestMappingTemplate: `{
+    "version": "2018-05-29",
+    "operation": "GetItem",
+    "key": {
+      "userId": $util.dynamodb.toDynamoDBJson($ctx.args.id)
     }
-  `,
-  ResponseMappingTemplate: `
-    $util.toJson($ctx.result)
-  `
+  }`,
+  ResponseMappingTemplate: `$util.toJson($ctx.result)`
 });
 ```
 
 ## Advanced Configuration
 
-Configure a resolver with additional options, including caching and a pipeline configuration:
+Configure a Resolver with advanced options such as caching and pipeline configuration:
 
 ```ts
-import AWS from "alchemy/aws/control";
-
-const advancedResolver = await AWS.AppSync.Resolver("advancedResolver", {
-  TypeName: "Mutation",
-  FieldName: "createUser",
+const AdvancedResolver = await AWS.AppSync.Resolver("AdvancedResolver", {
   ApiId: "your-api-id",
+  TypeName: "Query",
+  FieldName: "listUsers",
   DataSourceName: "UserDataSource",
-  MaxBatchSize: 10,
+  RequestMappingTemplate: `{
+    "version": "2018-05-29",
+    "operation": "Scan"
+  }`,
+  ResponseMappingTemplate: `$util.toJson($ctx.result.items)`,
   CachingConfig: {
     Ttl: 300,
-    CacheKeys: ["$ctx.args.id"]
+    CachingKeys: ["$ctx.args.status"]
   },
-  RequestMappingTemplate: `
-    {
-      "version": "2017-02-28",
-      "operation": "PutItem",
-      "key": {
-        "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
-      },
-      "attributeValues": {
-        "name": $util.dynamodb.toDynamoDBJson($ctx.args.name),
-        "email": $util.dynamodb.toDynamoDBJson($ctx.args.email)
-      }
-    }
-  `,
-  ResponseMappingTemplate: `
-    $util.toJson($ctx.result)
-  `
-});
-```
-
-## Pipeline Resolver Example
-
-Create a resolver that utilizes a pipeline configuration to handle complex logic:
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const pipelineResolver = await AWS.AppSync.Resolver("pipelineResolver", {
-  TypeName: "Query",
-  FieldName: "searchUsers",
-  ApiId: "your-api-id",
-  DataSourceName: "UserDataSource",
   PipelineConfig: {
-    Functions: ["function1", "function2"]
-  },
-  RequestMappingTemplate: `
-    $util.toJson($ctx.args)
-  `,
-  ResponseMappingTemplate: `
-    $util.toJson($ctx.result)
-  `
+    Functions: ["myPipelineFunctionId"]
+  }
 });
 ```
 
 ## Using S3 for Mapping Templates
 
-Leverage S3 for storing request and response mapping templates:
+Create a Resolver that utilizes S3 for storing mapping templates:
 
 ```ts
-import AWS from "alchemy/aws/control";
+const S3Resolver = await AWS.AppSync.Resolver("S3Resolver", {
+  ApiId: "your-api-id",
+  TypeName: "Mutation",
+  FieldName: "createUser",
+  DataSourceName: "UserDataSource",
+  RequestMappingTemplateS3Location: "s3://your-bucket-name/request-mapping-template.vtl",
+  ResponseMappingTemplateS3Location: "s3://your-bucket-name/response-mapping-template.vtl"
+});
+```
 
-const s3Resolver = await AWS.AppSync.Resolver("s3Resolver", {
+## Sync Configuration for Real-time Updates
+
+Set up a Resolver with sync configuration for real-time updates:
+
+```ts
+const SyncConfiguredResolver = await AWS.AppSync.Resolver("SyncConfiguredResolver", {
+  ApiId: "your-api-id",
   TypeName: "Mutation",
   FieldName: "updateUser",
-  ApiId: "your-api-id",
   DataSourceName: "UserDataSource",
-  RequestMappingTemplateS3Location: "s3://your-bucket/request-mapping-template.vtl",
-  ResponseMappingTemplateS3Location: "s3://your-bucket/response-mapping-template.vtl"
+  RequestMappingTemplate: `{
+    "version": "2018-05-29",
+    "operation": "PutItem",
+    "key": {
+      "userId": $util.dynamodb.toDynamoDBJson($ctx.args.userId)
+    },
+    "attributeValues": $util.dynamodb.toMapValues($ctx.args.input)
+  }`,
+  ResponseMappingTemplate: `$util.toJson($ctx.result)`,
+  SyncConfig: {
+    ConflictHandler: "AUTOMERGE",
+    ConflictDetection: "VERSION"
+  }
 });
-``` 
-
-This document provides a comprehensive overview of how to manage AWS AppSync Resolvers using Alchemy, showcasing different configurations and use cases for effective integration with your GraphQL APIs.
+```

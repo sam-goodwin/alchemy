@@ -5,61 +5,62 @@ description: Learn how to create, update, and manage AWS DataSync LocationEFSs u
 
 # LocationEFS
 
-The LocationEFS resource lets you manage [AWS DataSync LocationEFSs](https://docs.aws.amazon.com/datasync/latest/userguide/) for transferring data between AWS and on-premises environments using Amazon Elastic File System (EFS).
+The LocationEFS resource allows you to manage [AWS DataSync LocationEFSs](https://docs.aws.amazon.com/datasync/latest/userguide/) for transferring data between Amazon EFS and other AWS storage services.
 
 ## Minimal Example
 
-Create a basic EFS location with required properties and one optional property.
+Create a basic DataSync LocationEFS with the necessary properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const efsLocation = await AWS.DataSync.LocationEFS("myEfsLocation", {
-  EfsFilesystemArn: "arn:aws:elasticfilesystem:us-west-2:123456789012:file-system/fs-12345678",
+const BasicLocationEFS = await AWS.DataSync.LocationEFS("BasicLocationEFS", {
   Ec2Config: {
-    SecurityGroupArn: "arn:aws:ec2:us-west-2:123456789012:security-group/sg-12345678",
-    SubnetArn: "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-12345678"
+    SecurityGroupArns: ["arn:aws:ec2:us-west-2:123456789012:security-group/sg-0abc12345def67890"],
+    SubnetArn: "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-0abc12345def67890"
   },
+  EfsFilesystemArn: "arn:aws:elasticfilesystem:us-west-2:123456789012:file-system/fs-0abc12345def67890",
+  InTransitEncryption: "ENABLED",
   Tags: [
-    { Key: "Project", Value: "DataSync" },
-    { Key: "Environment", Value: "Production" }
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DataSync" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EFS location with additional optional settings, including access point and encryption.
+Configure a DataSync LocationEFS with additional options such as an access point and a specific subdirectory.
 
 ```ts
-const advancedEfsLocation = await AWS.DataSync.LocationEFS("advancedEfsLocation", {
-  EfsFilesystemArn: "arn:aws:elasticfilesystem:us-west-2:123456789012:file-system/fs-12345678",
+const AdvancedLocationEFS = await AWS.DataSync.LocationEFS("AdvancedLocationEFS", {
   Ec2Config: {
-    SecurityGroupArn: "arn:aws:ec2:us-west-2:123456789012:security-group/sg-12345678",
-    SubnetArn: "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-12345678"
+    SecurityGroupArns: ["arn:aws:ec2:us-west-2:123456789012:security-group/sg-0abc12345def67890"],
+    SubnetArn: "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-0abc12345def67890"
   },
-  AccessPointArn: "arn:aws:elasticfilesystem:us-west-2:123456789012:access-point/fsap-12345678",
+  EfsFilesystemArn: "arn:aws:elasticfilesystem:us-west-2:123456789012:file-system/fs-0abc12345def67890",
+  AccessPointArn: "arn:aws:elasticfilesystem:us-west-2:123456789012:access-point/fsap-0abc12345def67890",
   Subdirectory: "/data",
   InTransitEncryption: "ENABLED",
-  FileSystemAccessRoleArn: "arn:aws:iam::123456789012:role/DataSyncAccessRole",
+  FileSystemAccessRoleArn: "arn:aws:iam::123456789012:role/DataSyncEFSRole",
   Tags: [
-    { Key: "Project", Value: "DataSync" },
-    { Key: "Environment", Value: "Staging" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataSync" }
   ]
 });
 ```
 
-## Using an Existing Resource
+## Using Existing Resources
 
-Adopt an existing EFS location instead of failing if the resource already exists.
+If you want to adopt an existing EFS resource instead of creating a new one, set the `adopt` property to `true`.
 
 ```ts
-const adoptEfsLocation = await AWS.DataSync.LocationEFS("adoptEfsLocation", {
-  EfsFilesystemArn: "arn:aws:elasticfilesystem:us-west-2:123456789012:file-system/fs-12345678",
+const AdoptExistingLocationEFS = await AWS.DataSync.LocationEFS("AdoptExistingLocationEFS", {
   Ec2Config: {
-    SecurityGroupArn: "arn:aws:ec2:us-west-2:123456789012:security-group/sg-12345678",
-    SubnetArn: "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-12345678"
+    SecurityGroupArns: ["arn:aws:ec2:us-west-2:123456789012:security-group/sg-0abc12345def67890"],
+    SubnetArn: "arn:aws:ec2:us-west-2:123456789012:subnet/subnet-0abc12345def67890"
   },
-  adopt: true // Adopt the existing resource
+  EfsFilesystemArn: "arn:aws:elasticfilesystem:us-west-2:123456789012:file-system/fs-0abc12345def67890",
+  adopt: true
 });
 ```

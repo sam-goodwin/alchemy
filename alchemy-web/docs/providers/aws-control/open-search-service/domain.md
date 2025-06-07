@@ -5,18 +5,17 @@ description: Learn how to create, update, and manage AWS OpenSearchService Domai
 
 # Domain
 
-The Domain resource lets you manage [AWS OpenSearchService Domains](https://docs.aws.amazon.com/opensearchservice/latest/userguide/) and their configuration settings. This resource allows you to create, update, and manage various attributes of OpenSearch domains, including security options, snapshot configurations, and logging.
+The Domain resource lets you manage [AWS OpenSearchService Domains](https://docs.aws.amazon.com/opensearchservice/latest/userguide/) and their configuration settings.
 
 ## Minimal Example
 
-Create a basic OpenSearchService Domain with a specified domain name and engine version.
+Create a basic OpenSearchService domain with a specified domain name and access policies.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const openSearchDomain = await AWS.OpenSearchService.Domain("myOpenSearchDomain", {
+const OpenSearchDomain = await AWS.OpenSearchService.Domain("MyOpenSearchDomain", {
   DomainName: "my-opensearch-domain",
-  EngineVersion: "OpenSearch_1.0",
   AccessPolicies: JSON.stringify({
     Version: "2012-10-17",
     Statement: [
@@ -27,73 +26,74 @@ const openSearchDomain = await AWS.OpenSearchService.Domain("myOpenSearchDomain"
         Resource: "*"
       }
     ]
-  })
+  }),
+  VPCOptions: {
+    SubnetIds: ["subnet-0123456789abcdef0"],
+    SecurityGroupIds: ["sg-0123456789abcdef0"]
+  }
 });
 ```
 
 ## Advanced Configuration
 
-Configure an OpenSearchService Domain with advanced options such as VPC settings and encryption at rest.
+Configure an OpenSearchService domain with advanced security options and snapshot settings.
 
 ```ts
-const advancedOpenSearchDomain = await AWS.OpenSearchService.Domain("advancedOpenSearchDomain", {
+const AdvancedOpenSearchDomain = await AWS.OpenSearchService.Domain("AdvancedOpenSearchDomain", {
   DomainName: "advanced-opensearch-domain",
-  EngineVersion: "OpenSearch_1.0",
-  VPCOptions: {
-    SubnetIds: ["subnet-12345678", "subnet-87654321"],
-    SecurityGroupIds: ["sg-12345678"]
+  AdvancedSecurityOptions: {
+    Enabled: true,
+    InternalUserDatabaseEnabled: true,
+    MasterUserOptions: {
+      MasterUserName: "admin",
+      MasterUserPassword: "SecurePassword123!"
+    }
+  },
+  SnapshotOptions: {
+    AutomatedSnapshotStartHour: 0
+  },
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataScience" }
+  ]
+});
+```
+
+## Enhanced Security with Node-to-Node Encryption
+
+Create a domain that enables node-to-node encryption for enhanced security.
+
+```ts
+const SecureOpenSearchDomain = await AWS.OpenSearchService.Domain("SecureOpenSearchDomain", {
+  DomainName: "secure-opensearch-domain",
+  NodeToNodeEncryptionOptions: {
+    Enabled: true
   },
   EncryptionAtRestOptions: {
     Enabled: true,
-    KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-efgh-5678-ijkl-91011mnopqr"
-  },
-  LogPublishingOptions: {
-    "INDEX_SLOW_LOGS": {
-      CloudWatchLogsLogGroupArn: "arn:aws:logs:us-west-2:123456789012:log-group:my-log-group",
-      Enabled: true
-    }
+    KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-ef56-78gh-90ij-klmnopqrstu"
   }
 });
 ```
 
-## Snapshot Options
+## Custom Logging Options
 
-Create an OpenSearchService Domain with custom snapshot options to manage automated snapshots.
-
-```ts
-const snapshotDomain = await AWS.OpenSearchService.Domain("snapshotDomain", {
-  DomainName: "snapshot-opensearch-domain",
-  SnapshotOptions: {
-    AutomatedSnapshotStartHour: 0 // 12 AM UTC
-  },
-  AccessPolicies: JSON.stringify({
-    Version: "2012-10-17",
-    Statement: [
-      {
-        Effect: "Allow",
-        Principal: "*",
-        Action: "es:ESHttpPut",
-        Resource: "*"
-      }
-    ]
-  })
-});
-```
-
-## Logging Configuration
-
-Set up logging for an OpenSearchService Domain to capture index and search slow logs.
+Set up logging for your OpenSearchService domain to monitor access and performance.
 
 ```ts
-const loggingDomain = await AWS.OpenSearchService.Domain("loggingDomain", {
+const LoggingOpenSearchDomain = await AWS.OpenSearchService.Domain("LoggingOpenSearchDomain", {
   DomainName: "logging-opensearch-domain",
   LogPublishingOptions: {
-    "SEARCH_SLOW_LOGS": {
-      CloudWatchLogsLogGroupArn: "arn:aws:logs:us-west-2:123456789012:log-group:search-slow-logs",
+    IndexSlowLogs: {
+      CloudWatchLogsLogGroupArn: "arn:aws:logs:us-west-2:123456789012:log-group:my-log-group",
       Enabled: true
     },
-    "INDEX_SLOW_LOGS": {
-      CloudWatchLogsLogGroupArn: "arn:aws:logs:us-west-2:123456789012:log-group:index-slow-logs",
+    SearchSlowLogs: {
+      CloudWatchLogsLogGroupArn: "arn:aws:logs:us-west-2:123456789012:log-group:my-log-group",
+      Enabled: true
+    },
+    AuditLogs: {
+      CloudWatchLogsLogGroupArn: "arn:aws:logs:us-west-2:123456789012:log-group:my-log-group",
       Enabled: true
     }
   }

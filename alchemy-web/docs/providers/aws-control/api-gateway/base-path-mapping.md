@@ -5,61 +5,67 @@ description: Learn how to create, update, and manage AWS ApiGateway BasePathMapp
 
 # BasePathMapping
 
-The BasePathMapping resource lets you manage [AWS ApiGateway BasePathMappings](https://docs.aws.amazon.com/apigateway/latest/userguide/) to route API requests to specific stages of your API.
+The BasePathMapping resource lets you manage [AWS ApiGateway BasePathMappings](https://docs.aws.amazon.com/apigateway/latest/userguide/) for mapping a custom domain name to a specific API and stage.
 
 ## Minimal Example
 
-Create a basic BasePathMapping with required properties and one optional property.
+Create a basic BasePathMapping with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicMapping = await AWS.ApiGateway.BasePathMapping("basicMapping", {
+const SimpleBasePathMapping = await AWS.ApiGateway.BasePathMapping("SimpleBasePathMapping", {
   DomainName: "api.example.com",
-  RestApiId: "1234567890",
-  Stage: "prod"
+  RestApiId: "abcdefghij",
+  Stage: "prod",
+  BasePath: "v1"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a BasePathMapping with additional options such as a custom BasePath and enabling resource adoption.
+Configure a BasePathMapping with additional properties such as ID and adoption of an existing resource.
 
 ```ts
-const advancedMapping = await AWS.ApiGateway.BasePathMapping("advancedMapping", {
+const AdvancedBasePathMapping = await AWS.ApiGateway.BasePathMapping("AdvancedBasePathMapping", {
   DomainName: "api.example.com",
-  RestApiId: "1234567890",
-  Stage: "dev",
+  RestApiId: "abcdefghij",
+  Stage: "prod",
   BasePath: "v1",
-  adopt: true // Allows adoption of existing resource
+  Id: "existing-mapping-id",
+  adopt: true
 });
 ```
 
-## Specific Use Case: Custom Base Path
+## Using Different Base Paths
 
-Create a BasePathMapping with a specific custom BasePath to differentiate between API versions.
+Create multiple BasePathMappings for different versions of an API.
 
 ```ts
-const versionedMapping = await AWS.ApiGateway.BasePathMapping("versionedMapping", {
+const V2BasePathMapping = await AWS.ApiGateway.BasePathMapping("V2BasePathMapping", {
   DomainName: "api.example.com",
-  RestApiId: "0987654321",
-  Stage: "beta",
+  RestApiId: "abcdefghij",
+  Stage: "prod",
   BasePath: "v2"
 });
+
+const V3BasePathMapping = await AWS.ApiGateway.BasePathMapping("V3BasePathMapping", {
+  DomainName: "api.example.com",
+  RestApiId: "abcdefghij",
+  Stage: "prod",
+  BasePath: "v3"
+});
 ```
 
-## Specific Use Case: Multiple Mappings
+## Mapping to a Staging Environment
 
-Set up multiple BasePathMappings for different stages of the same API using a loop.
+Map a BasePath to a staging environment for testing purposes.
 
 ```ts
-const stages = ["prod", "staging", "dev"];
-for (const stage of stages) {
-  await AWS.ApiGateway.BasePathMapping(`mapping-${stage}`, {
-    DomainName: "api.example.com",
-    RestApiId: "1234567890",
-    Stage: stage,
-    BasePath: `v1/${stage}`
-  });
-}
+const StagingBasePathMapping = await AWS.ApiGateway.BasePathMapping("StagingBasePathMapping", {
+  DomainName: "staging.api.example.com",
+  RestApiId: "abcdefghij",
+  Stage: "staging",
+  BasePath: "v1"
+});
 ```

@@ -5,52 +5,22 @@ description: Learn how to create, update, and manage AWS EC2 NetworkInterfaceAtt
 
 # NetworkInterfaceAttachment
 
-The NetworkInterfaceAttachment resource lets you manage [AWS EC2 NetworkInterfaceAttachments](https://docs.aws.amazon.com/ec2/latest/userguide/) for associating network interfaces with EC2 instances.
+The NetworkInterfaceAttachment resource lets you create and manage [AWS EC2 NetworkInterfaceAttachments](https://docs.aws.amazon.com/ec2/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-networkinterfaceattachment.html
 
 ## Minimal Example
 
-Create a basic NetworkInterfaceAttachment with required properties and an optional deleteOnTermination setting.
-
 ```ts
 import AWS from "alchemy/aws/control";
 
-const networkInterfaceAttachment = await AWS.EC2.NetworkInterfaceAttachment("myNetworkInterfaceAttachment", {
-  InstanceId: "i-1234567890abcdef0",
-  DeviceIndex: "0",
-  NetworkInterfaceId: "eni-12345678",
-  DeleteOnTermination: true
-});
-```
-
-## Advanced Configuration
-
-Configure a NetworkInterfaceAttachment with enhanced options, including EnaSrdSpecification for SR-IOV support.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const advancedNetworkInterfaceAttachment = await AWS.EC2.NetworkInterfaceAttachment("advancedNetworkInterfaceAttachment", {
-  InstanceId: "i-0987654321abcdef0",
-  DeviceIndex: "1",
-  NetworkInterfaceId: "eni-87654321",
-  EnaSrdSpecification: {
-    // Enable enhanced networking
-    SrdType: "ena"
+const networkinterfaceattachment = await AWS.EC2.NetworkInterfaceAttachment(
+  "networkinterfaceattachment-example",
+  {
+    InstanceId: "example-instanceid",
+    DeviceIndex: "example-deviceindex",
+    NetworkInterfaceId: "example-networkinterfaceid",
   }
-});
+);
 ```
 
-## Adoption of Existing Resource
-
-If you need to adopt an existing NetworkInterfaceAttachment, you can do so by setting the adopt property.
-
-```ts
-import AWS from "alchemy/aws/control";
-
-const adoptedNetworkInterfaceAttachment = await AWS.EC2.NetworkInterfaceAttachment("adoptedNetworkInterfaceAttachment", {
-  InstanceId: "i-1122334455667788",
-  DeviceIndex: "2",
-  NetworkInterfaceId: "eni-11223344",
-  adopt: true // Adopt existing resource instead of failing
-});
-```

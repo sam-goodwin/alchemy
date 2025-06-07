@@ -5,79 +5,37 @@ description: Learn how to create, update, and manage AWS AccessAnalyzer Analyzer
 
 # Analyzer
 
-The Analyzer resource allows you to manage [AWS AccessAnalyzer Analyzers](https://docs.aws.amazon.com/accessanalyzer/latest/userguide/) that help you identify potential resource access issues across your AWS environment.
+The Analyzer resource lets you create and manage [AWS AccessAnalyzer Analyzers](https://docs.aws.amazon.com/accessanalyzer/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-accessanalyzer-analyzer.html
 
 ## Minimal Example
-
-Create a basic AccessAnalyzer with a specified type and an optional name.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicAnalyzer = await AWS.AccessAnalyzer.Analyzer("myBasicAnalyzer", {
-  Type: "ACCOUNT",
-  AnalyzerName: "MyBasicAnalyzer"
+const analyzer = await AWS.AccessAnalyzer.Analyzer("analyzer-example", {
+  Type: "example-type",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AccessAnalyzer with archive rules and tags for better resource management.
+Create a analyzer with additional configuration:
 
 ```ts
-const advancedAnalyzer = await AWS.AccessAnalyzer.Analyzer("myAdvancedAnalyzer", {
-  Type: "ORGANIZATION",
-  AnalyzerName: "MyAdvancedAnalyzer",
-  ArchiveRules: [
-    {
-      Filter: {
-        "accountId": "123456789012",
-        "resourceType": "AWS::S3::Bucket"
-      },
-      RuleName: "ArchiveS3BucketRules"
-    }
-  ],
-  Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    },
-    {
-      Key: "Department",
-      Value: "Engineering"
-    }
-  ]
+import AWS from "alchemy/aws/control";
+
+const advancedAnalyzer = await AWS.AccessAnalyzer.Analyzer("advanced-analyzer", {
+  Type: "example-type",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
+  },
 });
 ```
 
-## Adopting Existing Resources
-
-Create an AccessAnalyzer that adopts an existing resource if it already exists.
-
-```ts
-const adoptExistingAnalyzer = await AWS.AccessAnalyzer.Analyzer("myAdoptAnalyzer", {
-  Type: "ACCOUNT",
-  AnalyzerName: "MyAdoptAnalyzer",
-  adopt: true
-});
-```
-
-## Configuring Analyzer with Specific Settings
-
-Set up an AccessAnalyzer with specific configuration settings for enhanced analysis.
-
-```ts
-const configuredAnalyzer = await AWS.AccessAnalyzer.Analyzer("myConfiguredAnalyzer", {
-  Type: "ORGANIZATION",
-  AnalyzerConfiguration: {
-    ArchiveRules: [
-      {
-        RuleName: "MyArchiveRule",
-        Filter: {
-          "resourceType": "AWS::IAM::Role"
-        }
-      }
-    ]
-  }
-});
-```

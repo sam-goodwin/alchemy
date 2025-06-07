@@ -5,61 +5,65 @@ description: Learn how to create, update, and manage AWS Neptune EventSubscripti
 
 # EventSubscription
 
-The EventSubscription resource allows you to manage [AWS Neptune EventSubscriptions](https://docs.aws.amazon.com/neptune/latest/userguide/) that notify you of specific database events. This capability is essential for monitoring and reacting to database changes effectively.
+The EventSubscription resource lets you manage [AWS Neptune EventSubscriptions](https://docs.aws.amazon.com/neptune/latest/userguide/) for monitoring and responding to events in your Neptune database cluster.
 
 ## Minimal Example
 
-Create a basic EventSubscription with essential properties and one optional property:
+Create a basic EventSubscription with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const eventSubscription = await AWS.Neptune.EventSubscription("myEventSubscription", {
+const basicEventSubscription = await AWS.Neptune.EventSubscription("BasicEventSubscription", {
   SourceType: "db-instance",
   Enabled: true,
-  EventCategories: ["availability", "configuration"],
-  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:myTopic"
+  SnsTopicArn: "arn:aws:sns:us-east-1:123456789012:MySNSTopic",
+  EventCategories: ["availability", "configuration change"]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an EventSubscription with multiple source IDs and additional properties:
+Configure an EventSubscription with more advanced options, including multiple source IDs and the ability to adopt existing resources.
 
 ```ts
-const advancedEventSubscription = await AWS.Neptune.EventSubscription("advancedEventSubscription", {
+const advancedEventSubscription = await AWS.Neptune.EventSubscription("AdvancedEventSubscription", {
   SourceType: "db-cluster",
   Enabled: true,
-  EventCategories: ["failure", "deletion"],
-  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:myAdvancedTopic",
-  SourceIds: ["my-db-cluster-1", "my-db-cluster-2"]
-});
-```
-
-## Adoption of Existing Resources
-
-If you want to adopt an existing EventSubscription instead of failing when it already exists, you can set the `adopt` property:
-
-```ts
-const adoptExistingSubscription = await AWS.Neptune.EventSubscription("existingEventSubscription", {
-  SourceType: "db-instance",
-  Enabled: true,
-  EventCategories: ["creation", "modification"],
-  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:myAdoptedTopic",
+  SnsTopicArn: "arn:aws:sns:us-east-1:123456789012:MyAdvancedSNSTopic",
+  EventCategories: ["deletion", "failover"],
+  SourceIds: ["my-db-cluster-1", "my-db-cluster-2"],
   adopt: true
 });
 ```
 
-## Multi-Category Notification
+## Customizing Notification Settings
 
-Set up an EventSubscription that monitors multiple event categories for a specific source:
+Set up an EventSubscription with specific event categories to receive notifications on critical changes.
 
 ```ts
-const multiCategorySubscription = await AWS.Neptune.EventSubscription("multiCategorySubscription", {
+const customNotificationEventSubscription = await AWS.Neptune.EventSubscription("CustomNotificationEventSubscription", {
   SourceType: "db-instance",
   Enabled: true,
-  EventCategories: ["availability", "configuration", "deletion"],
-  SnsTopicArn: "arn:aws:sns:us-west-2:123456789012:multiCategoryTopic",
-  SourceIds: ["my-db-instance-1"]
+  SnsTopicArn: "arn:aws:sns:us-east-1:123456789012:MyCustomSNSTopic",
+  EventCategories: ["failure", "maintenance", "notification"]
+});
+```
+
+## Enabling and Disabling Subscriptions
+
+Create an EventSubscription that can be enabled or disabled as necessary.
+
+```ts
+const toggleableEventSubscription = await AWS.Neptune.EventSubscription("ToggleableEventSubscription", {
+  SourceType: "db-cluster",
+  Enabled: false, // Initially disabled
+  SnsTopicArn: "arn:aws:sns:us-east-1:123456789012:MyToggleableSNSTopic",
+  EventCategories: ["configuration change", "deletion"]
+});
+
+// Later, you can enable it by updating the Enabled property
+await AWS.Neptune.EventSubscription("ToggleableEventSubscription", {
+  Enabled: true
 });
 ```

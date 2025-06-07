@@ -5,16 +5,16 @@ description: Learn how to create, update, and manage AWS DataSync LocationHDFSs 
 
 # LocationHDFS
 
-The LocationHDFS resource lets you configure and manage [AWS DataSync LocationHDFS](https://docs.aws.amazon.com/datasync/latest/userguide/) to facilitate data transfer between on-premises Hadoop Distributed File System (HDFS) and AWS storage services.
+The LocationHDFS resource lets you manage [AWS DataSync LocationHDFSs](https://docs.aws.amazon.com/datasync/latest/userguide/) for transferring data between HDFS and AWS storage services.
 
 ## Minimal Example
 
-Create a basic HDFS location with the essential properties.
+Create a basic HDFS location with the required properties and a couple of optional properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const hdfsLocation = await AWS.DataSync.LocationHDFS("myHDFSLocation", {
+const HdfsLocation = await AWS.DataSync.LocationHDFS("MyHdfsLocation", {
   NameNodes: [
     {
       Hostname: "namenode.example.com",
@@ -22,47 +22,50 @@ const hdfsLocation = await AWS.DataSync.LocationHDFS("myHDFSLocation", {
     }
   ],
   AuthenticationType: "KERBEROS",
-  AgentArns: ["arn:aws:datasync:us-east-1:123456789012:agent/agent-id-123"],
-  SimpleUser: "hdfs-user",
-  KmsKeyProviderUri: "kms-uri"
+  KerberosPrincipal: "hdfs/_HOST@EXAMPLE.COM",
+  KerberosKeytab: "/etc/security/keytabs/hdfs.keytab",
+  KerberosKrb5Conf: "/etc/krb5.conf",
+  AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/agent-1"],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataEngineering" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a location with advanced options such as Kerberos authentication and replication factor.
+Configure HDFS location with additional security and performance settings.
 
 ```ts
-const advancedHdfsLocation = await AWS.DataSync.LocationHDFS("advancedHDFSLocation", {
+const AdvancedHdfsLocation = await AWS.DataSync.LocationHDFS("AdvancedHdfsLocation", {
   NameNodes: [
     {
-      Hostname: "namenode.example.com",
+      Hostname: "secure-namenode.example.com",
       Port: 8020
     }
   ],
   AuthenticationType: "KERBEROS",
-  AgentArns: ["arn:aws:datasync:us-east-1:123456789012:agent/agent-id-123"],
-  SimpleUser: "hdfs-user",
-  KerberosPrincipal: "hdfs/principal@EXAMPLE.COM",
-  KerberosKeytab: "/etc/security/keytabs/hdfs.keytab",
-  ReplicationFactor: 3,
-  Subdirectory: "/data",
+  KerberosPrincipal: "hdfs/_HOST@SECURE.EXAMPLE.COM",
+  KerberosKeytab: "/etc/security/keytabs/hdfs-secure.keytab",
+  KerberosKrb5Conf: "/etc/krb5-secure.conf",
+  KmsKeyProviderUri: "hdfs://kms.example.com:5000",
   BlockSize: 1048576,
+  ReplicationFactor: 3,
+  AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/agent-2"],
   Tags: [
-    {
-      Key: "Environment",
-      Value: "Production"
-    }
+    { Key: "Environment", Value: "test" },
+    { Key: "Team", Value: "DataOps" }
   ]
 });
 ```
 
-## Using Kerberos Configuration
+## Configuring with Subdirectories
 
-Set up a location with a custom Kerberos configuration file.
+Create an HDFS location that specifies a subdirectory for data transfer.
 
 ```ts
-const kerberosHdfsLocation = await AWS.DataSync.LocationHDFS("kerberosHDFSLocation", {
+const SubdirectoryHdfsLocation = await AWS.DataSync.LocationHDFS("SubdirectoryHdfsLocation", {
   NameNodes: [
     {
       Hostname: "namenode.example.com",
@@ -70,32 +73,13 @@ const kerberosHdfsLocation = await AWS.DataSync.LocationHDFS("kerberosHDFSLocati
     }
   ],
   AuthenticationType: "KERBEROS",
-  AgentArns: ["arn:aws:datasync:us-east-1:123456789012:agent/agent-id-123"],
-  SimpleUser: "hdfs-user",
-  KerberosKrb5Conf: "/etc/krb5.conf",
-  KerberosPrincipal: "hdfs/principal@EXAMPLE.COM",
-  KerberosKeytab: "/etc/security/keytabs/hdfs.keytab"
-});
-```
-
-## Specifying Qop Configuration
-
-Create a location with specific Quality of Protection (Qop) settings.
-
-```ts
-const qopHdfsLocation = await AWS.DataSync.LocationHDFS("qopHDFSLocation", {
-  NameNodes: [
-    {
-      Hostname: "namenode.example.com",
-      Port: 8020
-    }
-  ],
-  AuthenticationType: "KERBEROS",
-  AgentArns: ["arn:aws:datasync:us-east-1:123456789012:agent/agent-id-123"],
-  SimpleUser: "hdfs-user",
-  QopConfiguration: {
-    Qop: "AUTHENTICATION",
-    QopType: "PROTECTION"
-  }
+  KerberosPrincipal: "hdfs/_HOST@EXAMPLE.COM",
+  KerberosKeytab: "/etc/security/keytabs/hdfs.keytab",
+  Subdirectory: "/data/transfers",
+  AgentArns: ["arn:aws:datasync:us-west-2:123456789012:agent/agent-3"],
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Project", Value: "DataMigration" }
+  ]
 });
 ```

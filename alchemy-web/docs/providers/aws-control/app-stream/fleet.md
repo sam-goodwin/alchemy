@@ -5,80 +5,92 @@ description: Learn how to create, update, and manage AWS AppStream Fleets using 
 
 # Fleet
 
-The Fleet resource lets you manage [AWS AppStream Fleets](https://docs.aws.amazon.com/appstream/latest/userguide/) which are used to deliver applications to users through a secure, scalable environment.
+The Fleet resource lets you manage [AWS AppStream Fleets](https://docs.aws.amazon.com/appstream/latest/userguide/) that provide a collection of compute resources for streaming applications to users. This resource allows you to configure various parameters essential for the effective operation of your AppStream environment.
 
 ## Minimal Example
 
-Create a basic AppStream Fleet with required properties and a few common optional settings.
+Create a basic AppStream Fleet with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const appStreamFleet = await AWS.AppStream.Fleet("myFleet", {
-  Name: "MyAppFleet",
-  InstanceType: "stream.standard.medium",
+const DefaultFleet = await AWS.AppStream.Fleet("DefaultFleet", {
+  Name: "DefaultFleet",
+  InstanceType: "stream.standard.small",
   ComputeCapacity: {
-    DesiredCapacity: 2
+    DesiredInstances: 1
   },
-  EnableDefaultInternetAccess: true
+  VpcConfig: {
+    SubnetIds: ["subnet-12345678"],
+    SecurityGroupIds: ["sg-12345678"]
+  }
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AppStream Fleet with more advanced options, including VPC settings and IAM role.
+Configure an AppStream Fleet with advanced settings including session management and USB device filtering.
 
 ```ts
-const advancedFleet = await AWS.AppStream.Fleet("advancedFleet", {
-  Name: "AdvancedAppFleet",
-  InstanceType: "stream.compute.large",
+const AdvancedFleet = await AWS.AppStream.Fleet("AdvancedFleet", {
+  Name: "AdvancedFleet",
+  InstanceType: "stream.standard.medium",
   ComputeCapacity: {
-    DesiredCapacity: 5
+    DesiredInstances: 2
   },
-  VpcConfig: {
-    VpcId: "vpc-12345678",
-    SubnetIds: ["subnet-12345678", "subnet-87654321"],
-    SecurityGroupIds: ["sg-12345678"]
-  },
-  IamRoleArn: "arn:aws:iam::123456789012:role/AppStreamAccessRole",
-  MaxConcurrentSessions: 10,
-  DomainJoinInfo: {
-    DirectoryName: "myDomain",
-    OrganizationalUnitDistinguishedNames: ["OU=AppStream,DC=mydomain,DC=com"]
-  }
+  MaxUserDurationInSeconds: 3600,
+  IdleDisconnectTimeoutInSeconds: 300,
+  UsbDeviceFilterStrings: ["*"],
+  EnableDefaultInternetAccess: true,
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Development" }
+  ]
 });
 ```
 
-## Custom Session Script
+## Fleet with Domain Join
 
-Create a Fleet that includes a session script for custom user sessions.
+This example demonstrates how to configure a Fleet that joins a domain and uses a session script.
 
 ```ts
-const fleetWithSessionScript = await AWS.AppStream.Fleet("sessionScriptFleet", {
-  Name: "FleetWithSessionScript",
+const DomainJoinedFleet = await AWS.AppStream.Fleet("DomainJoinedFleet", {
+  Name: "DomainJoinedFleet",
   InstanceType: "stream.standard.large",
   ComputeCapacity: {
-    DesiredCapacity: 3
+    DesiredInstances: 1
+  },
+  DomainJoinInfo: {
+    DirectoryName: "corporate-domain.com",
+    OrganizationalUnitDistinguishedName: "OU=AppStream,DC=corporate-domain,DC=com"
   },
   SessionScriptS3Location: {
     S3Bucket: "my-bucket",
-    S3Key: "scripts/sessionScript.sh"
+    S3Key: "session-script.sh"
   },
-  MaxUserDurationInSeconds: 3600
+  MaxConcurrentSessions: 10
 });
 ```
 
-## USB Device Filtering
+## Fleet with Custom Network Configuration
 
-Configure a Fleet that includes USB device filtering to restrict which devices can be used.
+This example shows how to configure a Fleet with specific network settings including a VPC configuration.
 
 ```ts
-const usbFilteredFleet = await AWS.AppStream.Fleet("usbFilteredFleet", {
-  Name: "UsbFilteredFleet",
-  InstanceType: "stream.standard.medium",
+const NetworkConfiguredFleet = await AWS.AppStream.Fleet("NetworkConfiguredFleet", {
+  Name: "NetworkConfiguredFleet",
+  InstanceType: "stream.standard.xlarge",
   ComputeCapacity: {
-    DesiredCapacity: 4
+    DesiredInstances: 3
   },
-  UsbDeviceFilterStrings: ["VendorID:1234,ProductID:5678"]
+  VpcConfig: {
+    SubnetIds: ["subnet-87654321"],
+    SecurityGroupIds: ["sg-87654321"]
+  },
+  EnableDefaultInternetAccess: false,
+  Tags: [
+    { Key: "Environment", Value: "test" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```

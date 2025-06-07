@@ -5,63 +5,45 @@ description: Learn how to create, update, and manage AWS QLDB Streams using Alch
 
 # Stream
 
-The Stream resource allows you to manage [AWS QLDB Streams](https://docs.aws.amazon.com/qldb/latest/userguide/) for capturing changes to your ledger's data. This resource facilitates real-time processing of changes, enabling applications to respond to updates in your QLDB ledgers.
+The Stream resource lets you create and manage [AWS QLDB Streams](https://docs.aws.amazon.com/qldb/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-qldb-stream.html
 
 ## Minimal Example
-
-Create a QLDB Stream with essential properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const qldbStream = await AWS.QLDB.Stream("myQldbStream", {
-  InclusiveStartTime: new Date().toISOString(),
-  StreamName: "MyStream",
-  KinesisConfiguration: {
-    StreamArn: "arn:aws:kinesis:us-east-1:123456789012:stream/MyKinesisStream",
-    RoleArn: "arn:aws:iam::123456789012:role/MyKinesisRole"
-  },
-  LedgerName: "MyLedger",
-  RoleArn: "arn:aws:iam::123456789012:role/QLDBStreamRole",
-  ExclusiveEndTime: new Date(Date.now() + 86400000).toISOString() // Optional: 1 day later
+const stream = await AWS.QLDB.Stream("stream-example", {
+  InclusiveStartTime: "example-inclusivestarttime",
+  StreamName: "stream-stream",
+  KinesisConfiguration: "example-kinesisconfiguration",
+  LedgerName: "stream-ledger",
+  RoleArn: "example-rolearn",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a QLDB Stream with tags to enhance resource management and identification.
+Create a stream with additional configuration:
 
 ```ts
-const taggedQldbStream = await AWS.QLDB.Stream("taggedQldbStream", {
-  InclusiveStartTime: new Date().toISOString(),
-  StreamName: "TaggedStream",
-  KinesisConfiguration: {
-    StreamArn: "arn:aws:kinesis:us-east-1:123456789012:stream/MyKinesisStream",
-    RoleArn: "arn:aws:iam::123456789012:role/MyKinesisRole"
+import AWS from "alchemy/aws/control";
+
+const advancedStream = await AWS.QLDB.Stream("advanced-stream", {
+  InclusiveStartTime: "example-inclusivestarttime",
+  StreamName: "stream-stream",
+  KinesisConfiguration: "example-kinesisconfiguration",
+  LedgerName: "stream-ledger",
+  RoleArn: "example-rolearn",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  LedgerName: "MyLedger",
-  RoleArn: "arn:aws:iam::123456789012:role/QLDBStreamRole",
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "Finance" }
-  ]
 });
 ```
 
-## Stream with Exclusive End Time
-
-Demonstrate how to create a stream that includes an exclusive end time for more controlled data capture.
-
-```ts
-const timeLimitedQldbStream = await AWS.QLDB.Stream("timeLimitedQldbStream", {
-  InclusiveStartTime: new Date().toISOString(),
-  StreamName: "TimeLimitedStream",
-  KinesisConfiguration: {
-    StreamArn: "arn:aws:kinesis:us-east-1:123456789012:stream/MyKinesisStream",
-    RoleArn: "arn:aws:iam::123456789012:role/MyKinesisRole"
-  },
-  LedgerName: "MyLedger",
-  RoleArn: "arn:aws:iam::123456789012:role/QLDBStreamRole",
-  ExclusiveEndTime: new Date(Date.now() + 3600000).toISOString() // Optional: 1 hour later
-});
-```

@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS ApiGatewayV2 RouteRespo
 
 # RouteResponse
 
-The RouteResponse resource lets you manage AWS ApiGatewayV2 RouteResponses, which define how API responses are handled and formatted. For more details, you can refer to the [AWS ApiGatewayV2 RouteResponses](https://docs.aws.amazon.com/apigatewayv2/latest/userguide/) documentation.
+The RouteResponse resource allows you to manage [AWS ApiGatewayV2 RouteResponses](https://docs.aws.amazon.com/apigatewayv2/latest/userguide/) which are used to define the responses that can be returned by an API route.
 
 ## Minimal Example
 
@@ -14,10 +14,10 @@ Create a basic RouteResponse with required properties and one optional property.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const routeResponse = await AWS.ApiGatewayV2.RouteResponse("basicRouteResponse", {
+const BasicRouteResponse = await AWS.ApiGatewayV2.RouteResponse("BasicRouteResponse", {
+  ApiId: "myApiId",
+  RouteId: "myRouteId",
   RouteResponseKey: "200",
-  RouteId: "123456",
-  ApiId: "api-abcdef",
   ResponseParameters: {
     "method.response.header.Access-Control-Allow-Origin": "'*'"
   }
@@ -26,48 +26,41 @@ const routeResponse = await AWS.ApiGatewayV2.RouteResponse("basicRouteResponse",
 
 ## Advanced Configuration
 
-Configure a RouteResponse with additional properties to refine response handling.
+Configure a RouteResponse with additional options such as model selection expression and response models.
 
 ```ts
-const advancedRouteResponse = await AWS.ApiGatewayV2.RouteResponse("advancedRouteResponse", {
-  RouteResponseKey: "404",
-  RouteId: "123456",
-  ApiId: "api-abcdef",
+import AWS from "alchemy/aws/control";
+
+const AdvancedRouteResponse = await AWS.ApiGatewayV2.RouteResponse("AdvancedRouteResponse", {
+  ApiId: "myApiId",
+  RouteId: "myRouteId",
+  RouteResponseKey: "200",
   ModelSelectionExpression: "$request.body.type",
   ResponseModels: {
-    "application/json": "ErrorModel"
-  }
-});
-```
-
-## Custom Response Parameters
-
-Create a RouteResponse that specifies custom response parameters for CORS.
-
-```ts
-const corsRouteResponse = await AWS.ApiGatewayV2.RouteResponse("corsRouteResponse", {
-  RouteResponseKey: "200",
-  RouteId: "123456",
-  ApiId: "api-abcdef",
+    "application/json": "MyJsonModel"
+  },
   ResponseParameters: {
-    "method.response.header.Access-Control-Allow-Origin": "'https://example.com'",
-    "method.response.header.Access-Control-Allow-Methods": "'GET, POST, OPTIONS'",
-    "method.response.header.Access-Control-Allow-Headers": "'Content-Type'"
+    "method.response.header.Access-Control-Allow-Origin": "'*'",
+    "method.response.header.Access-Control-Allow-Methods": "'GET, POST'"
   }
 });
 ```
 
-## Response Model Example
+## Example with Adoption
 
-Define a RouteResponse that leverages a specific response model for structured data.
+Create a RouteResponse that adopts an existing resource while specifying response parameters.
 
 ```ts
-const modelRouteResponse = await AWS.ApiGatewayV2.RouteResponse("modelRouteResponse", {
-  RouteResponseKey: "200",
-  RouteId: "123456",
-  ApiId: "api-abcdef",
-  ResponseModels: {
-    "application/json": "MyResponseModel"
-  }
+import AWS from "alchemy/aws/control";
+
+const AdoptedRouteResponse = await AWS.ApiGatewayV2.RouteResponse("AdoptedRouteResponse", {
+  ApiId: "myApiId",
+  RouteId: "myRouteId",
+  RouteResponseKey: "404",
+  ResponseParameters: {
+    "method.response.header.Access-Control-Allow-Origin": "'*'",
+    "method.response.header.Content-Type": "'application/json'"
+  },
+  adopt: true
 });
 ```

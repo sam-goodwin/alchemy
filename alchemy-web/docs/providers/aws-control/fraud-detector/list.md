@@ -5,50 +5,77 @@ description: Learn how to create, update, and manage AWS FraudDetector Lists usi
 
 # List
 
-The List resource lets you manage [AWS FraudDetector Lists](https://docs.aws.amazon.com/frauddetector/latest/userguide/) which are used to store and manage sets of variables for fraud detection.
+The List resource allows you to manage [AWS FraudDetector Lists](https://docs.aws.amazon.com/frauddetector/latest/userguide/) which can be used to store data used in fraud detection models.
 
 ## Minimal Example
 
-Create a basic FraudDetector List with required properties and a common optional property.
+This example demonstrates how to create a basic FraudDetector List with the required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const fraudDetectorList = await AWS.FraudDetector.List("myFraudDetectorList", {
-  name: "customer_ids",
-  description: "A list of customer IDs for fraud detection",
-  variableType: "STRING",
-  elements: ["12345", "67890", "abcde"]
+const basicList = await AWS.FraudDetector.List("BasicList", {
+  Name: "UserEmails",
+  Description: "A list of user email addresses for fraud detection.",
+  VariableType: "STRING",
+  Elements: ["user1@example.com", "user2@example.com"],
+  Tags: [{ Key: "Environment", Value: "production" }]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a FraudDetector List with tags for better organization and management.
+In this example, we configure a FraudDetector List with additional properties and multiple elements.
 
 ```ts
-const taggedFraudDetectorList = await AWS.FraudDetector.List("taggedFraudDetectorList", {
-  name: "transaction_ids",
-  description: "A list of transaction IDs for fraud detection",
-  variableType: "STRING",
-  elements: ["tx-1001", "tx-1002", "tx-1003"],
-  tags: [
-    { key: "environment", value: "production" },
-    { key: "team", value: "fraud-prevention" }
+const advancedList = await AWS.FraudDetector.List("AdvancedList", {
+  Name: "TransactionIDs",
+  Description: "A list of transaction IDs flagged for review.",
+  VariableType: "STRING",
+  Elements: [
+    "TX123456",
+    "TX654321",
+    "TX987654",
+    "TX456789"
+  ],
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "FraudDetection" }
   ]
 });
 ```
 
-## Using Existing Lists
+## Updating an Existing List
 
-You can adopt an existing FraudDetector List instead of creating a new one if it already exists.
+This example shows how to update an existing FraudDetector List by adding new elements.
 
 ```ts
-const existingFraudDetectorList = await AWS.FraudDetector.List("adoptedFraudDetectorList", {
-  name: "user_emails",
-  description: "A list of user email addresses for fraud detection",
-  variableType: "STRING",
-  elements: ["user@example.com", "admin@example.com"],
-  adopt: true
+const updatedList = await AWS.FraudDetector.List("UpdateList", {
+  Name: "UserEmails",
+  Description: "Updated list of user email addresses.",
+  VariableType: "STRING",
+  Elements: [
+    "user1@example.com",
+    "user2@example.com",
+    "user3@example.com" // New element added
+  ],
+  Tags: [{ Key: "Environment", Value: "production" }]
+});
+```
+
+## Adopting an Existing List
+
+This example demonstrates how to adopt an existing FraudDetector List if it already exists.
+
+```ts
+const adoptedList = await AWS.FraudDetector.List("AdoptedList", {
+  Name: "ExistingUserEmails",
+  Description: "Adopting an existing list of user email addresses.",
+  VariableType: "STRING",
+  Elements: [
+    "user1@example.com",
+    "user2@example.com"
+  ],
+  adopt: true // Adopt existing resource instead of failing
 });
 ```

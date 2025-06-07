@@ -5,24 +5,24 @@ description: Learn how to create, update, and manage AWS SSM Documents using Alc
 
 # Document
 
-The Document resource allows you to create and manage [AWS SSM Documents](https://docs.aws.amazon.com/ssm/latest/userguide/) which define actions for AWS Systems Manager. These documents can be used to automate tasks such as software installation, configuration, and execution of scripts on managed instances.
+The Document resource lets you manage [AWS SSM Documents](https://docs.aws.amazon.com/ssm/latest/userguide/) for defining actions that can be performed on managed instances.
 
 ## Minimal Example
 
-Create a basic SSM Document to run a shell command on an EC2 instance.
+Create a basic SSM Document with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const shellCommandDocument = await AWS.SSM.Document("ShellCommandDocument", {
+const basicDocument = await AWS.SSM.Document("BasicDocument", {
   Content: {
-    schemaVersion: "2.2",
-    description: "Run a simple shell command",
+    schemaVersion: "0.3",
+    description: "A simple document for executing commands",
     mainSteps: [{
       action: "aws:runCommand",
-      name: "runShellCommand",
+      name: "runShellScript",
       inputs: {
-        DocumentName: "AWS-RunShellScript",
+        DocumentType: "Command",
         Parameters: {
           commands: ["echo Hello World"]
         }
@@ -30,98 +30,101 @@ const shellCommandDocument = await AWS.SSM.Document("ShellCommandDocument", {
     }]
   },
   DocumentType: "Command",
-  TargetType: "/AWS::EC2::Instance",
-  Name: "HelloWorldCommand"
+  Tags: [
+    { Key: "Environment", Value: "Development" },
+    { Key: "Owner", Value: "DevTeam" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Define a more complex SSM Document with multiple commands and parameters.
+Configure an SSM Document with more advanced settings, including attachments and versioning.
 
 ```ts
-const complexDocument = await AWS.SSM.Document("ComplexDocument", {
+const advancedDocument = await AWS.SSM.Document("AdvancedDocument", {
   Content: {
-    schemaVersion: "2.2",
-    description: "Run multiple shell commands",
+    schemaVersion: "0.3",
+    description: "An advanced SSM document with attachments",
     mainSteps: [{
       action: "aws:runCommand",
-      name: "runMultipleCommands",
+      name: "runShellScript",
       inputs: {
-        DocumentName: "AWS-RunShellScript",
+        DocumentType: "Command",
         Parameters: {
-          commands: [
-            "yum update -y",
-            "yum install -y httpd",
-            "service httpd start"
-          ]
+          commands: ["echo Running advanced script"]
         }
       }
     }]
   },
   DocumentType: "Command",
-  TargetType: "/AWS::EC2::Instance",
-  Name: "InstallAndStartHttpd"
+  VersionName: "v1.0.0",
+  Attachments: [{
+    Key: "myAttachment",
+    Values: ["attachmentValue"]
+  }],
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Owner", Value: "OpsTeam" }
+  ]
+});
+```
+
+## Using Custom Parameters
+
+Demonstrate how to use custom parameters in the document content.
+
+```ts
+const paramDocument = await AWS.SSM.Document("ParamDocument", {
+  Content: {
+    schemaVersion: "0.3",
+    description: "Document with custom parameters",
+    mainSteps: [{
+      action: "aws:runCommand",
+      name: "runParameterizedScript",
+      inputs: {
+        DocumentType: "Command",
+        Parameters: {
+          commands: ["echo Parameter value is {{ scriptParam }}"],
+          scriptParam: ["Hello Parameter"]
+        }
+      }
+    }]
+  },
+  DocumentType: "Command",
+  Tags: [
+    { Key: "Environment", Value: "Testing" },
+    { Key: "Owner", Value: "QA" }
+  ]
 });
 ```
 
 ## Versioning and Update Method
 
-Create an SSM Document with versioning and a specified update method.
+Create a document with versioning and a specified update method.
 
 ```ts
 const versionedDocument = await AWS.SSM.Document("VersionedDocument", {
   Content: {
-    schemaVersion: "2.2",
-    description: "Run a versioned shell command",
+    schemaVersion: "0.3",
+    description: "Versioned document example",
     mainSteps: [{
       action: "aws:runCommand",
-      name: "runVersionedCommand",
+      name: "runVersionedScript",
       inputs: {
-        DocumentName: "AWS-RunShellScript",
+        DocumentType: "Command",
         Parameters: {
-          commands: ["echo Version 1.0"]
+          commands: ["echo Versioned Document Running"]
         }
       }
     }]
   },
   DocumentType: "Command",
-  TargetType: "/AWS::EC2::Instance",
-  Name: "VersionedShellCommand",
-  VersionName: "1.0",
-  UpdateMethod: "Overwrite" // Overwrite existing document with the same name
-});
-```
-
-## Adding Tags
-
-Create an SSM Document and include tags for better resource management.
-
-```ts
-const taggedDocument = await AWS.SSM.Document("TaggedDocument", {
-  Content: {
-    schemaVersion: "2.2",
-    description: "Run a shell command with tags",
-    mainSteps: [{
-      action: "aws:runCommand",
-      name: "runTaggedCommand",
-      inputs: {
-        DocumentName: "AWS-RunShellScript",
-        Parameters: {
-          commands: ["echo Tagged Command"]
-        }
-      }
-    }]
-  },
-  DocumentType: "Command",
-  TargetType: "/AWS::EC2::Instance",
-  Name: "ShellCommandWithTags",
-  Tags: [{
-    Key: "Environment",
-    Value: "Production"
-  }, {
-    Key: "Department",
-    Value: "Engineering"
-  }]
+  VersionName: "v2.0.0",
+  UpdateMethod: "Overwrite",
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Owner", Value: "ReleaseTeam" }
+  ]
 });
 ```

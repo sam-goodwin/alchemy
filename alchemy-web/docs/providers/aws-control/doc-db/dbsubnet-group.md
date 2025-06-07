@@ -5,61 +5,69 @@ description: Learn how to create, update, and manage AWS DocDB DBSubnetGroups us
 
 # DBSubnetGroup
 
-The DBSubnetGroup resource lets you manage [AWS DocumentDB DBSubnetGroups](https://docs.aws.amazon.com/docdb/latest/userguide/) to define a group of subnets for your DocumentDB clusters.
+The DBSubnetGroup resource allows you to define a group of subnets that can be used by your Amazon DocumentDB (with MongoDB compatibility) clusters. For more details, visit the [AWS DocDB DBSubnetGroups documentation](https://docs.aws.amazon.com/docdb/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic DBSubnetGroup with a name, description, and a list of subnet IDs.
+Create a simple DBSubnetGroup with the required properties and an optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const dbSubnetGroup = await AWS.DocDB.DBSubnetGroup("myDbSubnetGroup", {
-  DBSubnetGroupName: "my-db-subnet-group",
-  DBSubnetGroupDescription: "A subnet group for my DocumentDB cluster",
-  SubnetIds: [
-    "subnet-0123456789abcdef0",
-    "subnet-0abcdef0123456789"
-  ],
+const simpleDBSubnetGroup = await AWS.DocDB.DBSubnetGroup("SimpleDBSubnetGroup", {
+  DBSubnetGroupDescription: "A simple DB Subnet Group for DocumentDB",
+  SubnetIds: ["subnet-0abcd1234efgh5678", "subnet-0abcd1234efgh5679"],
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "MyProject" }
+    { Key: "Environment", Value: "Development" },
+    { Key: "Team", Value: "Database" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a DBSubnetGroup with additional parameters for resource adoption.
+Configure a DBSubnetGroup with an explicit name and additional tags.
 
 ```ts
-const advancedDbSubnetGroup = await AWS.DocDB.DBSubnetGroup("advancedDbSubnetGroup", {
-  DBSubnetGroupName: "advanced-db-subnet-group",
-  DBSubnetGroupDescription: "An advanced subnet group for my DocumentDB cluster",
-  SubnetIds: [
-    "subnet-abcdef0123456789",
-    "subnet-0123456789abcdef"
-  ],
+const advancedDBSubnetGroup = await AWS.DocDB.DBSubnetGroup("AdvancedDBSubnetGroup", {
+  DBSubnetGroupName: "MyCustomDBSubnetGroup",
+  DBSubnetGroupDescription: "An advanced DB Subnet Group with specific settings",
+  SubnetIds: ["subnet-0abcd1234efgh5670", "subnet-0abcd1234efgh5671"],
   Tags: [
     { Key: "Environment", Value: "Staging" },
-    { Key: "Project", Value: "AdvancedProject" }
-  ],
-  adopt: true // Adopt existing resource instead of failing
+    { Key: "Owner", Value: "DevOps" }
+  ]
 });
 ```
 
-## Example with Existing Resources
+## Using Existing Resources
 
-Demonstrate how to use an existing DBSubnetGroup by adopting it into your configuration.
+Create a DBSubnetGroup that adopts existing resources instead of failing if they already exist.
 
 ```ts
-const existingDbSubnetGroup = await AWS.DocDB.DBSubnetGroup("existingDbSubnetGroup", {
-  DBSubnetGroupName: "existing-db-subnet-group",
-  DBSubnetGroupDescription: "Adopting an existing subnet group",
+const adoptExistingDBSubnetGroup = await AWS.DocDB.DBSubnetGroup("AdoptExistingDBSubnetGroup", {
+  DBSubnetGroupName: "ExistingDBSubnetGroup",
+  DBSubnetGroupDescription: "Adopting an existing DB Subnet Group",
+  SubnetIds: ["subnet-0abcd1234efgh5672", "subnet-0abcd1234efgh5673"],
+  adopt: true
+});
+```
+
+## Example with Multiple Subnets
+
+Define a DBSubnetGroup that includes multiple subnets across different availability zones.
+
+```ts
+const multiAZDBSubnetGroup = await AWS.DocDB.DBSubnetGroup("MultiAZDBSubnetGroup", {
+  DBSubnetGroupDescription: "DB Subnet Group utilizing multiple AZs",
   SubnetIds: [
-    "subnet-1234567890abcdef",
-    "subnet-abcdef1234567890"
+    "subnet-0abcd1234efgh5674", // AZ1
+    "subnet-0abcd1234efgh5675", // AZ2
+    "subnet-0abcd1234efgh5676"  // AZ3
   ],
-  adopt: true // Adopt the existing resource
+  Tags: [
+    { Key: "Environment", Value: "Production" },
+    { Key: "Compliance", Value: "GDPR" }
+  ]
 });
 ```

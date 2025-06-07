@@ -5,76 +5,81 @@ description: Learn how to create, update, and manage AWS ElastiCache CacheCluste
 
 # CacheCluster
 
-The CacheCluster resource lets you manage [AWS ElastiCache CacheClusters](https://docs.aws.amazon.com/elasticache/latest/userguide/) for in-memory data storage and caching.
+The CacheCluster resource lets you manage [AWS ElastiCache CacheClusters](https://docs.aws.amazon.com/elasticache/latest/userguide/) for caching data to improve application performance and scalability.
 
 ## Minimal Example
 
-Create a basic CacheCluster with required properties and one optional property.
+Create a basic CacheCluster with required properties and a couple of common optional settings.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicCacheCluster = await AWS.ElastiCache.CacheCluster("basicCacheCluster", {
-  CacheNodeType: "cache.t2.micro", 
+const BasicCacheCluster = await AWS.ElastiCache.CacheCluster("BasicCacheCluster", {
+  CacheNodeType: "cache.t2.micro",
   Engine: "redis",
   NumCacheNodes: 1,
-  ClusterName: "my-basic-cache-cluster",
-  PreferredMaintenanceWindow: "sun:05:00-sun:06:00" // Maintenance window
+  CacheParameterGroupName: "default.redis5.0",
+  VpcSecurityGroupIds: ["sg-0123456789abcdef0"],
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CacheCluster with additional options for enhanced functionality.
+Configure an advanced CacheCluster with additional settings like snapshot options and maintenance windows.
 
 ```ts
-const advancedCacheCluster = await AWS.ElastiCache.CacheCluster("advancedCacheCluster", {
+const AdvancedCacheCluster = await AWS.ElastiCache.CacheCluster("AdvancedCacheCluster", {
   CacheNodeType: "cache.m5.large",
   Engine: "redis",
   NumCacheNodes: 3,
-  ClusterName: "my-advanced-cache-cluster",
-  SnapshotRetentionLimit: 5,
-  AutoMinorVersionUpgrade: true,
-  PreferredAvailabilityZones: ["us-west-2a", "us-west-2b"],
+  PreferredMaintenanceWindow: "sun:23:00-sun:23:30",
+  SnapshotRetentionLimit: 7,
+  SnapshotWindow: "02:00-03:00",
   CacheParameterGroupName: "default.redis5.0",
-  LogDeliveryConfigurations: [{
-    DestinationType: "cloudwatch-logs",
-    LogFormat: "text",
-    DestinationDetails: {
-      LogGroup: "my-cache-cluster-logs"
-    }
-  }]
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DataScience" }
+  ]
 });
 ```
 
 ## High Availability Configuration
 
-Set up a CacheCluster for high availability with multiple availability zones.
+Set up a CacheCluster in a specific availability zone with enhanced security features.
 
 ```ts
-const highAvailabilityCacheCluster = await AWS.ElastiCache.CacheCluster("highAvailabilityCacheCluster", {
+const HighAvailabilityCacheCluster = await AWS.ElastiCache.CacheCluster("HighAvailabilityCacheCluster", {
   CacheNodeType: "cache.r5.large",
-  Engine: "redis",
-  NumCacheNodes: 3,
-  ClusterName: "my-ha-cache-cluster",
-  PreferredAvailabilityZones: ["us-east-1a", "us-east-1b", "us-east-1c"],
-  TransitEncryptionEnabled: true,
-  CacheSubnetGroupName: "my-cache-subnet-group",
-  VpcSecurityGroupIds: ["sg-0abcd1234efgh5678"]
+  Engine: "memcached",
+  NumCacheNodes: 2,
+  PreferredAvailabilityZones: ["us-west-2a", "us-west-2b"],
+  CacheSubnetGroupName: "my-subnet-group",
+  CacheSecurityGroupNames: ["my-security-group"],
+  Tags: [
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "QA" }
+  ]
 });
 ```
 
-## Snapshot Configuration
+## Snapshot and Backup Configuration
 
-Configure a CacheCluster with snapshot features for data durability.
+Create a CacheCluster with snapshot and backup settings to ensure data durability.
 
 ```ts
-const snapshotCacheCluster = await AWS.ElastiCache.CacheCluster("snapshotCacheCluster", {
+const SnapshotCacheCluster = await AWS.ElastiCache.CacheCluster("SnapshotCacheCluster", {
   CacheNodeType: "cache.t3.medium",
   Engine: "redis",
-  NumCacheNodes: 2,
-  ClusterName: "my-snapshot-cache-cluster",
-  SnapshotWindow: "03:00-04:00", // Time range for snapshot
-  SnapshotRetentionLimit: 7
+  NumCacheNodes: 1,
+  SnapshotRetentionLimit: 30,
+  SnapshotWindow: "04:00-05:00",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Backup" }
+  ]
 });
 ```

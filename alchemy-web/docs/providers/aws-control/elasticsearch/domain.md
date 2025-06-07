@@ -9,25 +9,30 @@ The Domain resource lets you manage [AWS Elasticsearch Domains](https://docs.aws
 
 ## Minimal Example
 
-Create a basic Elasticsearch Domain with essential properties.
+Create a basic Elasticsearch domain with a specified domain name and access policies.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const elasticsearchDomain = await AWS.Elasticsearch.Domain("myElasticsearchDomain", {
+const ElasticsearchDomain = await AWS.Elasticsearch.Domain("MyElasticsearchDomain", {
   DomainName: "my-elasticsearch-domain",
+  AccessPolicies: JSON.stringify({
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: "*",
+        Action: "es:*",
+        Resource: "*"
+      }
+    ]
+  }),
   ElasticsearchVersion: "7.10",
-  EBSOptions: {
-    EBSEnabled: true,
-    VolumeType: "gp2",
-    VolumeSize: 10
-  },
-  VPCOptions: {
-    SubnetIds: ["subnet-0abcd1234efgh5678"],
-    SecurityGroupIds: ["sg-01234abcd567efgh8"]
+  NodeToNodeEncryptionOptions: {
+    Enabled: true
   },
   Tags: [
-    { Key: "Environment", Value: "Development" },
+    { Key: "Environment", Value: "production" },
     { Key: "Project", Value: "SearchService" }
   ]
 });
@@ -35,72 +40,57 @@ const elasticsearchDomain = await AWS.Elasticsearch.Domain("myElasticsearchDomai
 
 ## Advanced Configuration
 
-Configure an Elasticsearch Domain with advanced security options and logging.
+Configure an Elasticsearch domain with advanced options such as Cognito authentication and VPC settings.
 
 ```ts
-const advancedElasticsearchDomain = await AWS.Elasticsearch.Domain("secureElasticsearchDomain", {
-  DomainName: "secure-elasticsearch-domain",
-  ElasticsearchVersion: "7.10",
-  AdvancedSecurityOptions: {
-    Enabled: true,
-    InternalUserDatabaseEnabled: true,
-    MasterUserOptions: {
-      MasterUserName: "admin",
-      MasterUserPassword: alchemy.secret(process.env.ES_MASTER_PASSWORD!)
-    }
-  },
-  LogPublishingOptions: {
-    SearchSlowLog: {
-      Enabled: true,
-      CloudWatchLogGroupArn: "arn:aws:logs:us-west-2:123456789012:log-group:/aws/elasticsearch/my-slow-log",
-      LogType: "All"
-    }
-  }
-});
-```
-
-## Using Cognito for Authentication
-
-Create an Elasticsearch Domain that uses Amazon Cognito for user authentication.
-
-```ts
-const cognitoElasticsearchDomain = await AWS.Elasticsearch.Domain("cognitoElasticsearchDomain", {
-  DomainName: "cognito-elasticsearch-domain",
-  ElasticsearchVersion: "7.10",
+const AdvancedElasticsearchDomain = await AWS.Elasticsearch.Domain("AdvancedElasticsearchDomain", {
+  DomainName: "advanced-elasticsearch-domain",
+  AccessPolicies: JSON.stringify({
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: {
+          Service: "cognito-identity.amazonaws.com"
+        },
+        Action: "es:*",
+        Resource: "*"
+      }
+    ]
+  }),
   CognitoOptions: {
     Enabled: true,
-    UserPoolId: "us-west-2_aBcDeFgHi",
-    IdentityPoolId: "us-west-2:12345678-abcd-1234-abcd-1234567890ab",
-    RoleArn: "arn:aws:iam::123456789012:role/CognitoAccessRole"
+    IdentityPoolId: "us-west-2:XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+    RoleArn: "arn:aws:iam::123456789012:role/Cognito_ESAccessRole"
+  },
+  VPCOptions: {
+    SubnetIds: ["subnet-0bb1c79c", "subnet-0bb1c79d"],
+    SecurityGroupIds: ["sg-0bb1c79e"]
+  },
+  AdvancedOptions: {
+    "rest.action.multi.allow_explicit_index": "true"
   }
 });
 ```
 
-## Snapshot Configuration
+## Encrypted Domain Example
 
-Configure an Elasticsearch Domain with snapshot options for data backup.
-
-```ts
-const snapshotElasticsearchDomain = await AWS.Elasticsearch.Domain("snapshotElasticsearchDomain", {
-  DomainName: "snapshot-elasticsearch-domain",
-  ElasticsearchVersion: "7.10",
-  SnapshotOptions: {
-    AutomatedSnapshotStartHour: 0 // Set to midnight UTC
-  }
-});
-```
-
-## Encryption at Rest
-
-Create an Elasticsearch Domain with encryption at rest enabled.
+Create an Elasticsearch domain with encryption at rest enabled for enhanced security.
 
 ```ts
-const encryptedElasticsearchDomain = await AWS.Elasticsearch.Domain("encryptedElasticsearchDomain", {
+const EncryptedElasticsearchDomain = await AWS.Elasticsearch.Domain("EncryptedElasticsearchDomain", {
   DomainName: "encrypted-elasticsearch-domain",
-  ElasticsearchVersion: "7.10",
+  EBSOptions: {
+    EBSEnabled: true,
+    VolumeType: "gp2",
+    VolumeSize: 10
+  },
   EncryptionAtRestOptions: {
     Enabled: true,
-    KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-56ef-78gh-90ij-klmnopqrst"
+    KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/abcd-1234-a1b2-xyz"
+  },
+  SnapshotOptions: {
+    AutomatedSnapshotStartHour: 0
   }
 });
 ```

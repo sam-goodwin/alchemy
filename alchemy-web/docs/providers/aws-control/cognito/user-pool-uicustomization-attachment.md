@@ -5,68 +5,73 @@ description: Learn how to create, update, and manage AWS Cognito UserPoolUICusto
 
 # UserPoolUICustomizationAttachment
 
-The UserPoolUICustomizationAttachment resource allows you to customize the UI for your AWS Cognito User Pools. This customization can include visual elements such as CSS styles that enhance the user experience. For more information, refer to the [AWS Cognito UserPoolUICustomizationAttachments documentation](https://docs.aws.amazon.com/cognito/latest/userguide/).
+The UserPoolUICustomizationAttachment resource lets you customize the UI of your Amazon Cognito User Pools. This customization allows you to specify CSS styles for user pool sign-up and sign-in pages. For more information, refer to the [AWS Cognito UserPoolUICustomizationAttachments](https://docs.aws.amazon.com/cognito/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic UserPoolUICustomizationAttachment with required properties and a common optional property.
+Create a basic UserPoolUICustomizationAttachment with required properties and a common optional CSS property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const userPoolUICustomization = await AWS.Cognito.UserPoolUICustomizationAttachment("myUserPoolUICustomization", {
-  UserPoolId: "us-east-1_AbCdEfGhI",
-  ClientId: "1h2g3f4g5h6i7j8k9l0m",
-  CSS: "body { background-color: #f0f0f0; }" // Basic CSS customization
+const UserPoolUICustomization = await AWS.Cognito.UserPoolUICustomizationAttachment("UserPoolUICustomization", {
+  UserPoolId: "us-east-1_aBc123456",
+  ClientId: "2n12345678",
+  CSS: `
+    .sign-in {
+      background-color: #f7f7f7;
+      color: #333;
+    }
+  `
 });
 ```
 
 ## Advanced Configuration
 
-Customize the User Pool UI with more extensive CSS and adopt an existing resource if it already exists.
+Customize the UI with additional advanced CSS properties for branding and user experience.
 
 ```ts
-const advancedUICustomization = await AWS.Cognito.UserPoolUICustomizationAttachment("advancedUserPoolUICustomization", {
-  UserPoolId: "us-east-1_AbCdEfGhI",
-  ClientId: "1h2g3f4g5h6i7j8k9l0m",
+const AdvancedUserPoolUICustomization = await AWS.Cognito.UserPoolUICustomizationAttachment("AdvancedUserPoolUICustomization", {
+  UserPoolId: "us-east-1_aBc123456",
+  ClientId: "2n12345678",
   CSS: `
-    body { 
-      background-color: #ffffff; 
-      font-family: Arial, sans-serif; 
+    .sign-in {
+      background-color: #ffffff;
+      color: #000000;
+      font-family: Arial, sans-serif;
     }
-    .header { 
-      color: #333333; 
+    .button {
+      background-color: #0073e6;
+      border-radius: 5px;
+      color: #ffffff;
     }
-  `,
-  adopt: true // Adopt existing resource if it exists
+  `
 });
 ```
 
-## Example with Custom CSS
+## Customizing for Multiple Clients
 
-In this example, you can see how to apply a more comprehensive CSS style to the user pool UI.
+Use different customizations for multiple clients within the same user pool.
 
 ```ts
-const customCSSUICustomization = await AWS.Cognito.UserPoolUICustomizationAttachment("customCSSUserPoolUICustomization", {
-  UserPoolId: "us-east-1_AbCdEfGhI",
-  ClientId: "1h2g3f4g5h6i7j8k9l0m",
+const Client1Customization = await AWS.Cognito.UserPoolUICustomizationAttachment("Client1Customization", {
+  UserPoolId: "us-east-1_aBc123456",
+  ClientId: "client1-123456",
   CSS: `
-    body { 
-      background-color: #fafafa; 
-      color: #333; 
-      font-size: 16px; 
+    .sign-in {
+      background-color: #ffcccc;
+      color: #900;
     }
-    .button { 
-      background-color: #007bff; 
-      border: none; 
-      color: white; 
-      padding: 10px 20px; 
-      text-align: center; 
-      text-decoration: none; 
-      display: inline-block; 
-      font-size: 16px; 
-      margin: 4px 2px; 
-      cursor: pointer; 
+  `
+});
+
+const Client2Customization = await AWS.Cognito.UserPoolUICustomizationAttachment("Client2Customization", {
+  UserPoolId: "us-east-1_aBc123456",
+  ClientId: "client2-654321",
+  CSS: `
+    .sign-in {
+      background-color: #ccffcc;
+      color: #006600;
     }
   `
 });

@@ -5,59 +5,48 @@ description: Learn how to create, update, and manage AWS VpcLattice AccessLogSub
 
 # AccessLogSubscription
 
-The AccessLogSubscription resource lets you manage [AWS VpcLattice AccessLogSubscriptions](https://docs.aws.amazon.com/vpclattice/latest/userguide/) for logging access to service network traffic in VPC Lattice.
+The AccessLogSubscription resource allows you to manage [AWS VpcLattice AccessLogSubscriptions](https://docs.aws.amazon.com/vpclattice/latest/userguide/) for logging traffic data from your service network.
 
 ## Minimal Example
 
-Create a basic AccessLogSubscription with required properties and a common optional property.
+This example demonstrates how to create a basic access log subscription with required properties and a common optional tag.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const accessLogSubscription = await AWS.VpcLattice.AccessLogSubscription("myAccessLogSubscription", {
-  DestinationArn: "arn:aws:s3:::my-log-bucket/access-logs/",
-  ServiceNetworkLogType: "HTTP",
-  ResourceIdentifier: "my-service-network"
+const BasicLogSubscription = await AWS.VpcLattice.AccessLogSubscription("BasicLogSubscription", {
+  DestinationArn: "arn:aws:s3:::my-access-logs-bucket",
+  ResourceIdentifier: "my-service-network-id",
+  Tags: [
+    { Key: "Environment", Value: "production" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure an AccessLogSubscription with tags for better resource management.
+In this example, we configure an access log subscription with enhanced logging features by specifying the ServiceNetworkLogType.
 
 ```ts
-const taggedAccessLogSubscription = await AWS.VpcLattice.AccessLogSubscription("taggedAccessLogSubscription", {
-  DestinationArn: "arn:aws:s3:::my-log-bucket/access-logs/",
-  ServiceNetworkLogType: "HTTP",
-  ResourceIdentifier: "my-service-network",
+const AdvancedLogSubscription = await AWS.VpcLattice.AccessLogSubscription("AdvancedLogSubscription", {
+  DestinationArn: "arn:aws:s3:::my-advanced-logs-bucket",
+  ResourceIdentifier: "my-service-network-id",
+  ServiceNetworkLogType: "AllTraffic",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "VpcLatticeDemo" }
+    { Key: "Environment", Value: "staging" },
+    { Key: "Team", Value: "Networking" }
   ]
 });
 ```
 
 ## Adopting an Existing Resource
 
-Adopt an existing AccessLogSubscription instead of failing if it already exists.
+This example shows how to adopt an existing access log subscription instead of failing when a resource already exists.
 
 ```ts
-const existingAccessLogSubscription = await AWS.VpcLattice.AccessLogSubscription("existingAccessLogSubscription", {
-  DestinationArn: "arn:aws:s3:::my-log-bucket/access-logs/",
-  ServiceNetworkLogType: "HTTP",
-  ResourceIdentifier: "my-service-network",
+const AdoptedLogSubscription = await AWS.VpcLattice.AccessLogSubscription("AdoptedLogSubscription", {
+  DestinationArn: "arn:aws:s3:::my-existing-access-logs-bucket",
+  ResourceIdentifier: "my-existing-network-id",
   adopt: true
-});
-```
-
-## Logging to CloudWatch
-
-Set up an AccessLogSubscription that logs to a CloudWatch destination.
-
-```ts
-const cloudWatchLogSubscription = await AWS.VpcLattice.AccessLogSubscription("cloudWatchLogSubscription", {
-  DestinationArn: "arn:aws:logs:us-west-2:123456789012:log-group:my-log-group",
-  ServiceNetworkLogType: "HTTP",
-  ResourceIdentifier: "my-service-network"
 });
 ```

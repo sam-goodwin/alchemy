@@ -5,76 +5,42 @@ description: Learn how to create, update, and manage AWS QuickSight CustomPermis
 
 # CustomPermissions
 
-The CustomPermissions resource allows you to manage [AWS QuickSight Custom Permissions](https://docs.aws.amazon.com/quicksight/latest/userguide/) for your AWS account, enabling fine-grained access control for QuickSight resources.
+The CustomPermissions resource lets you create and manage [AWS QuickSight CustomPermissionss](https://docs.aws.amazon.com/quicksight/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-quicksight-custompermissions.html
 
 ## Minimal Example
-
-Create a basic CustomPermissions resource with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const customPermissions = await AWS.QuickSight.CustomPermissions("basicCustomPermissions", {
-  CustomPermissionsName: "DefaultPermissions",
-  AwsAccountId: "123456789012",
-  Capabilities: {
-    "SPICE": true,
-    "ANALYSIS": true
-  },
-  Tags: [
-    { Key: "Environment", Value: "Dev" },
-    { Key: "Project", Value: "Analytics" }
-  ]
+const custompermissions = await AWS.QuickSight.CustomPermissions("custompermissions-example", {
+  CustomPermissionsName: "custompermissions-custompermissions",
+  AwsAccountId: "example-awsaccountid",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CustomPermissions resource with a complex set of capabilities and tags.
+Create a custompermissions with additional configuration:
 
 ```ts
-const advancedCustomPermissions = await AWS.QuickSight.CustomPermissions("advancedCustomPermissions", {
-  CustomPermissionsName: "AdvancedPermissions",
-  AwsAccountId: "123456789012",
-  Capabilities: {
-    "SPICE": true,
-    "ANALYSIS": true,
-    "DASHBOARD": true,
-    "DATASET": true,
-    "USER": true
-  },
-  Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "Data Science" },
-    { Key: "Compliance", Value: "GDPR" }
-  ]
-});
+import AWS from "alchemy/aws/control";
+
+const advancedCustomPermissions = await AWS.QuickSight.CustomPermissions(
+  "advanced-custompermissions",
+  {
+    CustomPermissionsName: "custompermissions-custompermissions",
+    AwsAccountId: "example-awsaccountid",
+    Tags: {
+      Environment: "production",
+      Team: "DevOps",
+      Project: "MyApp",
+      CostCenter: "Engineering",
+      ManagedBy: "Alchemy",
+    },
+  }
+);
 ```
 
-## Adoption of Existing Resource
-
-Create a CustomPermissions resource while adopting an existing resource if it already exists.
-
-```ts
-const adoptCustomPermissions = await AWS.QuickSight.CustomPermissions("adoptExistingCustomPermissions", {
-  CustomPermissionsName: "ExistingPermissions",
-  AwsAccountId: "123456789012",
-  adopt: true
-});
-``` 
-
-## Adding Tags for Organization
-
-Create a CustomPermissions resource with multiple tags for better organization and management.
-
-```ts
-const taggedCustomPermissions = await AWS.QuickSight.CustomPermissions("taggedCustomPermissions", {
-  CustomPermissionsName: "TaggedPermissions",
-  AwsAccountId: "123456789012",
-  Tags: [
-    { Key: "Department", Value: "Marketing" },
-    { Key: "Project", Value: "Sales Dashboard" },
-    { Key: "Status", Value: "Active" }
-  ]
-});
-```

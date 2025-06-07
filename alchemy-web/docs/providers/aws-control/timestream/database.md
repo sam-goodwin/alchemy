@@ -5,63 +5,52 @@ description: Learn how to create, update, and manage AWS Timestream Databases us
 
 # Database
 
-The Database resource lets you manage [AWS Timestream Databases](https://docs.aws.amazon.com/timestream/latest/userguide/) for time-series data storage and analysis.
+The Database resource lets you manage [AWS Timestream Databases](https://docs.aws.amazon.com/timestream/latest/userguide/) and their associated configurations.
 
 ## Minimal Example
 
-Create a basic Timestream database with a specified name and optional KMS key for encryption.
+Create a basic Timestream database with a name and optional KMS key for encryption.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const timestreamDatabase = await AWS.Timestream.Database("myTimestreamDatabase", {
-  DatabaseName: "MyTimeSeriesDB",
-  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/my-key-id",
+const TimestreamDatabase = await AWS.Timestream.Database("MyTimestreamDatabase", {
+  DatabaseName: "MetricsDatabase",
+  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234abcd1234",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "IoT" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Analytics" }
   ]
 });
 ```
 
 ## Advanced Configuration
 
-Create a Timestream database with additional tags for better resource management.
+Configure a Timestream database with adoption of an existing resource.
 
 ```ts
-const advancedTimestreamDatabase = await AWS.Timestream.Database("advancedTimestreamDatabase", {
-  DatabaseName: "AdvancedTimeSeriesDB",
-  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/my-key-id",
-  Tags: [
-    { Key: "Team", Value: "DataScience" },
-    { Key: "CostCenter", Value: "12345" },
-    { Key: "Compliance", Value: "GDPR" }
-  ],
-  adopt: true // Adopts existing resource if it already exists
+const ExistingTimestreamDatabase = await AWS.Timestream.Database("ExistingDatabase", {
+  DatabaseName: "ExistingMetricsDatabase",
+  adopt: true // Adopt existing resource instead of failing if it already exists
 });
 ```
 
-## Example with Resource Adoption
+## Database with No Tags
 
-This example demonstrates creating a Timestream database that adopts an existing resource, preventing failure if it already exists.
+Create a Timestream database without any tags for simpler use cases.
 
 ```ts
-const adoptedDatabase = await AWS.Timestream.Database("adoptedDatabase", {
-  DatabaseName: "ExistingTimeSeriesDB",
-  adopt: true // This will attempt to adopt the existing resource
+const SimpleTimestreamDatabase = await AWS.Timestream.Database("SimpleDatabase", {
+  DatabaseName: "SimpleMetricsDatabase"
 });
 ```
 
-## Example with Encryption Key
+## Database with Only KMS Key
 
-This example shows how to create a Timestream database with a specified KMS key for enhanced security.
+Provision a Timestream database using only a KMS key for encryption, omitting all other properties.
 
 ```ts
-const secureDatabase = await AWS.Timestream.Database("secureTimestreamDatabase", {
-  DatabaseName: "SecureTimeSeriesDB",
-  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/my-secure-key",
-  Tags: [
-    { Key: "Security", Value: "High" }
-  ]
+const KMSOnlyTimestreamDatabase = await AWS.Timestream.Database("KMSDatabase", {
+  KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/xyz9876-xyz9-9876-xyz9-9876xyz9876"
 });
 ```

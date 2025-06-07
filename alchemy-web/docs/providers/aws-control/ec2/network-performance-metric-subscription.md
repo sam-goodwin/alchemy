@@ -5,46 +5,23 @@ description: Learn how to create, update, and manage AWS EC2 NetworkPerformanceM
 
 # NetworkPerformanceMetricSubscription
 
-The NetworkPerformanceMetricSubscription resource lets you manage subscriptions for network performance metrics in AWS EC2. This allows you to monitor network performance effectively. For more information, refer to the [AWS EC2 NetworkPerformanceMetricSubscriptions documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The NetworkPerformanceMetricSubscription resource lets you create and manage [AWS EC2 NetworkPerformanceMetricSubscriptions](https://docs.aws.amazon.com/ec2/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-networkperformancemetricsubscription.html
 
 ## Minimal Example
-
-Create a basic NetworkPerformanceMetricSubscription with required properties.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const networkSubscription = await AWS.EC2.NetworkPerformanceMetricSubscription("networkSubscription", {
-  Destination: "arn:aws:sns:us-west-2:123456789012:MySNSTopic",
-  Statistic: "Average",
-  Metric: "PacketDropCount",
-  Source: "i-0abcd1234efgh5678"
-});
+const networkperformancemetricsubscription = await AWS.EC2.NetworkPerformanceMetricSubscription(
+  "networkperformancemetricsubscription-example",
+  {
+    Destination: "example-destination",
+    Statistic: "example-statistic",
+    Metric: "example-metric",
+    Source: "example-source",
+  }
+);
 ```
 
-## Advanced Configuration
-
-Configure a NetworkPerformanceMetricSubscription with the adoption of an existing resource.
-
-```ts
-const existingNetworkSubscription = await AWS.EC2.NetworkPerformanceMetricSubscription("existingNetworkSubscription", {
-  Destination: "arn:aws:sns:us-west-2:123456789012:MyExistingSNSTopic",
-  Statistic: "Sum",
-  Metric: "BytesIn",
-  Source: "i-0abcd1234efgh5678",
-  adopt: true
-});
-```
-
-## Custom Metric Configuration
-
-Subscribe to a custom metric for more specific network performance monitoring.
-
-```ts
-const customMetricSubscription = await AWS.EC2.NetworkPerformanceMetricSubscription("customMetricSubscription", {
-  Destination: "arn:aws:sns:us-east-1:123456789012:CustomSNSTopic",
-  Statistic: "Maximum",
-  Metric: "PacketLossCount",
-  Source: "i-0abcd1234efgh5678"
-});
-```

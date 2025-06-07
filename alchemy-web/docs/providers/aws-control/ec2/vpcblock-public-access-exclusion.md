@@ -5,71 +5,45 @@ description: Learn how to create, update, and manage AWS EC2 VPCBlockPublicAcces
 
 # VPCBlockPublicAccessExclusion
 
-The VPCBlockPublicAccessExclusion resource allows you to manage the public access settings for your Amazon EC2 VPCs by excluding specific components such as internet gateways from public access blocking. For more details, refer to the [AWS EC2 VPCBlockPublicAccessExclusions documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
+The VPCBlockPublicAccessExclusion resource allows you to manage public access exclusions for your Amazon EC2 VPCs. This resource helps ensure that specific internet gateway configurations can be excluded from the VPC's public access block settings. For more information, refer to the [AWS EC2 VPCBlockPublicAccessExclusions documentation](https://docs.aws.amazon.com/ec2/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic VPCBlockPublicAccessExclusion resource to exclude an internet gateway from public access blocking.
+Create a basic VPCBlockPublicAccessExclusion with required properties and an optional VPC ID.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicExclusion = await AWS.EC2.VPCBlockPublicAccessExclusion("basicExclusion", {
-  InternetGatewayExclusionMode: "ExcludeGateway",
-  VpcId: "vpc-123abc45", // Replace with your VPC ID
-  Tags: [
-    { Key: "Environment", Value: "Development" },
-    { Key: "Project", Value: "WebApp" }
-  ]
+const VPCExclusion = await AWS.EC2.VPCBlockPublicAccessExclusion("MyVPCExclusion", {
+  InternetGatewayExclusionMode: "Exclude",
+  VpcId: "vpc-12345678"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VPCBlockPublicAccessExclusion with a subnet ID for more granular control over public access settings.
+Configure a VPCBlockPublicAccessExclusion with additional options such as tags and subnet ID.
 
 ```ts
-const advancedExclusion = await AWS.EC2.VPCBlockPublicAccessExclusion("advancedExclusion", {
-  InternetGatewayExclusionMode: "ExcludeGateway",
-  VpcId: "vpc-678def90", // Replace with your VPC ID
-  SubnetId: "subnet-abc12345", // Replace with your Subnet ID
+const AdvancedVPCExclusion = await AWS.EC2.VPCBlockPublicAccessExclusion("AdvancedVPCExclusion", {
+  InternetGatewayExclusionMode: "Exclude",
+  VpcId: "vpc-12345678",
+  SubnetId: "subnet-87654321",
   Tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Department", Value: "IT" }
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
   ]
 });
 ```
 
-## Excluding Multiple Resources
+## Adoption of Existing Resource
 
-Create multiple exclusions for different internet gateways within the same VPC.
-
-```ts
-const exclusion1 = await AWS.EC2.VPCBlockPublicAccessExclusion("exclusion1", {
-  InternetGatewayExclusionMode: "ExcludeGateway",
-  VpcId: "vpc-abc12345", // Replace with your VPC ID
-  Tags: [
-    { Key: "Purpose", Value: "Web Server" }
-  ]
-});
-
-const exclusion2 = await AWS.EC2.VPCBlockPublicAccessExclusion("exclusion2", {
-  InternetGatewayExclusionMode: "ExcludeGateway",
-  VpcId: "vpc-abc12345", // Same VPC ID
-  Tags: [
-    { Key: "Purpose", Value: "Load Balancer" }
-  ]
-});
-```
-
-## Adoption of Existing Resources
-
-If you want to adopt an existing VPCBlockPublicAccessExclusion without failing, you can set the `adopt` property to `true`.
+If you want to adopt an existing resource instead of failing when the resource already exists, use the adopt property.
 
 ```ts
-const adoptExistingExclusion = await AWS.EC2.VPCBlockPublicAccessExclusion("adoptExistingExclusion", {
-  InternetGatewayExclusionMode: "ExcludeGateway",
-  VpcId: "vpc-abc12345", // Replace with your VPC ID
-  adopt: true // Adopt existing resource if it exists
+const AdoptExistingVPCExclusion = await AWS.EC2.VPCBlockPublicAccessExclusion("AdoptExistingVPCExclusion", {
+  InternetGatewayExclusionMode: "Exclude",
+  VpcId: "vpc-12345678",
+  adopt: true
 });
 ```

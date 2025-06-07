@@ -5,64 +5,61 @@ description: Learn how to create, update, and manage AWS MediaLive SignalMaps us
 
 # SignalMap
 
-The SignalMap resource allows you to manage [AWS MediaLive SignalMaps](https://docs.aws.amazon.com/medialive/latest/userguide/) for video processing and signal management in your broadcasting workflows.
+The SignalMap resource allows you to manage [AWS MediaLive SignalMaps](https://docs.aws.amazon.com/medialive/latest/userguide/) and their configuration settings.
 
 ## Minimal Example
 
-Create a basic SignalMap with required properties and one optional description.
+Create a basic SignalMap with required properties and a common optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const basicSignalMap = await AWS.MediaLive.SignalMap("basicSignalMap", {
-  discoveryEntryPointArn: "arn:aws:medialive:us-west-2:123456789012:signalmap:basic-signal-map",
-  name: "BasicSignalMap",
-  description: "This is a basic SignalMap for demonstration purposes."
+const BasicSignalMap = await AWS.MediaLive.SignalMap("BasicSignalMap", {
+  Name: "MySignalMap",
+  DiscoveryEntryPointArn: "arn:aws:medialive:us-west-2:123456789012:discovery-entry-point/abc123",
+  Description: "This is a basic SignalMap for our MediaLive configuration."
 });
 ```
 
 ## Advanced Configuration
 
-Configure a SignalMap with additional options such as EventBridge rule template group identifiers and CloudWatch alarm template group identifiers.
+Configure a SignalMap with additional properties, including EventBridge rule template group identifiers and tags.
 
 ```ts
-const advancedSignalMap = await AWS.MediaLive.SignalMap("advancedSignalMap", {
-  discoveryEntryPointArn: "arn:aws:medialive:us-west-2:123456789012:signalmap:advanced-signal-map",
-  name: "AdvancedSignalMap",
-  eventBridgeRuleTemplateGroupIdentifiers: ["group1", "group2"],
-  cloudWatchAlarmTemplateGroupIdentifiers: ["alarmGroup1", "alarmGroup2"],
-  forceRediscovery: true,
-  tags: {
-    project: "media-processing",
-    environment: "production"
-  }
+const AdvancedSignalMap = await AWS.MediaLive.SignalMap("AdvancedSignalMap", {
+  Name: "MyAdvancedSignalMap",
+  DiscoveryEntryPointArn: "arn:aws:medialive:us-west-2:123456789012:discovery-entry-point/xyz456",
+  EventBridgeRuleTemplateGroupIdentifiers: ["group1", "group2"],
+  CloudWatchAlarmTemplateGroupIdentifiers: ["alarmGroup1"],
+  Tags: [
+    { Key: "Environment", Value: "development" },
+    { Key: "Project", Value: "MediaLive" }
+  ]
 });
 ```
 
-## SignalMap with Rediscovery
+## Force Rediscovery
 
-Create a SignalMap that forces rediscovery of existing resources when created.
+Create a SignalMap that forces rediscovery of resources.
 
 ```ts
-const rediscoverySignalMap = await AWS.MediaLive.SignalMap("rediscoverySignalMap", {
-  discoveryEntryPointArn: "arn:aws:medialive:us-west-2:123456789012:signalmap:rediscovery-signal-map",
-  name: "RediscoverySignalMap",
-  forceRediscovery: true,
-  description: "This SignalMap forces rediscovery of existing resources."
+const ForceRediscoverySignalMap = await AWS.MediaLive.SignalMap("ForceRediscoverySignalMap", {
+  Name: "MyForceRediscoverySignalMap",
+  DiscoveryEntryPointArn: "arn:aws:medialive:us-west-2:123456789012:discovery-entry-point/def789",
+  ForceRediscovery: true,
+  Description: "This SignalMap forces rediscovery of all resources."
 });
 ```
 
-## SignalMap with Tags
+## Adoption of Existing Resources
 
-Create a SignalMap that utilizes tags for better resource organization and management.
+Create a SignalMap that adopts an existing resource instead of failing.
 
 ```ts
-const taggedSignalMap = await AWS.MediaLive.SignalMap("taggedSignalMap", {
-  discoveryEntryPointArn: "arn:aws:medialive:us-west-2:123456789012:signalmap:tagged-signal-map",
-  name: "TaggedSignalMap",
-  tags: {
-    owner: "dev-team",
-    purpose: "testing"
-  }
+const AdoptExistingSignalMap = await AWS.MediaLive.SignalMap("AdoptExistingSignalMap", {
+  Name: "MyAdoptExistingSignalMap",
+  DiscoveryEntryPointArn: "arn:aws:medialive:us-west-2:123456789012:discovery-entry-point/ghi101",
+  adopt: true,
+  Description: "This SignalMap will adopt an existing resource if it exists."
 });
 ```

@@ -5,81 +5,110 @@ description: Learn how to create, update, and manage AWS NetworkManager CoreNetw
 
 # CoreNetwork
 
-The CoreNetwork resource allows you to manage [AWS NetworkManager CoreNetworks](https://docs.aws.amazon.com/networkmanager/latest/userguide/) which facilitate the management of your global network. This resource provides a central point for managing your network components and policies across AWS.
+The CoreNetwork resource allows you to manage [AWS NetworkManager CoreNetworks](https://docs.aws.amazon.com/networkmanager/latest/userguide/) which help you define a global network architecture. This resource enables you to create, modify, and manage network policies for your enterprise applications and services.
 
 ## Minimal Example
 
-Create a basic CoreNetwork with required properties and a description.
+This example demonstrates how to create a basic CoreNetwork with required properties and a common optional description.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const coreNetwork = await AWS.NetworkManager.CoreNetwork("myCoreNetwork", {
-  GlobalNetworkId: "gn-12345678",
-  Description: "Core network for managing global connectivity"
+const MyCoreNetwork = await AWS.NetworkManager.CoreNetwork("MyCoreNetwork", {
+  GlobalNetworkId: "gn-0123456789abcdef0",
+  Description: "This is my main corporate network."
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CoreNetwork with a policy document and tags for better resource management.
+In this example, we include a policy document that defines IAM permissions and tags for better resource management.
 
 ```ts
-const policyDocument = {
-  Version: "2012-10-17",
-  Statement: [
-    {
-      Effect: "Allow",
-      Principal: "*",
-      Action: "networkmanager:CreateCoreNetwork",
-      Resource: "*"
-    }
-  ]
-};
-
-const advancedCoreNetwork = await AWS.NetworkManager.CoreNetwork("advancedCoreNetwork", {
-  GlobalNetworkId: "gn-87654321",
-  Description: "Advanced core network with policies",
-  PolicyDocument: policyDocument,
+const AdvancedCoreNetwork = await AWS.NetworkManager.CoreNetwork("AdvancedCoreNetwork", {
+  GlobalNetworkId: "gn-0123456789abcdef0",
+  Description: "Advanced configuration with policies.",
+  PolicyDocument: {
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: "*",
+        Action: "networkmanager:*",
+        Resource: "*"
+      }
+    ]
+  },
   Tags: [
     { Key: "Environment", Value: "Production" },
-    { Key: "Team", Value: "NetworkOps" }
+    { Key: "Owner", Value: "NetworkTeam" }
   ]
 });
 ```
 
-## Adoption of Existing Resources
+## Network Policy Example
 
-Create a CoreNetwork while adopting an existing resource if it already exists.
+This example demonstrates how to create a CoreNetwork with a detailed policy document that specifies network access controls.
 
 ```ts
-const adoptExistingCoreNetwork = await AWS.NetworkManager.CoreNetwork("adoptExistingCoreNetwork", {
-  GlobalNetworkId: "gn-11223344",
-  Description: "Adopting existing core network",
-  adopt: true
+const PolicyCoreNetwork = await AWS.NetworkManager.CoreNetwork("PolicyCoreNetwork", {
+  GlobalNetworkId: "gn-0123456789abcdef0",
+  Description: "Core network with strict policies.",
+  PolicyDocument: {
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: {
+          Service: "networkmanager.amazonaws.com"
+        },
+        Action: [
+          "networkmanager:CreateCoreNetwork",
+          "networkmanager:UpdateCoreNetwork"
+        ],
+        Resource: "*"
+      },
+      {
+        Effect: "Deny",
+        Action: "networkmanager:DeleteCoreNetwork",
+        Resource: "*",
+        Condition: {
+          StringEquals: {
+            "aws:PrincipalTag/Role": "ReadOnly"
+          }
+        }
+      }
+    ]
+  },
+  Tags: [
+    { Key: "Department", Value: "IT" },
+    { Key: "Project", Value: "CloudMigration" }
+  ]
 });
 ```
 
-## Updating CoreNetwork Properties
+## CoreNetwork with Multiple CIDR Blocks
 
-Update an existing CoreNetwork with new properties and a modified policy document.
+This example shows how to set up a CoreNetwork that specifies multiple CIDR blocks for different segments.
 
 ```ts
-const updatedPolicyDocument = {
-  Version: "2012-10-17",
-  Statement: [
-    {
-      Effect: "Allow",
-      Principal: "*",
-      Action: "networkmanager:UpdateCoreNetwork",
-      Resource: "*"
-    }
+const MultiCIDRCoreNetwork = await AWS.NetworkManager.CoreNetwork("MultiCIDRCoreNetwork", {
+  GlobalNetworkId: "gn-0123456789abcdef0",
+  Description: "Core network with multiple CIDR blocks.",
+  PolicyDocument: {
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: "*",
+        Action: "networkmanager:*",
+        Resource: "*"
+      }
+    ]
+  },
+  Tags: [
+    { Key: "Environment", Value: "Staging" },
+    { Key: "Team", Value: "Development" }
   ]
-};
-
-const updatedCoreNetwork = await AWS.NetworkManager.CoreNetwork("updateCoreNetwork", {
-  GlobalNetworkId: "gn-44556677",
-  Description: "Updated core network with new policies",
-  PolicyDocument: updatedPolicyDocument
 });
 ```

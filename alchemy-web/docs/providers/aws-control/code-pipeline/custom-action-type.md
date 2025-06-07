@@ -5,127 +5,115 @@ description: Learn how to create, update, and manage AWS CodePipeline CustomActi
 
 # CustomActionType
 
-The CustomActionType resource lets you define custom actions for your AWS CodePipeline, enabling integration with third-party services or custom processing logic. For more detailed information, refer to the [AWS CodePipeline CustomActionTypes documentation](https://docs.aws.amazon.com/codepipeline/latest/userguide/).
+The CustomActionType resource lets you define new custom action types for AWS CodePipeline, allowing you to integrate additional functionality into your pipelines. For more information, refer to the [AWS CodePipeline CustomActionTypes documentation](https://docs.aws.amazon.com/codepipeline/latest/userguide/).
 
 ## Minimal Example
 
-Create a basic CustomActionType with required properties and a common optional configuration.
+Create a basic custom action type with required properties and some optional configurations.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const simpleCustomActionType = await AWS.CodePipeline.CustomActionType("simpleCustomAction", {
-  category: "Build",
-  inputArtifactDetails: {
-    minimumCount: 1,
-    maximumCount: 5,
-    type: {
-      name: "MyInputArtifact",
-      type: "S3"
-    }
+const BasicCustomActionType = await AWS.CodePipeline.CustomActionType("BasicCustomActionType", {
+  Category: "Build",
+  InputArtifactDetails: {
+    MinimumCount: 1,
+    MaximumCount: 1
   },
-  outputArtifactDetails: {
-    minimumCount: 1,
-    maximumCount: 5,
-    type: {
-      name: "MyOutputArtifact",
-      type: "S3"
-    }
+  OutputArtifactDetails: {
+    MinimumCount: 1,
+    MaximumCount: 1
   },
-  provider: "MyCustomProvider",
-  version: "1.0",
-  settings: {
-    entityUrlTemplate: "https://example.com/{JobId}",
-    executionUrlTemplate: "https://example.com/{JobId}/execute"
-  }
+  Version: "1.0",
+  Provider: "MyCustomProvider",
+  ConfigurationProperties: [
+    {
+      Name: "MyCustomProperty",
+      Required: true,
+      Key: true,
+      Secret: false,
+      Queryable: false
+    }
+  ],
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "DevOps" }
+  ]
 });
 ```
 
 ## Advanced Configuration
 
-Configure a CustomActionType with detailed configuration properties including multiple configuration options and tags.
+Define a custom action type with additional configuration properties for enhanced functionality.
 
 ```ts
-const advancedCustomActionType = await AWS.CodePipeline.CustomActionType("advancedCustomAction", {
-  category: "Test",
-  inputArtifactDetails: {
-    minimumCount: 1,
-    maximumCount: 3,
-    type: {
-      name: "TestInputArtifact",
-      type: "S3"
-    }
+const AdvancedCustomActionType = await AWS.CodePipeline.CustomActionType("AdvancedCustomActionType", {
+  Category: "Test",
+  InputArtifactDetails: {
+    MinimumCount: 1,
+    MaximumCount: 2
   },
-  outputArtifactDetails: {
-    minimumCount: 1,
-    maximumCount: 2,
-    type: {
-      name: "TestOutputArtifact",
-      type: "S3"
-    }
+  OutputArtifactDetails: {
+    MinimumCount: 1,
+    MaximumCount: 2
   },
-  provider: "AdvancedProvider",
-  version: "1.0",
-  configurationProperties: [
+  Version: "1.1",
+  Provider: "MyAdvancedProvider",
+  ConfigurationProperties: [
     {
-      key: "TestParameter1",
-      required: true,
-      secret: false,
-      type: "String"
+      Name: "MyAdvancedProperty",
+      Required: true,
+      Key: true,
+      Secret: false,
+      Queryable: true
     },
     {
-      key: "TestParameter2",
-      required: false,
-      secret: true,
-      type: "String"
+      Name: "Timeout",
+      Required: false,
+      Key: false,
+      Secret: false,
+      Queryable: false
     }
   ],
-  tags: [
-    { key: "Project", value: "MyProject" },
-    { key: "Environment", value: "Production" }
-  ]
+  Settings: {
+    EntityUrlTemplate: "https://mycustomprovider.com/action/{Input}",
+    ExecutionUrlTemplate: "https://mycustomprovider.com/execution/{ExecutionId}"
+  }
 });
 ```
 
-## Custom Action with IAM Permissions
+## Custom Action with Multiple Input Artifacts
 
-Define a CustomActionType that requires specific IAM permissions for execution.
+Create a custom action type that accepts multiple input artifacts for a more complex workflow.
 
 ```ts
-const customActionWithPermissions = await AWS.CodePipeline.CustomActionType("permissionedCustomAction", {
-  category: "Deploy",
-  inputArtifactDetails: {
-    minimumCount: 1,
-    maximumCount: 1,
-    type: {
-      name: "DeployInputArtifact",
-      type: "S3"
-    }
+const MultiInputArtifactCustomActionType = await AWS.CodePipeline.CustomActionType("MultiInputArtifactCustomActionType", {
+  Category: "Deploy",
+  InputArtifactDetails: {
+    MinimumCount: 2,
+    MaximumCount: 5
   },
-  outputArtifactDetails: {
-    minimumCount: 1,
-    maximumCount: 1,
-    type: {
-      name: "DeployOutputArtifact",
-      type: "S3"
-    }
+  OutputArtifactDetails: {
+    MinimumCount: 1,
+    MaximumCount: 1
   },
-  provider: "PermissionedProvider",
-  version: "1.0",
-  configurationProperties: [
+  Version: "2.0",
+  Provider: "MyMultiInputProvider",
+  ConfigurationProperties: [
     {
-      key: "Environment",
-      required: true,
-      secret: false,
-      type: "String"
+      Name: "DeploymentTarget",
+      Required: true,
+      Key: true,
+      Secret: false,
+      Queryable: true
+    },
+    {
+      Name: "RollbackOnFailure",
+      Required: false,
+      Key: false,
+      Secret: false,
+      Queryable: false
     }
-  ],
-  settings: {
-    entityUrlTemplate: "https://example.com/{JobId}",
-    executionUrlTemplate: "https://example.com/{JobId}/execute"
-  },
-  tags: [
-    { key: "Service", value: "DeploymentService" }
   ]
 });
 ```

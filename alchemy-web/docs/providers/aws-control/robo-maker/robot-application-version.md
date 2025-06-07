@@ -5,7 +5,7 @@ description: Learn how to create, update, and manage AWS RoboMaker RobotApplicat
 
 # RobotApplicationVersion
 
-The RobotApplicationVersion resource lets you manage versions of a robot application in AWS RoboMaker. This resource is essential for deploying and updating robot applications in your AWS environment. For more information, refer to the [AWS RoboMaker RobotApplicationVersions documentation](https://docs.aws.amazon.com/robomaker/latest/userguide/).
+The RobotApplicationVersion resource allows you to manage versions of your robot applications in AWS RoboMaker. This resource is essential for deploying and updating robot applications in a controlled manner. For more details, refer to the [AWS RoboMaker RobotApplicationVersions documentation](https://docs.aws.amazon.com/robomaker/latest/userguide/).
 
 ## Minimal Example
 
@@ -14,47 +14,48 @@ Create a basic RobotApplicationVersion with the required properties.
 ```ts
 import AWS from "alchemy/aws/control";
 
-const robotAppVersion = await AWS.RoboMaker.RobotApplicationVersion("basicRobotAppVersion", {
+const BasicRobotAppVersion = await AWS.RoboMaker.RobotApplicationVersion("BasicRobotAppVersion", {
   Application: "arn:aws:robomaker:us-west-2:123456789012:robot-application/my-robot-app",
-  CurrentRevisionId: "revision-1"
+  CurrentRevisionId: "Revision1"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a RobotApplicationVersion with additional properties such as adopting an existing resource.
+Configure a RobotApplicationVersion with additional properties, such as adopting an existing resource.
 
 ```ts
-const advancedRobotAppVersion = await AWS.RoboMaker.RobotApplicationVersion("advancedRobotAppVersion", {
-  Application: "arn:aws:robomaker:us-west-2:123456789012:robot-application/my-advanced-robot-app",
-  CurrentRevisionId: "revision-2",
-  adopt: true
+const AdvancedRobotAppVersion = await AWS.RoboMaker.RobotApplicationVersion("AdvancedRobotAppVersion", {
+  Application: "arn:aws:robomaker:us-west-2:123456789012:robot-application/my-robot-app",
+  CurrentRevisionId: "Revision1",
+  adopt: true // Adopt existing resource if it already exists
 });
 ```
 
-## Specific Use Case: Version Control
+## Version Management
 
-Create a new version of a robot application while ensuring you adopt an existing resource if it already exists.
+Manage multiple versions of a robot application by using different revision IDs.
 
 ```ts
-const versionControlledRobotApp = await AWS.RoboMaker.RobotApplicationVersion("versionControlledRobotApp", {
-  Application: "arn:aws:robomaker:us-west-2:123456789012:robot-application/my-versioned-robot-app",
-  CurrentRevisionId: "revision-3",
-  adopt: true
+const FirstRobotAppVersion = await AWS.RoboMaker.RobotApplicationVersion("FirstRobotAppVersion", {
+  Application: "arn:aws:robomaker:us-west-2:123456789012:robot-application/my-robot-app",
+  CurrentRevisionId: "Revision1"
+});
+
+const SecondRobotAppVersion = await AWS.RoboMaker.RobotApplicationVersion("SecondRobotAppVersion", {
+  Application: "arn:aws:robomaker:us-west-2:123456789012:robot-application/my-robot-app",
+  CurrentRevisionId: "Revision2"
 });
 ```
 
-## Example: Tracking Creation and Update Times
+## Deployment Example
 
-Retrieve information about the creation and last update times of a RobotApplicationVersion.
+Deploy a RobotApplicationVersion as part of a larger workflow, such as within a CI/CD pipeline.
 
 ```ts
-const robotAppVersionInfo = await AWS.RoboMaker.RobotApplicationVersion("robotAppVersionInfo", {
-  Application: "arn:aws:robomaker:us-west-2:123456789012:robot-application/my-tracked-robot-app",
-  CurrentRevisionId: "revision-4"
+const RobotAppVersionForDeployment = await AWS.RoboMaker.RobotApplicationVersion("RobotAppVersionForDeployment", {
+  Application: "arn:aws:robomaker:us-west-2:123456789012:robot-application/my-robot-app",
+  CurrentRevisionId: "Revision3",
+  adopt: false // Do not adopt existing resource
 });
-
-// Accessing additional properties
-console.log(`Creation Time: ${robotAppVersionInfo.CreationTime}`);
-console.log(`Last Update Time: ${robotAppVersionInfo.LastUpdateTime}`);
 ```

@@ -5,59 +5,64 @@ description: Learn how to create, update, and manage AWS OpenSearchServerless Vp
 
 # VpcEndpoint
 
-The VpcEndpoint resource lets you manage [AWS OpenSearchServerless VpcEndpoints](https://docs.aws.amazon.com/opensearchserverless/latest/userguide/) for accessing OpenSearch Serverless from within your Amazon VPC.
+The VpcEndpoint resource allows you to create and manage [AWS OpenSearchServerless VpcEndpoints](https://docs.aws.amazon.com/opensearchserverless/latest/userguide/) to enable secure communication between your OpenSearch Serverless domain and your VPC.
 
 ## Minimal Example
 
-Create a basic VPC endpoint with required properties and one optional property.
+This example demonstrates how to create a basic VpcEndpoint with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const vpcEndpoint = await AWS.OpenSearchServerless.VpcEndpoint("myVpcEndpoint", {
-  VpcId: "vpc-0abcd1234efgh5678",
-  SubnetIds: [
-    "subnet-0abcd1234efgh5678",
-    "subnet-1abcd1234efgh5678"
-  ],
-  SecurityGroupIds: [
-    "sg-0abcd1234efgh5678"
-  ],
-  Name: "MyOpenSearchVpcEndpoint"
+const basicVpcEndpoint = await AWS.OpenSearchServerless.VpcEndpoint("BasicVpcEndpoint", {
+  VpcId: "vpc-0abc1234def5678gh",
+  SubnetIds: ["subnet-0abc1234def5678gh", "subnet-1abc1234def5678gh"],
+  SecurityGroupIds: ["sg-0abc1234def5678gh"],
+  Name: "BasicVpcEndpoint"
 });
 ```
 
 ## Advanced Configuration
 
-Configure a VPC endpoint with multiple security groups for enhanced network security.
+In this example, we configure a VpcEndpoint with additional properties, including a custom name and multiple security groups.
 
 ```ts
-const advancedVpcEndpoint = await AWS.OpenSearchServerless.VpcEndpoint("advancedVpcEndpoint", {
-  VpcId: "vpc-0abcd1234efgh5678",
-  SubnetIds: [
-    "subnet-0abcd1234efgh5678",
-    "subnet-1abcd1234efgh5678"
-  ],
+const advancedVpcEndpoint = await AWS.OpenSearchServerless.VpcEndpoint("AdvancedVpcEndpoint", {
+  VpcId: "vpc-0abc1234def5678gh",
+  SubnetIds: ["subnet-0abc1234def5678gh"],
   SecurityGroupIds: [
-    "sg-0abcd1234efgh5678",
-    "sg-1abcd1234efgh5678"
+    "sg-0abc1234def5678gh",
+    "sg-1abc1234def5678gh"
   ],
-  Name: "AdvancedOpenSearchVpcEndpoint"
+  Name: "AdvancedVpcEndpoint"
 });
 ```
 
-## Adopt Existing Resource
+## Enhanced Network Security
 
-If you want to adopt an existing VPC endpoint instead of failing, use the adopt option.
+This example shows how to create a VpcEndpoint with specific security group settings to enhance network security.
 
 ```ts
-const adoptedVpcEndpoint = await AWS.OpenSearchServerless.VpcEndpoint("adoptedVpcEndpoint", {
-  VpcId: "vpc-0abcd1234efgh5678",
-  SubnetIds: [
-    "subnet-0abcd1234efgh5678",
-    "subnet-1abcd1234efgh5678"
+const secureVpcEndpoint = await AWS.OpenSearchServerless.VpcEndpoint("SecureVpcEndpoint", {
+  VpcId: "vpc-0abc1234def5678gh",
+  SubnetIds: ["subnet-0abc1234def5678gh"],
+  SecurityGroupIds: [
+    "sg-0abc1234def5678gh"
   ],
-  Name: "AdoptedOpenSearchVpcEndpoint",
+  Name: "SecureVpcEndpoint"
+});
+```
+
+## Resource Adoption
+
+In this example, we demonstrate how to adopt an existing VpcEndpoint resource instead of failing if it already exists.
+
+```ts
+const adoptVpcEndpoint = await AWS.OpenSearchServerless.VpcEndpoint("AdoptVpcEndpoint", {
+  VpcId: "vpc-0abc1234def5678gh",
+  SubnetIds: ["subnet-0abc1234def5678gh"],
+  SecurityGroupIds: ["sg-0abc1234def5678gh"],
+  Name: "AdoptVpcEndpoint",
   adopt: true
 });
 ```

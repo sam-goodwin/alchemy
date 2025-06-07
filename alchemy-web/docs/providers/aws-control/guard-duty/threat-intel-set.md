@@ -5,67 +5,63 @@ description: Learn how to create, update, and manage AWS GuardDuty ThreatIntelSe
 
 # ThreatIntelSet
 
-The ThreatIntelSet resource allows you to manage [AWS GuardDuty ThreatIntelSets](https://docs.aws.amazon.com/guardduty/latest/userguide/) which are used to provide additional intelligence data to enhance threat detection.
+The ThreatIntelSet resource allows you to manage [AWS GuardDuty ThreatIntelSets](https://docs.aws.amazon.com/guardduty/latest/userguide/) which are used to import threat intelligence data for enhanced security threat detection.
 
 ## Minimal Example
 
-Create a basic ThreatIntelSet with required properties and some common optional settings.
+Create a basic ThreatIntelSet with required properties and one optional property.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const threatIntelSet = await AWS.GuardDuty.ThreatIntelSet("basicIntelSet", {
-  format: "TXT",
-  location: "https://example.com/threat-intel.txt",
-  activate: true,
-  detectorId: "detector-1234567890abcdef"
+const BasicThreatIntelSet = await AWS.GuardDuty.ThreatIntelSet("BasicThreatIntelSet", {
+  Format: "TXT",
+  Location: "https://example.com/threat-intel.txt",
+  Activate: true
 });
 ```
 
 ## Advanced Configuration
 
-Configure a ThreatIntelSet with additional tags for better resource management.
+Configure a ThreatIntelSet with additional properties such as tags and a specific detector ID.
 
 ```ts
-const advancedThreatIntelSet = await AWS.GuardDuty.ThreatIntelSet("advancedIntelSet", {
-  format: "JSON",
-  location: "https://example.com/advanced-intel.json",
-  activate: false,
-  detectorId: "detector-abcdef1234567890",
-  tags: [
-    { Key: "Environment", Value: "Production" },
-    { Key: "Project", Value: "Security" }
+const AdvancedThreatIntelSet = await AWS.GuardDuty.ThreatIntelSet("AdvancedThreatIntelSet", {
+  Format: "JSON",
+  Location: "https://example.com/threat-intel.json",
+  DetectorId: "12abc34def567ghij890klmnop",
+  Tags: [
+    { Key: "Environment", Value: "production" },
+    { Key: "Team", Value: "Security" }
   ]
 });
 ```
 
-## Updating an Existing ThreatIntelSet
+## Using Custom Threat Intelligence
 
-Adopt an existing ThreatIntelSet instead of failing if it already exists.
+Create a ThreatIntelSet that utilizes a custom threat intelligence file for more tailored threat detection.
 
 ```ts
-const existingThreatIntelSet = await AWS.GuardDuty.ThreatIntelSet("existingIntelSet", {
-  format: "CSV",
-  location: "https://example.com/existing-intel.csv",
-  activate: true,
-  detectorId: "detector-fedcba0987654321",
+const CustomThreatIntelSet = await AWS.GuardDuty.ThreatIntelSet("CustomThreatIntelSet", {
+  Format: "CSV",
+  Location: "https://example.com/custom-threat-intel.csv",
+  Activate: false,
+  Tags: [
+    { Key: "UseCase", Value: "Custom Threat Detection" },
+    { Key: "Owner", Value: "SecurityTeam" }
+  ]
+});
+```
+
+## Adopt Existing ThreatIntelSet
+
+Configure a ThreatIntelSet to adopt an existing resource instead of failing when the resource already exists.
+
+```ts
+const AdoptedThreatIntelSet = await AWS.GuardDuty.ThreatIntelSet("AdoptedThreatIntelSet", {
+  Format: "TXT",
+  Location: "https://example.com/existing-threat-intel.txt",
+  Activate: true,
   adopt: true
-});
-```
-
-## Using Tags for Resource Management
-
-Create a ThreatIntelSet with specific tags to help with organization and billing.
-
-```ts
-const taggedThreatIntelSet = await AWS.GuardDuty.ThreatIntelSet("taggedIntelSet", {
-  format: "TXT",
-  location: "https://example.com/tagged-intel.txt",
-  activate: true,
-  detectorId: "detector-12345abcdef",
-  tags: [
-    { Key: "Department", Value: "IT" },
-    { Key: "Compliance", Value: "GDPR" }
-  ]
 });
 ```

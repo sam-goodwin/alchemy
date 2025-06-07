@@ -5,74 +5,45 @@ description: Learn how to create, update, and manage AWS BillingConductor Billin
 
 # BillingGroup
 
-The BillingGroup resource lets you manage [AWS BillingConductor BillingGroups](https://docs.aws.amazon.com/billingconductor/latest/userguide/) for organizing and managing billing across multiple accounts.
+The BillingGroup resource lets you create and manage [AWS BillingConductor BillingGroups](https://docs.aws.amazon.com/billingconductor/latest/userguide/) using AWS Cloud Control API.
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-billingconductor-billinggroup.html
 
 ## Minimal Example
-
-Create a basic billing group with required properties and optional description and tags.
 
 ```ts
 import AWS from "alchemy/aws/control";
 
-const billingGroup = await AWS.BillingConductor.BillingGroup("basicBillingGroup", {
-  Name: "BasicBillingGroup",
-  PrimaryAccountId: "123456789012",
-  ComputationPreference: {
-    PriceListId: "price-list-id",
-    PricingPlan: "FlatRate"
-  },
-  AccountGrouping: {
-    AccountIds: ["123456789012", "987654321098"]
-  },
-  Description: "A simple billing group for demo purposes",
-  Tags: [
-    { Key: "Environment", Value: "Development" }
-  ]
+const billinggroup = await AWS.BillingConductor.BillingGroup("billinggroup-example", {
+  PrimaryAccountId: "example-primaryaccountid",
+  ComputationPreference: "example-computationpreference",
+  AccountGrouping: "example-accountgrouping",
+  Name: "billinggroup-",
+  Tags: { Environment: "production", ManagedBy: "Alchemy" },
+  Description: "A billinggroup resource managed by Alchemy",
 });
 ```
 
 ## Advanced Configuration
 
-Configure a billing group with additional properties for enhanced management.
+Create a billinggroup with additional configuration:
 
 ```ts
-const advancedBillingGroup = await AWS.BillingConductor.BillingGroup("advancedBillingGroup", {
-  Name: "AdvancedBillingGroup",
-  PrimaryAccountId: "123456789012",
-  ComputationPreference: {
-    PriceListId: "advanced-price-list-id",
-    PricingPlan: "Tiered"
+import AWS from "alchemy/aws/control";
+
+const advancedBillingGroup = await AWS.BillingConductor.BillingGroup("advanced-billinggroup", {
+  PrimaryAccountId: "example-primaryaccountid",
+  ComputationPreference: "example-computationpreference",
+  AccountGrouping: "example-accountgrouping",
+  Name: "billinggroup-",
+  Tags: {
+    Environment: "production",
+    Team: "DevOps",
+    Project: "MyApp",
+    CostCenter: "Engineering",
+    ManagedBy: "Alchemy",
   },
-  AccountGrouping: {
-    AccountIds: ["123456789012", "987654321098", "112233445566"]
-  },
-  Description: "An advanced billing group with multiple accounts",
-  Tags: [
-    { Key: "Team", Value: "Finance" },
-    { Key: "Project", Value: "BillingOptimization" }
-  ],
-  adopt: true
+  Description: "A billinggroup resource managed by Alchemy",
 });
 ```
 
-## Custom Computation Preferences
-
-Create a billing group with custom computation preferences for specific pricing strategies.
-
-```ts
-const customComputationBillingGroup = await AWS.BillingConductor.BillingGroup("customComputationBillingGroup", {
-  Name: "CustomComputationBillingGroup",
-  PrimaryAccountId: "123456789012",
-  ComputationPreference: {
-    PriceListId: "custom-price-list-id",
-    PricingPlan: "UsageBased"
-  },
-  AccountGrouping: {
-    AccountIds: ["123456789012", "987654321098", "223344556677"]
-  },
-  Description: "Billing group with unique computation preferences",
-  Tags: [
-    { Key: "BillingType", Value: "Usage" }
-  ]
-});
-```
