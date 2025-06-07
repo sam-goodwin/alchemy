@@ -43,7 +43,14 @@ await app.finalize();
 
 # Examples
 
+- CloudFlare Worker with Queue, R2 Bucket, Durable Objects, Workflows and RPC: [examples/cloudflare-worker/](./examples/cloudflare-worker/alchemy.run.ts)
+- CloudFlare Worker Bootstrap with Queue and R2 End-to-End Testing: [examples/cloudflare-worker-bootstrap/](./examples/cloudflare-worker-bootstrap/index.ts)
 - CloudFlare ViteJS Website + API Backend with Durable Objects: [examples/cloudflare-vite/](./examples/cloudflare-vite/alchemy.run.ts)
+- CloudFlare TanStack Start Application Deployment: [examples/cloudflare-tanstack-start/](./examples/cloudflare-tanstack-start/alchemy.run.ts)
+- CloudFlare RedwoodJS Application with D1 Database: [examples/cloudflare-redwood/](./examples/cloudflare-redwood/alchemy.run.ts)
+- CloudFlare React Router Application Deployment: [examples/cloudflare-react-router/](./examples/cloudflare-react-router/alchemy.run.ts)
+- CloudFlare Nuxt 3 Application with Pipeline and R2 Bucket: [examples/cloudflare-nuxt-pipeline/](./examples/cloudflare-nuxt-pipeline/alchemy.run.ts)
+- CloudFlare SvelteKit Application with KV and R2 Storage: [examples/cloudflare-sveltekit/](./examples/cloudflare-sveltekit/alchemy.run.ts)
 - Deploy an AWS Lambda Function with a DynamoDB Table and IAM Role: [examples/aws-app/](./examples/aws-app/alchemy.run.ts)
 
 # Getting Started
