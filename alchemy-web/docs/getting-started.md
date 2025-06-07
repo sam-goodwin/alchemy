@@ -242,13 +242,15 @@ console.log(`Worker deployed at: ${worker.url}`);
 await app.finalize();
 ```
 
-Now update your worker to use these bindings:
+Now update your worker to use these bindings with type safety:
 
 ```typescript
 // src/worker.ts
+import type { worker } from "../alchemy.run";
+
 export default {
-  async fetch(request: Request, env: any): Promise<Response> {
-    // Store and retrieve data
+  async fetch(request: Request, env: typeof worker.Env): Promise<Response> {
+    // Store and retrieve data with type safety
     await env.KV.put("last-visit", new Date().toISOString());
     const lastVisit = await env.KV.get("last-visit");
     
@@ -256,15 +258,20 @@ export default {
       message: "Hello from Alchemy!",
       timestamp: new Date().toISOString(),
       lastVisit: lastVisit,
-      apiKey: env.API_KEY
+      apiKey: env.API_KEY // TypeScript knows this is a string
     });
   },
 };
 ```
 
-## Configure Type-Safe Bindings
+> [!NOTE]
+> The `typeof worker.Env` gives you full type safety by inferring types directly from your infrastructure definition in `alchemy.run.ts`. No code generation required!
 
-To get full TypeScript support for your bindings, create an `src/env.ts` file:
+## Alternative: Using Cloudflare Workers Environment
+
+For a more integrated development experience, you can also access bindings through the `cloudflare:workers` module.
+
+First, create an `src/env.ts` file for global type configuration:
 
 ```typescript
 // src/env.ts
@@ -293,7 +300,7 @@ Update your `tsconfig.json` to include the env types:
 }
 ```
 
-Now update your worker to use type-safe bindings:
+Now you can use the `env` import instead:
 
 ```typescript
 // src/worker.ts
@@ -316,7 +323,7 @@ export default {
 ```
 
 > [!NOTE]
-> Alchemy infers binding types directly from your infrastructure code. No code generation required - your `env.ts` file imports the worker definition and TypeScript automatically provides the correct types!
+> Both approaches give you the same type safety. The `typeof worker.Env` approach is simpler to start with, while the `cloudflare:workers` import provides a more integrated development experience with the Cloudflare Workers runtime.
 
 ## Understanding State
 
