@@ -106,7 +106,16 @@ export function secret<S extends string | undefined>(
   name?: string,
 ): Secret {
   if (unencrypted === undefined) {
-    throw new Error("Secret cannot be undefined");
+    throw new Error(
+      "Secret value cannot be undefined. This usually happens when:\n" +
+      "  1. An environment variable is not set (e.g., process.env.API_KEY is undefined)\n" +
+      "  2. A required credential or password is missing\n" +
+      "  3. The alchemy application password is not configured\n\n" +
+      "To fix this:\n" +
+      "  • Check that all required environment variables are set in your .env file\n" +
+      "  • Ensure your alchemy app has a password: alchemy('app', { password: process.env.SECRET_PASSPHRASE })\n" +
+      "  • Verify the secret value exists before calling secret()"
+    );
   }
   return new Secret(unencrypted, name);
 }
