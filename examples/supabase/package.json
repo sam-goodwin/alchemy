@@ -1,0 +1,14 @@
+{
+  "name": "supabase-drizzle-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "bun run --env-file ../../.env ./alchemy.run.ts",
+    "destroy": "bun run --env-file ../../.env ./alchemy.run.ts --destroy"
+  },
+  "dependencies": {
+    "alchemy": "workspace:*",
+    "drizzle-orm": "^0.30.0",
+    "postgres": "^3.4.0"
+  }
+}
