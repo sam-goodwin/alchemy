@@ -86,6 +86,10 @@
       "bun": "./src/vercel/index.ts",
       "import": "./lib/vercel/index.js"
     },
+    "./k8s": {
+      "bun": "./src/k8s/index.ts",
+      "import": "./lib/k8s/index.js"
+    },
     "./shadcn": {
       "bun": "./src/web/shadcn.ts",
       "import": "./lib/web/shadcn.js"
@@ -128,6 +132,7 @@
     "@cloudflare/unenv-preset": "^2.3.1",
     "@cloudflare/workers-shared": "^0.17.5",
     "@iarna/toml": "^2.2.5",
+    "@kubernetes/client-node": "^1.0.0",
     "@octokit/rest": "^21.1.1",
     "@swc/core": "^1.11.24",
     "ai": "^4.0.0",
