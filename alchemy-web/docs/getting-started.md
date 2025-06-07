@@ -214,9 +214,9 @@ Visit the URL to see your worker in action!
 > [!TIP]
 > If you're familiar with other IaC tools, this should feel similar to `terraform apply`, `pulumi up`, `cdk deploy` or `sst deploy`
 
-## Add Type-Safe Bindings
+## Add Bindings
 
-Now let's add some infrastructure to our worker. We'll add a KV namespace for storage and show how Alchemy provides type-safe access to these bindings.
+Now let's add some infrastructure to our worker. We'll add a KV namespace for storage.
 
 First, update your `alchemy.run.ts` to add bindings:
 
@@ -242,14 +242,65 @@ console.log(`Worker deployed at: ${worker.url}`);
 await app.finalize();
 ```
 
-Now update your worker to use these bindings with full type safety:
+Now update your worker to use these bindings:
 
 ```typescript
 // src/worker.ts
-import type {} from "../alchemy.run"; // Type-only import for binding inference
+export default {
+  async fetch(request: Request, env: any): Promise<Response> {
+    // Store and retrieve data
+    await env.KV.put("last-visit", new Date().toISOString());
+    const lastVisit = await env.KV.get("last-visit");
+    
+    return Response.json({ 
+      message: "Hello from Alchemy!",
+      timestamp: new Date().toISOString(),
+      lastVisit: lastVisit,
+      apiKey: env.API_KEY
+    });
+  },
+};
+```
+
+## Configure Type-Safe Bindings
+
+To get full TypeScript support for your bindings, create an `src/env.ts` file:
+
+```typescript
+// src/env.ts
+import type { worker } from "../alchemy.run";
+
+export type WorkerEnv = typeof worker.Env;
+
+declare global {
+  type Env = WorkerEnv;
+}
+
+declare module "cloudflare:workers" {
+  namespace Cloudflare {
+    export interface Env extends WorkerEnv {}
+  }
+}
+```
+
+Update your `tsconfig.json` to include the env types:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types", "./src/env.ts"]
+  }
+}
+```
+
+Now update your worker to use type-safe bindings:
+
+```typescript
+// src/worker.ts
+import { env } from "cloudflare:workers";
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request): Promise<Response> {
     // Store and retrieve data with type safety
     await env.KV.put("last-visit", new Date().toISOString());
     const lastVisit = await env.KV.get("last-visit");
@@ -265,7 +316,7 @@ export default {
 ```
 
 > [!NOTE]
-> The type-only import `import type {} from "../alchemy.run"` enables TypeScript to infer binding types from your Alchemy configuration. Alchemy analyzes your worker bindings and automatically provides the correct `Env` interface—no code generation required!
+> Alchemy infers binding types directly from your infrastructure code. No code generation required - your `env.ts` file imports the worker definition and TypeScript automatically provides the correct types!
 
 ## Understanding State
 
