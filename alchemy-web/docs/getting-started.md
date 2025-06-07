@@ -267,6 +267,102 @@ yarn tsx ./alchemy.run.ts
 
 :::
 
+## Type-Safe Bindings
+
+One of Alchemy's key features is type-safe bindings that automatically infer types from your infrastructure configuration. Unlike traditional IaC tools, Alchemy doesn't generate types—it infers them directly from your TypeScript configuration.
+
+> [!TIP]
+> Learn more about bindings in [Concepts: Bindings](./concepts/bindings.md#type-safe-bindings)
+
+### Configuration
+
+Let's add some bindings to our worker by updating `alchemy.run.ts`:
+
+```typescript
+import alchemy from "alchemy";
+import { Worker, WranglerJson, KvNamespace } from "alchemy/cloudflare";
+
+// Initialize the Alchemy application scope
+const app = await alchemy("my-first-app", {
+  stage: "dev",
+  phase: process.argv.includes("--destroy") ? "destroy" : "up",
+});
+
+// Create a KV namespace for storage
+const kv = await KvNamespace("my-app-storage", {});
+
+// Create a worker with bindings
+const worker = await Worker("hello-worker", {
+  entrypoint: "./src/worker.ts",
+  url: true,
+  bindings: {
+    KV: kv,
+    API_KEY: "secret-api-key",
+    DEBUG: true,
+  },
+});
+
+// Generate wrangler.json for local development
+await WranglerJson("wrangler.json", {
+  worker,
+});
+
+console.log(`Worker deployed at: ${worker.url}`);
+
+await app.finalize();
+```
+
+### Using Bindings in Your Worker
+
+Now you can access these bindings in your worker with full type safety by importing `env` from `cloudflare:workers`:
+
+```typescript
+// src/worker.ts
+import type {} from "../alchemy.run"; // Type-only import for binding inference
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    
+    if (url.pathname === "/hello") {
+      // Type-safe access to bindings
+      const debugMode = env.DEBUG; // TypeScript knows this is boolean
+      const apiKey = env.API_KEY;   // TypeScript knows this is string
+      
+      // Store something in KV
+      await env.KV.put("last-visit", new Date().toISOString());
+      const lastVisit = await env.KV.get("last-visit");
+      
+      return Response.json({ 
+        message: "Hello from Alchemy!",
+        timestamp: new Date().toISOString(),
+        location: request.cf?.colo,
+        debug: debugMode,
+        lastVisit,
+      });
+    }
+    
+    return new Response("Welcome to Alchemy! Try /hello", { 
+      status: 200,
+      headers: { "Content-Type": "text/plain" }
+    });
+  },
+};
+```
+
+> [!NOTE]
+> The type-only import `import type {} from "../alchemy.run"` enables TypeScript to infer binding types from your Alchemy configuration. Alchemy analyzes your worker bindings and automatically provides the correct `Env` interface—no code generation required!
+
+### How Type Inference Works
+
+Alchemy's type inference works by:
+
+1. **Analyzing your bindings**: When you define bindings in your `Worker` resource, Alchemy understands their types
+2. **Type-only imports**: The `import type {} from "../alchemy.run"` statement tells TypeScript to look at your infrastructure configuration
+3. **Automatic interface generation**: TypeScript automatically provides the `Env` interface based on your bindings without any build step
+
+This means your infrastructure and application code stay perfectly in sync—if you change a binding in `alchemy.run.ts`, TypeScript will immediately catch any type errors in your worker code.
+
 ## Local Development
 
 Now you can run your worker locally using `wrangler dev`:
