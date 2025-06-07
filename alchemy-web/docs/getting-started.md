@@ -5,7 +5,7 @@ description: Quick start guide to using Alchemy, the TypeScript-native Infrastru
 
 # Getting Started with Alchemy
 
-This guide walks you through deploying your first Cloudflare Worker using Alchemy, demonstrating Infrastructure-as-Code principles with a real-world, practical example.
+This guide will deploy a Cloudflare Worker and bind resources to it with Alchemy.
 
 > [!TIP]
 > Read [What is Alchemy](./what-is-alchemy.md) to get an overview of Alchemy and how it's different than traditional IaC
@@ -13,7 +13,26 @@ This guide walks you through deploying your first Cloudflare Worker using Alchem
 ## Prerequisites
 
 You'll need:
-- [Node.js](https://nodejs.org/) or [Bun](https://bun.sh/)
+
+::: code-group
+
+```sh [Node.js]
+# Install from https://nodejs.org/
+node --version
+```
+
+```sh [Bun]
+# Install from https://bun.sh/
+bun --version
+```
+
+```sh [Deno]
+# Install from https://deno.com/
+deno --version
+```
+
+:::
+
 - A [Cloudflare account](https://dash.cloudflare.com/sign-up) (free tier works)
 
 ## Create a New TypeScript Project
@@ -150,19 +169,9 @@ Create a `src/worker.ts` file with your worker code:
 ```typescript
 export default {
   async fetch(request: Request): Promise<Response> {
-    const url = new URL(request.url);
-    
-    if (url.pathname === "/hello") {
-      return Response.json({ 
-        message: "Hello from Alchemy!",
-        timestamp: new Date().toISOString(),
-        location: request.cf?.colo 
-      });
-    }
-    
-    return new Response("Welcome to Alchemy! Try /hello", { 
-      status: 200,
-      headers: { "Content-Type": "text/plain" }
+    return Response.json({ 
+      message: "Hello from Alchemy!",
+      timestamp: new Date().toISOString()
     });
   },
 };
@@ -200,10 +209,63 @@ Created: "my-first-app/dev/hello-worker"
 Worker deployed at: https://hello-worker.your-subdomain.workers.dev
 ```
 
-Visit the URL to see your worker in action! Try visiting `/hello` for the JSON response.
+Visit the URL to see your worker in action!
 
 > [!TIP]
 > If you're familiar with other IaC tools, this should feel similar to `terraform apply`, `pulumi up`, `cdk deploy` or `sst deploy`
+
+## Add Type-Safe Bindings
+
+Now let's add some infrastructure to our worker. We'll add a KV namespace for storage and show how Alchemy provides type-safe access to these bindings.
+
+First, update your `alchemy.run.ts` to add bindings:
+
+```typescript
+import { Worker, KvNamespace } from "alchemy/cloudflare";
+
+// ... existing app initialization ...
+
+// Create a KV namespace for storage
+const kv = await KvNamespace("my-app-storage", {});
+
+// Update the worker with bindings
+const worker = await Worker("hello-worker", {
+  entrypoint: "./src/worker.ts",
+  url: true,
+  bindings: {
+    KV: kv,
+    API_KEY: "secret-api-key",
+  },
+});
+
+console.log(`Worker deployed at: ${worker.url}`);
+await app.finalize();
+```
+
+Now update your worker to use these bindings with full type safety:
+
+```typescript
+// src/worker.ts
+import type {} from "../alchemy.run"; // Type-only import for binding inference
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    // Store and retrieve data with type safety
+    await env.KV.put("last-visit", new Date().toISOString());
+    const lastVisit = await env.KV.get("last-visit");
+    
+    return Response.json({ 
+      message: "Hello from Alchemy!",
+      timestamp: new Date().toISOString(),
+      lastVisit: lastVisit,
+      apiKey: env.API_KEY // TypeScript knows this is a string
+    });
+  },
+};
+```
+
+> [!NOTE]
+> The type-only import `import type {} from "../alchemy.run"` enables TypeScript to infer binding types from your Alchemy configuration. Alchemy analyzes your worker bindings and automatically provides the correct `Env` interface—no code generation required!
 
 ## Understanding State
 
@@ -223,29 +285,21 @@ State files help Alchemy determine whether to create, update, delete, or skip re
 
 ## Generate wrangler.json for Local Development
 
-Add wrangler.json generation to your `alchemy.run.ts`:
+Now add wrangler.json generation to your updated `alchemy.run.ts`:
 
 ```typescript
-import { Worker, WranglerJson } from "alchemy/cloudflare";
+// Add this import
+import { WranglerJson } from "alchemy/cloudflare";
 
-// ... existing code ...
-
-const worker = await Worker("hello-worker", {
-  entrypoint: "./src/worker.ts",
-  url: true,
-});
+// ... after creating the worker with bindings ...
 
 // Generate wrangler.json for local development
 await WranglerJson("wrangler.json", {
   worker,
 });
-
-console.log(`Worker deployed at: ${worker.url}`);
-
-await app.finalize();
 ```
 
-Run the script again to generate the `wrangler.json`:
+Deploy again to generate the `wrangler.json` with your bindings:
 
 ::: code-group
 
@@ -267,196 +321,15 @@ yarn tsx ./alchemy.run.ts
 
 :::
 
-## Type-Safe Bindings
-
-One of Alchemy's key features is type-safe bindings that automatically infer types from your infrastructure configuration. Unlike traditional IaC tools, Alchemy doesn't generate types—it infers them directly from your TypeScript configuration.
-
-> [!TIP]
-> Learn more about bindings in [Concepts: Bindings](./concepts/bindings.md#type-safe-bindings)
-
-### Configuration
-
-Let's add some bindings to our worker by updating `alchemy.run.ts`:
-
-```typescript
-import alchemy from "alchemy";
-import { Worker, WranglerJson, KvNamespace } from "alchemy/cloudflare";
-
-// Initialize the Alchemy application scope
-const app = await alchemy("my-first-app", {
-  stage: "dev",
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
-});
-
-// Create a KV namespace for storage
-const kv = await KvNamespace("my-app-storage", {});
-
-// Create a worker with bindings
-const worker = await Worker("hello-worker", {
-  entrypoint: "./src/worker.ts",
-  url: true,
-  bindings: {
-    KV: kv,
-    API_KEY: "secret-api-key",
-    DEBUG: true,
-  },
-});
-
-// Generate wrangler.json for local development
-await WranglerJson("wrangler.json", {
-  worker,
-});
-
-console.log(`Worker deployed at: ${worker.url}`);
-
-await app.finalize();
-```
-
-### Using Bindings in Your Worker
-
-Now you can access these bindings in your worker with full type safety by importing `env` from `cloudflare:workers`:
-
-```typescript
-// src/worker.ts
-import type {} from "../alchemy.run"; // Type-only import for binding inference
-
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
-    
-    if (url.pathname === "/hello") {
-      // Type-safe access to bindings
-      const debugMode = env.DEBUG; // TypeScript knows this is boolean
-      const apiKey = env.API_KEY;   // TypeScript knows this is string
-      
-      // Store something in KV
-      await env.KV.put("last-visit", new Date().toISOString());
-      const lastVisit = await env.KV.get("last-visit");
-      
-      return Response.json({ 
-        message: "Hello from Alchemy!",
-        timestamp: new Date().toISOString(),
-        location: request.cf?.colo,
-        debug: debugMode,
-        lastVisit,
-      });
-    }
-    
-    return new Response("Welcome to Alchemy! Try /hello", { 
-      status: 200,
-      headers: { "Content-Type": "text/plain" }
-    });
-  },
-};
-```
-
-> [!NOTE]
-> The type-only import `import type {} from "../alchemy.run"` enables TypeScript to infer binding types from your Alchemy configuration. Alchemy analyzes your worker bindings and automatically provides the correct `Env` interface—no code generation required!
-
-### How Type Inference Works
-
-Alchemy's type inference works by:
-
-1. **Analyzing your bindings**: When you define bindings in your `Worker` resource, Alchemy understands their types
-2. **Type-only imports**: The `import type {} from "../alchemy.run"` statement tells TypeScript to look at your infrastructure configuration
-3. **Automatic interface generation**: TypeScript automatically provides the `Env` interface based on your bindings without any build step
-
-This means your infrastructure and application code stay perfectly in sync—if you change a binding in `alchemy.run.ts`, TypeScript will immediately catch any type errors in your worker code.
-
 ## Local Development
 
-Now you can run your worker locally using `wrangler dev`:
+Run your worker locally using `wrangler dev`:
 
 ```sh
 wrangler dev
 ```
 
-This starts a local development server that mirrors your deployed worker environment:
-
-```
-⛅️ wrangler 3.78.12
--------------------
-Your worker has access to the following bindings:
-- Vars:
-  - (none)
-- Browser Rendering:
-  - (disabled)
-⎔ Starting local server...
-[wrangler:inf] Ready on http://localhost:8787
-```
-
-Visit `http://localhost:8787` to test your worker locally!
-
-## Update Your Worker
-
-Let's update our worker script to add more functionality:
-
-```typescript
-// src/worker.ts
-export default {
-  async fetch(request: Request): Promise<Response> {
-    const url = new URL(request.url);
-    
-    if (url.pathname === "/hello") {
-      return Response.json({ 
-        message: "Hello from Alchemy!",
-        timestamp: new Date().toISOString(),
-        location: request.cf?.colo,
-        version: "2.0"
-      });
-    }
-
-    if (url.pathname === "/api/time") {
-      return Response.json({
-        time: new Date().toISOString(),
-        timezone: "UTC"
-      });
-    }
-    
-    return new Response(`
-      <h1>Welcome to Alchemy!</h1>
-      <p>Try these endpoints:</p>
-      <ul>
-        <li><a href="/hello">/hello</a> - JSON greeting</li>
-        <li><a href="/api/time">/api/time</a> - Current time</li>
-      </ul>
-    `, { 
-      status: 200,
-      headers: { "Content-Type": "text/html" }
-    });
-  },
-};
-```
-
-Deploy the update:
-
-::: code-group
-
-```sh [bun]
-bun ./alchemy.run.ts
-```
-
-```sh [npm]
-npx tsx ./alchemy.run.ts
-```
-
-```sh [pnpm]
-pnpm tsx ./alchemy.run.ts
-```
-
-```sh [yarn]
-yarn tsx ./alchemy.run.ts
-```
-
-:::
-
-You'll see:
-```
-Update:  "my-first-app/dev/hello-worker"
-Updated: "my-first-app/dev/hello-worker"
-```
-
-The beauty of Infrastructure-as-Code: Alchemy automatically detects changes and updates only what's necessary!
+Visit `http://localhost:8787` to test your worker locally with all your bindings!
 
 ## Tear Down
 
