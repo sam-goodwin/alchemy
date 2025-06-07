@@ -3,28 +3,19 @@ import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import type { Secret } from "../secret.ts";
 import { handleApiError } from "./api-error.ts";
-import { createNeonApi, type NeonApiOptions } from "./api.ts";
+import { createNeonApi, type NeonApiOptions, type NeonApi } from "./api.ts";
+import type { NeonRegion, NeonPgVersion, NeonOperation } from "./types.ts";
 
-/**
- * A Neon region where projects can be provisioned
- */
-export type NeonRegion =
-  | "aws-us-east-1"
-  | "aws-us-east-2"
-  | "aws-us-west-2"
-  | "aws-eu-central-1"
-  | "aws-eu-west-2"
-  | "aws-ap-southeast-1"
-  | "aws-ap-southeast-2"
-  | "aws-sa-east-1"
-  | "azure-eastus2"
-  | "azure-westus3"
-  | "azure-gwc";
+// Forward declarations for interfaces that will be imported from their respective files
+import type { Branch } from "./branch.ts";
+import type { Database } from "./database.ts";
+import type { Endpoint } from "./endpoint.ts";
+import type { Role } from "./role.ts";
 
 /**
  * Properties for creating or updating a Neon project
  */
-export interface NeonProjectProps extends NeonApiOptions {
+export interface ProjectProps extends NeonApiOptions {
   /**
    * Name of the project
    */
@@ -34,243 +25,34 @@ export interface NeonProjectProps extends NeonApiOptions {
    * Region where the project will be provisioned
    * @default "aws-us-east-1"
    */
-  region_id?: NeonRegion;
+  regionId?: NeonRegion;
 
   /**
    * PostgreSQL version to use
    * @default 16
    */
-  pg_version?: 14 | 15 | 16 | 17;
+  pgVersion?: NeonPgVersion;
 
   /**
    * Whether to create a default branch and endpoint
    * @default true
    */
-  default_endpoint?: boolean;
+  defaultEndpoint?: boolean;
 
   /**
    * Default branch name
    * @default "main"
    */
-  default_branch_name?: string;
+  defaultBranchName?: string;
 
   /**
    * Existing project ID to update
    * Used internally during update operations
    * @internal
    */
-  existing_project_id?: string;
+  existingProjectId?: string;
 }
 
-/**
- * A Neon database
- */
-export interface NeonDatabase {
-  /**
-   * Database ID
-   */
-  id: number;
-
-  /**
-   * ID of the branch this database belongs to
-   */
-  branch_id: string;
-
-  /**
-   * Database name
-   */
-  name: string;
-
-  /**
-   * Name of the database owner role
-   */
-  owner_name: string;
-
-  /**
-   * Time at which the database was created
-   */
-  created_at: string;
-
-  /**
-   * Time at which the database was last updated
-   */
-  updated_at: string;
-}
-
-/**
- * A Neon database role
- */
-export interface NeonRole {
-  /**
-   * ID of the branch this role belongs to
-   */
-  branch_id: string;
-
-  /**
-   * Role name
-   */
-  name: string;
-
-  /**
-   * Role password (only included during creation)
-   */
-  password?: string;
-
-  /**
-   * Whether this role is protected from deletion
-   */
-  protected: boolean;
-
-  /**
-   * Time at which the role was created
-   */
-  created_at: string;
-
-  /**
-   * Time at which the role was last updated
-   */
-  updated_at: string;
-}
-
-/**
- * A Neon branch
- */
-export interface NeonBranch {
-  /**
-   * Branch ID
-   */
-  id: string;
-
-  /**
-   * ID of the project this branch belongs to
-   */
-  project_id: string;
-
-  /**
-   * Branch name
-   */
-  name: string;
-
-  /**
-   * Current state of the branch
-   */
-  current_state: string;
-
-  /**
-   * Pending state of the branch
-   */
-  pending_state: string;
-
-  /**
-   * Time at which the branch was created
-   */
-  created_at: string;
-
-  /**
-   * Time at which the branch was last updated
-   */
-  updated_at: string;
-}
-
-/**
- * A Neon compute endpoint
- */
-export interface NeonEndpoint {
-  /**
-   * Endpoint ID
-   */
-  id: string;
-
-  /**
-   * Host for connecting to this endpoint
-   */
-  host: string;
-
-  /**
-   * ID of the project this endpoint belongs to
-   */
-  project_id: string;
-
-  /**
-   * ID of the branch this endpoint belongs to
-   */
-  branch_id: string;
-
-  /**
-   * Endpoint type (read_write, read_only)
-   */
-  type: string;
-
-  /**
-   * Current state of the endpoint
-   */
-  current_state: string;
-
-  /**
-   * Pending state of the endpoint
-   */
-  pending_state: string;
-
-  /**
-   * Region ID where this endpoint is provisioned
-   */
-  region_id: string;
-
-  /**
-   * Minimum compute units for autoscaling
-   */
-  autoscaling_limit_min_cu: number;
-
-  /**
-   * Maximum compute units for autoscaling
-   */
-  autoscaling_limit_max_cu: number;
-
-  /**
-   * Whether connection pooler is enabled
-   */
-  pooler_enabled: boolean;
-
-  /**
-   * Connection pooler mode
-   */
-  pooler_mode: string;
-
-  /**
-   * Whether this endpoint is disabled
-   */
-  disabled: boolean;
-
-  /**
-   * Whether passwordless access is enabled
-   */
-  passwordless_access: boolean;
-
-  /**
-   * Time at which the endpoint was created
-   */
-  created_at: string;
-
-  /**
-   * Time at which the endpoint was last updated
-   */
-  updated_at: string;
-
-  /**
-   * Proxy host for this endpoint
-   */
-  proxy_host: string;
-
-  /**
-   * Endpoint settings
-   */
-  settings: {
-    /**
-     * PostgreSQL settings
-     */
-    pg_settings: Record<string, any>;
-  };
-}
 
 /**
  * A Neon connection URI
@@ -279,12 +61,12 @@ export interface NeonConnectionUri {
   /**
    * Connection URI string
    */
-  connection_uri: Secret;
+  connectionUri: Secret;
 
   /**
    * Connection parameters
    */
-  connection_parameters: {
+  connectionParameters: {
     database: string;
     host: string;
     port: number;
@@ -305,17 +87,17 @@ export interface NeonOperation {
   /**
    * ID of the project this operation belongs to
    */
-  project_id: string;
+  projectId: string;
 
   /**
    * ID of the branch this operation affects, if applicable
    */
-  branch_id?: string;
+  branchId?: string;
 
   /**
    * ID of the endpoint this operation affects, if applicable
    */
-  endpoint_id?: string;
+  endpointId?: string;
 
   /**
    * Action being performed
@@ -330,17 +112,17 @@ export interface NeonOperation {
   /**
    * Number of failures encountered
    */
-  failures_count: number;
+  failuresCount: number;
 
   /**
    * Time at which the operation was created
    */
-  created_at: string;
+  createdAt: string;
 
   /**
    * Time at which the operation was last updated
    */
-  updated_at: string;
+  updatedAt: string;
 }
 
 /**
@@ -352,10 +134,14 @@ interface NeonApiResponse {
     name: string;
     region_id: string;
     pg_version: number;
-    created_at: string;
-    updated_at: string;
+    createdAt: string;
+    updatedAt: string;
     proxy_host?: string;
-    [key: string]: any;
+    computeTimeSeconds?: number;
+    activeTimeSeconds?: number;
+    cpuUsedSec?: number;
+    writtenDataBytes?: number;
+    dataTransferBytes?: number;
   };
   connection_uris?: Array<{
     connection_uri: string;
@@ -368,61 +154,61 @@ interface NeonApiResponse {
     };
   }>;
   roles?: Array<{
-    branch_id: string;
+    branchId: string;
     name: string;
     password?: string;
     protected: boolean;
-    created_at: string;
-    updated_at: string;
+    createdAt: string;
+    updatedAt: string;
   }>;
   databases?: Array<{
     id: number;
-    branch_id: string;
+    branchId: string;
     name: string;
-    owner_name: string;
-    created_at: string;
-    updated_at: string;
+    ownerName: string;
+    createdAt: string;
+    updatedAt: string;
   }>;
   operations?: Array<{
     id: string;
-    project_id: string;
-    branch_id?: string;
-    endpoint_id?: string;
+    projectId: string;
+    branchId?: string;
+    endpointId?: string;
     action: string;
     status: string;
-    failures_count: number;
-    created_at: string;
-    updated_at: string;
+    failuresCount: number;
+    createdAt: string;
+    updatedAt: string;
   }>;
   branch?: {
     id: string;
-    project_id: string;
+    projectId: string;
     name: string;
-    current_state: string;
-    pending_state: string;
-    created_at: string;
-    updated_at: string;
+    currentState: string;
+    pendingState: string;
+    createdAt: string;
+    updatedAt: string;
   };
   endpoints?: Array<{
     id: string;
     host: string;
-    project_id: string;
-    branch_id: string;
+    projectId: string;
+    branchId: string;
     type: string;
-    current_state: string;
-    pending_state: string;
-    region_id: string;
-    autoscaling_limit_min_cu: number;
-    autoscaling_limit_max_cu: number;
-    pooler_enabled: boolean;
-    pooler_mode: string;
+    currentState: string;
+    pendingState: string;
+    regionId: string;
+    autoscalingLimitMinCu: number;
+    autoscalingLimitMaxCu: number;
+    poolerEnabled: boolean;
+    poolerMode: string;
     disabled: boolean;
-    passwordless_access: boolean;
-    created_at: string;
-    updated_at: string;
-    proxy_host: string;
+    passwordlessAccess: boolean;
+    createdAt: string;
+    updatedAt: string;
+    proxyHost: string;
     settings: {
-      pg_settings: Record<string, any>;
+      pg_settings: Record<string, string>;
     };
   }>;
 }
@@ -431,9 +217,9 @@ interface NeonApiResponse {
  * Output returned after Neon project creation/update
  * IMPORTANT: The interface name MUST match the exported resource name
  */
-export interface NeonProject
+export interface Project
   extends Resource<"neon::Project">,
-    Omit<NeonProjectProps, "apiKey" | "existing_project_id"> {
+    Omit<ProjectProps, "apiKey" | "existingProjectId"> {
   /**
    * The ID of the project
    */
@@ -442,42 +228,42 @@ export interface NeonProject
   /**
    * Time at which the project was created
    */
-  created_at: string;
+  createdAt: string;
 
   /**
    * Time at which the project was last updated
    */
-  updated_at: string;
+  updatedAt: string;
 
   /**
    * Hostname for proxy access
    */
-  proxy_host?: string;
+  proxyHost?: string;
 
   /**
    * Connection URIs for the databases
    */
-  connection_uris: [NeonConnectionUri, ...NeonConnectionUri[]];
+  connectionUris: [NeonConnectionUri, ...NeonConnectionUri[]];
 
   /**
    * Database roles created with the project
    */
-  roles: [NeonRole, ...NeonRole[]];
+  roles: [Role, ...Role[]];
 
   /**
    * Databases created with the project
    */
-  databases?: [NeonDatabase, ...NeonDatabase[]];
+  databases?: [Database, ...Database[]];
 
   /**
    * Default branch information
    */
-  branch?: NeonBranch;
+  branch?: Branch;
 
   /**
    * Compute endpoints for the project
    */
-  endpoints: [NeonEndpoint, ...NeonEndpoint[]];
+  endpoints: [Endpoint, ...Endpoint[]];
 }
 
 /**
@@ -485,35 +271,35 @@ export interface NeonProject
  *
  * @example
  * // Create a basic Neon project with default settings:
- * const project = await NeonProject("my-project", {
+ * const project = await Project("my-project", {
  *   name: "My Project"
  * });
  *
  * @example
  * // Create a Neon project in a specific region with a specific PostgreSQL version:
- * const euProject = await NeonProject("my-eu-project", {
+ * const euProject = await Project("my-eu-project", {
  *   name: "My EU Project",
- *   region_id: "aws-eu-west-1",
- *   pg_version: 16,
+ *   regionId: "aws-eu-west-1",
+ *   pgVersion: 16,
  *   apiKey: alchemy.secret(process.env.NEON_API_KEY)
  * });
  *
  * @example
  * // Create a Neon project with a custom default branch name:
- * const devProject = await NeonProject("dev-project", {
+ * const devProject = await Project("dev-project", {
  *   name: "Development Project",
- *   default_branch_name: "development"
+ *   defaultBranchName: "development"
  * });
  */
-export const NeonProject = Resource(
+export const Project = Resource(
   "neon::Project",
   async function (
-    this: Context<NeonProject>,
+    this: Context<Project>,
     id: string,
-    props: NeonProjectProps,
-  ): Promise<NeonProject> {
+    props: ProjectProps,
+  ): Promise<Project> {
     const api = createNeonApi(props);
-    const projectId = props.existing_project_id || this.output?.id;
+    const projectId = props.existingProjectId || this.output?.id;
 
     if (this.phase === "delete") {
       try {
@@ -606,18 +392,18 @@ export const NeonProject = Resource(
       return this({
         id: response.project.id,
         name: response.project.name,
-        region_id: response.project.region_id as NeonRegion,
-        pg_version: response.project.pg_version as 14 | 15 | 16 | 17,
-        created_at: response.project.created_at,
-        updated_at: response.project.updated_at,
-        proxy_host: response.project.proxy_host,
+        regionId: response.project.region_id as NeonRegion,
+        pgVersion: response.project.pg_version as NeonPgVersion,
+        createdAt: response.project.createdAt,
+        updatedAt: response.project.updatedAt,
+        proxyHost: response.project.proxy_host,
         // Pass through the provided props except apiKey (which is sensitive)
-        default_endpoint: props.default_endpoint,
-        default_branch_name: props.default_branch_name,
+        defaultEndpoint: props.defaultEndpoint,
+        defaultBranchName: props.defaultBranchName,
         baseUrl: props.baseUrl,
         // Add all available data
         // @ts-ignore - api ensures they're non-empty
-        connection_uris: response.connection_uris,
+        connectionUris: response.connection_uris,
         // @ts-ignore
         roles: response.roles,
         // @ts-ignore
@@ -638,18 +424,18 @@ export const NeonProject = Resource(
  * Helper function to create a new Neon project
  */
 async function createNewProject(
-  api: any,
+  api: NeonApi,
   props: NeonProjectProps,
 ): Promise<NeonApiResponse> {
-  const defaultEndpoint = props.default_endpoint ?? true;
+  const defaultEndpoint = props.defaultEndpoint ?? true;
   const projectResponse = await api.post("/projects", {
     project: {
       name: props.name,
-      region_id: props.region_id || "aws-us-east-1",
-      pg_version: props.pg_version || 16,
+      region_id: props.regionId || "aws-us-east-1",
+      pg_version: props.pgVersion || 16,
       default_endpoint: defaultEndpoint,
       branch: defaultEndpoint
-        ? { name: props.default_branch_name || "main" }
+        ? { name: props.defaultBranchName || "main" }
         : undefined,
     },
   });
@@ -670,7 +456,7 @@ async function createNewProject(
  * @returns Complete project data with all related resources
  */
 async function getProject(
-  api: any,
+  api: NeonApi,
   projectId: string,
   initialData: Partial<NeonApiResponse> = {},
 ): Promise<NeonApiResponse> {
@@ -688,14 +474,39 @@ async function getProject(
     const branchData = await getBranchDetails(api, projectId, branchId);
 
     // Update with the latest branch data
-    responseData.branch = branchData.branch;
+    responseData.branch = {
+      ...branchData.branch,
+      pendingState: (branchData.branch as any).pending_state || "ready",
+    };
 
     // Also fetch the latest endpoint details for this branch
     const endpointData = await getEndpointDetails(api, projectId, branchId);
 
     // Update with the latest endpoint data if available
     if (endpointData.endpoints && endpointData.endpoints.length > 0) {
-      responseData.endpoints = endpointData.endpoints;
+      responseData.endpoints = endpointData.endpoints.map((ep) => ({
+        id: ep.id,
+        host: ep.host,
+        projectId: ep.projectId,
+        branchId: ep.branchId,
+        type: ep.type,
+        currentState: ep.currentState,
+        pendingState: (ep as any).pending_state || "active",
+        regionId: ep.regionId,
+        autoscalingLimitMinCu: ep.autoscalingLimitMinCu,
+        autoscalingLimitMaxCu: ep.autoscalingLimitMaxCu,
+        poolerEnabled: ep.poolerEnabled,
+        poolerMode: ep.poolerMode,
+        disabled: ep.disabled,
+        passwordlessAccess: ep.passwordlessAccess,
+        createdAt: ep.createdAt,
+        updatedAt: ep.updatedAt,
+        proxyHost: ep.proxyHost,
+        settings: {
+          pgSettings: ep.settings?.pgSettings || {},
+          pg_settings: ep.settings?.pgSettings || {},
+        },
+      }));
     }
   }
 
@@ -706,8 +517,8 @@ async function getProject(
     connection_uris: (
       updatedData.connection_uris || responseData.connection_uris
     )?.map((uri) => ({
-      connection_uri: alchemy.secret(uri.connection_uri),
-      connection_parameters: {
+      connectionUri: alchemy.secret(uri.connection_uri),
+      connectionParameters: {
         database: uri.connection_parameters.database,
         host: uri.connection_parameters.host,
         port: uri.connection_parameters.port ?? 5432,
@@ -730,10 +541,10 @@ async function getProject(
  * @returns Promise that resolves when all operations complete
  */
 async function waitForOperations(
-  api: any,
+  api: NeonApi,
   operations: Array<{
     id: string;
-    project_id: string;
+    projectId: string;
     status: string;
     action: string;
   }>,
@@ -774,12 +585,13 @@ async function waitForOperations(
 
       // Check operation status
       const operationResponse = await api.get(
-        `/projects/${operation.project_id}/operations/${operation.id}`,
+        `/projects/${operation.projectId}/operations/${operation.id}`,
       );
 
       if (operationResponse.ok) {
-        const operationData = await operationResponse.json();
-        operationStatus = operationData.operation?.status;
+        const operationData: { operation?: { status?: string } } =
+          await operationResponse.json();
+        operationStatus = operationData.operation?.status || "unknown";
       } else {
         throw new Error(
           `Failed to check operation ${operation.id} status: HTTP ${operationResponse.status}`,
@@ -810,7 +622,7 @@ async function waitForOperations(
  * @throws Error if project details cannot be retrieved
  */
 async function getProjectDetails(
-  api: any,
+  api: NeonApi,
   projectId: string,
 ): Promise<NeonApiResponse> {
   const response = await api.get(`/projects/${projectId}`);
@@ -832,7 +644,7 @@ async function getProjectDetails(
  * @throws Error if branch details cannot be retrieved
  */
 async function getBranchDetails(
-  api: any,
+  api: NeonApi,
   projectId: string,
   branchId: string,
 ): Promise<{ branch: NeonBranch }> {
@@ -855,7 +667,7 @@ async function getBranchDetails(
  * @throws Error if endpoint details cannot be retrieved
  */
 async function getEndpointDetails(
-  api: any,
+  api: NeonApi,
   projectId: string,
   branchId: string,
 ): Promise<{ endpoints: NeonEndpoint[] }> {
