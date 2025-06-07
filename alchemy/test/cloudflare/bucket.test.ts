@@ -166,6 +166,25 @@ describe("R2 Bucket Resource", async () => {
     }
   });
 
+  test("should throw error when trying to change bucket name during update", async (_scope) => {
+    const nameChangeTestId = `${testId}-name-change`;
+
+    const bucket = await R2Bucket(nameChangeTestId, {
+      name: `${nameChangeTestId}-original`,
+      adopt: true,
+    });
+
+    expect(bucket.name).toEqual(`${nameChangeTestId}-original`);
+
+    await expect(async () => {
+      await R2Bucket(nameChangeTestId, {
+        name: `${nameChangeTestId}-changed`,
+      });
+    }).toThrow(
+      "Cannot update R2Bucket name after creation. Bucket name is immutable.",
+    );
+  });
+
   test("create and delete worker with R2 bucket binding", async (scope) => {
     const workerName = `${BRANCH_PREFIX}-test-worker-r2-binding-r2-1`;
     // Create a test R2 bucket
