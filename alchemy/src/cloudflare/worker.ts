@@ -635,7 +635,8 @@ export function Worker<const B extends Bindings>(
         url: true,
         compatibilityFlags: [
           "nodejs_compat",
-          ...(props.compatibilityFlags ?? []),
+          ...(props.compatibilityFlags?.filter((f) => f !== "nodejs_compat") ??
+            []),
         ],
         entrypoint: meta!.filename,
         name: workerName,
