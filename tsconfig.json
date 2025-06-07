@@ -13,5 +13,6 @@
     { "path": "./examples/cloudflare-vite/tsconfig.json" },
     { "path": "./examples/cloudflare-worker-bootstrap/tsconfig.json" },
     { "path": "./examples/cloudflare-worker/tsconfig.json" },
+    { "path": "./examples/fly-app/tsconfig.json" },
   ]
 }

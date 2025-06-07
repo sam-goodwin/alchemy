@@ -1,0 +1,17 @@
+{
+  "name": "fly-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "docker build -t registry.fly.io/alchemy-fly-example:latest .",
+    "deploy": "bun run --env-file ../../.env ./alchemy.run.ts",
+    "destroy": "bun run --env-file ../../.env ./alchemy.run.ts --destroy",
+    "dev": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "alchemy": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}
