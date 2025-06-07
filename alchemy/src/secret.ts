@@ -1,4 +1,16 @@
 import { alchemy } from "./alchemy.ts";
+import { decryptWithKey, encrypt } from "./encrypt.ts";
+import {
+  type Resource,
+  ResourceFQN,
+  ResourceID,
+  ResourceKind,
+  ResourceScope,
+  ResourceSeq,
+} from "./resource.ts";
+import type { Scope } from "./scope.ts";
+
+export const SALT_KEY = "_passkey-salt";
 
 // a global registry of all secrets that we will use when serializing an application
 const globalSecrets: {
@@ -11,9 +23,27 @@ function nextName() {
 }
 
 /**
+ * Generate a new salt for secret encryption.
+ * This should only be called during serialization if no salt exists.
+ */
+async function generateSalt(): Promise<string> {
+  const sodium = (await import("libsodium-wrappers-sumo" as any)).default;
+  await sodium.ready;
+  // Generate a random salt using proper pwhash salt size
+  const saltBytes = sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES);
+  const saltValue = sodium.to_base64(
+    saltBytes,
+    sodium.base64_variants.ORIGINAL,
+  );
+  return saltValue;
+}
+
+/**
  * Internal wrapper for sensitive values like API keys and credentials.
  * When stored in alchemy state files, the value is automatically encrypted
- * using the application's password. The password can be provided either:
+ * using libsodium's pwhash or generichash depending on salt availability.
+ *
+ * The password can be provided either:
  *
  * 1. Globally when initializing the alchemy application:
  * ```ts
@@ -35,12 +65,16 @@ function nextName() {
  * Without a password, secrets cannot be encrypted or decrypted, and operations
  * involving sensitive values will fail.
  *
+ * A salt is stored in the root scope and used for all secret encryption.
+ * This salt enables secure key derivation using libsodium's pwhash.
+ * If no salt is present, encryption falls back to generichash for compatibility.
+ *
  * @example
  * // In state file (.alchemy/app/prod/resource.json):
  * {
  *   "props": {
  *     "apiKey": {
- *       "@secret": "encrypted-value-here..." // encrypted using app password
+ *       "@secret": "encrypted-value-here..." // encrypted using app password and salt
  *     }
  *   }
  * }
@@ -77,6 +111,9 @@ export function isSecret(binding: any): binding is Secret {
  * Requires a password to be set either globally in the alchemy application options
  * or locally in an alchemy.run scope.
  *
+ * The root scope's salt is used for encryption, enabling secure key derivation
+ * using libsodium's pwhash. If no salt exists, encryption falls back to generichash.
+ *
  * @example
  * // Global password for all secrets
  * const app = await alchemy("my-app", {
@@ -109,6 +146,79 @@ export function secret<S extends string | undefined>(
     throw new Error("Secret cannot be undefined");
   }
   return new Secret(unencrypted, name);
+}
+
+/**
+ * Serialize a secret for storage, using the root scope's password and salt.
+ * If no salt exists, one will be generated and stored in the root scope.
+ */
+export async function serializeSecret(
+  secret: Secret,
+  scope: Scope,
+): Promise<{ "@secret": string }> {
+  if (!scope.password) {
+    throw new Error(
+      "Cannot serialize secret without password, did you forget to set password when initializing your alchemy app?\n" +
+        "See: https://alchemy.run/docs/concepts/secret.html#encryption-password",
+    );
+  }
+
+  // Initialize salt in root scope if not present
+  const salt = await scope.root.state.get(SALT_KEY);
+  if (!salt?.data?.value) {
+    const newSalt = await generateSalt();
+    const saltResource = {
+      [ResourceID]: "alchemy::SecretSalt",
+      [ResourceFQN]: "alchemy::SecretSalt",
+      [ResourceKind]: "alchemy::SecretSalt",
+      [ResourceScope]: scope,
+      [ResourceSeq]: 0,
+    } satisfies Resource;
+
+    await scope.root.state.set(SALT_KEY, {
+      output: saltResource,
+      status: "created",
+      kind: "alchemy::SecretSalt",
+      id: SALT_KEY,
+      fqn: SALT_KEY,
+      seq: 0,
+      data: {
+        value: newSalt,
+      },
+      props: {},
+    });
+  }
+
+  // Encrypt using the password and root scope's salt
+  const encrypted = await encrypt(secret.unencrypted, scope.password, scope);
+
+  return {
+    "@secret": encrypted,
+  };
+}
+
+/**
+ * Deserialize an encrypted secret value using the root scope's password and salt.
+ */
+export async function deserializeSecret(
+  value: { "@secret": string },
+  scope: Scope,
+): Promise<Secret> {
+  if (!scope.password) {
+    throw new Error(
+      "Cannot deserialize secret without password, did you forget to set password when initializing your alchemy app?\n" +
+        "See: https://alchemy.run/docs/concepts/secret.html#encryption-password",
+    );
+  }
+
+  // Decrypt using the password and root scope's salt
+  const decrypted = await decryptWithKey(
+    value["@secret"],
+    scope.password,
+    scope,
+  );
+
+  return new Secret(decrypted);
 }
 
 export namespace secret {

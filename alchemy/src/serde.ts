@@ -1,12 +1,11 @@
-import { decryptWithKey, encrypt } from "./encrypt.ts";
 import {
   InnerResourceScope,
   ResourceFQN,
   ResourceKind,
   type Resource,
 } from "./resource.ts";
+import { deserializeSecret, Secret, serializeSecret } from "./secret.ts";
 import { Scope } from "./scope.ts";
-import { Secret } from "./secret.ts";
 
 import type { Type } from "arktype";
 
@@ -112,18 +111,7 @@ export async function serialize(
   if (Array.isArray(value)) {
     return Promise.all(value.map((value) => serialize(scope, value, options)));
   } else if (value instanceof Secret) {
-    if (!scope.password) {
-      throw new Error(
-        "Cannot serialize secret without password, did you forget to set password when initializing your alchemy app?\n" +
-          "See: https://alchemy.run/docs/concepts/secret.html#encryption-password",
-      );
-    }
-    return {
-      "@secret":
-        options?.encrypt !== false
-          ? await encrypt(value.unencrypted, scope.password)
-          : value.unencrypted,
-    };
+    return serializeSecret(value, scope);
   } else if (isType(value)) {
     return {
       "@schema": value.toJSON(),
@@ -146,7 +134,7 @@ export async function serialize(
     // TODO(sam):
     return Object.fromEntries(
       Object.keys(Object.getPrototypeOf(value))
-        // exlcude import.meta.env
+        // exclude import.meta.env
         .filter((prop) => prop === "env")
         .map((prop) => [prop, (value as any)[prop]]),
     );
@@ -204,13 +192,7 @@ export async function deserialize(
   }
   if (value && typeof value === "object") {
     if (typeof value["@secret"] === "string") {
-      if (!scope.password) {
-        throw new Error(
-          "Cannot deserialize secret without password, did you forget to set password when initializing your alchemy app?\n" +
-            "See: https://alchemy.run/docs/concepts/secret.html#encryption-password",
-        );
-      }
-      return new Secret(await decryptWithKey(value["@secret"], scope.password));
+      return deserializeSecret(value, scope);
     } else if ("@schema" in value) {
       return value["@schema"];
     } else if ("@date" in value) {

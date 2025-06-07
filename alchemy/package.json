@@ -108,6 +108,7 @@
     }
   },
   "dependencies": {
+    "libsodium-wrappers-sumo": "^0.7.15",
     "unenv": "2.0.0-rc.15"
   },
   "peerDependencies": {
@@ -161,7 +162,7 @@
     "@octokit/rest": "^21.1.1",
     "@types/bun": "latest",
     "@types/diff": "^5.0.0",
-    "@types/libsodium-wrappers": "^0.7.14",
+
     "@types/node": "latest",
     "@types/turndown": "^5.0.5",
     "ai": "^4.1.16",
