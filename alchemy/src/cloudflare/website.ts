@@ -10,6 +10,8 @@ import {
   type WorkerProps,
 } from "./worker.ts";
 import { WranglerJson } from "./wrangler.json.ts";
+import { createViteDevServer, createViteProxy } from "./vite-dev-server.ts";
+import { Scope } from "../scope.ts";
 
 export interface WebsiteProps<B extends Bindings>
   extends Omit<WorkerProps<B>, "name" | "assets" | "entrypoint"> {
@@ -86,6 +88,14 @@ export interface WebsiteProps<B extends Bindings>
         // override main
         main?: string;
       };
+
+  /**
+   * Vite configuration for dev mode
+   * When scope.dev is true, this will be passed to the Vite dev server
+   */
+  vite?: {
+    config?: any;
+  };
 }
 
 export type Website<B extends Bindings> = B extends { ASSETS: any }
@@ -102,6 +112,7 @@ export async function Website<B extends Bindings>(
   const wrangler = props.wrangler ?? true;
 
   return alchemy.run(id, async () => {
+    const scope = Scope.current;
     const cwd = path.resolve(props.cwd || process.cwd());
     const fileName =
       typeof wrangler === "boolean"
@@ -121,6 +132,94 @@ export async function Website<B extends Bindings>(
         ? props.assets
         : (props.assets?.dist ?? "dist");
 
+    // Check if we're in dev mode and should start Vite dev server
+    let viteDevServer: { port: number; url: string; dispose: () => Promise<void> } | undefined;
+    let devScript: string | undefined;
+
+    if (scope.dev) {
+      console.log(`🚀 Starting Vite dev server for ${workerName}...`);
+      
+      viteDevServer = await createViteDevServer(
+        `${workerName}-vite`,
+        cwd,
+        props.vite?.config
+      );
+
+      // Store dispose function for cleanup
+      scope.defer(viteDevServer.dispose);
+
+      // Create a worker script that proxies requests to the Vite dev server
+      // but allows the worker to handle API routes if they exist
+      devScript = props.main
+        ? `
+// Import the user's worker if they provided one
+const userWorker = await import("${props.main}");
+
+async function viteProxy(request) {
+  const url = new URL(request.url);
+  const viteRequestUrl = new URL(url.pathname + url.search, "${viteDevServer.url}");
+  
+  try {
+    const response = await fetch(viteRequestUrl, {
+      method: request.method,
+      headers: request.headers,
+      body: request.body,
+    });
+    return response;
+  } catch (error) {
+    console.error("Error proxying to Vite dev server:", error);
+    return new Response("Vite dev server error", { status: 500 });
+  }
+}
+
+export default {
+  async fetch(request, env, ctx) {
+    // If user provided a worker with fetch, let them handle API routes first
+    if (userWorker.default?.fetch) {
+      try {
+        const response = await userWorker.default.fetch(request, env, ctx);
+        // If the worker returns a successful response, use it
+        if (response.status < 400) {
+          return response;
+        }
+      } catch (error) {
+        console.warn("User worker error, falling back to Vite:", error);
+      }
+    }
+    
+    // Otherwise, proxy to Vite dev server
+    return viteProxy(request);
+  },
+  
+  // Forward other handlers if they exist
+  ...(userWorker.default?.queue && { queue: userWorker.default.queue }),
+  ...(userWorker.default?.scheduled && { scheduled: userWorker.default.scheduled }),
+};`
+        : `
+async function viteProxy(request) {
+  const url = new URL(request.url);
+  const viteRequestUrl = new URL(url.pathname + url.search, "${viteDevServer.url}");
+  
+  try {
+    const response = await fetch(viteRequestUrl, {
+      method: request.method,
+      headers: request.headers,
+      body: request.body,
+    });
+    return response;
+  } catch (error) {
+    console.error("Error proxying to Vite dev server:", error);
+    return new Response("Vite dev server error", { status: 500 });
+  }
+}
+
+export default {
+  async fetch(request, env, ctx) {
+    return viteProxy(request);
+  },
+};`;
+    }
+
     const workerProps = {
       ...props,
       compatibilityDate: props.compatibilityDate ?? DEFAULT_COMPATIBILITY_DATE,
@@ -132,14 +231,14 @@ export async function Website<B extends Bindings>(
         run_worker_first: false,
         ...(typeof props.assets === "string" ? {} : props.assets),
       },
-      script: props.main
+      script: devScript ?? (props.main
         ? undefined
         : `
 export default {
   async fetch(request, env) {
     return new Response("Not Found", { status: 404 });
   },
-};`,
+};`),
       url: true,
       adopt: true,
     } as WorkerProps<any> & { name: string };
@@ -157,7 +256,8 @@ export default {
       });
     }
 
-    if (props.command) {
+    // Only run build command if not in dev mode with Vite
+    if (props.command && !scope.dev) {
       await Exec("build", {
         cwd,
         command: props.command,

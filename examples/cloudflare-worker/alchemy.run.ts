@@ -19,6 +19,8 @@ const app = await alchemy("cloudflare-worker", {
     process.env.ALCHEMY_STATE_STORE === "cloudflare"
       ? (scope) => new DOStateStore(scope)
       : undefined,
+  dev: process.argv.includes("--dev"),
+  quiet: !process.argv.includes("--verbose"),
 });
 
 export const queue = await Queue<{

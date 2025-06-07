@@ -32,6 +32,7 @@ import {
   type NoBundleResult,
   bundleWorkerScript,
 } from "./bundle/bundle-worker.ts";
+import { createWorkerDevContext } from "./bundle/bundle-worker-dev.ts";
 import { isD1Database } from "./d1-database.ts";
 import {
   DurableObjectNamespace,
@@ -58,6 +59,7 @@ import {
   prepareWorkerMetadata,
 } from "./worker-metadata.ts";
 import type { SingleStepMigration } from "./worker-migration.ts";
+import { miniflareWorker } from "./worker-miniflare.ts";
 import { WorkerStub, isWorkerStub } from "./worker-stub.ts";
 import { Workflow, isWorkflow, upsertWorkflow } from "./workflow.ts";
 
@@ -222,13 +224,25 @@ export interface BaseWorkerProps<
    * This is only used when using the rpc property.
    */
   rpc?: (new (...args: any[]) => RPC) | type<RPC>;
+  /**
+   * Whether to run the worker locally using Miniflare instead of deploying to Cloudflare
+   *
+   * When true, starts a local Miniflare development server instead of deploying to Cloudflare
+   * @default false
+   */
+  dev?:
+    | boolean
+    | {
+        enabled: boolean;
+        port?: number;
+      };
 }
 
 export interface InlineWorkerProps<
   B extends Bindings | undefined = Bindings,
   RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
 > extends BaseWorkerProps<B, RPC> {
-  script: string;
+  script: string | NoBundleResult;
   entrypoint?: undefined;
   noBundle?: false;
 }
@@ -789,6 +803,90 @@ export const _Worker = Resource(
       props.compatibilityDate ?? DEFAULT_COMPATIBILITY_DATE;
     const compatibilityFlags = props.compatibilityFlags ?? [];
 
+    // Get current timestamp
+    const now = Date.now();
+
+    if (props.dev || this.scope.dev) {
+      let scriptContent: string | NoBundleResult;
+      let devDispose: (() => Promise<void>) | undefined;
+
+      // If entrypoint is provided, set up hot reloading with esbuild context
+      if (props.entrypoint) {
+        const devContext = await createWorkerDevContext(
+          workerName,
+          {
+            ...props,
+            entrypoint: props.entrypoint,
+            compatibilityDate,
+            compatibilityFlags,
+          },
+          async (newScript: string) => {
+            // Hot reload callback - update the miniflare worker
+            console.log(`🔥 Hot reloading worker: ${workerName}`);
+            await miniflareWorker({
+              ...rest,
+              script: newScript,
+              scriptPath: props.entrypoint!,
+              compatibilityDate,
+              compatibilityFlags,
+              workerName,
+            });
+          }
+        );
+        
+        scriptContent = devContext.initialScript;
+        devDispose = devContext.dispose;
+      } else {
+        // Fallback to one-time bundling for inline scripts
+        scriptContent =
+          props.script ??
+          (await bundleWorkerScript({
+            ...props,
+            compatibilityDate,
+            compatibilityFlags,
+          }));
+      }
+
+      const { entrypoint, ...rest } = props;
+
+      const miniWorker = await miniflareWorker({
+        ...rest,
+        script: scriptContent,
+        scriptPath: entrypoint ?? process.cwd(),
+        compatibilityDate,
+        compatibilityFlags,
+        workerName,
+      });
+
+      // Store dispose function for cleanup
+      if (devDispose) {
+        this.scope.defer(devDispose);
+      }
+
+      return this({
+        type: "service",
+        id,
+        entrypoint: props.entrypoint,
+        name: workerName,
+        compatibilityDate,
+        compatibilityFlags,
+        format: props.format || "esm", // Include format in the output
+        bindings: props.bindings ?? ({} as B),
+        env: props.env,
+        observability: props.observability,
+        createdAt: now,
+        updatedAt: now,
+        eventSources: props.eventSources,
+        url: miniWorker.url,
+        // Include assets configuration in the output
+        assets: props.assets,
+        // Include cron triggers in the output
+        crons: props.crons,
+        // phantom property
+        Env: undefined!,
+      } as unknown as Worker<B>);
+    }
+
     const uploadWorkerScript = async (props: WorkerProps<B>) => {
       const [oldBindings, oldMetadata] = await Promise.all([
         getWorkerBindings(api, workerName),
@@ -895,9 +993,6 @@ export const _Worker = Resource(
         props.url ?? true,
       );
 
-      // Get current timestamp
-      const now = Date.now();
-
       // Update cron triggers
       if (props.crons) {
         const res = await api.put(
@@ -967,7 +1062,7 @@ export const _Worker = Resource(
       }
     }
 
-    const { scriptMetadata, workerUrl, now } = await uploadWorkerScript(props);
+    const { scriptMetadata, workerUrl } = await uploadWorkerScript(props);
 
     function exportBindings() {
       return Object.fromEntries(
