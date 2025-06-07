@@ -20,6 +20,15 @@ export default {
 
     await env.RPC.hello("John Doe");
 
+    // Demonstrate Secrets Store usage
+    const apiKey = await env.SECRETS.get("API_KEY");
+    const databaseUrl = await env.SECRETS.get("DATABASE_URL");
+    const oauthSecret = await env.SECRETS.get("OAUTH_SECRET");
+    
+    console.log(`API Key exists: ${apiKey ? "yes" : "no"}`);
+    console.log(`Database URL exists: ${databaseUrl ? "yes" : "no"}`);
+    console.log(`OAuth Secret exists: ${oauthSecret ? "yes" : "no"}`);
+
     return new Response("Ok");
   },
   async queue(batch: typeof queue.Batch, _env: typeof worker.Env) {

@@ -285,3 +285,29 @@ yarn tsx ./alchemy.run --destroy
 
 > [!TIP]
 > If the Resource is mostly headless infrastructure like a database or some other service, you should use Cloudflare Workers as the runtime to "round off" the example package. E.g. for a Neon Provider, we would connect it into a Cloudlare Worker via Hyperdrive and provide a URL (via Worker) to hit that page. Ideally you'd also put ViteJS in front and hit that endpoint.
+
+## Development Workflow
+
+### Pre-Commit Requirements
+
+> [!IMPORTANT]
+> **Always run the linter before committing changes.**
+
+Before committing any code changes, you MUST run the linter to ensure code quality and consistency:
+
+```sh
+bun check --fix
+```
+
+This command will:
+- Check for TypeScript errors
+- Apply automatic formatting fixes
+- Ensure code follows project conventions
+
+After running the linter:
+1. Review any changes made by the auto-fix process
+2. Commit all changes (including linter fixes) together
+3. Ensure tests still pass if applicable
+
+> [!NOTE]
+> If you're using Claude Code, you can request Claude to run `bun check --fix` and commit the changes for you.

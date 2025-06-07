@@ -17,6 +17,7 @@ import type { HyperdriveResource } from "./hyperdrive.ts";
 import type { KVNamespaceResource } from "./kv-namespace.ts";
 import type { PipelineResource } from "./pipeline.ts";
 import type { QueueResource } from "./queue.ts";
+import type { SecretsStore } from "./secrets-store.ts";
 import type { VectorizeIndexResource } from "./vectorize-index.ts";
 import type { VersionMetadata } from "./version-metadata.ts";
 import type { WorkerStub } from "./worker-stub.ts";
@@ -48,6 +49,7 @@ export type Binding =
   | PipelineResource
   | QueueResource
   | R2BucketResource
+  | SecretsStore<any>
   | {
       type: "kv_namespace";
       id: string;
@@ -99,6 +101,7 @@ export type WorkerBindingSpec =
   | WorkerBindingQueue
   | WorkerBindingR2Bucket
   | WorkerBindingSecretText
+  | WorkerBindingSecretsStore
   | WorkerBindingService
   | WorkerBindingStaticContent
   | WorkerBindingTailConsumer
@@ -292,6 +295,17 @@ export interface WorkerBindingSecretText {
   type: "secret_text";
   /** Secret value */
   text: string;
+}
+
+export interface WorkerBindingSecretsStore {
+  /** The name of the binding */
+  name: string;
+  /** Type identifier for Secrets Store binding */
+  type: "secrets_store";
+  /** Store ID */
+  store_id: string;
+  /** Secret name */
+  secret_name: string;
 }
 
 /**

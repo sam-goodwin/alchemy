@@ -386,6 +386,13 @@ export async function prepareWorkerMetadata<B extends Bindings>(
         name: bindingName,
         bucket_name: binding.name,
       });
+    } else if (binding.type === "secrets_store") {
+      meta.bindings.push({
+        type: "secrets_store",
+        name: bindingName,
+        store_id: binding.id,
+        secret_name: bindingName,
+      });
     } else if (binding.type === "assets") {
       meta.bindings.push({
         type: "assets",
