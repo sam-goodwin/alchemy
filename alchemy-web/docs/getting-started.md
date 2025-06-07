@@ -1,40 +1,119 @@
 ---
 title: Getting Started with Alchemy
-description: Quick start guide to using Alchemy, the TypeScript-native Infrastructure-as-Code library. Learn how to install, create resources, and manage their lifecycle.
+description: Quick start guide to using Alchemy, the TypeScript-native Infrastructure-as-Code library. Deploy your first Cloudflare Worker with type-safe infrastructure code.
 ---
 
 # Getting Started with Alchemy
 
+This guide will deploy a Cloudflare Worker and bind resources to it with Alchemy.
+
 > [!TIP]
-> Read [What is Alchemy](./what-is-alchemy.md) to get an overview of Alchemy and how it's different than tradtional IaC
+> Read [What is Alchemy](./what-is-alchemy.md) to get an overview of Alchemy and how it's different than traditional IaC
 
-## Installation
+## Prerequisites
 
-Start by installing the Alchemy library using Bun (or your preferred package manager):
+You'll need:
+
+::: code-group
+
+```sh [Node.js]
+# Install from https://nodejs.org/
+node --version
+```
+
+```sh [Bun]
+# Install from https://bun.sh/
+bun --version
+```
+
+```sh [Deno]
+# Install from https://deno.com/
+deno --version
+```
+
+:::
+
+- A [Cloudflare account](https://dash.cloudflare.com/sign-up) (free tier works)
+
+## Create a New TypeScript Project
+
+Start by creating an empty TypeScript project:
+
+::: code-group
+
+```sh [bun]
+mkdir my-alchemy-app
+cd my-alchemy-app
+bun init -y
+```
+
+```sh [npm]
+mkdir my-alchemy-app
+cd my-alchemy-app
+npm init -y
+npm install -D typescript @types/node tsx
+```
+
+```sh [pnpm]
+mkdir my-alchemy-app
+cd my-alchemy-app
+pnpm init
+pnpm add -D typescript @types/node tsx
+```
+
+```sh [yarn]
+mkdir my-alchemy-app
+cd my-alchemy-app
+yarn init -y
+yarn add -D typescript @types/node tsx
+```
+
+:::
+
+## Install Dependencies
+
+Install Alchemy and the Wrangler CLI:
 
 ::: code-group
 
 ```sh [bun]
 bun add alchemy
+bun add -g wrangler
 ```
 
 ```sh [npm]
-npm add alchemy
+npm install alchemy
+npm install -g wrangler
 ```
 
 ```sh [pnpm]
 pnpm add alchemy
+pnpm add -g wrangler
 ```
 
 ```sh [yarn]
 yarn add alchemy
+yarn global add wrangler
 ```
 
 :::
 
+## Login to Cloudflare
+
+Authenticate with Cloudflare using wrangler:
+
+```sh
+wrangler login
+```
+
+This will open your browser to authenticate with your Cloudflare account.
+
+> [!TIP]
+> Alchemy automatically uses your wrangler OAuth token. See the [Cloudflare Auth](./guides/cloudflare-auth.md) guide for alternative authentication methods.
+
 ## Create Your First Alchemy App
 
-Create a file named `alchemy.run.ts` in your project directory and follow these steps:
+Create a file named `alchemy.run.ts` in your project directory:
 
 > [!TIP]
 > `alchemy.run.ts` is just a convention - you can run Alchemy in any script or JavaScript environment.
@@ -54,20 +133,18 @@ const app = await alchemy("my-first-app", {
 > [!NOTE]
 > Learn more about Alchemy scopes in [Concepts: Scope](./concepts/scope.md)
 
-### Step 2: Instantiate a Resource
-
-A Resource is just an async function that takes a unique id (e.g. `config`) and some properties.
+### Step 2: Create a Cloudflare Worker
 
 ```typescript
-import { File } from "alchemy/fs";
+import { Worker } from "alchemy/cloudflare";
 
-// Create a file resource
-const hello = await File("hello", {
-  path: "./hello.txt",
-  content: "hello world"
+// Create a simple worker
+const worker = await Worker("hello-worker", {
+  entrypoint: "./src/worker.ts",
+  url: true, // Enable workers.dev subdomain
 });
 
-console.log(`Created file at: ${hello.path}`);
+console.log(`Worker deployed at: ${worker.url}`);
 ```
 
 > [!NOTE]
@@ -75,44 +152,178 @@ console.log(`Created file at: ${hello.path}`);
 
 ### Step 3: Finalize the Application
 
-At the end of our script, call `finalize`.
-
 ```typescript
 // Finalize the app to apply changes
 await app.finalize();
 ```
 
-This is necessary for deleting what are called "orphaned resources" (more on that below).
+This is necessary for deleting what are called "orphaned resources" when resources are removed.
 
 > [!NOTE]
 > Learn more about finalization and destroying resources in [Concepts: Destroy](./concepts/destroy.md)
 
-## Run the Script
+### Step 4: Create the Worker Script
 
-Now we simply run the script. Alchemy is just pure TypeScript, so you can run it with any JS engine, e.g. `bun`:
+Create a `src/worker.ts` file with your worker code:
 
-```bash
+```typescript
+export default {
+  async fetch(request: Request): Promise<Response> {
+    return Response.json({ 
+      message: "Hello from Alchemy!",
+      timestamp: new Date().toISOString()
+    });
+  },
+};
+```
+
+## Deploy Your Worker
+
+Run the Alchemy script to deploy your worker:
+
+::: code-group
+
+```sh [bun]
 bun ./alchemy.run.ts
 ```
+
+```sh [npm]
+npx tsx ./alchemy.run.ts
+```
+
+```sh [pnpm]
+pnpm tsx ./alchemy.run.ts
+```
+
+```sh [yarn]
+yarn tsx ./alchemy.run.ts
+```
+
+:::
 
 You will see output similar to:
 
 ```
-Create:  "my-first-app/dev/hello"
-Created: "my-first-app/dev/hello"
+Create:  "my-first-app/dev/hello-worker"
+Created: "my-first-app/dev/hello-worker"
+Worker deployed at: https://hello-worker.your-subdomain.workers.dev
 ```
 
-This indicates that Alchemy has:
-1. Identified that the resource needs to be created
-2. Successfully created the resource
-
-We now have a `./hello.txt` file in our project:
-```
-hello world
-```
+Visit the URL to see your worker in action!
 
 > [!TIP]
 > If you're familiar with other IaC tools, this should feel similar to `terraform apply`, `pulumi up`, `cdk deploy` or `sst deploy`
+
+## Add Bindings
+
+Now let's add some infrastructure to our worker. We'll add a KV namespace for storage.
+
+First, update your `alchemy.run.ts` to add bindings:
+
+```typescript
+import { Worker, KvNamespace } from "alchemy/cloudflare";
+
+// ... existing app initialization ...
+
+// Create a KV namespace for storage
+const kv = await KvNamespace("my-app-storage", {});
+
+// Update the worker with bindings
+const worker = await Worker("hello-worker", {
+  entrypoint: "./src/worker.ts",
+  url: true,
+  bindings: {
+    KV: kv,
+    API_KEY: "secret-api-key",
+  },
+});
+
+console.log(`Worker deployed at: ${worker.url}`);
+await app.finalize();
+```
+
+Now update your worker to use these bindings with type safety:
+
+```typescript
+// src/worker.ts
+import type { worker } from "../alchemy.run";
+
+export default {
+  async fetch(request: Request, env: typeof worker.Env): Promise<Response> {
+    // Store and retrieve data with type safety
+    await env.KV.put("last-visit", new Date().toISOString());
+    const lastVisit = await env.KV.get("last-visit");
+    
+    return Response.json({ 
+      message: "Hello from Alchemy!",
+      timestamp: new Date().toISOString(),
+      lastVisit: lastVisit,
+      apiKey: env.API_KEY // TypeScript knows this is a string
+    });
+  },
+};
+```
+
+> [!NOTE]
+> The `typeof worker.Env` gives you full type safety by inferring types directly from your infrastructure definition in `alchemy.run.ts`. No code generation required!
+
+## Alternative: Using Cloudflare Workers Environment
+
+For a more integrated development experience, you can also access bindings through the `cloudflare:workers` module.
+
+First, create an `src/env.ts` file for global type configuration:
+
+```typescript
+// src/env.ts
+import type { worker } from "../alchemy.run";
+
+export type WorkerEnv = typeof worker.Env;
+
+declare global {
+  type Env = WorkerEnv;
+}
+
+declare module "cloudflare:workers" {
+  namespace Cloudflare {
+    export interface Env extends WorkerEnv {}
+  }
+}
+```
+
+Update your `tsconfig.json` to include the env types:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types", "./src/env.ts"]
+  }
+}
+```
+
+Now you can use the `env` import instead:
+
+```typescript
+// src/worker.ts
+import { env } from "cloudflare:workers";
+
+export default {
+  async fetch(request: Request): Promise<Response> {
+    // Store and retrieve data with type safety
+    await env.KV.put("last-visit", new Date().toISOString());
+    const lastVisit = await env.KV.get("last-visit");
+    
+    return Response.json({ 
+      message: "Hello from Alchemy!",
+      timestamp: new Date().toISOString(),
+      lastVisit: lastVisit,
+      apiKey: env.API_KEY // TypeScript knows this is a string
+    });
+  },
+};
+```
+
+> [!NOTE]
+> Both approaches give you the same type safety. The `typeof worker.Env` approach is simpler to start with, while the `cloudflare:workers` import provides a more integrated development experience with the Cloudflare Workers runtime.
 
 ## Understanding State
 
@@ -122,80 +333,98 @@ After running your app, Alchemy creates a `.alchemy` directory to store state:
 .alchemy/
   my-first-app/         # app
     dev/                # stage
-      hello.txt.json  # resource
+      hello-worker.json # resource state
 ```
 
 State files help Alchemy determine whether to create, update, delete, or skip resources on subsequent runs.
 
-If you run the same script again without changes, you'll see no operations performed because the state hasn't changed.
-
 > [!NOTE]
 > Learn more about Alchemy state in [Concepts: State](./concepts/state.md)
 
-## Update our File
+## Generate wrangler.json for Local Development
 
-Let's now update our `alchemy.run.ts` script to change the content of the file:
+Now add wrangler.json generation to your updated `alchemy.run.ts`:
 
-```ts
-const hello = await File("hello", {
-  // path: "./hello.txt",
-  path: "./hello-world.txt",
-  // content: "hello world"
-  content: "Hello, world!"
+```typescript
+// Add this import
+import { WranglerJson } from "alchemy/cloudflare";
+
+// ... after creating the worker with bindings ...
+
+// Generate wrangler.json for local development
+await WranglerJson("wrangler.json", {
+  worker,
 });
 ```
 
-Now, when we re-run the script, we'll see:
-```
-Update:  "my-first-app/dev/hello"
-Updated: "my-first-app/dev/hello"
-```
+Deploy again to generate the `wrangler.json` with your bindings:
 
-And now the `hello.txt` file is gone and replaced with `hello-world.txt` with different content:
-```
-Hello, World
+::: code-group
+
+```sh [bun]
+bun ./alchemy.run.ts
 ```
 
-Notice how we didn't have to write any code to delete the old file?
-
-In a nutshell, that's the point of Infrastructure-as-Code - we just write code that creates the state we want and Alchemy takes care of deciding what to create, update or delete and in what order.
-
-## Destroy the Resource
-
-Let's now comment out the `File` and run it again.
-
-```typescript
-// const hello = await File("hello", {
-//   path: "./hello-world.txt",
-//   content: "Hello, world!"
-// });
+```sh [npm]
+npx tsx ./alchemy.run.ts
 ```
 
-> [!CAUTION]
-> Now, before we run our script again, you need to first add a "naked" impot of `alchemy/fs` at the top of our `alchemy.run.ts` script.
-> ```typescript
-> import "alchemy/fs"
-> ```
-> If you forget this, you would get an error
-> `Cannot destroy resource "my-first-app/dev/hello" type fs::File - no provider found. You may need to import the provider in your alchemy.run.ts.`
-> 
-> This is because IDEs usually remove unused imports. If you don't import the resource, the delete handler won't be registered which Alchemy needs to delete the resource.
-
-The output should look like:
-
-```
-Delete:  "my-first-app/dev/hello"
-Deleted: "my-first-app/dev/hello"
+```sh [pnpm]
+pnpm tsx ./alchemy.run.ts
 ```
 
-And the `hello-world.txt` file is now gone.
+```sh [yarn]
+yarn tsx ./alchemy.run.ts
+```
 
-> [!NOTE]
-> You can read more about how to destroy resoruces and stacks in [Concepts: Destroy](./concepts/destroy.md)
+:::
+
+## Local Development
+
+Run your worker locally using `wrangler dev`:
+
+```sh
+wrangler dev
+```
+
+Visit `http://localhost:8787` to test your worker locally with all your bindings!
+
+## Tear Down
+
+When you're done, you can destroy all resources:
+
+::: code-group
+
+```sh [bun]
+bun ./alchemy.run.ts --destroy
+```
+
+```sh [npm]
+npx tsx ./alchemy.run.ts --destroy
+```
+
+```sh [pnpm]
+pnpm tsx ./alchemy.run.ts --destroy
+```
+
+```sh [yarn]
+yarn tsx ./alchemy.run.ts --destroy
+```
+
+:::
+
+Output:
+```
+Delete:  "my-first-app/dev/hello-worker"
+Deleted: "my-first-app/dev/hello-worker"
+```
+
+Your worker is now removed from Cloudflare.
 
 ## Next Steps
 
-This was a very simple example using the local file system. Now, you might want to do something more interesting like deploy some Cloudflare resources or build your own!
+You've successfully deployed your first Cloudflare Worker with Alchemy! Here are some next steps:
 
-- [Deploy a ViteJS site to Cloudflare](./guides/cloudflare-vitejs)
-- [Build your own Custom Resource](./guides/custom-resources.md)
+- [Deploy a ViteJS site to Cloudflare](./guides/cloudflare-vitejs) - Build full-stack applications
+- [Learn about Cloudflare Workers](./guides/cloudflare-worker) - Advanced worker features
+- [Build your own Custom Resource](./guides/custom-resources.md) - Extend Alchemy
