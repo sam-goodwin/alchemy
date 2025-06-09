@@ -15,12 +15,12 @@ export class NeonApiError extends Error {
   /**
    * Error data from the API response
    */
-  public readonly errorData?: any;
+  public readonly errorData?: unknown;
 
   /**
    * Create a new NeonApiError
    */
-  constructor(message: string, response: Response, errorData?: any) {
+  constructor(message: string, response: Response, errorData?: unknown) {
     super(message);
     this.name = "NeonApiError";
     this.status = response.status;
@@ -49,7 +49,7 @@ export async function handleApiError(
   resourceId?: string,
 ): Promise<never> {
   const resourceDisplay = resourceId ? `'${resourceId}'` : "";
-  let errorData: any;
+  let errorData: unknown;
 
   try {
     errorData = await response.json();
@@ -64,15 +64,21 @@ export async function handleApiError(
 
   let message = `Error ${action} ${resourceType} ${resourceDisplay}: `;
 
-  if (errorData?.error?.message) {
-    message += errorData.error.message;
-  } else if (errorData?.message) {
-    message += errorData.message;
-  } else if (errorData?.error) {
-    message +=
-      typeof errorData.error === "string"
-        ? errorData.error
-        : JSON.stringify(errorData.error);
+  if (errorData && typeof errorData === "object" && "error" in errorData) {
+    const error = (errorData as { error: unknown }).error;
+    if (error && typeof error === "object" && "message" in error) {
+      message += (error as { message: string }).message;
+    } else if (typeof error === "string") {
+      message += error;
+    } else {
+      message += JSON.stringify(error);
+    }
+  } else if (
+    errorData &&
+    typeof errorData === "object" &&
+    "message" in errorData
+  ) {
+    message += (errorData as { message: string }).message;
   } else {
     message += response.statusText;
   }

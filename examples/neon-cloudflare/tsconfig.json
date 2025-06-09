@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "types": ["@cloudflare/workers-types"]
+  },
+  "include": ["src/**/*", "alchemy.run.ts"],
+  "exclude": ["node_modules", "dist"]
+}

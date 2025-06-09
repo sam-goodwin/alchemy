@@ -131,7 +131,7 @@ export class NeonApi {
    */
   async post(
     path: string,
-    body: any,
+    body: unknown,
     init: RequestInit = {},
   ): Promise<Response> {
     const requestBody =
@@ -148,7 +148,7 @@ export class NeonApi {
    */
   async put(
     path: string,
-    body: any,
+    body: unknown,
     init: RequestInit = {},
   ): Promise<Response> {
     const requestBody = body instanceof FormData ? body : JSON.stringify(body);
@@ -160,7 +160,7 @@ export class NeonApi {
    */
   async patch(
     path: string,
-    body: any,
+    body: unknown,
     init: RequestInit = {},
   ): Promise<Response> {
     return this.fetch(path, {
