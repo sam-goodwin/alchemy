@@ -1,0 +1,79 @@
+---
+export interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Astro on Cloudflare with Alchemy" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<title>{title}</title>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
+<style is:global>
+	html {
+		font-family: system-ui, sans-serif;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	}
+	body {
+		margin: 0;
+		min-height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.container {
+		max-width: 800px;
+		padding: 2rem;
+		background: white;
+		border-radius: 12px;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+		text-align: center;
+	}
+	h1 {
+		color: #333;
+		margin-bottom: 1rem;
+	}
+	.astro-logo {
+		display: inline-block;
+		width: 100px;
+		height: 100px;
+		margin: 1rem 0;
+	}
+	.features {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 1rem;
+		margin: 2rem 0;
+	}
+	.feature {
+		padding: 1rem;
+		background: #f8f9fa;
+		border-radius: 8px;
+		border: 1px solid #e9ecef;
+	}
+	.feature h3 {
+		margin: 0 0 0.5rem 0;
+		color: #495057;
+	}
+	.feature p {
+		margin: 0;
+		color: #6c757d;
+		font-size: 0.9rem;
+	}
+	code {
+		background: #f1f3f4;
+		padding: 0.2rem 0.4rem;
+		border-radius: 4px;
+		font-family: 'Courier New', monospace;
+	}
+</style>

@@ -1,0 +1,36 @@
+---
+import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
+
+interface Props {
+    bun: string | string[]
+    npm: string | string[]
+    pnpm: string | string[]
+    yarn: string | string[]
+}
+
+const { bun, npm, pnpm, yarn } = Astro.props;
+---
+
+<Tabs>
+  {bun && (
+    <TabItem label="bun">
+        <Code lang="sh" code={Array.isArray(bun) ? bun.join('\n') : bun} />
+    </TabItem>
+  )}
+  {npm && (
+    <TabItem label="npm">
+      <Code lang="sh" code={Array.isArray(npm) ? npm.join('\n') : npm} />
+    </TabItem>
+  )}
+  {pnpm && (
+    <TabItem label="pnpm">
+      <Code lang="sh" code={Array.isArray(pnpm) ? pnpm.join('\n') : pnpm} />
+    </TabItem>
+  )}
+  {yarn && (
+    <TabItem label="yarn">
+      <Code lang="sh" code={Array.isArray(yarn) ? yarn.join('\n') : yarn} />
+    </TabItem>
+  )}
+</Tabs>
+

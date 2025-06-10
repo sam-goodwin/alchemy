@@ -6,6 +6,7 @@
     { "path": "./alchemy/tsconfig.json" },
     { "path": "./alchemy/tsconfig.test.json" },
     { "path": "./examples/aws-app/tsconfig.json" },
+    { "path": "./examples/cloudflare-astro/tsconfig.json" },
     { "path": "./examples/cloudflare-nuxt-pipeline/tsconfig.json" },
     { "path": "./examples/cloudflare-react-router/tsconfig.json" },
     { "path": "./examples/cloudflare-redwood/tsconfig.json" },

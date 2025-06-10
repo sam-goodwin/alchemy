@@ -1,0 +1,26 @@
+{
+  "name": "astro-project",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "deploy": "bun run --env-file ../../.env ./alchemy.run.ts",
+    "destroy": "bun run --env-file ../../.env ./alchemy.run.ts --destroy",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/cloudflare": "^12.5.4",
+    "alchemy": "workspace:*",
+    "astro": "^5.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "cloudflare": "^4.2.0",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.3"
+  }
+}

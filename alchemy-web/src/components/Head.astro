@@ -1,0 +1,17 @@
+---
+import StarlightHead from '@astrojs/starlight/components/Head.astro';
+// import {OgImage} from '@sumitgohil/astro-opengraph-image/components';
+
+const entry = Astro.locals.starlightRoute.entry;
+---
+
+<StarlightHead /> 
+<!-- <OgImage>
+  <h1>{entry.data.title}</h1>
+  <p>{entry.data.description}</p>
+  <style is:inline>
+    h1 {
+      color: red;
+    }
+  </style>
+</OgImage> -->

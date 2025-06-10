@@ -1,18 +1,10 @@
 // ensure providers are registered (for deletion purposes)
 
 import "../alchemy/src/cloudflare/index.js";
+import { Astro, CustomDomain, Zone } from "../alchemy/src/cloudflare/index.js";
 import "../alchemy/src/dns/index.js";
-import "../alchemy/src/os/index.js";
-
-import path from "node:path";
-import {
-  Assets,
-  CustomDomain,
-  Worker,
-  Zone,
-} from "../alchemy/src/cloudflare/index.js";
 import alchemy from "../alchemy/src/index.js";
-import { Exec } from "../alchemy/src/os/index.js";
+import "../alchemy/src/os/index.js";
 import options from "./env.js";
 
 // Support BRANCH_PREFIX for resource isolation
@@ -30,33 +22,15 @@ if (!isPreview) {
   });
 }
 
-await Exec("build-site", {
-  command: "bun run --filter alchemy-web docs:build",
-});
-
-const staticAssets = await Assets("static-assets", {
-  path: path.join("alchemy-web", ".vitepress", "dist"),
-});
-
-export const website = await Worker("website", {
+export const website = await Astro("alchemy-web", {
   name: branchPrefix ? `${branchPrefix}-alchemy-website` : "alchemy-website",
-  url: true,
-  bindings: {
-    ASSETS: staticAssets,
-  },
+  cwd: "alchemy-web",
+  command: "bun run docs:build",
   assets: {
     html_handling: "auto-trailing-slash",
     // not_found_handling: "single-page-application",
     run_worker_first: false,
   },
-  script: `
-export default {
-  async fetch(request, env) {
-    // return env.ASSETS.fetch(request);
-    return new Response("Not Found", { status: 404 });
-  },
-};
-`,
 });
 
 // Only set up custom domain for production deployments

@@ -1,0 +1,229 @@
+---
+title: Astro
+description: Step-by-step guide to deploying Astro applications with server-side rendering to Cloudflare Workers using Alchemy's Infrastructure-as-Code approach.
+sidebar:
+  order: 1.4
+  badge: New
+---
+
+import CommandGroup from "../../../components/CommandGroup.astro";
+import { Aside } from "@astrojs/starlight/components";
+
+This guide demonstrates how to deploy an Astro application with server-side rendering to Cloudflare using Alchemy.
+
+## Create a new Astro Project
+
+Start by creating a new Astro project:
+
+<CommandGroup
+  bun={["bun create astro@latest my-astro-app", "cd my-astro-app"]}
+  npm={["npm create astro@latest my-astro-app", "cd my-astro-app"]}
+  pnpm={["pnpm create astro@latest my-astro-app", "cd my-astro-app"]}
+  yarn={["yarn create astro@latest my-astro-app", "cd my-astro-app"]}
+/>
+
+When prompted:
+
+- Choose "Just the basics" template
+- Select "Yes" for TypeScript
+- Choose "Strictest" for TypeScript configuration
+- Select "Yes" for install dependencies
+- Select "No" for git repository (we'll handle this separately)
+
+## Install Cloudflare Adapter
+
+Install the Cloudflare adapter and Alchemy dependencies:
+
+<CommandGroup
+  bun={[
+    "bun add @astrojs/cloudflare",
+    "bun add -D alchemy cloudflare @cloudflare/workers-types",
+  ]}
+  npm={[
+    "npm install @astrojs/cloudflare",
+    "npm install --save-dev alchemy cloudflare @cloudflare/workers-types",
+  ]}
+  pnpm={[
+    "pnpm add @astrojs/cloudflare",
+    "pnpm add -D alchemy cloudflare @cloudflare/workers-types",
+  ]}
+  yarn={[
+    "yarn add @astrojs/cloudflare",
+    "yarn add -D alchemy cloudflare @cloudflare/workers-types",
+  ]}
+/>
+
+## Configure Astro for Cloudflare
+
+Update your `astro.config.mjs` to use the Cloudflare adapter:
+
+```js title="astro.config.mjs"
+import { defineConfig } from "astro/config";
+import cloudflare from "@astrojs/cloudflare";
+
+// https://astro.build/config
+export default defineConfig({
+  output: "server",
+  adapter: cloudflare(),
+});
+```
+
+## Create `alchemy.run.ts`
+
+Create `alchemy.run.ts` to configure your deployment using Alchemy's Astro resource:
+
+```ts title="alchemy.run.ts"
+/// <reference types="node" />
+
+import alchemy from "alchemy";
+import { Astro, KVNamespace, R2Bucket } from "alchemy/cloudflare";
+
+const app = await alchemy("cloudflare-astro", {
+  phase: process.argv.includes("--destroy") ? "destroy" : "up",
+});
+
+// Create some Cloudflare resources for your app
+export const [storage, cache] = await Promise.all([
+  R2Bucket("astro-storage", {
+    allowPublicAccess: false,
+  }),
+  KVNamespace("CACHE", {
+    title: "astro-cache",
+  }),
+]);
+
+export const website = await Astro("astro-website", {
+  command: "bun run build",
+  bindings: {
+    STORAGE: storage,
+    CACHE: cache,
+  },
+});
+
+console.log({
+  url: website.url,
+});
+
+await app.finalize();
+```
+
+## Configure Alchemy Types
+
+Create `src/env.d.ts` to properly type your Cloudflare bindings:
+
+```ts title="src/env.d.ts"
+/// <reference types="astro/client" />
+
+import type { website } from "../alchemy.run.ts";
+
+type CloudflareEnv = typeof website.Env;
+
+declare namespace App {
+  interface Locals extends CloudflareEnv {}
+}
+```
+
+## Add an API Route
+
+Create `src/pages/api/hello.ts` to demonstrate server-side functionality:
+
+```ts title="src/pages/api/hello.ts"
+import type { APIRoute } from "astro";
+
+export const GET: APIRoute = async ({ request }) => {
+  // Access Cloudflare runtime context
+  const runtime = request.cf;
+
+  return new Response(
+    JSON.stringify({
+      message: "Hello from Astro API on Cloudflare!",
+      timestamp: new Date().toISOString(),
+      colo: runtime?.colo || "unknown",
+      country: runtime?.country || "unknown",
+      city: runtime?.city || "unknown",
+    }),
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+};
+```
+
+## Login to Cloudflare
+
+Before you can deploy, you need to authenticate by running `wrangler login`.
+
+<CommandGroup
+  bun="bun wrangler login"
+  npm="npx wrangler login"
+  pnpm="pnpm wrangler login"
+  yarn="yarn wrangler login"
+/>
+
+<Aside type="tip">
+  Alchemy will by default try and use your wrangler OAuth token and Refresh
+  Token to connect but see the [Cloudflare Auth](../guides/cloudflare-auth) for
+  other methods.
+</Aside>
+
+## Deploy
+
+Run `alchemy.run.ts` script to deploy:
+
+<CommandGroup
+  bun="bun run alchemy.run.ts"
+  npm="npx tsx alchemy.run.ts"
+  pnpm="pnpm tsx alchemy.run.ts"
+  yarn="yarn tsx alchemy.run.ts"
+/>
+
+It should log out the URL of your deployed site:
+
+```sh
+{
+  url: "https://your-site.your-sub-domain.workers.dev",
+}
+```
+
+Click the endpoint to see your site! Try visiting `/api/hello` to see the API endpoint in action.
+
+## Local Development
+
+Run the Astro development server:
+
+<CommandGroup
+  bun="bun run dev"
+  npm="npm run dev"
+  pnpm="pnpm run dev"
+  yarn="yarn run dev"
+/>
+
+The Astro dev server will start:
+
+```sh
+🚀  astro  v5.1.3 ready in 892 ms
+
+┃ Local    http://localhost:4321/
+┃ Network  use --host to expose
+
+┃ Watch mode enabled! Edit a file to see changes.
+```
+
+<Aside type="tip">
+  For production-like local development with Cloudflare Workers, you can use
+  `wrangler dev` after building your Astro site.
+</Aside>
+
+## Tear Down
+
+That's it! You can now tear down the app (if you want to):
+
+<CommandGroup
+  bun="bun run alchemy.run.ts --destroy"
+  npm="npx tsx alchemy.run.ts --destroy"
+  pnpm="pnpm tsx alchemy.run.ts --destroy"
+  yarn="yarn tsx alchemy.run.ts --destroy"
+/>

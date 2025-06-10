@@ -1,0 +1,40 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Astro + Cloudflare + Alchemy">
+	<div class="container">
+		<h1>🚀 Astro on Cloudflare with Alchemy</h1>
+		
+		<svg class="astro-logo" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<style>
+				.flame { fill: #FF5D01; }
+				.a { fill: #000014; }
+			</style>
+			<title>Astro</title>
+			<path class="flame" d="m155.611 58.517-8.073 6.967a.317.317 0 0 1-.478-.024L128 42.773l-19.06 22.687a.317.317 0 0 1-.478.024l-8.073-6.967L128 28.639l27.611 29.878Z"/>
+			<path class="a" d="M181.956 77.038c-1.692-.925-3.718.302-3.718 2.196v61.893c0 1.477-.65 2.87-1.775 3.81L128 180.404l-48.463-35.467c-1.125-.94-1.775-2.333-1.775-3.81V79.234c0-1.894-2.026-3.121-3.718-2.196L30.22 102.666c-1.125.615-1.82 1.78-1.82 3.046v67.175c0 3.289 1.788 6.315 4.661 7.888l84.465 46.231c2.542 1.392 5.666 1.392 8.208 0l84.465-46.231c2.873-1.573 4.661-4.599 4.661-7.888v-67.175c0-1.266-.695-2.431-1.82-3.046L181.956 77.038Z"/>
+		</svg>
+
+		<p>Welcome to your Astro application deployed on Cloudflare Workers using Alchemy Infrastructure-as-Code!</p>
+
+		<div class="features">
+			<div class="feature">
+				<h3>⚡ Astro</h3>
+				<p>Modern web framework with component islands and server-side rendering</p>
+			</div>
+			<div class="feature">
+				<h3>☁️ Cloudflare</h3>
+				<p>Edge runtime with global deployment and zero cold starts</p>
+			</div>
+			<div class="feature">
+				<h3>🔮 Alchemy</h3>
+				<p>TypeScript Infrastructure-as-Code for seamless deployment</p>
+			</div>
+		</div>
+
+		<p>
+			Try visiting <code>/api/hello</code> to see the API endpoint in action!
+		</p>
+	</div>
+</Layout>

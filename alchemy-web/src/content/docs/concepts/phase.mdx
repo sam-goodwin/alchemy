@@ -1,0 +1,97 @@
+---
+title: Phase
+description: Master the three execution phases in Alchemy - up, destroy, and read. Learn when to use each phase for deploying, tearing down, or accessing your infrastructure.
+sidebar:
+  order: 2
+---
+
+import { Aside } from "@astrojs/starlight/components";
+import CommandGroup from "../../../components/CommandGroup.astro";
+
+An Alchemy app can run in one of three phases:
+
+1. `"up"` - resources should be created, updated and deleted as necessary.
+2. `"destroy"` - all resources in the stage should be deleted and the program should not proceed
+3. `"read"` - run the program end-to-end but do not create, update or delete any resources
+
+## `"up"`
+
+The **Up** phase creates, updates and deletes resources. This is the default mode and the most common. It's how you deploy your app (synchronize resources).
+
+```ts
+const app = await alchemy("my-app", {
+  phase: "up"
+});
+
+const worker = await Worker("my-app", { .. }); // <- will be created or updated
+
+await app.finalize(); // <- will delete orphaned resources
+```
+
+## `"destroy"`
+
+The **Destroy** phase deletes all resources and scopes within the `my-app.${stage}` (e.g. `prod` below).
+
+```ts
+const app = await alchemy("my-app", {
+  phase: "destroy",
+  stage: "prod", // <- this stage will be destroyed
+});
+
+// execution will not proceed to the following lines
+
+const worker = await Worker("my-app", { .. }); // <- never executed
+```
+
+## `"read"`
+
+The **Read** phase runs the program but never creates, updates or deletes any resources. It is useful for building shell scripts that need access to infrastructure properties (e.g. the )
+
+```ts
+const app = await alchemy("my-app", {
+  phase: "read"
+});
+
+// will reconstruct itself from state and error if it does not exist
+const worker = await Worker("my-app", { .. });
+
+worker.url; // <- populated from `.alchemy/` state
+
+await app.finalize() // <- will not delete any orphaned resources
+```
+
+<Aside type="tip">
+You can write your own scripts that run commands and pass infrastructure properties as environment variables with a very simple node script.
+
+1.  Set the `phase` to `"read"`, e.g. using an env variable:
+
+```ts
+// ./alchemy.run.ts
+const app = await alchemy({
+  phase: process.env.PHASE ?? "up"
+});
+
+// export your infrastructure
+export const website = await Worker(..);
+
+```
+
+2. Import the `website` from your `alchemy.run.ts` module and execute a shell command. `alchemy/os` exposes a convenient async exec command that inherits stdio by default, but you can use anything.
+
+```ts
+// ./scripts/build.ts
+import { exec } from "alchemy/os";
+import { website } from "./alchemy.run";
+
+await exec("astro build", {
+  BACKEND_URL: website.url,
+});
+```
+
+3.  Finally, execute your command `bash`:
+
+```sh
+PHASE=read bun ./scripts/build.ts
+```
+
+</Aside>

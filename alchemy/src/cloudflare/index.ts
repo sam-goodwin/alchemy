@@ -6,6 +6,7 @@ export * from "./analytics-engine.ts";
 export * from "./api-error.ts";
 export * from "./api.ts";
 export * from "./assets.ts";
+export * from "./astro.ts";
 export * from "./bindings.ts";
 export * from "./bound.ts";
 export * from "./browser-rendering.ts";

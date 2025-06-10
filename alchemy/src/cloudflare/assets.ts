@@ -3,6 +3,7 @@ import * as path from "node:path";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { getContentType } from "../util/content-type.ts";
+import ignore from "../util/ignore-matcher.js";
 
 /**
  * Properties for creating or updating Assets
@@ -111,7 +112,8 @@ export const Assets = Resource(
     }
 
     // Recursively get all files in the assets directory
-    const filesList = await getFilesRecursively(props.path);
+    const ignoreMatcher = await createIgnoreMatcher(props.path);
+    const filesList = await getFilesRecursively(props.path, ignoreMatcher);
 
     // Create asset file objects
     const files: AssetFile[] = filesList.map((filePath) => {
@@ -140,19 +142,41 @@ export const Assets = Resource(
   },
 );
 
-// Helper functions for file operations
-async function getFilesRecursively(dir: string): Promise<string[]> {
-  const files = await fs.readdir(dir, { withFileTypes: true });
+async function createIgnoreMatcher(
+  dir: string,
+): Promise<{ ignores: (path: string) => boolean }> {
+  const ignoreMatcher = ignore().add(".assetsignore");
+  const ignorePath = path.join(dir, ".assetsignore");
+  try {
+    const content = await fs.readFile(ignorePath, "utf-8");
+    ignoreMatcher.add(content.split("\n"));
+  } catch {
+    // ignore
+  }
+  return ignoreMatcher;
+}
 
-  const allFiles = await Promise.all(
+// Helper functions for file operations
+async function getFilesRecursively(
+  dir: string,
+  ignoreMatcher: { ignores: (path: string) => boolean },
+): Promise<string[]> {
+  const files = await fs.readdir(dir, { withFileTypes: true });
+  const result: string[] = [];
+
+  await Promise.all(
     files.map(async (file) => {
       const path = `${dir}/${file.name}`;
-      if (file.isDirectory()) {
-        return getFilesRecursively(path);
+      if (ignoreMatcher.ignores(file.name)) {
+        return;
       }
-      return path;
+      if (file.isDirectory()) {
+        result.push(...(await getFilesRecursively(path, ignoreMatcher)));
+      } else {
+        result.push(path);
+      }
     }),
   );
 
-  return allFiles.flat();
+  return result;
 }

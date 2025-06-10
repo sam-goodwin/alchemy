@@ -1,0 +1,209 @@
+---
+title: Queue
+description: Learn how to create, configure, and use Cloudflare Queues for background job processing in your Worker applications managed by Alchemy.
+sidebar:
+  order: 6
+---
+
+import { Aside } from "@astrojs/starlight/components";
+import CommandGroup from "../../../components/CommandGroup.astro";
+
+This guide explains how to create and use Cloudflare Queues with your Worker applications.
+
+<Aside type="tip">
+  We assume you're familiar with Cloudflare Queues already. If not, read
+  [Cloudflare Queues](https://developers.cloudflare.com/queues/) first.
+</Aside>
+
+## Create a Queue
+
+Create a Queue with a type for the message payload:
+
+```ts
+import { Queue } from "alchemy/cloudflare";
+
+// Define the message payload type
+export const queue = await Queue<{
+  name: string;
+  email: string;
+}>("my-worker-queue");
+
+// Create a dead letter queue for failed messages
+export const dlq = await Queue("failed-messages-dlq");
+
+// Create main queue with DLQ support
+export const queueWithDlq = await Queue<{
+  name: string;
+  email: string;
+}>("my-worker-queue-with-dlq", {
+  dlq: dlq, // or dlq: "failed-messages-dlq"
+});
+```
+
+## Configure Queue Producer
+
+Bind the Queue to your Worker as an environment variable to send messages.
+
+```ts
+import { Worker } from "alchemy/cloudflare";
+
+export const worker = await Worker("my-worker", {
+  entrypoint: "./src/worker.ts",
+  bindings: {
+    QUEUE: queue, // Bind queue as QUEUE environment variable
+  },
+});
+```
+
+## Send Messages Using Producer
+
+Access the Queue from your Worker's fetch handler to send messages.
+
+```ts
+// src/worker.ts
+import type { worker } from "../alchemy.run";
+
+export default {
+  async fetch(request: Request, env: typeof worker.Env) {
+    // Send a message to the queue
+    await env.QUEUE.send({
+      name: "John Doe",
+      email: "john.doe@example.com",
+    });
+
+    return new Response("Ok");
+  },
+};
+```
+
+## Configure Queue Consumer
+
+Register your Worker as a consumer of the Queue by adding it to eventSources.
+
+```ts
+import { Worker } from "alchemy/cloudflare";
+
+export const worker = await Worker("my-worker", {
+  // add the event source
+  eventSources: [queue],
+});
+```
+
+## Process Messages Using Consumer
+
+Implement the queue handler using a type-safe batch parameter.
+
+```ts
+// src/worker.ts
+import type { queue, worker } from "../alchemy.run";
+
+export default {
+  // other handlers like fetch...
+
+  // Process queue messages with proper type safety
+  async queue(batch: typeof queue.Batch, env: typeof worker.Env) {
+    // Process each message in the batch
+    for (const message of batch.messages) {
+      console.log(message);
+      // Acknowledge individual message
+      message.ack();
+    }
+
+    // Or acknowledge all messages at once
+    // batch.ackAll();
+  },
+};
+```
+
+<Aside type="tip">
+  Using `typeof queue.Batch` provides better type safety than generic types, as
+  it directly references the typed queue you created.
+</Aside>
+
+## Generate Wrangler Config
+
+Create the Wrangler configuration file to include the Queue binding.
+
+```ts
+import { WranglerJson } from "alchemy/cloudflare";
+
+await WranglerJson("wrangler.jsonc", {
+  worker,
+});
+```
+
+## Type-safe Environment
+
+Set up type definitions for your Worker environment for better type safety.
+
+```ts
+// src/env.d.ts
+import type { worker } from "./alchemy.run";
+
+export type WorkerEnv = typeof worker.Env;
+
+declare module "cloudflare:workers" {
+  namespace Cloudflare {
+    export interface Env extends WorkerEnv {}
+  }
+}
+```
+
+## Complete Example
+
+A complete implementation example showing both producer and consumer roles in the same Worker.
+
+```ts
+// alchemy.run.ts
+import alchemy from "alchemy";
+import { Queue, Worker, WranglerJson } from "alchemy/cloudflare";
+
+const app = await alchemy("queue-example");
+
+// Create a typed queue with export
+export const queue = await Queue<{
+  name: string;
+  email: string;
+}>("example-worker-queue");
+
+// Create worker as both producer and consumer
+export const worker = await Worker("example-worker", {
+  entrypoint: "./src/worker.ts",
+  bindings: {
+    QUEUE: queue, // Producer: bind queue for sending messages
+  },
+  eventSources: [queue], // Consumer: register worker to receive messages
+});
+
+// Generate wrangler config
+await WranglerJson("wrangler.jsonc", {
+  worker,
+});
+
+await app.finalize();
+```
+
+```ts
+// src/worker.ts
+import type { queue, worker } from "../alchemy.run";
+
+export default {
+  // Producer: send messages
+  async fetch(request: Request, env: typeof worker.Env) {
+    await env.QUEUE.send({
+      name: "John Doe",
+      email: "john.doe@example.com",
+    });
+    return new Response("Ok");
+  },
+
+  // Consumer: process messages with type-safe batch
+  async queue(batch: typeof queue.Batch, env: typeof worker.Env) {
+    for (const message of batch.messages) {
+      console.log(message);
+      message.ack();
+    }
+    batch.ackAll();
+  },
+};
+```
