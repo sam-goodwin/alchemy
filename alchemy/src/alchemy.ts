@@ -13,7 +13,7 @@ import {
 } from "./resource.ts";
 import { isRuntime } from "./runtime/global.ts";
 import { Scope } from "./scope.ts";
-import { secret } from "./secret.ts";
+import { generateSalt, secret } from "./secret.ts";
 import type { StateStoreType } from "./state.ts";
 import { logger } from "./util/logger.ts";
 import { TelemetryClient } from "./util/telemetry/client.ts";
@@ -377,7 +377,8 @@ async function run<T>(
         [ResourceScope]: _scope,
         [ResourceSeq]: seq,
       } as const;
-      const resource = {
+      const prev = await _scope.parent!.state.get(id);
+      let resource = {
         kind: Scope.KIND,
         id,
         seq,
@@ -386,8 +387,8 @@ async function run<T>(
         props: {},
         status: "created",
         output,
+        salt: prev?.salt ?? (await generateSalt()),
       } as const;
-      const prev = await _scope.parent!.state.get(id);
       if (!prev) {
         await _scope.parent!.state.set(id, resource);
       } else if (prev.kind !== Scope.KIND) {

@@ -133,7 +133,7 @@ function handleUnenvAliasedPackages(
   for (const [module, unresolvedAlias] of Object.entries(alias)) {
     try {
       aliasAbsolute[module] = _require.resolve(unresolvedAlias);
-    } catch (_e) {
+    } catch {
       // this is an alias for package that is not installed in the current app => ignore
     }
   }

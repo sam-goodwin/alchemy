@@ -13,6 +13,7 @@ import {
   type ResourceProps,
 } from "./resource.ts";
 import { Scope } from "./scope.ts";
+import { generateSalt } from "./secret.ts";
 import { serialize } from "./serde.ts";
 import type { State } from "./state.ts";
 import { formatFQN } from "./util/cli.tsx";
@@ -66,6 +67,7 @@ async function _apply<Out extends Resource>(
         new Scope({
           parent: scope,
           scopeName: resource[ResourceID],
+          salt: state.salt,
         }),
       );
       scope.telemetryClient.record({
@@ -91,6 +93,7 @@ async function _apply<Out extends Resource>(
         },
         // deps: [...deps],
         props,
+        salt: await generateSalt(),
       };
       await scope.state.set(resource[ResourceID], state);
     }
@@ -124,6 +127,7 @@ async function _apply<Out extends Resource>(
           new Scope({
             parent: scope,
             scopeName: resource[ResourceID],
+            salt: state.salt,
           }),
         );
         scope.telemetryClient.record({
@@ -224,6 +228,7 @@ async function _apply<Out extends Resource>(
       status,
       output,
       props,
+      salt: state.salt,
       // deps: [...deps],
     });
     // if (output !== undefined) {

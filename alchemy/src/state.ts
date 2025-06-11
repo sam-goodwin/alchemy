@@ -31,6 +31,8 @@ export type State<
   props: Props;
   oldProps?: Props;
   output: Out;
+  // optional for backwards compatibility
+  salt?: string;
 };
 
 export type StateStoreType = (scope: Scope) => StateStore;

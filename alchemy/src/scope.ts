@@ -21,6 +21,7 @@ export interface ScopeOptions {
   quiet?: boolean;
   phase?: Phase;
   telemetryClient?: ITelemetryClient;
+  salt?: string;
 }
 
 // TODO: support browser
@@ -60,6 +61,7 @@ export class Scope {
   public readonly scopeName: string | null;
   public readonly parent: Scope | undefined;
   public readonly password: string | undefined;
+  public readonly salt: string | undefined;
   public readonly state: StateStore;
   public readonly stateStore: StateStoreType;
   public readonly quiet: boolean;
@@ -89,6 +91,7 @@ export class Scope {
       throw new Error("Scope name is required when creating a child scope");
     }
     this.password = options.password ?? this.parent?.password;
+    this.salt = options.salt ?? this.parent?.salt;
     const phase = options.phase ?? this.parent?.phase;
     if (phase === undefined) {
       throw new Error("Phase is required");
