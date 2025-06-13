@@ -5,12 +5,16 @@ import { inBrowser, useRoute } from "vitepress";
 import Theme from "vitepress/theme-without-fonts";
 import { nextTick, onMounted, watch } from "vue";
 import CodeSnippetHero from "./components/CodeSnippetHero.vue";
+import FeaturesSection from "./components/FeaturesSection.vue";
+import FeatureItem from "./components/FeatureItem.vue";
 import "./style.css";
 
 export default {
   extends: Theme,
   enhanceApp(ctx) {
     ctx.app.component("CodeSnippetHero", CodeSnippetHero);
+    ctx.app.component("FeaturesSection", FeaturesSection);
+    ctx.app.component("FeatureItem", FeatureItem);
   },
   // synchronizes code-group tabs
   // copied from: https://github.com/vuejs/vitepress/issues/2954#issuecomment-2517789015

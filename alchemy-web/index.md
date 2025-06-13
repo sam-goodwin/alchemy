@@ -35,3 +35,5 @@ const product = await Product("pro-plan", {
 
 </template>
 </CodeSnippetHero>
+
+<FeaturesSection />
