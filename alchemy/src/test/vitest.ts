@@ -79,6 +79,19 @@ type test = {
    */
   skipIf(condition: boolean): test;
 
+  /**
+   * Run the same test for multiple variants
+   * @param variants Array of variant values to test
+   * @param testName Base name for the test (will be suffixed with variant for non-first items)
+   * @param testHandler Function that receives scope and variant value
+   * @returns Array of test functions that can be called
+   */
+  variant<const T extends readonly string[]>(
+    variants: T,
+    testName: string,
+    testHandler: (scope: Scope, variant: T[number]) => Promise<void>,
+  ): Array<{ name: string; handler: (scope: Scope) => Promise<void> }>;
+
   beforeAll(fn: (scope: Scope) => Promise<void>): void;
 
   afterAll(fn: (scope: Scope) => Promise<void>): void;
@@ -136,6 +149,19 @@ export function test(
       return (..._args: any[]) => {};
     }
     return test;
+  };
+
+  test.variant = <const T extends readonly string[]>(
+    variants: T,
+    testName: string,
+    testHandler: (scope: Scope, variant: T[number]) => Promise<void>,
+  ): Array<{ name: string; handler: (scope: Scope) => Promise<void> }> => {
+    return variants.map((variant, index) => ({
+      name: index === 0 ? testName : `${testName} (${variant})`,
+      handler: async (scope: Scope) => {
+        return testHandler(scope, variant);
+      },
+    }));
   };
 
   const scope = new Scope({

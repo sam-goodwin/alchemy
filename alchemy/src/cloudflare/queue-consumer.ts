@@ -455,10 +455,13 @@ export async function listQueueConsumers(
 export async function listQueueConsumersForWorker(
   api: CloudflareApi,
   workerName: string,
+  platform?: boolean,
 ) {
-  const response = await api.get(
-    `/accounts/${api.accountId}/workers/scripts/${workerName}/queue-consumers?perPage=100`,
-  );
+  const endpoint = platform
+    ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}/queue-consumers?perPage=100`
+    : `/accounts/${api.accountId}/workers/scripts/${workerName}/queue-consumers?perPage=100`;
+  
+  const response = await api.get(endpoint);
 
   if (response.status === 404) {
     return [];

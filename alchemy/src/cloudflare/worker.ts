@@ -258,6 +258,15 @@ export interface BaseWorkerProps<
    * This allows workers to be routed to via dispatch namespace routing rules
    */
   namespace?: string | DispatchNamespaceResource;
+
+  /**
+   * Deploy this worker to Workers for Platform
+   *
+   * When true, this worker will be deployed to Workers for Platform
+   * instead of as a standard worker script
+   * @default false
+   */
+  platform?: boolean;
 }
 
 export interface InlineWorkerProps<
@@ -429,6 +438,11 @@ export type Worker<
      * The dispatch namespace this worker is deployed to
      */
     namespace?: string | DispatchNamespaceResource;
+
+    /**
+     * Whether this worker is deployed to Workers for Platform
+     */
+    platform?: boolean;
   };
 
 /**
@@ -592,6 +606,14 @@ export function WorkerRef<
  *   }
  * });
  *
+ * @example
+ * // Deploy a worker to Workers for Platform:
+ * const platformWorker = await Worker("platform-worker", {
+ *   name: "platform-worker",
+ *   entrypoint: "./src/platform.ts",
+ *   platform: true
+ * });
+ *
  * @see
  * https://developers.cloudflare.com/workers/
  */
@@ -625,6 +647,7 @@ export function Worker<const B extends Bindings>(
       apiToken: props.apiToken,
       baseUrl: props.baseUrl,
       email: props.email,
+      platform: props.platform,
     });
 
     async function collectResources(
@@ -837,8 +860,8 @@ export const _Worker = Resource(
 
     const uploadWorkerScript = async (props: WorkerProps<B>) => {
       const [oldBindings, oldMetadata] = await Promise.all([
-        getWorkerBindings(api, workerName),
-        getWorkerScriptMetadata(api, workerName),
+        getWorkerBindings(api, workerName, props.platform),
+        getWorkerScriptMetadata(api, workerName, props.platform),
       ]);
       const oldTags = oldMetadata?.default_environment?.script?.tags;
 
@@ -880,6 +903,7 @@ export const _Worker = Resource(
           workerName,
           assetBinding.assets,
           props.assets,
+          props.platform,
         );
       }
 
@@ -895,6 +919,7 @@ export const _Worker = Resource(
           workerName,
         },
         assetUploadResult,
+        props.platform,
       );
 
       // Get dispatch namespace if specified
@@ -910,6 +935,7 @@ export const _Worker = Resource(
         scriptBundle,
         scriptMetadata,
         dispatchNamespace,
+        props.platform,
       );
 
       for (const workflow of workflowsBindings) {
@@ -952,6 +978,7 @@ export const _Worker = Resource(
         api,
         workerName,
         props.url ?? true,
+        props.platform,
       );
 
       // Get current timestamp
@@ -979,7 +1006,7 @@ export const _Worker = Resource(
 
     if (this.phase === "delete") {
       // Delete any queue consumers attached to this worker first
-      await deleteQueueConsumers(api, workerName);
+      await deleteQueueConsumers(api, workerName, props.platform);
 
       // @ts-ignore
       await uploadWorkerScript({
@@ -1024,7 +1051,7 @@ export const _Worker = Resource(
 
     if (this.phase === "create") {
       if (!props.adopt) {
-        await assertWorkerDoesNotExist(this, api, workerName);
+        await assertWorkerDoesNotExist(this, api, workerName, props.platform);
       }
     }
 
@@ -1111,6 +1138,8 @@ export const _Worker = Resource(
       routes: createdRoutes.length > 0 ? createdRoutes : undefined,
       // Include the dispatch namespace in the output
       namespace: props.namespace,
+      // Include whether this is deployed to Workers for Platform
+      platform: props.platform,
       // phantom property
       Env: undefined!,
     } as unknown as Worker<B>);
@@ -1124,10 +1153,12 @@ export async function deleteWorker<B extends Bindings>(
 ) {
   const workerName = props.workerName;
 
-  // Delete worker
-  const deleteResponse = await api.delete(
-    `/accounts/${api.accountId}/workers/scripts/${workerName}`,
-  );
+  // Delete worker - use platform endpoint if platform is true
+  const endpoint = props.platform
+    ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}`
+    : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+  
+  const deleteResponse = await api.delete(endpoint);
 
   // Check for success (2xx status code)
   if (!deleteResponse.ok && deleteResponse.status !== 404) {
@@ -1137,8 +1168,12 @@ export async function deleteWorker<B extends Bindings>(
   // Disable the URL if it was enabled
   if (ctx.output?.url) {
     try {
+      const subdomainEndpoint = props.platform
+        ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}/subdomain`
+        : `/accounts/${api.accountId}/workers/scripts/${workerName}/subdomain`;
+      
       await api.post(
-        `/accounts/${api.accountId}/workers/scripts/${workerName}/subdomain`,
+        subdomainEndpoint,
         JSON.stringify({ enabled: false }),
         {
           headers: { "Content-Type": "application/json" },
@@ -1159,6 +1194,7 @@ export async function putWorker(
   scriptBundle: string | NoBundleResult,
   scriptMetadata: WorkerMetadata,
   dispatchNamespace?: string,
+  platform?: boolean,
 ) {
   return withExponentialBackoff(
     async () => {
@@ -1203,7 +1239,9 @@ export async function putWorker(
       // Upload worker script with bindings
       const endpoint = dispatchNamespace
         ? `/accounts/${api.accountId}/workers/dispatch/namespaces/${dispatchNamespace}/scripts/${workerName}`
-        : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+        : platform
+          ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}`
+          : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
 
       const uploadResponse = await api.put(endpoint, formData, {
         headers: {
@@ -1240,15 +1278,18 @@ export async function assertWorkerDoesNotExist<B extends Bindings>(
   ctx: Context<Worker<B>>,
   api: CloudflareApi,
   workerName: string,
+  platform?: boolean,
 ) {
-  const response = await api.get(
-    `/accounts/${api.accountId}/workers/scripts/${workerName}`,
-  );
+  const endpoint = platform
+    ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}`
+    : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+  
+  const response = await api.get(endpoint);
   if (response.status === 404) {
     return true;
   }
   if (response.status === 200) {
-    const metadata = await getWorkerScriptMetadata(api, workerName);
+    const metadata = await getWorkerScriptMetadata(api, workerName, platform);
 
     if (!metadata) {
       throw new Error(
@@ -1278,12 +1319,17 @@ export async function configureURL<B extends Bindings>(
   api: CloudflareApi,
   workerName: string,
   url: boolean,
+  platform?: boolean,
 ) {
   let workerUrl;
   if (url) {
     // Enable the workers.dev subdomain for this worker
+    const subdomainEndpoint = platform
+      ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}/subdomain`
+      : `/accounts/${api.accountId}/workers/scripts/${workerName}/subdomain`;
+    
     await api.post(
-      `/accounts/${api.accountId}/workers/scripts/${workerName}/subdomain`,
+      subdomainEndpoint,
       { enabled: true, previews_enabled: true },
       {
         headers: { "Content-Type": "application/json" },
@@ -1319,8 +1365,12 @@ export async function configureURL<B extends Bindings>(
     }
   } else if (url === false && ctx.output?.url) {
     // Explicitly disable URL if it was previously enabled
+    const disableSubdomainEndpoint = platform
+      ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}/subdomain`
+      : `/accounts/${api.accountId}/workers/scripts/${workerName}/subdomain`;
+    
     const response = await api.post(
-      `/accounts/${api.accountId}/workers/scripts/${workerName}/subdomain`,
+      disableSubdomainEndpoint,
       JSON.stringify({ enabled: false }),
       {
         headers: { "Content-Type": "application/json" },
@@ -1338,10 +1388,13 @@ export async function configureURL<B extends Bindings>(
 export async function getWorkerScriptMetadata(
   api: CloudflareApi,
   workerName: string,
+  platform?: boolean,
 ): Promise<WorkerScriptMetadata | undefined> {
-  const response = await api.get(
-    `/accounts/${api.accountId}/workers/services/${workerName}`,
-  );
+  const endpoint = platform
+    ? `/accounts/${api.accountId}/workers/platform/services/${workerName}`
+    : `/accounts/${api.accountId}/workers/services/${workerName}`;
+  
+  const response = await api.get(endpoint);
   if (response.status === 404) {
     return undefined;
   }
@@ -1353,13 +1406,15 @@ export async function getWorkerScriptMetadata(
   return ((await response.json()) as any).result as WorkerScriptMetadata;
 }
 
-async function getWorkerBindings(api: CloudflareApi, workerName: string) {
+async function getWorkerBindings(api: CloudflareApi, workerName: string, platform?: boolean) {
   // Fetch the bindings for a worker by calling the Cloudflare API endpoint:
   // GET /accounts/:account_id/workers/scripts/:script_name/bindings
   // See: https://developers.cloudflare.com/api/resources/workers/subresources/scripts/subresources/script_and_version_settings/methods/get/
-  const response = await api.get(
-    `/accounts/${api.accountId}/workers/scripts/${workerName}/settings`,
-  );
+  const endpoint = platform
+    ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}/settings`
+    : `/accounts/${api.accountId}/workers/scripts/${workerName}/settings`;
+  
+  const response = await api.get(endpoint);
   if (response.status === 404) {
     return undefined;
   }
@@ -1403,12 +1458,14 @@ async function getWorkerBindings(api: CloudflareApi, workerName: string) {
  * @param ctx Worker context containing eventSources
  * @param api CloudflareApi instance
  * @param workerName Name of the worker script
+ * @param platform Whether this is for Workers for Platform
  */
 async function deleteQueueConsumers(
   api: CloudflareApi,
   workerName: string,
+  platform?: boolean,
 ): Promise<void> {
-  const consumers = await listQueueConsumersForWorker(api, workerName);
+  const consumers = await listQueueConsumersForWorker(api, workerName, platform);
 
   await Promise.all(
     consumers.map(async (consumer) => {

@@ -203,6 +203,7 @@ export async function prepareWorkerMetadata<B extends Bindings>(
     workerName: string;
   },
   assetUploadResult?: AssetUploadResult,
+  platform?: boolean,
 ): Promise<WorkerMetadata> {
   // we use Cloudflare Worker tags to store a mapping between Alchemy's stable identifier and the binding name
   // e.g.

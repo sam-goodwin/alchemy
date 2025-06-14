@@ -46,12 +46,17 @@ export default {
 };
 `;
 
-// Helper function to check if a worker exists
-async function assertWorkerDoesNotExist(workerName: string) {
+// Helper function to check if a worker exists (platform-aware)
+async function assertWorkerDoesNotExist(
+  workerName: string,
+  platform: "vanilla" | "wfp" = "vanilla",
+) {
   try {
-    const response = await api.get(
-      `/accounts/${api.accountId}/workers/scripts/${workerName}`,
-    );
+    const endpoint =
+      platform === "wfp"
+        ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}`
+        : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+    const response = await api.get(endpoint);
     expect(response.status).toEqual(404);
   } catch {
     // 404 is expected, so we can ignore it
@@ -60,112 +65,140 @@ async function assertWorkerDoesNotExist(workerName: string) {
 }
 
 describe("Durable Object Namespace", () => {
-  test("create and delete worker with Durable Object binding", async (scope) => {
-    const workerName = `${BRANCH_PREFIX}-test-worker-do-binding-do-1`;
+  const doBindingTests = test.variant(
+    ["vanilla", "wfp"],
+    "create and delete worker with Durable Object binding",
+    async (scope, platform: "vanilla" | "wfp") => {
+      const workerName = `${BRANCH_PREFIX}-test-worker-do-binding-${platform}-1`;
 
-    let worker: Worker | undefined;
-    try {
-      // First create the worker without the DO binding
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: durableObjectWorkerScript,
-        format: "esm",
-        // No bindings yet
-      });
+      let worker: Worker | undefined;
+      try {
+        // First create the worker without the DO binding
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: durableObjectWorkerScript,
+          format: "esm",
+          platform: platform === "wfp",
+          // No bindings yet
+        });
 
-      expect(worker.id).toBeTruthy();
-      expect(worker.name).toEqual(workerName);
-      expect(worker.bindings).toEqual({});
+        expect(worker.id).toBeTruthy();
+        expect(worker.name).toEqual(workerName);
+        expect(worker.platform).toEqual(platform === "wfp");
+        expect(worker.bindings).toEqual({});
 
-      // Create a Durable Object namespace
-      const counterNamespace = new DurableObjectNamespace(
-        "test-counter-namespace",
-        {
-          className: "Counter",
-          scriptName: workerName,
-        },
-      );
+        // Create a Durable Object namespace
+        const counterNamespace = new DurableObjectNamespace(
+          `test-counter-namespace-${platform}`,
+          {
+            className: "Counter",
+            scriptName: workerName,
+          },
+        );
 
-      // Update the worker with the DO binding
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: durableObjectWorkerScript,
-        format: "esm",
-        bindings: {
-          COUNTER: counterNamespace,
-        },
-      });
+        // Update the worker with the DO binding
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: durableObjectWorkerScript,
+          format: "esm",
+          platform: platform === "wfp",
+          bindings: {
+            COUNTER: counterNamespace,
+          },
+        });
 
-      expect(worker.id).toBeTruthy();
-      expect(worker.name).toEqual(workerName);
-      expect(worker.bindings).toBeDefined();
-    } finally {
-      await destroy(scope);
-      await assertWorkerDoesNotExist(workerName);
-    }
-  });
+        expect(worker.id).toBeTruthy();
+        expect(worker.name).toEqual(workerName);
+        expect(worker.platform).toEqual(platform === "wfp");
+        expect(worker.bindings).toBeDefined();
+      } finally {
+        await destroy(scope);
+        await assertWorkerDoesNotExist(workerName, platform);
+      }
+    },
+  );
 
-  test("add environment variables to worker with durable object", async (scope) => {
-    const workerName = `${BRANCH_PREFIX}-test-worker-do-with-env-doenv-1`;
+  // Register the DO binding tests
+  for (const doBindingTest of doBindingTests) {
+    test(doBindingTest.name, doBindingTest.handler);
+  }
 
-    let worker: Worker | undefined;
-    try {
-      // First create a worker with a Durable Object but no env vars
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: durableObjectWorkerScript,
-        format: "esm",
-      });
+  const doEnvTests = test.variant(
+    ["vanilla", "wfp"],
+    "add environment variables to worker with durable object",
+    async (scope, platform: "vanilla" | "wfp") => {
+      const workerName = `${BRANCH_PREFIX}-test-worker-do-with-env-${platform}-1`;
 
-      expect(worker.id).toBeTruthy();
-      expect(worker.name).toEqual(workerName);
+      let worker: Worker | undefined;
+      try {
+        // First create a worker with a Durable Object but no env vars
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: durableObjectWorkerScript,
+          format: "esm",
+          platform: platform === "wfp",
+        });
 
-      // Create a Durable Object namespace
-      const counterNamespace = new DurableObjectNamespace(
-        "test-counter-env-namespace",
-        {
-          className: "Counter",
-          scriptName: workerName,
-        },
-      );
+        expect(worker.id).toBeTruthy();
+        expect(worker.name).toEqual(workerName);
+        expect(worker.platform).toEqual(platform === "wfp");
 
-      // Update the worker with the DO binding
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: durableObjectWorkerScript,
-        format: "esm",
-        bindings: {
-          COUNTER: counterNamespace,
-        },
-      });
+        // Create a Durable Object namespace
+        const counterNamespace = new DurableObjectNamespace(
+          `test-counter-env-namespace-${platform}`,
+          {
+            className: "Counter",
+            scriptName: workerName,
+          },
+        );
 
-      // Apply the worker with binding
-      expect(worker.bindings).toBeDefined();
-      expect(worker.env).toBeUndefined();
+        // Update the worker with the DO binding
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: durableObjectWorkerScript,
+          format: "esm",
+          platform: platform === "wfp",
+          bindings: {
+            COUNTER: counterNamespace,
+          },
+        });
 
-      // Now update the worker by adding environment variables
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: durableObjectWorkerScript,
-        format: "esm",
-        bindings: {
-          COUNTER: counterNamespace,
-        },
-        env: {
-          API_SECRET: "test-secret-123",
-          DEBUG_MODE: "true",
-        },
-      });
+        // Apply the worker with binding
+        expect(worker.bindings).toBeDefined();
+        expect(worker.platform).toEqual(platform === "wfp");
+        expect(worker.env).toBeUndefined();
 
-      expect(worker.bindings).toBeDefined();
-      expect(worker.env).toBeDefined();
-      expect(worker.env?.API_SECRET).toEqual("test-secret-123");
-      expect(worker.env?.DEBUG_MODE).toEqual("true");
-    } finally {
-      await destroy(scope);
-      await assertWorkerDoesNotExist(workerName);
-    }
-  });
+        // Now update the worker by adding environment variables
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: durableObjectWorkerScript,
+          format: "esm",
+          platform: platform === "wfp",
+          bindings: {
+            COUNTER: counterNamespace,
+          },
+          env: {
+            API_SECRET: "test-secret-123",
+            DEBUG_MODE: "true",
+          },
+        });
+
+        expect(worker.bindings).toBeDefined();
+        expect(worker.platform).toEqual(platform === "wfp");
+        expect(worker.env).toBeDefined();
+        expect(worker.env?.API_SECRET).toEqual("test-secret-123");
+        expect(worker.env?.DEBUG_MODE).toEqual("true");
+      } finally {
+        await destroy(scope);
+        await assertWorkerDoesNotExist(workerName, platform);
+      }
+    },
+  );
+
+  // Register the DO environment tests
+  for (const doEnvTest of doEnvTests) {
+    test(doEnvTest.name, doEnvTest.handler);
+  }
 
   test("create and test worker with cross-script durable object binding", async (scope) => {
     // Create names for both workers

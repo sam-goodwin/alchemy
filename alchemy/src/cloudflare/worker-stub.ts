@@ -15,6 +15,11 @@ export interface WorkerStubProps extends CloudflareApiOptions {
    * Name for the worker
    */
   name: string;
+  /**
+   * Whether this is for Workers for Platform
+   * @default false
+   */
+  platform?: boolean;
 }
 
 /**
@@ -26,6 +31,10 @@ export interface WorkerStub extends Resource<"cloudflare::WorkerStub"> {
    * The name of the worker
    */
   name: string;
+  /**
+   * Whether this is for Workers for Platform
+   */
+  platform?: boolean;
 }
 
 export function isWorkerStub(resource: Resource): resource is WorkerStub {
@@ -63,8 +72,8 @@ export const WorkerStub = Resource(
     }
 
     // If worker doesn't exist and we're in create phase, create an empty one
-    if (!(await exists(api, props.name)) && this.phase === "create") {
-      await createEmptyWorker(api, props.name);
+    if (!(await exists(api, props.name, props.platform)) && this.phase === "create") {
+      await createEmptyWorker(api, props.name, props.platform);
     }
 
     // Return the worker stub info
@@ -78,10 +87,13 @@ export const WorkerStub = Resource(
 async function exists(
   api: CloudflareApi,
   workerName: string,
+  platform?: boolean,
 ): Promise<boolean> {
-  const response = await api.get(
-    `/accounts/${api.accountId}/workers/scripts/${workerName}`,
-  );
+  const endpoint = platform
+    ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}`
+    : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+  
+  const response = await api.get(endpoint);
 
   if (response.ok) {
     return true;
@@ -95,6 +107,7 @@ async function exists(
 async function createEmptyWorker(
   api: CloudflareApi,
   workerName: string,
+  platform?: boolean,
 ): Promise<void> {
   // Minimal empty worker script
   const emptyScript = `export default { 
@@ -133,9 +146,13 @@ async function createEmptyWorker(
     ),
   );
 
-  // Upload worker script
+  // Upload worker script - use platform-aware endpoint if needed
+  const endpoint = platform
+    ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}`
+    : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+  
   const uploadResponse = await api.put(
-    `/accounts/${api.accountId}/workers/scripts/${workerName}`,
+    endpoint,
     formData,
     {
       headers: {

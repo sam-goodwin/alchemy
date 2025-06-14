@@ -22,12 +22,17 @@ const test = alchemy.test(import.meta, {
 // Create a Cloudflare API client for verification
 const api = await createCloudflareApi();
 
-// Helper function to check if a worker exists
-async function assertWorkerDoesNotExist(workerName: string) {
+// Helper function to check if a worker exists (platform-aware)
+async function assertWorkerDoesNotExist(
+  workerName: string,
+  platform: "vanilla" | "wfp" = "vanilla",
+) {
   try {
-    const response = await api.get(
-      `/accounts/${api.accountId}/workers/scripts/${workerName}`,
-    );
+    const endpoint =
+      platform === "wfp"
+        ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}`
+        : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+    const response = await api.get(endpoint);
     expect(response.status).toEqual(404);
   } catch {
     // 404 is expected, so we can ignore it
@@ -36,143 +41,185 @@ async function assertWorkerDoesNotExist(workerName: string) {
 }
 
 describe("Worker Resource", () => {
-  test("create, update, and delete worker (CJS format)", async (scope) => {
-    const workerName = `${BRANCH_PREFIX}-test-worker-cjs-1`;
+  // Create tests for both platforms using testBothPlatforms helper
+  const cjsTests = test.variant(
+    ["vanilla", "wfp"],
+    "create, update, and delete worker (CJS format)",
+    async (scope, platform: "vanilla" | "wfp") => {
+      const workerName = `${BRANCH_PREFIX}-test-worker-cjs-${platform}-1`;
 
-    let worker: Worker | undefined;
-    try {
-      // Create a worker with an explicit name
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: `
-          addEventListener('fetch', event => {
-            event.respondWith(new Response('Hello world!', { status: 200 }));
-          });
-        `,
-        format: "cjs",
-      });
-
-      // Apply to create the worker
-      expect(worker.id).toBeTruthy();
-      expect(worker.name).toEqual(workerName);
-      expect(worker.format).toEqual("cjs");
-
-      // Update the worker with a new script
-      const updatedScript = `
-        addEventListener('fetch', event => {
-          event.respondWith(new Response('Hello updated world!', { status: 200 }));
+      let worker: Worker | undefined;
+      try {
+        // Create a worker with an explicit name
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: `
+            addEventListener('fetch', event => {
+              event.respondWith(new Response('Hello world!', { status: 200 }));
+            });
+          `,
+          format: "cjs",
+          platform: platform === "wfp",
         });
-      `;
 
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: updatedScript,
-        format: "cjs",
-      });
+        // Apply to create the worker
+        expect(worker.id).toBeTruthy();
+        expect(worker.name).toEqual(workerName);
+        expect(worker.format).toEqual("cjs");
+        expect(worker.platform).toEqual(platform === "wfp");
 
-      expect(worker.id).toEqual(worker.id);
-    } finally {
-      await destroy(scope);
-      await assertWorkerDoesNotExist(workerName);
-    }
-  });
-
-  test("create, update, and delete worker (ESM format)", async (scope) => {
-    const workerName = `${BRANCH_PREFIX}-test-worker-esm-1`;
-
-    let worker: Worker | undefined;
-    try {
-      // Create a worker with ESM format
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: `
-          export default {
-            async fetch(request, env, ctx) {
-              return new Response('Hello ESM world!', { status: 200 });
-            }
-          };
-        `,
-        format: "esm", // Explicitly using ESM
-      });
-
-      // Apply to create the worker
-      expect(worker.id).toBeTruthy();
-      expect(worker.name).toEqual(workerName);
-      expect(worker.format).toEqual("esm");
-
-      // Update the worker with a new ESM script
-      const updatedEsmScript = `
-        export default {
-          async fetch(request, env, ctx) {
-            return new Response('Hello updated ESM world!', { status: 200 });
-          }
-        };
-      `;
-
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: updatedEsmScript,
-        format: "esm",
-      });
-
-      expect(worker.id).toEqual(worker.id);
-    } finally {
-      await destroy(scope);
-      await assertWorkerDoesNotExist(workerName);
-    }
-  });
-
-  test("convert between ESM and CJS formats", async (scope) => {
-    const workerName = `${BRANCH_PREFIX}-test-worker-format-conversion-convert-1`;
-
-    let worker: Worker | undefined;
-    try {
-      // First create with ESM format
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: `
-          export default {
-            async fetch(request, env, ctx) {
-              return new Response('Hello ESM world!', { status: 200 });
-            }
-          };
-        `,
-        format: "esm",
-      });
-
-      expect(worker.format).toEqual("esm");
-
-      // Update to CJS format
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: `
+        // Update the worker with a new script
+        const updatedScript = `
           addEventListener('fetch', event => {
-            event.respondWith(new Response('Hello world!', { status: 200 }));
+            event.respondWith(new Response('Hello updated world!', { status: 200 }));
           });
-        `,
-        format: "cjs",
-      });
-      expect(worker.format).toEqual("cjs");
+        `;
 
-      // Update back to ESM format
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: `
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: updatedScript,
+          format: "cjs",
+          platform: platform === "wfp",
+        });
+
+        expect(worker.id).toEqual(worker.id);
+        expect(worker.platform).toEqual(platform === "wfp");
+      } finally {
+        await destroy(scope);
+        await assertWorkerDoesNotExist(workerName, platform);
+      }
+    },
+  );
+
+  // Register the CJS tests
+  for (const cjsTest of cjsTests) {
+    test(cjsTest.name, cjsTest.handler);
+  }
+
+  const esmTests = test.variant(
+    ["vanilla", "wfp"],
+    "create, update, and delete worker (ESM format)",
+    async (scope, platform: "vanilla" | "wfp") => {
+      const workerName = `${BRANCH_PREFIX}-test-worker-esm-${platform}-1`;
+
+      let worker: Worker | undefined;
+      try {
+        // Create a worker with ESM format
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: `
+            export default {
+              async fetch(request, env, ctx) {
+                return new Response('Hello ESM world!', { status: 200 });
+              }
+            };
+          `,
+          format: "esm", // Explicitly using ESM
+          platform: platform === "wfp",
+        });
+
+        // Apply to create the worker
+        expect(worker.id).toBeTruthy();
+        expect(worker.name).toEqual(workerName);
+        expect(worker.format).toEqual("esm");
+        expect(worker.platform).toEqual(platform === "wfp");
+
+        // Update the worker with a new ESM script
+        const updatedEsmScript = `
           export default {
             async fetch(request, env, ctx) {
-              return new Response('Hello ESM world!', { status: 200 });
+              return new Response('Hello updated ESM world!', { status: 200 });
             }
           };
-        `,
-        format: "esm",
-      });
+        `;
 
-      expect(worker.format).toEqual("esm");
-    } finally {
-      await destroy(scope);
-      await assertWorkerDoesNotExist(workerName);
-    }
-  });
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: updatedEsmScript,
+          format: "esm",
+          platform: platform === "wfp",
+        });
+
+        expect(worker.id).toEqual(worker.id);
+        expect(worker.platform).toEqual(platform === "wfp");
+      } finally {
+        await destroy(scope);
+        await assertWorkerDoesNotExist(workerName, platform);
+      }
+    },
+  );
+
+  // Register the ESM tests
+  for (const esmTest of esmTests) {
+    test(esmTest.name, esmTest.handler);
+  }
+
+  const formatConversionTests = test.variant(
+    ["vanilla", "wfp"],
+    "convert between ESM and CJS formats",
+    async (scope, platform: "vanilla" | "wfp") => {
+      const workerName = `${BRANCH_PREFIX}-test-worker-format-conversion-${platform}-1`;
+
+      let worker: Worker | undefined;
+      try {
+        // First create with ESM format
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: `
+            export default {
+              async fetch(request, env, ctx) {
+                return new Response('Hello ESM world!', { status: 200 });
+              }
+            };
+          `,
+          format: "esm",
+          platform: platform === "wfp",
+        });
+
+        expect(worker.format).toEqual("esm");
+        expect(worker.platform).toEqual(platform === "wfp");
+
+        // Update to CJS format
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: `
+            addEventListener('fetch', event => {
+              event.respondWith(new Response('Hello world!', { status: 200 }));
+            });
+          `,
+          format: "cjs",
+          platform: platform === "wfp",
+        });
+        expect(worker.format).toEqual("cjs");
+        expect(worker.platform).toEqual(platform === "wfp");
+
+        // Update back to ESM format
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: `
+            export default {
+              async fetch(request, env, ctx) {
+                return new Response('Hello ESM world!', { status: 200 });
+              }
+            };
+          `,
+          format: "esm",
+          platform: platform === "wfp",
+        });
+
+        expect(worker.format).toEqual("esm");
+        expect(worker.platform).toEqual(platform === "wfp");
+      } finally {
+        await destroy(scope);
+        await assertWorkerDoesNotExist(workerName, platform);
+      }
+    },
+  );
+
+  // Register the format conversion tests
+  for (const formatTest of formatConversionTests) {
+    test(formatTest.name, formatTest.handler);
+  }
 
   test("fails when creating a worker with a duplicate name", async (scope) => {
     const workerName = `${BRANCH_PREFIX}-test-worker-duplicate`;
@@ -207,102 +254,115 @@ describe("Worker Resource", () => {
     }
   });
 
-  test("create and delete worker with multiple bindings", async (scope) => {
-    const workerName = `${BRANCH_PREFIX}-test-worker-multi-bindings-multi-1`;
+  const multiBindingTests = test.variant(
+    ["vanilla", "wfp"],
+    "create and delete worker with multiple bindings",
+    async (scope, platform: "vanilla" | "wfp") => {
+      const workerName = `${BRANCH_PREFIX}-test-worker-multi-bindings-${platform}-1`;
 
-    // Sample ESM worker script with multiple bindings
-    const multiBindingsWorkerScript = `
-  export class Counter {
-    constructor(state, env) {
-      this.state = state;
-      this.env = env;
-      this.counter = 0;
-    }
-
-    async fetch(request) {
-      this.counter++;
-      return new Response('Counter: ' + this.counter, { status: 200 });
-    }
-  }
-
-  export default {
-    async fetch(request, env, ctx) {
-      // Path-based routing to demonstrate different bindings
-      const url = new URL(request.url);
-
-      if (url.pathname.includes('/counter')) {
-        const id = env.COUNTER.idFromName('default');
-        const stub = env.COUNTER.get(id);
-        return stub.fetch(request);
+      // Sample ESM worker script with multiple bindings
+      const multiBindingsWorkerScript = `
+    export class Counter {
+      constructor(state, env) {
+        this.state = state;
+        this.env = env;
+        this.counter = 0;
       }
 
-      if (url.pathname.includes('/kv')) {
-        const value = await env.TEST_KV.get('testKey');
-        return new Response('KV Value: ' + (value || 'not found'), { status: 200 });
+      async fetch(request) {
+        this.counter++;
+        return new Response('Counter: ' + this.counter, { status: 200 });
       }
-
-      if (url.pathname.includes('/secret')) {
-        return new Response('Secret: ' + env.API_KEY, { status: 200 });
-      }
-
-      return new Response('Hello worker with multiple bindings!', { status: 200 });
     }
-  };
-`;
 
-    // Create a Durable Object namespace
-    const counterNamespace = new DurableObjectNamespace(
-      "test-counter-namespace",
-      {
-        className: "Counter",
-        scriptName: workerName,
-      },
-    );
+    export default {
+      async fetch(request, env, ctx) {
+        // Path-based routing to demonstrate different bindings
+        const url = new URL(request.url);
 
-    // Create a KV namespace
-    const testKv = await KVNamespace("test-kv-namespace", {
-      title: `${BRANCH_PREFIX} Test KV Namespace 1`,
-      values: [
+        if (url.pathname.includes('/counter')) {
+          const id = env.COUNTER.idFromName('default');
+          const stub = env.COUNTER.get(id);
+          return stub.fetch(request);
+        }
+
+        if (url.pathname.includes('/kv')) {
+          const value = await env.TEST_KV.get('testKey');
+          return new Response('KV Value: ' + (value || 'not found'), { status: 200 });
+        }
+
+        if (url.pathname.includes('/secret')) {
+          return new Response('Secret: ' + env.API_KEY, { status: 200 });
+        }
+
+        return new Response('Hello worker with multiple bindings!', { status: 200 });
+      }
+    };
+  `;
+
+      // Create a Durable Object namespace
+      const counterNamespace = new DurableObjectNamespace(
+        `test-counter-namespace-${platform}`,
         {
-          key: "testKey",
-          value: "initial-value",
+          className: "Counter",
+          scriptName: workerName,
         },
-      ],
-    });
+      );
 
-    let worker: Worker | undefined;
-
-    try {
-      // First create the worker without bindings
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: multiBindingsWorkerScript,
-        format: "esm",
+      // Create a KV namespace
+      const testKv = await KVNamespace(`test-kv-namespace-${platform}`, {
+        title: `${BRANCH_PREFIX} Test KV Namespace ${platform.toUpperCase()} 1`,
+        values: [
+          {
+            key: "testKey",
+            value: "initial-value",
+          },
+        ],
       });
 
-      expect(worker.id).toBeTruthy();
-      expect(worker.name).toEqual(workerName);
+      let worker: Worker | undefined;
 
-      // Update the worker with all bindings
-      worker = await Worker(workerName, {
-        name: workerName,
-        script: multiBindingsWorkerScript,
-        format: "esm",
-        bindings: {
-          COUNTER: counterNamespace,
-          TEST_KV: testKv,
-          API_KEY: "test-api-key-value",
-        },
-      });
+      try {
+        // First create the worker without bindings
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: multiBindingsWorkerScript,
+          format: "esm",
+          platform: platform === "wfp",
+        });
 
-      expect(worker.id).toBeTruthy();
-      expect(worker.name).toEqual(workerName);
-      expect(worker.bindings).toBeDefined();
-    } finally {
-      await destroy(scope);
-      await assertWorkerDoesNotExist(workerName);
-    }
-  });
+        expect(worker.id).toBeTruthy();
+        expect(worker.name).toEqual(workerName);
+        expect(worker.platform).toEqual(platform === "wfp");
+
+        // Update the worker with all bindings
+        worker = await Worker(workerName, {
+          name: workerName,
+          script: multiBindingsWorkerScript,
+          format: "esm",
+          platform: platform === "wfp",
+          bindings: {
+            COUNTER: counterNamespace,
+            TEST_KV: testKv,
+            API_KEY: "test-api-key-value",
+          },
+        });
+
+        expect(worker.id).toBeTruthy();
+        expect(worker.name).toEqual(workerName);
+        expect(worker.platform).toEqual(platform === "wfp");
+        expect(worker.bindings).toBeDefined();
+      } finally {
+        await destroy(scope);
+        await assertWorkerDoesNotExist(workerName, platform);
+      }
+    },
+  );
+
+  // Register the multi-binding tests
+  for (const multiBindingTest of multiBindingTests) {
+    test(multiBindingTest.name, multiBindingTest.handler);
+  }
 
   // Add a new test for environment variables
   test("create and test worker with environment variables", async (scope) => {

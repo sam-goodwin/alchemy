@@ -54,6 +54,7 @@ interface UploadResponse {
  * @param workerName Name of the worker
  * @param assets Assets resource containing files to upload
  * @param assetConfig Configuration for the assets
+ * @param platform Whether this is for Workers for Platform (defaults to false unless your worker is in or bound to a dispatch namespace)
  * @returns Completion token for the assets upload
  */
 export async function uploadAssets(
@@ -61,15 +62,20 @@ export async function uploadAssets(
   workerName: string,
   assets: Assets,
   assetConfig?: WorkerProps["assets"],
+  platform?: boolean,
 ): Promise<AssetUploadResult> {
   // Process the assets configuration once at the beginning
   const processedConfig = createAssetConfig(assetConfig);
 
   const { manifest, filePathsByHash } = await prepareAssetManifest(assets);
 
-  // Start the upload session
+  // Start the upload session - use platform-aware endpoint if needed
+  const endpoint = platform
+    ? `/accounts/${api.accountId}/workers/platform/scripts/${workerName}/assets-upload-session`
+    : `/accounts/${api.accountId}/workers/scripts/${workerName}/assets-upload-session`;
+  
   const uploadSessionResponse = await api.post(
-    `/accounts/${api.accountId}/workers/scripts/${workerName}/assets-upload-session`,
+    endpoint,
     JSON.stringify({ manifest }),
     {
       headers: { "Content-Type": "application/json" },
