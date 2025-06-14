@@ -39,6 +39,7 @@ export * from "./react-router.ts";
 export * from "./redwood.ts";
 export * from "./route.ts";
 export * from "./secret.ts";
+export * from "./secret-key.ts";
 export * from "./secrets-store.ts";
 export * from "./sveltekit.ts";
 export * from "./tanstack-start.ts";

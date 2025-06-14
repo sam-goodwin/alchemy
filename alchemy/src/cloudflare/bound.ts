@@ -1,5 +1,6 @@
 import type { Pipeline } from "cloudflare:pipelines";
 import type { Secret } from "../secret.ts";
+import type { SecretKey } from "./secret-key.ts";
 import type { AiGatewayResource as _AiGateway } from "./ai-gateway.ts";
 import type { Ai as _Ai } from "./ai.ts";
 import type { AnalyticsEngineDataset as _AnalyticsEngineDataset } from "./analytics-engine.ts";
@@ -45,39 +46,41 @@ export type Bound<T extends Binding> = T extends _DurableObjectNamespace<
               ? Hyperdrive
               : T extends Secret
                 ? string
-                : T extends Assets
-                  ? Service
-                  : T extends _Workflow<infer P>
-                    ? Workflow<P>
-                    : T extends D1DatabaseResource
-                      ? D1Database
-                      : T extends DispatchNamespaceResource
-                        ? { get(name: string): Fetcher }
-                        : T extends _VectorizeIndex
-                          ? VectorizeIndex
-                          : T extends _Queue<infer Body>
-                            ? Queue<Body>
-                            : T extends _SecretsStore<infer S>
-                              ? SecretsStoreBinding<S>
-                              : T extends _AnalyticsEngineDataset
-                                ? AnalyticsEngineDataset
-                                : T extends _Pipeline<infer R>
-                                  ? Pipeline<R>
-                                  : T extends string
-                                    ? string
-                                    : T extends BrowserRendering
-                                      ? Fetcher
-                                      : T extends _Ai<infer M>
-                                        ? Ai<M>
-                                        : T extends _Images
-                                          ? ImagesBinding
-                                          : T extends _VersionMetadata
-                                            ? WorkerVersionMetadata
-                                            : T extends Self
-                                              ? Service
-                                              : T extends Json<infer T>
-                                                ? T
-                                                : Service;
+                : T extends SecretKey
+                  ? CryptoKey
+                  : T extends Assets
+                    ? Service
+                    : T extends _Workflow<infer P>
+                      ? Workflow<P>
+                      : T extends D1DatabaseResource
+                        ? D1Database
+                        : T extends DispatchNamespaceResource
+                          ? { get(name: string): Fetcher }
+                          : T extends _VectorizeIndex
+                            ? VectorizeIndex
+                            : T extends _Queue<infer Body>
+                              ? Queue<Body>
+                              : T extends _SecretsStore<infer S>
+                                ? SecretsStoreBinding<S>
+                                : T extends _AnalyticsEngineDataset
+                                  ? AnalyticsEngineDataset
+                                  : T extends _Pipeline<infer R>
+                                    ? Pipeline<R>
+                                    : T extends string
+                                      ? string
+                                      : T extends BrowserRendering
+                                        ? Fetcher
+                                        : T extends _Ai<infer M>
+                                          ? Ai<M>
+                                          : T extends _Images
+                                            ? ImagesBinding
+                                            : T extends _VersionMetadata
+                                              ? WorkerVersionMetadata
+                                              : T extends Self
+                                                ? Service
+                                                : T extends Json<infer T>
+                                                  ? T
+                                                  : Service;
 
 interface SecretsStoreBinding<
   S extends Record<string, Secret> | undefined = undefined,

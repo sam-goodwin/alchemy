@@ -484,6 +484,16 @@ export async function prepareWorkerMetadata<B extends Bindings>(
         name: bindingName,
         namespace: binding.namespaceName,
       });
+    } else if (binding.type === "secret_key") {
+      meta.bindings.push({
+        type: "secret_key",
+        name: bindingName,
+        algorithm: binding.algorithm,
+        format: binding.format,
+        usages: binding.usages,
+        key_base64: binding.key_base64,
+        key_jwk: binding.key_jwk,
+      });
     } else {
       // @ts-expect-error - we should never reach here
       throw new Error(`Unsupported binding type: ${binding.type}`);
