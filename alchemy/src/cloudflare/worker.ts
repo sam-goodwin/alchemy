@@ -258,6 +258,17 @@ export interface BaseWorkerProps<
    * This allows workers to be routed to via dispatch namespace routing rules
    */
   namespace?: string | DispatchNamespaceResource;
+
+  /**
+   * Version label for this worker deployment
+   *
+   * When specified, the worker will be published as a version with this label
+   * instead of updating the live deployment. This creates a preview URL that
+   * can be tested before promoting to production.
+   *
+   * @example "pr-123"
+   */
+  version?: string;
 }
 
 export interface InlineWorkerProps<
@@ -429,6 +440,16 @@ export type Worker<
      * The dispatch namespace this worker is deployed to
      */
     namespace?: string | DispatchNamespaceResource;
+
+    /**
+     * Version label for this worker deployment
+     */
+    version?: string;
+
+    /**
+     * Preview URL for the version (when version is specified)
+     */
+    previewUrl?: string;
   };
 
 /**
@@ -591,6 +612,18 @@ export function WorkerRef<
  *     SHARED_STORAGE: dataWorker.bindings.STORAGE
  *   }
  * });
+ *
+ * @example
+ * // Create a worker version for testing with a preview URL:
+ * const previewWorker = await Worker("my-worker", {
+ *   name: "my-worker",
+ *   entrypoint: "./src/worker.ts",
+ *   version: "pr-123"
+ * });
+ *
+ * // The worker will have a preview URL for testing:
+ * console.log(`Preview URL: ${previewWorker.previewUrl}`);
+ * // Output: Preview URL: https://pr-123-my-worker.subdomain.workers.dev
  *
  * @see
  * https://developers.cloudflare.com/workers/
@@ -904,12 +937,19 @@ export const _Worker = Resource(
           : props.namespace.namespace
         : undefined;
 
-      await putWorker(
+      // Deploy worker (either as version or live worker)
+      const versionResult = await putWorker(
         api,
         workerName,
         scriptBundle,
         scriptMetadata,
         dispatchNamespace,
+        props.version
+          ? {
+              versionLabel: props.version,
+              message: `Version ${props.version}`,
+            }
+          : undefined,
       );
 
       for (const workflow of workflowsBindings) {
@@ -974,7 +1014,7 @@ export const _Worker = Resource(
         }
       }
 
-      return { scriptBundle, scriptMetadata, workerUrl, now };
+      return { scriptBundle, scriptMetadata, workerUrl, now, versionResult };
     };
 
     if (this.phase === "delete") {
@@ -1023,12 +1063,22 @@ export const _Worker = Resource(
     }
 
     if (this.phase === "create") {
-      if (!props.adopt) {
+      if (props.version) {
+        // When version is specified, we adopt existing workers or create them if they don't exist
+        const workerExists = await checkWorkerExists(api, workerName);
+        if (!workerExists) {
+          // Create the base worker first if it doesn't exist
+          const baseWorkerProps = { ...props, version: undefined };
+          await uploadWorkerScript(baseWorkerProps);
+        }
+        // We always "adopt" when publishing versions
+      } else if (!props.adopt) {
         await assertWorkerDoesNotExist(this, api, workerName);
       }
     }
 
-    const { scriptMetadata, workerUrl, now } = await uploadWorkerScript(props);
+    const { scriptMetadata, workerUrl, now, versionResult } =
+      await uploadWorkerScript(props);
 
     // Create routes if provided and capture their outputs
     let createdRoutes: Route[] = [];
@@ -1111,6 +1161,9 @@ export const _Worker = Resource(
       routes: createdRoutes.length > 0 ? createdRoutes : undefined,
       // Include the dispatch namespace in the output
       namespace: props.namespace,
+      // Include version information in the output
+      version: props.version,
+      previewUrl: versionResult?.previewUrl,
       // phantom property
       Env: undefined!,
     } as unknown as Worker<B>);
@@ -1153,15 +1206,22 @@ export async function deleteWorker<B extends Bindings>(
   return;
 }
 
-export async function putWorker(
+interface PutWorkerOptions {
+  versionLabel?: string;
+  message?: string;
+  dispatchNamespace?: string;
+}
+
+async function putWorkerInternal(
   api: CloudflareApi,
   workerName: string,
   scriptBundle: string | NoBundleResult,
   scriptMetadata: WorkerMetadata,
-  dispatchNamespace?: string,
-) {
+  options: PutWorkerOptions = {},
+): Promise<{ versionId?: string; previewUrl?: string }> {
   return withExponentialBackoff(
     async () => {
+      const { versionLabel, message, dispatchNamespace } = options;
       const scriptName =
         scriptMetadata.main_module ?? scriptMetadata.body_part!;
 
@@ -1187,53 +1247,122 @@ export async function putWorker(
         addFile(scriptName, scriptBundle);
       } else {
         for (const [fileName, content] of Object.entries(scriptBundle)) {
-          // Add the actual script content as a named file part
           addFile(fileName, content);
         }
       }
 
+      // Prepare metadata - add version annotations if this is a version
+      const finalMetadata = versionLabel
+        ? {
+            ...scriptMetadata,
+            annotations: {
+              "workers/tag": versionLabel,
+              ...(message && { "workers/message": message.substring(0, 100) }),
+            },
+          }
+        : scriptMetadata;
+
       // Add metadata as JSON
       formData.append(
         "metadata",
-        new Blob([JSON.stringify(scriptMetadata)], {
+        new Blob([JSON.stringify(finalMetadata)], {
           type: "application/json",
         }),
       );
 
-      // Upload worker script with bindings
-      const endpoint = dispatchNamespace
-        ? `/accounts/${api.accountId}/workers/dispatch/namespaces/${dispatchNamespace}/scripts/${workerName}`
-        : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+      // Determine endpoint and HTTP method
+      let endpoint: string;
+      let method: "PUT" | "POST";
 
-      const uploadResponse = await api.put(endpoint, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      if (versionLabel) {
+        // Upload worker version using the versions API
+        endpoint = `/accounts/${api.accountId}/workers/scripts/${workerName}/versions`;
+        method = "POST";
+      } else {
+        // Upload worker script with bindings
+        endpoint = dispatchNamespace
+          ? `/accounts/${api.accountId}/workers/dispatch/namespaces/${dispatchNamespace}/scripts/${workerName}`
+          : `/accounts/${api.accountId}/workers/scripts/${workerName}`;
+        method = "PUT";
+      }
+
+      const uploadResponse =
+        method === "PUT"
+          ? await api.put(endpoint, formData, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            })
+          : await api.post(endpoint, formData, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            });
 
       // Check if the upload was successful
       if (!uploadResponse.ok) {
         await handleApiError(
           uploadResponse,
-          "uploading worker script",
+          versionLabel ? "uploading worker version" : "uploading worker script",
           "worker",
           workerName,
         );
       }
 
-      return formData;
+      // Handle version response
+      if (versionLabel) {
+        const responseData = await uploadResponse.json();
+        const result = responseData.result;
+        return {
+          versionId: result.id,
+          previewUrl: result.preview_url,
+        };
+      }
+
+      return {};
     },
     (err) =>
       err.status === 404 ||
       err.status === 500 ||
       err.status === 503 ||
-      // this is a tranient error that cloudflare throws randomly
+      // this is a transient error that cloudflare throws randomly
       (err instanceof CloudflareApiError &&
         err.status === 400 &&
         err.message.match(/binding.*failed to generate/)),
     10,
     100,
   );
+}
+
+export async function putWorker(
+  api: CloudflareApi,
+  workerName: string,
+  scriptBundle: string | NoBundleResult,
+  scriptMetadata: WorkerMetadata,
+  dispatchNamespace?: string,
+  version?: { versionLabel: string; message?: string },
+): Promise<{ versionId?: string; previewUrl?: string }> {
+  return await putWorkerInternal(
+    api,
+    workerName,
+    scriptBundle,
+    scriptMetadata,
+    {
+      dispatchNamespace,
+      versionLabel: version?.versionLabel,
+      message: version?.message,
+    },
+  );
+}
+
+export async function checkWorkerExists(
+  api: CloudflareApi,
+  workerName: string,
+): Promise<boolean> {
+  const response = await api.get(
+    `/accounts/${api.accountId}/workers/scripts/${workerName}`,
+  );
+  return response.status === 200;
 }
 
 export async function assertWorkerDoesNotExist<B extends Bindings>(

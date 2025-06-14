@@ -1356,4 +1356,93 @@ describe("Worker Resource", () => {
       await destroy(scope);
     }
   });
+
+  test("create unversioned and versioned workers independently", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-versions`;
+    const versionLabel = "pr-123";
+
+    try {
+      // First create a base worker without version
+      const baseWorker = await Worker(`${workerName}-base`, {
+        name: workerName,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return new Response('Hello from base worker!', { 
+                status: 200,
+                headers: { 'Content-Type': 'text/plain' }
+              });
+            }
+          };
+        `,
+        format: "esm",
+        url: true,
+      });
+
+      // Verify base worker properties
+      expect(baseWorker.id).toBeTruthy();
+      expect(baseWorker.name).toEqual(workerName);
+      expect(baseWorker.version).toBeUndefined();
+      expect(baseWorker.previewUrl).toBeUndefined();
+      expect(baseWorker.url).toBeTruthy();
+
+      // Test that the base worker URL works
+      const baseResponse = await fetchAndExpectOK(baseWorker.url!);
+      const baseText = await baseResponse.text();
+      expect(baseText).toEqual("Hello from base worker!");
+
+      // Now create a version of the same worker with different code
+      const versionWorker = await Worker(`${workerName}-version`, {
+        name: workerName,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return new Response('Hello from worker version!', { 
+                status: 200,
+                headers: { 'Content-Type': 'text/plain' }
+              });
+            }
+          };
+        `,
+        format: "esm",
+        version: versionLabel,
+      });
+
+      // Verify the version worker properties
+      expect(versionWorker).toMatchObject({
+        name: workerName,
+        version: versionLabel,
+      });
+      expect(versionWorker.id).toBeTruthy();
+      expect(versionWorker.previewUrl).toBeTruthy();
+      expect(versionWorker.previewUrl).toContain(versionLabel);
+      expect(versionWorker.previewUrl).toContain(workerName);
+
+      // Test that the preview URL works and returns different content
+      const versionResponse = await fetchAndExpectOK(versionWorker.previewUrl!);
+      const versionText = await versionResponse.text();
+      expect(versionText).toEqual("Hello from worker version!");
+
+      // Verify that both workers exist independently by checking their responses
+      const baseRecheck = await fetchAndExpectOK(baseWorker.url!);
+      const baseRecheckText = await baseRecheck.text();
+      expect(baseRecheckText).toEqual("Hello from base worker!");
+
+      const versionRecheck = await fetchAndExpectOK(versionWorker.previewUrl!);
+      const versionRecheckText = await versionRecheck.text();
+      expect(versionRecheckText).toEqual("Hello from worker version!");
+
+      // Verify that the responses are actually different (independent deployments)
+      expect(baseRecheckText).not.toEqual(versionRecheckText);
+
+      // Verify the base worker still exists in the API
+      const baseWorkerCheck = await api.get(
+        `/accounts/${api.accountId}/workers/scripts/${workerName}`,
+      );
+      expect(baseWorkerCheck.status).toEqual(200);
+    } finally {
+      await destroy(scope);
+      await assertWorkerDoesNotExist(workerName);
+    }
+  });
 });
