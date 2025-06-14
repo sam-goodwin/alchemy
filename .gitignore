@@ -16,3 +16,5 @@ wrangler.jsonc
 # Husky - ignore generated files but keep hooks
 .husky/_
 !.husky/pre-commit
+
+.smoke

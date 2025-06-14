@@ -44,7 +44,12 @@ export async function bundleWorkerScript<B extends Bindings>(
     const rules = (
       props.rules ?? [
         {
-          globs: ["**/*.js", "**/*.mjs", "**/*.wasm"],
+          globs: [
+            "**/*.js",
+            "**/*.mjs",
+            "**/*.wasm",
+            ...(props.uploadSourceMaps ? ["**/*.js.map"] : []),
+          ],
         },
       ]
     ).flatMap((rule) => rule.globs);

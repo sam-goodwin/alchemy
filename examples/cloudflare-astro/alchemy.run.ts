@@ -9,7 +9,8 @@ const app = await alchemy("cloudflare-astro", {
       : undefined,
 });
 
-export const website = await Astro(`cloudflare-astro-website${BRANCH_PREFIX}`, {
+export const website = await Astro("website", {
+  name: `cloudflare-astro-website${BRANCH_PREFIX}`,
   command: "bun run build",
 });
 

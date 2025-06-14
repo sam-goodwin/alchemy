@@ -289,6 +289,13 @@ export interface EntrypointWorkerProps<
   noBundle?: boolean;
 
   /**
+   * Whether to upload source maps for the worker script.
+   *
+   * @default false
+   */
+  uploadSourceMaps?: boolean;
+
+  /**
    * Rules for adding additional files to the bundle.
    *
    * If {@link noBundle} is false | undefined, this will be ignored.

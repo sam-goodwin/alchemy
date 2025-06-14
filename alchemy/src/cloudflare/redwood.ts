@@ -44,6 +44,7 @@ export async function Redwood<B extends Bindings>(
   return Website(id, {
     ...props,
     command: props?.command ?? "bun run clean && RWSDK_DEPLOY=1 bun run build",
+    noBundle: props?.noBundle ?? true,
     wrangler:
       props?.wrangler === false
         ? false

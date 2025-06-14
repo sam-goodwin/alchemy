@@ -12,8 +12,13 @@
   "scripts": {
     "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b",
     "postbuild": "cpx 'src/**/*/types.d.ts' lib",
-    "publish:npm": "cp ../README.md . && bun run build && npm publish && rm README.md",
+    "build:cli": "esbuild src/cli.ts --bundle --platform=node --target=node18 --outfile=lib/cli.js --format=esm --banner:js='#!/usr/bin/env node'",
+    "postbuild:cli": "chmod +x lib/cli.js",
+    "publish:npm": "cp ../README.md . && bun run build && bun run build:cli && npm publish && rm README.md",
     "docs:gen": "rm -rf ./docs && typedoc"
+  },
+  "bin": {
+    "alchemy": "./lib/cli.js"
   },
   "author": "Sam Goodwin <sam@alchemy.run>",
   "homepage": "https://alchemy.run",
@@ -157,6 +162,7 @@
     "@cloudflare/puppeteer": "^1.0.2",
     "@cloudflare/workers-types": "^4.20250303.0",
     "@iarna/toml": "^2.2.5",
+    "@inquirer/prompts": "^7.0.0",
     "@octokit/rest": "^21.1.1",
     "@types/bun": "latest",
     "@types/diff": "^5.0.0",
