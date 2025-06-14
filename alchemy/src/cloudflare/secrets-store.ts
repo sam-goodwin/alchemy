@@ -1,6 +1,5 @@
 import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
-import { bind } from "../runtime/bind.ts";
 import { secret, type Secret } from "../secret.ts";
 import { handleApiError } from "./api-error.ts";
 import {
@@ -8,7 +7,6 @@ import {
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.ts";
-import type { Bound } from "./bound.ts";
 
 /**
  * Properties for creating or updating a Secrets Store
@@ -67,11 +65,6 @@ export interface SecretsStore<
 > extends Resource<"cloudflare::SecretsStore">,
     Omit<SecretsStoreProps<S>, "delete"> {
   /**
-   * The binding type for Cloudflare Workers
-   */
-  type: "secrets_store";
-
-  /**
    * The unique identifier of the secrets store
    */
   id: string;
@@ -97,10 +90,6 @@ export interface SecretsStore<
    */
   modifiedAt: number;
 }
-
-export type SecretsStoreWithBinding<
-  S extends Record<string, Secret> | undefined = undefined,
-> = SecretsStore<S> & Bound<SecretsStore<S>>;
 
 /**
  * A Cloudflare Secrets Store is a secure, centralized location for storing account-level secrets.
@@ -142,15 +131,20 @@ export type SecretsStoreWithBinding<
  * });
  *
  * @example
- * // Use in a Worker binding to access secrets
+ * // Individual secrets from the store can be bound to workers
+ * const apiKeySecret = await Secret("api-key", {
+ *   store: store,
+ *   value: alchemy.secret(process.env.API_KEY)
+ * });
+ *
  * const worker = await Worker("my-worker", {
  *   bindings: {
- *     SECRETS: store
+ *     API_KEY: apiKeySecret
  *   },
  *   code: `
  *     export default {
  *       async fetch(request, env) {
- *         const apiKey = await env.SECRETS.get("API_KEY");
+ *         const apiKey = env.API_KEY;
  *         return new Response(apiKey ? "Secret found" : "No secret");
  *       }
  *     }
@@ -162,7 +156,7 @@ export async function SecretsStore<
 >(
   name: string,
   props: SecretsStoreProps<S> = {} as SecretsStoreProps<S>,
-): Promise<SecretsStoreWithBinding<S>> {
+): Promise<SecretsStore<S>> {
   // Convert string values to Secret instances
   const normalizedProps: SecretsStoreProps<S> = {
     ...props,
@@ -176,12 +170,7 @@ export async function SecretsStore<
       : undefined,
   };
 
-  const store = await _SecretsStore(name, normalizedProps);
-  const binding = await bind(store);
-  return {
-    ...store,
-    get: binding.get,
-  } as SecretsStoreWithBinding<S>;
+  return await _SecretsStore(name, normalizedProps);
 }
 
 const _SecretsStore = Resource("cloudflare::SecretsStore", async function <
@@ -254,7 +243,6 @@ const _SecretsStore = Resource("cloudflare::SecretsStore", async function <
   }
 
   return this({
-    type: "secrets_store",
     id: storeId,
     name: name,
     secrets: props.secrets as S,

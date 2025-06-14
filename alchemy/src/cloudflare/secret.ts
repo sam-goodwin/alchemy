@@ -11,6 +11,7 @@ import {
   type CloudflareApiOptions,
 } from "./api.ts";
 import type { SecretsStore } from "./secrets-store.ts";
+import { listSecrets } from "./secrets-store.ts";
 
 /**
  * Properties for creating or updating a Secret in a Secrets Store (internal interface)
@@ -75,6 +76,11 @@ export interface Secret
   extends Resource<"cloudflare::Secret">,
     Omit<_SecretProps, "delete"> {
   /**
+   * The binding type for Cloudflare Workers
+   */
+  type: "secrets_store_secret";
+
+  /**
    * The name of the secret
    */
   name: string;
@@ -126,16 +132,17 @@ export interface Secret
  * });
  *
  * @example
- * // Use in a Worker binding
+ * // Use individual secrets as Worker bindings
  * const worker = await Worker("my-worker", {
  *   bindings: {
- *     SECRETS: store
+ *     API_KEY: apiKey,
+ *     DATABASE_URL: dbUrl
  *   },
  *   code: `
  *     export default {
  *       async fetch(request, env) {
- *         const apiKey = await env.SECRETS.get("api-key");
- *         const dbUrl = await env.SECRETS.get("database-url");
+ *         const apiKey = env.API_KEY;
+ *         const dbUrl = env.DATABASE_URL;
  *         return new Response(\`API: \${apiKey ? "set" : "unset"}\`);
  *       }
  *     }
@@ -190,6 +197,7 @@ const _Secret = Resource(
     await insertSecret(api, props.store.id, name, props.value);
 
     return this({
+      type: "secrets_store_secret",
       name,
       storeId: props.store.id,
       store: props.store,
@@ -209,15 +217,16 @@ export async function insertSecret(
   secretName: string,
   secretValue: AlchemySecret,
 ): Promise<void> {
+  // Use bulk POST endpoint for oauth_token compatibility
+  const bulkPayload = [{
+    name: secretName,
+    value: secretValue.unencrypted,
+    scopes: ["workers"],
+  }];
+
   const response = await api.post(
     `/accounts/${api.accountId}/secrets_store/stores/${storeId}/secrets`,
-    [
-      {
-        name: secretName,
-        value: secretValue.unencrypted,
-        scopes: [],
-      },
-    ],
+    bulkPayload,
   );
 
   if (!response.ok) {
@@ -225,7 +234,23 @@ export async function insertSecret(
       errors: [{ message: response.statusText }],
     }));
     const errorMessage = errorData.errors?.[0]?.message || response.statusText;
-    throw new Error(`Error creating secret '${secretName}': ${errorMessage}`);
+    
+    // If secret already exists, delete it first then recreate
+    if (errorMessage.includes("secret_name_already_exists")) {
+      await deleteSecret(api, storeId, secretName);
+      
+      // Retry creation after deletion
+      const retryResponse = await api.post(
+        `/accounts/${api.accountId}/secrets_store/stores/${storeId}/secrets`,
+        bulkPayload,
+      );
+      
+      if (!retryResponse.ok) {
+        await handleApiError(retryResponse, "create", "secret", secretName);
+      }
+    } else {
+      await handleApiError(response, "create", "secret", secretName);
+    }
   }
 }
 
@@ -238,13 +263,7 @@ export async function deleteSecret(
   secretName: string,
 ): Promise<void> {
   const response = await api.delete(
-    `/accounts/${api.accountId}/secrets_store/stores/${storeId}/secrets`,
-    {
-      body: JSON.stringify([secretName]),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
+    `/accounts/${api.accountId}/secrets_store/stores/${storeId}/secrets/${secretName}`,
   );
 
   if (!response.ok && response.status !== 404) {

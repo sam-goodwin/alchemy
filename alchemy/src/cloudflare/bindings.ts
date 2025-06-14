@@ -3,7 +3,8 @@
  * Based on Cloudflare API documentation:
  * https://developers.cloudflare.com/api/resources/workers/subresources/scripts/methods/update/
  */
-import type { Secret } from "../secret.ts";
+import type { Secret } from "./secret.ts";
+import type { Secret as AlchemySecret } from "../secret.ts";
 import type { AiGatewayResource } from "./ai-gateway.ts";
 import type { Ai } from "./ai.ts";
 import type { AnalyticsEngineDataset } from "./analytics-engine.ts";
@@ -18,7 +19,6 @@ import type { HyperdriveResource } from "./hyperdrive.ts";
 import type { KVNamespaceResource } from "./kv-namespace.ts";
 import type { PipelineResource } from "./pipeline.ts";
 import type { QueueResource } from "./queue.ts";
-import type { SecretsStore } from "./secrets-store.ts";
 import type { VectorizeIndexResource } from "./vectorize-index.ts";
 import type { VersionMetadata } from "./version-metadata.ts";
 import type { WorkerStub } from "./worker-stub.ts";
@@ -42,6 +42,7 @@ export declare namespace Bindings {
 export type Binding =
   | Ai
   | AiGatewayResource
+  | AlchemySecret
   | Assets
   | D1DatabaseResource
   | DispatchNamespaceResource
@@ -53,7 +54,6 @@ export type Binding =
   | PipelineResource
   | QueueResource
   | R2BucketResource
-  | SecretsStore<any>
   | {
       type: "kv_namespace";
       id: string;
@@ -305,8 +305,8 @@ export interface WorkerBindingSecretText {
 export interface WorkerBindingSecretsStore {
   /** The name of the binding */
   name: string;
-  /** Type identifier for Secrets Store binding */
-  type: "secrets_store";
+  /** Type identifier for Secrets Store Secret binding */
+  type: "secrets_store_secret";
   /** Store ID */
   store_id: string;
   /** Secret name */

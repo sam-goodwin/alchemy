@@ -387,23 +387,25 @@ export async function prepareWorkerMetadata<B extends Bindings>(
         name: bindingName,
         bucket_name: binding.name,
       });
-    } else if (binding.type === "secrets_store") {
-      meta.bindings.push({
-        type: "secrets_store",
-        name: bindingName,
-        store_id: binding.id,
-        secret_name: bindingName,
-      });
     } else if (binding.type === "assets") {
       meta.bindings.push({
         type: "assets",
         name: bindingName,
       });
     } else if (binding.type === "secret") {
+      // For generic alchemy secrets, bind as secret_text
       meta.bindings.push({
         type: "secret_text",
         name: bindingName,
         text: binding.unencrypted,
+      });
+    } else if (binding.type === "secrets_store_secret") {
+      // For secrets from a secrets store, bind to the store with the specific secret name
+      meta.bindings.push({
+        type: "secrets_store_secret",
+        name: bindingName,
+        store_id: binding.storeId,
+        secret_name: binding.name,
       });
     } else if (binding.type === "workflow") {
       meta.bindings.push({

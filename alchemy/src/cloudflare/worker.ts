@@ -654,16 +654,12 @@ export function Worker<const B extends Bindings>(
           isBucket(resource) ||
           isPipeline(resource) ||
           isVectorizeIndex(resource) ||
-          isKVNamespace(resource)
+          isKVNamespace(resource) ||
+          resource instanceof Secret
         ) {
           // TODO(sam): make this generic/pluggable
           autoBindings[getBindKey(resource)] = resource;
         }
-      }
-
-      // TODO(sam): prune to only needed secrets
-      for (const secret of Secret.all()) {
-        autoBindings[secret.name] = secret;
       }
 
       const bindings = {

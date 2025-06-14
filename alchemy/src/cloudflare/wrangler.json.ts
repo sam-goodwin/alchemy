@@ -510,9 +510,13 @@ function processBindings(
         binding: bindingName,
         bucket_name: binding.name,
       });
-    } else if (binding.type === "secret") {
-      // Secret binding
-      secrets.push(bindingName);
+    } else if (binding.type === "secrets_store_secret") {
+      // Secrets Store Secret binding
+      secretsStoreSecrets.push({
+        binding: bindingName,
+        store_id: binding.storeId,
+        secret_name: binding.name,
+      });
     } else if (binding.type === "assets") {
       spec.assets = {
         directory: binding.path,
@@ -596,21 +600,15 @@ function processBindings(
       });
     } else if (binding.type === "json") {
       // TODO(sam): anything to do here? not sure wrangler.json supports this
-    } else if (binding.type === "secrets_store") {
-      if (binding.secrets) {
-        for (const [secretName, _secret] of Object.entries(binding.secrets)) {
-          secretsStoreSecrets.push({
-            binding: bindingName,
-            store_id: binding.id,
-            secret_name: secretName,
-          });
-        }
-      }
     } else if (binding.type === "dispatch_namespace") {
       dispatchNamespaces.push({
         binding: bindingName,
         namespace: binding.namespaceName,
       });
+    } else if (binding.type === "secret") {
+      // Generic alchemy secret - handled as environment variable
+      // These are converted to secret_text bindings in worker metadata
+      // No specific wrangler.json configuration needed
     } else {
       // biome-ignore lint/correctness/noVoidTypeReturn: it returns never
       return assertNever(binding);
