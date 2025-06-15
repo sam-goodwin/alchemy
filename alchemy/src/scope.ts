@@ -195,6 +195,8 @@ export class Scope {
     if (this.finalized) {
       return;
     }
+    
+    // Handle global scope cleanup for Cloudflare Workers emulation
     if (this.parent === undefined && Scope.globals.length > 0) {
       const last = Scope.globals.pop();
       if (last !== this) {
@@ -203,9 +205,32 @@ export class Scope {
         );
       }
     }
+    
     this.finalized = true;
-    // trigger and await all deferred promises
+    
+    // If this is the root scope, initiate backwards pass through children in LIFO order
+    if (this.parent === undefined) {
+      // Get children in reverse order of their creation (LIFO)
+      const childScopes = Array.from(this.children.values()).reverse();
+      
+      // Finalize children first in LIFO order
+      for (const childScope of childScopes) {
+        await childScope.finalize();
+      }
+    }
+    
+    // Execute this scope's finalization
+    await this.executeFinalization();
+  }
+  
+  /**
+   * Executes the actual finalization logic for this scope.
+   * This includes deferred promises, orphan cleanup and telemetry recording.
+   */
+  private async executeFinalization() {
+    // Execute deferred promises for this scope
     await Promise.all(this.deferred.map((fn) => fn()));
+    
     if (!this.isErrored) {
       // TODO: need to detect if it is in error
       const resourceIds = await this.state.list();
@@ -233,7 +258,10 @@ export class Scope {
       });
     }
 
-    await this.rootTelemetryClient?.finalize();
+    // Only finalize telemetry client if this is the root scope
+    if (this.parent === undefined) {
+      await this.rootTelemetryClient?.finalize();
+    }
   }
 
   /**
