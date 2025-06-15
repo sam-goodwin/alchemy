@@ -1,13 +1,27 @@
-import { type Resource, ResourceKind } from "../resource.ts";
+import {
+  Resource,
+  type Resource as ResourceType,
+  ResourceKind,
+} from "../resource.ts";
 import type { Secret } from "../secret.ts";
 import type { Bindings } from "./bindings.ts";
-import type { KVNamespaceResource } from "./kv-namespace.ts";
+import { KVNamespace, type KVNamespaceResource } from "./kv-namespace.ts";
 import {
   Worker,
   type FetchWorkerProps,
   type BaseWorkerProps,
 } from "./worker.ts";
 import type { BaseSchema } from "valibot";
+import type { Context } from "../context.ts";
+import { Hono } from "hono";
+import {
+  issuer,
+  CloudflareKVStorage,
+  GitHubProvider,
+  GoogleProvider,
+  DiscordProvider,
+  FacebookProvider,
+} from "@openauthjs/openauth";
 
 /**
  * Configuration for an OAuth provider
@@ -42,6 +56,8 @@ export interface OpenAuthProps<B extends Bindings = Bindings>
     | "adopt"
     | "compatibilityDate"
     | "compatibilityFlags"
+    | "script"
+    | "fetch"
   > {
   /**
    * Name for the worker
@@ -99,17 +115,6 @@ export interface OpenAuthProps<B extends Bindings = Bindings>
   url?: boolean;
 
   /**
-   * TTL configuration for tokens and sessions
-   */
-  ttl?: {
-    /**
-     * Token reuse time in seconds
-     * @default 60
-     */
-    reuse?: number;
-  };
-
-  /**
    * Custom success handler function for post-authentication logic
    * This function will be called after successful OAuth authentication
    *
@@ -143,7 +148,7 @@ export interface OpenAuthProps<B extends Bindings = Bindings>
   compatibilityFlags?: string[];
 }
 
-export function isOpenAuth(resource: Resource): resource is OpenAuth<any> {
+export function isOpenAuth(resource: ResourceType): resource is OpenAuth<any> {
   return resource[ResourceKind] === "cloudflare::OpenAuth";
 }
 
@@ -151,7 +156,7 @@ export function isOpenAuth(resource: Resource): resource is OpenAuth<any> {
  * Output returned after OpenAuth Worker creation/update
  */
 export interface OpenAuth<B extends Bindings = Bindings>
-  extends Resource<"cloudflare::OpenAuth"> {
+  extends ResourceType<"cloudflare::OpenAuth"> {
   /**
    * The ID of the worker
    */
@@ -188,13 +193,6 @@ export interface OpenAuth<B extends Bindings = Bindings>
    * OAuth provider configurations
    */
   providers: OpenAuthProps<B>["providers"];
-
-  /**
-   * TTL configuration
-   */
-  ttl: {
-    reuse: number;
-  };
 
   /**
    * Time at which the worker was created
@@ -249,120 +247,121 @@ export function OpenAuth<const B extends Bindings>(
   meta: ImportMeta,
   props: OpenAuthProps<B>,
 ): Promise<OpenAuth<B>> & globalThis.Service {
-  // Use the Worker function with 3 parameters pattern from cloudflare-worker-bootstrap
-  const worker = Worker(id, meta, {
-    name: props.name ?? id,
-    bindings: {
-      ...props.bindings,
-      AUTH_STORE: props.storage,
-    },
-    env: {
-      ...props.env,
-      ...generateProviderEnvVars(props.providers),
-    },
-    url: props.url ?? true,
-    adopt: props.adopt ?? false,
-    compatibilityDate: props.compatibilityDate,
-    compatibilityFlags: ["nodejs_compat", ...(props.compatibilityFlags ?? [])],
-    accountId: props.accountId,
-    apiKey: props.apiKey,
-    apiToken: props.apiToken,
-    baseUrl: props.baseUrl,
-    email: props.email,
-    fetch: async (request: Request, env: any, ctx: ExecutionContext) => {
-      return generateOpenAuthHandler(props, request, env, ctx);
-    },
-  } as FetchWorkerProps<any>) as Promise<OpenAuth<B>> & globalThis.Service;
+  return Resource(
+    "cloudflare::OpenAuth",
+    async function (
+      this: Context,
+      id: string,
+      props: OpenAuthProps<B>,
+    ): Promise<OpenAuth<B>> {
+      // Create AUTH_STORE if not provided
+      const authStore = props.storage
+        ? typeof props.storage === "string"
+          ? ({ title: props.storage } as KVNamespaceResource)
+          : props.storage
+        : await KVNamespace(`${id}-auth-store`, {
+            title: `${props.name ?? id}-auth-store`,
+          });
 
-  return worker;
-}
+      // Create the Hono app that will be returned
+      const app = new Hono();
 
-function generateProviderEnvVars(
-  providers: OpenAuthProps["providers"],
-): Record<string, string> {
-  const env: Record<string, string> = {};
+      // Build the providers configuration for OpenAuth.js
+      const openAuthProviders: Record<string, any> = {};
 
-  for (const [providerName, config] of Object.entries(providers)) {
-    if (config) {
-      const upperProvider = providerName.toUpperCase();
-      env[`${upperProvider}_CLIENT_ID`] = config.clientId.unencrypted;
-      env[`${upperProvider}_CLIENT_SECRET`] = config.clientSecret.unencrypted;
-    }
-  }
-
-  return env;
-}
-
-async function generateOpenAuthHandler<B extends Bindings>(
-  props: OpenAuthProps<B>,
-  request: Request,
-  _env: any,
-  _ctx: ExecutionContext,
-): Promise<Response> {
-  // Validate required properties
-  if (!props.providers || Object.keys(props.providers).length === 0) {
-    return new Response("At least one OAuth provider must be configured", {
-      status: 500,
-    });
-  }
-
-  if (!props.storage) {
-    return new Response(
-      "Storage (KV Namespace) is required for session management",
-      { status: 500 },
-    );
-  }
-
-  const url = new URL(request.url);
-
-  // Health check endpoint
-  if (url.pathname === "/") {
-    return new Response(
-      JSON.stringify({
-        message: "OpenAuth Worker",
-        providers: Object.keys(props.providers),
-        status: "healthy",
-      }),
-      {
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-  }
-
-  // Custom routes
-  if (props.routes) {
-    for (const [path, _handler] of Object.entries(props.routes)) {
-      if (url.pathname === path) {
-        try {
-          // Execute the custom handler (this is a simplified version)
-          // In a real implementation, we'd need proper context setup
-          if (path === "/api/me") {
-            return new Response(
-              JSON.stringify({ user: "test-user", authenticated: true }),
-              {
-                headers: { "Content-Type": "application/json" },
-              },
-            );
-          }
-          if (path === "/api/status") {
-            return new Response(
-              JSON.stringify({ status: "ok", service: "openauth" }),
-              {
-                headers: { "Content-Type": "application/json" },
-              },
-            );
-          }
-        } catch (_error) {
-          return new Response("Handler error", { status: 500 });
-        }
+      if (props.providers.github) {
+        openAuthProviders.github = GitHubProvider({
+          clientId: props.providers.github.clientId.unencrypted,
+          clientSecret: props.providers.github.clientSecret.unencrypted,
+          scopes: props.providers.github.scopes,
+        });
       }
-    }
-  }
 
-  // OpenAuth endpoints (simplified mock for testing)
-  if (url.pathname.startsWith("/auth/")) {
-    return new Response("OpenAuth endpoint", { status: 200 });
-  }
+      if (props.providers.google) {
+        openAuthProviders.google = GoogleProvider({
+          clientId: props.providers.google.clientId.unencrypted,
+          clientSecret: props.providers.google.clientSecret.unencrypted,
+          scopes: props.providers.google.scopes,
+        });
+      }
 
-  return new Response("Not Found", { status: 404 });
+      if (props.providers.discord) {
+        openAuthProviders.discord = DiscordProvider({
+          clientId: props.providers.discord.clientId.unencrypted,
+          clientSecret: props.providers.discord.clientSecret.unencrypted,
+          scopes: props.providers.discord.scopes,
+        });
+      }
+
+      if (props.providers.facebook) {
+        openAuthProviders.facebook = FacebookProvider({
+          clientId: props.providers.facebook.clientId.unencrypted,
+          clientSecret: props.providers.facebook.clientSecret.unencrypted,
+          scopes: props.providers.facebook.scopes,
+        });
+      }
+
+      // Create the OpenAuth issuer configuration
+      const openAuthHandler = issuer({
+        subjects: props.subjects,
+        storage: CloudflareKVStorage(),
+        providers: openAuthProviders,
+        success:
+          props.onSuccess ||
+          (async (ctx, value) => {
+            return ctx.subject("user", {
+              id: value.tokenset?.access_token || "unknown",
+              ...value.claims,
+            });
+          }),
+      });
+
+      // Mount OpenAuth on the Hono app
+      app.mount("/auth", openAuthHandler);
+
+      // Health check endpoint
+      app.get("/", (c) => {
+        return c.json({
+          message: "OpenAuth Worker",
+          providers: Object.keys(props.providers),
+          status: "healthy",
+        });
+      });
+
+      // Create the underlying Worker with the Hono app
+      const worker = await Worker(id, meta, {
+        name: props.name ?? id,
+        bindings: {
+          ...props.bindings,
+          AUTH_STORE: authStore,
+        } as B & { AUTH_STORE: KVNamespaceResource },
+        env: props.env,
+        url: props.url ?? true,
+        adopt: props.adopt ?? false,
+        compatibilityDate: props.compatibilityDate ?? "2025-04-26",
+        compatibilityFlags: [
+          "nodejs_compat",
+          ...(props.compatibilityFlags ?? []),
+        ],
+        accountId: props.accountId,
+        apiKey: props.apiKey,
+        apiToken: props.apiToken,
+        baseUrl: props.baseUrl,
+        email: props.email,
+        fetch: async (request: Request, env: any, ctx: ExecutionContext) => {
+          return app.fetch(request, env, ctx);
+        },
+      } as FetchWorkerProps<any>);
+
+      return {
+        ...worker,
+        [ResourceKind]: "cloudflare::OpenAuth",
+        store: authStore,
+        app: app,
+        providers: props.providers,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      } as OpenAuth<B>;
+    },
+  )(id, props);
 }

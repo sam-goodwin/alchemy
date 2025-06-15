@@ -40,9 +40,6 @@ describe("OpenAuth", () => {
             scopes: ["user:email", "read:user"],
           },
         },
-        ttl: {
-          reuse: 60,
-        },
         createdAt: expect.any(Number),
         updatedAt: expect.any(Number),
       });
@@ -143,7 +140,7 @@ describe("OpenAuth", () => {
     }
   });
 
-  test("creates OpenAuth worker with TTL and app usage", async (scope) => {
+  test("creates OpenAuth worker with app usage", async (scope) => {
     const resourceId = `${BRANCH_PREFIX}-openauth-app`;
 
     let openauth: any;
@@ -157,13 +154,9 @@ describe("OpenAuth", () => {
             scopes: ["identify", "email"],
           },
         },
-        ttl: {
-          reuse: 120,
-        },
         adopt: true,
       });
 
-      expect(openauth.ttl.reuse).toBe(120);
       expect(openauth.app).toBeDefined();
       expect(openauth.store).toBeDefined();
 

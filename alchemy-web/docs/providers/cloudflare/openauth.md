@@ -193,31 +193,7 @@ Each provider accepts:
 
 ## Authentication Flow
 
-The OpenAuth worker automatically provides these endpoints:
-
-- `/auth/{provider}` - Initiate OAuth flow for a provider
-- `/auth/{provider}/callback` - OAuth callback endpoint
-- `/auth/session` - Get current session info
-- `/auth/logout` - Clear session
-
-Example usage:
-```ts
-// Redirect user to GitHub login
-window.location.href = `${auth.url}/auth/github`;
-
-// Check if user is authenticated
-const response = await fetch(`${auth.url}/auth/session`);
-const session = await response.json();
-```
-
-## Environment Variables
-
-The following environment variables are automatically set based on your provider configuration:
-
-- `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` 
-- `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET`
-- `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET`
+OpenAuth provides a complete OAuth authentication flow with built-in endpoints and session management. For detailed information about the authentication flow, endpoints, and advanced configuration, see the [official OpenAuth documentation](https://openauth.js.org/docs/).
 
 ## Requirements
 

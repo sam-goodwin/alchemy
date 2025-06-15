@@ -108,6 +108,7 @@
     }
   },
   "dependencies": {
+    "@openauthjs/openauth": "^0.4.3",
     "unenv": "2.0.0-rc.15"
   },
   "peerDependencies": {
