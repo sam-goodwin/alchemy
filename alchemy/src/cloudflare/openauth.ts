@@ -1,9 +1,13 @@
 import { type Resource, ResourceKind } from "../resource.ts";
 import type { Secret } from "../secret.ts";
-import type { CloudflareApiOptions } from "./api.ts";
 import type { Bindings } from "./bindings.ts";
 import type { KVNamespaceResource } from "./kv-namespace.ts";
-import { Worker, type FetchWorkerProps } from "./worker.ts";
+import {
+  Worker,
+  type FetchWorkerProps,
+  type BaseWorkerProps,
+} from "./worker.ts";
+import type { BaseSchema } from "valibot";
 
 /**
  * Configuration for an OAuth provider
@@ -29,7 +33,16 @@ export interface OAuthProviderConfig {
  * Properties for creating an OpenAuth Worker
  */
 export interface OpenAuthProps<B extends Bindings = Bindings>
-  extends CloudflareApiOptions {
+  extends Omit<
+    BaseWorkerProps<B>,
+    | "name"
+    | "bindings"
+    | "env"
+    | "url"
+    | "adopt"
+    | "compatibilityDate"
+    | "compatibilityFlags"
+  > {
   /**
    * Name for the worker
    * @default id
@@ -63,8 +76,9 @@ export interface OpenAuthProps<B extends Bindings = Bindings>
 
   /**
    * KV Namespace for session storage
+   * If not provided, one will be automatically created
    */
-  storage: string | KVNamespaceResource;
+  storage?: string | KVNamespaceResource;
 
   /**
    * Additional bindings to attach to the worker
@@ -109,13 +123,7 @@ export interface OpenAuthProps<B extends Bindings = Bindings>
    * User schema definition for type safety
    * Should be a Valibot schema object
    */
-  subjects?: any;
-
-  /**
-   * Custom routes to add to the Hono app
-   * Key is the route path, value is the handler function as string
-   */
-  routes?: Record<string, string>;
+  subjects?: BaseSchema<any, any, any>;
 
   /**
    * Whether to adopt the Worker if it already exists when creating
@@ -167,6 +175,16 @@ export interface OpenAuth<B extends Bindings = Bindings>
   };
 
   /**
+   * The KV Namespace used for session storage
+   */
+  store: KVNamespaceResource;
+
+  /**
+   * The Hono app instance for adding custom routes
+   */
+  app: any; // Hono app type
+
+  /**
    * OAuth provider configurations
    */
   providers: OpenAuthProps<B>["providers"];
@@ -199,7 +217,7 @@ export interface OpenAuth<B extends Bindings = Bindings>
  *
  * This resource automatically sets up OAuth authentication with support for multiple providers,
  * session management via KV storage, and a complete authentication flow with customizable
- * success handling.
+ * success handling. A KV Namespace for session storage is automatically created if not provided.
  *
  * @example
  * ## Basic GitHub Authentication
@@ -207,123 +225,23 @@ export interface OpenAuth<B extends Bindings = Bindings>
  * Set up OpenAuth with GitHub provider for user authentication:
  *
  * ```ts
- * const authStore = await KVNamespace("auth-sessions", {
- *   title: "auth-sessions"
- * });
- *
  * const auth = await OpenAuth("auth", import.meta, {
  *   providers: {
  *     github: {
- *       clientId: secret.env.GITHUB_CLIENT_ID,
- *       clientSecret: secret.env.GITHUB_CLIENT_SECRET,
+ *       clientId: alchemy.secret(process.env.GITHUB_CLIENT_ID),
+ *       clientSecret: alchemy.secret(process.env.GITHUB_CLIENT_SECRET),
  *       scopes: ["user:email", "read:user"]
  *     }
- *   },
- *   storage: authStore,
- *   onSuccess: async (ctx, value) => {
- *     return {
- *       id: value.user.id.toString(),
- *       name: value.user.name || value.user.login,
- *       email: value.user.email,
- *       avatar: value.user.avatar_url
- *     };
  *   }
  * });
- * ```
  *
- * @example
- * ## Multiple OAuth Providers
- *
- * Support both GitHub and Google authentication:
- *
- * ```ts
- * const authStore = await KVNamespace("auth-sessions", {
- *   title: "auth-sessions"
+ * // Add custom routes to the Hono app
+ * auth.app.get("/api/me", async (c) => {
+ *   return c.json({ user: c.get("user"), authenticated: true });
  * });
  *
- * const auth = await OpenAuth("auth", import.meta, {
- *   providers: {
- *     github: {
- *       clientId: secret.env.GITHUB_CLIENT_ID,
- *       clientSecret: secret.env.GITHUB_CLIENT_SECRET,
- *       scopes: ["user:email"]
- *     },
- *     google: {
- *       clientId: secret.env.GOOGLE_CLIENT_ID,
- *       clientSecret: secret.env.GOOGLE_CLIENT_SECRET,
- *       scopes: ["profile", "email"]
- *     }
- *   },
- *   storage: authStore
- * });
- * ```
- *
- * @example
- * ## Custom Success Handler and Routes
- *
- * Add custom post-authentication logic and API routes:
- *
- * ```ts
- * const auth = await OpenAuth("auth", import.meta, {
- *   providers: {
- *     github: {
- *       clientId: secret.env.GITHUB_CLIENT_ID,
- *       clientSecret: secret.env.GITHUB_CLIENT_SECRET
- *     }
- *   },
- *   storage: authStore,
- *   onSuccess: async (ctx, value) => {
- *     // Custom user processing
- *     await logUserSignin(value.user);
- *     return createUserSubject(value.user);
- *   },
- *   routes: {
- *     "/api/me": `
- *       c.json({ user: c.get("user"), authenticated: true })
- *     `,
- *     "/api/logout": `
- *       // Custom logout logic
- *       return c.json({ success: true })
- *     `
- *   }
- * });
- * ```
- *
- * @example
- * ## Integration with Existing Worker
- *
- * Use OpenAuth in combination with other Cloudflare bindings:
- *
- * ```ts
- * const database = await D1Database("db", { name: "my-app-db" });
- * const cache = await KVNamespace("cache", { title: "app-cache" });
- * const authStore = await KVNamespace("auth", { title: "auth-sessions" });
- *
- * const auth = await OpenAuth("auth", import.meta, {
- *   providers: {
- *     github: {
- *       clientId: secret.env.GITHUB_CLIENT_ID,
- *       clientSecret: secret.env.GITHUB_CLIENT_SECRET
- *     }
- *   },
- *   storage: authStore,
- *   bindings: {
- *     DATABASE: database,
- *     CACHE: cache
- *   },
- *   onSuccess: async (ctx, value) => {
- *     // Store user in database
- *     await ctx.env.DATABASE.prepare(
- *       "INSERT OR REPLACE INTO users (id, name, email) VALUES (?, ?, ?)"
- *     ).bind(value.user.id, value.user.name, value.user.email).run();
- *
- *     return {
- *       id: value.user.id.toString(),
- *       name: value.user.name,
- *       email: value.user.email
- *     };
- *   }
- * });
+ * // Access the auto-created auth store
+ * console.log("Auth store:", auth.store.title);
  * ```
  */
 export function OpenAuth<const B extends Bindings>(

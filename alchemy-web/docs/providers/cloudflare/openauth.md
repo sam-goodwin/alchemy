@@ -14,21 +14,16 @@ OpenAuth provides a secure, edge-compatible authentication solution with support
 Create a basic OpenAuth worker with GitHub authentication:
 
 ```ts
-import { OpenAuth, KVNamespace, secret } from "alchemy/cloudflare";
-
-const authStore = await KVNamespace("auth-sessions", {
-  title: "auth-sessions"
-});
+import { OpenAuth, alchemy } from "alchemy/cloudflare";
 
 const auth = await OpenAuth("auth", import.meta, {
   providers: {
     github: {
-      clientId: secret.env.GITHUB_CLIENT_ID,
-      clientSecret: secret.env.GITHUB_CLIENT_SECRET,
+      clientId: alchemy.secret(process.env.GITHUB_CLIENT_ID),
+      clientSecret: alchemy.secret(process.env.GITHUB_CLIENT_SECRET),
       scopes: ["user:email", "read:user"]
     }
-  },
-  storage: authStore
+  }
 });
 ```
 
@@ -37,26 +32,21 @@ const auth = await OpenAuth("auth", import.meta, {
 Support both GitHub and Google authentication:
 
 ```ts
-import { OpenAuth, KVNamespace, secret } from "alchemy/cloudflare";
-
-const authStore = await KVNamespace("auth-sessions", {
-  title: "auth-sessions"
-});
+import { OpenAuth, alchemy } from "alchemy/cloudflare";
 
 const auth = await OpenAuth("auth", import.meta, {
   providers: {
     github: {
-      clientId: secret.env.GITHUB_CLIENT_ID,
-      clientSecret: secret.env.GITHUB_CLIENT_SECRET,
+      clientId: alchemy.secret(process.env.GITHUB_CLIENT_ID),
+      clientSecret: alchemy.secret(process.env.GITHUB_CLIENT_SECRET),
       scopes: ["user:email"]
     },
     google: {
-      clientId: secret.env.GOOGLE_CLIENT_ID,
-      clientSecret: secret.env.GOOGLE_CLIENT_SECRET,
+      clientId: alchemy.secret(process.env.GOOGLE_CLIENT_ID),
+      clientSecret: alchemy.secret(process.env.GOOGLE_CLIENT_SECRET),
       scopes: ["profile", "email"]
     }
-  },
-  storage: authStore
+  }
 });
 ```
 
@@ -65,20 +55,15 @@ const auth = await OpenAuth("auth", import.meta, {
 Add custom post-authentication logic:
 
 ```ts
-import { OpenAuth, KVNamespace, secret } from "alchemy/cloudflare";
-
-const authStore = await KVNamespace("auth-sessions", {
-  title: "auth-sessions"
-});
+import { OpenAuth, alchemy } from "alchemy/cloudflare";
 
 const auth = await OpenAuth("auth", import.meta, {
   providers: {
     github: {
-      clientId: secret.env.GITHUB_CLIENT_ID,
-      clientSecret: secret.env.GITHUB_CLIENT_SECRET
+      clientId: alchemy.secret(process.env.GITHUB_CLIENT_ID),
+      clientSecret: alchemy.secret(process.env.GITHUB_CLIENT_SECRET)
     }
   },
-  storage: authStore,
   onSuccess: async (ctx, value) => {
     // Custom user processing
     console.log("User signed in:", value.user.login);
@@ -99,32 +84,28 @@ const auth = await OpenAuth("auth", import.meta, {
 Add custom routes to the Hono app:
 
 ```ts
-import { OpenAuth, KVNamespace, secret } from "alchemy/cloudflare";
-
-const authStore = await KVNamespace("auth-sessions", {
-  title: "auth-sessions"
-});
+import { OpenAuth, alchemy } from "alchemy/cloudflare";
 
 const auth = await OpenAuth("auth", import.meta, {
   providers: {
     github: {
-      clientId: secret.env.GITHUB_CLIENT_ID,
-      clientSecret: secret.env.GITHUB_CLIENT_SECRET
+      clientId: alchemy.secret(process.env.GITHUB_CLIENT_ID),
+      clientSecret: alchemy.secret(process.env.GITHUB_CLIENT_SECRET)
     }
-  },
-  storage: authStore,
-  routes: {
-    "/api/me": `
-      return c.json({ 
-        user: c.get("user"), 
-        authenticated: true 
-      });
-    `,
-    "/api/logout": `
-      // Custom logout logic
-      return c.json({ success: true });
-    `
   }
+});
+
+// Add custom routes to the Hono app
+auth.app.get("/api/me", async (c) => {
+  return c.json({ 
+    user: c.get("user"), 
+    authenticated: true 
+  });
+});
+
+auth.app.post("/api/logout", async (c) => {
+  // Custom logout logic
+  return c.json({ success: true });
 });
 ```
 
@@ -137,21 +118,19 @@ import {
   OpenAuth, 
   KVNamespace, 
   D1Database, 
-  secret 
+  alchemy 
 } from "alchemy/cloudflare";
 
 const database = await D1Database("db", { name: "my-app-db" });
 const cache = await KVNamespace("cache", { title: "app-cache" });
-const authStore = await KVNamespace("auth", { title: "auth-sessions" });
 
 const auth = await OpenAuth("auth", import.meta, {
   providers: {
     github: {
-      clientId: secret.env.GITHUB_CLIENT_ID,
-      clientSecret: secret.env.GITHUB_CLIENT_SECRET
+      clientId: alchemy.secret(process.env.GITHUB_CLIENT_ID),
+      clientSecret: alchemy.secret(process.env.GITHUB_CLIENT_SECRET)
     }
   },
-  storage: authStore,
   bindings: {
     DATABASE: database,
     CACHE: cache
@@ -173,6 +152,9 @@ const auth = await OpenAuth("auth", import.meta, {
     };
   }
 });
+
+// Access the auth store that was automatically created
+console.log("Auth store:", auth.store.title);
 ```
 
 ## TTL Configuration
@@ -180,20 +162,15 @@ const auth = await OpenAuth("auth", import.meta, {
 Configure token and session lifetimes:
 
 ```ts
-import { OpenAuth, KVNamespace, secret } from "alchemy/cloudflare";
-
-const authStore = await KVNamespace("auth-sessions", {
-  title: "auth-sessions"
-});
+import { OpenAuth, alchemy } from "alchemy/cloudflare";
 
 const auth = await OpenAuth("auth", import.meta, {
   providers: {
     github: {
-      clientId: secret.env.GITHUB_CLIENT_ID,
-      clientSecret: secret.env.GITHUB_CLIENT_SECRET
+      clientId: alchemy.secret(process.env.GITHUB_CLIENT_ID),
+      clientSecret: alchemy.secret(process.env.GITHUB_CLIENT_SECRET)
     }
   },
-  storage: authStore,
   ttl: {
     reuse: 120 // Token reuse time in seconds
   }
@@ -246,9 +223,11 @@ The following environment variables are automatically set based on your provider
 
 To use OpenAuth, you need:
 
-1. **KV Namespace** for session storage
-2. **OAuth App** configured with your provider (GitHub, Google, etc.)
-3. **Client credentials** stored as secrets
+1. **OAuth App** configured with your provider (GitHub, Google, etc.)
+2. **Client credentials** stored as secrets
+
+> [!NOTE]
+> A KV Namespace for session storage is automatically created and managed by OpenAuth. You can access it via the `store` property of the returned OpenAuth resource.
 
 ## Dependencies
 

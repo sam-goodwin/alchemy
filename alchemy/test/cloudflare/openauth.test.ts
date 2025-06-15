@@ -15,12 +15,6 @@ describe("OpenAuth", () => {
   test("creates OpenAuth worker with GitHub provider", async (scope) => {
     const resourceId = `${BRANCH_PREFIX}-openauth-github`;
 
-    // Create KV namespace for session storage
-    const authStore = await KVNamespace("auth-store", {
-      title: `${resourceId}-auth-store`,
-      adopt: true,
-    });
-
     let openauth: any;
     try {
       // Create OpenAuth worker with GitHub provider
@@ -33,7 +27,6 @@ describe("OpenAuth", () => {
             scopes: ["user:email", "read:user"],
           },
         },
-        storage: authStore,
         adopt: true,
       });
 
@@ -55,7 +48,9 @@ describe("OpenAuth", () => {
       });
 
       expect(openauth.url).toMatch(/https:\/\/.+\.workers\.dev/);
-      expect(openauth.bindings.AUTH_STORE).toBe(authStore);
+      expect(openauth.store).toBeDefined();
+      expect(openauth.app).toBeDefined();
+      expect(openauth.bindings.AUTH_STORE).toBe(openauth.store);
       expect(typeof openauth.fetch).toBe("function");
 
       // Test the worker responds to health check
@@ -88,7 +83,6 @@ describe("OpenAuth", () => {
             scopes: ["profile", "email"],
           },
         },
-        storage: authStore,
         adopt: true,
       });
 
@@ -108,11 +102,6 @@ describe("OpenAuth", () => {
   test("creates OpenAuth worker with custom success handler", async (scope) => {
     const resourceId = `${BRANCH_PREFIX}-openauth-custom`;
 
-    const authStore = await KVNamespace("auth-store-custom", {
-      title: `${resourceId}-auth-store`,
-      adopt: true,
-    });
-
     let openauth: any;
     try {
       openauth = await OpenAuth(resourceId, import.meta, {
@@ -123,7 +112,6 @@ describe("OpenAuth", () => {
             clientSecret: secret("fake-github-client-secret"),
           },
         },
-        storage: authStore,
         onSuccess: async (_ctx, value) => {
           return {
             id: value.user.id.toString(),
@@ -142,6 +130,8 @@ describe("OpenAuth", () => {
         providers: {
           github: expect.any(Object),
         },
+        store: expect.any(Object),
+        app: expect.any(Object),
       });
 
       // Test worker is healthy
@@ -153,13 +143,8 @@ describe("OpenAuth", () => {
     }
   });
 
-  test("creates OpenAuth worker with custom routes and TTL", async (scope) => {
-    const resourceId = `${BRANCH_PREFIX}-openauth-routes`;
-
-    const authStore = await KVNamespace("auth-store-routes", {
-      title: `${resourceId}-auth-store`,
-      adopt: true,
-    });
+  test("creates OpenAuth worker with TTL and app usage", async (scope) => {
+    const resourceId = `${BRANCH_PREFIX}-openauth-app`;
 
     let openauth: any;
     try {
@@ -172,41 +157,20 @@ describe("OpenAuth", () => {
             scopes: ["identify", "email"],
           },
         },
-        storage: authStore,
         ttl: {
           reuse: 120,
-        },
-        routes: {
-          "/api/me": `
-            return c.json({ user: "test-user", authenticated: true });
-          `,
-          "/api/status": `
-            return c.json({ status: "ok", service: "openauth" });
-          `,
         },
         adopt: true,
       });
 
       expect(openauth.ttl.reuse).toBe(120);
+      expect(openauth.app).toBeDefined();
+      expect(openauth.store).toBeDefined();
 
-      // Test custom routes
-      const meResponse = await openauth.fetch("/api/me");
-      expect(meResponse.status).toBe(200);
-
-      const meData = await meResponse.json();
-      expect(meData).toMatchObject({
-        user: "test-user",
-        authenticated: true,
-      });
-
-      const statusResponse = await openauth.fetch("/api/status");
-      expect(statusResponse.status).toBe(200);
-
-      const statusData = await statusResponse.json();
-      expect(statusData).toMatchObject({
-        status: "ok",
-        service: "openauth",
-      });
+      // Test that app object has expected methods
+      expect(typeof openauth.app.get).toBe("function");
+      expect(typeof openauth.app.post).toBe("function");
+      expect(typeof openauth.app.route).toBe("function");
     } finally {
       await destroy(scope);
       await assertOpenAuthDoesNotExist(openauth);
@@ -215,11 +179,6 @@ describe("OpenAuth", () => {
 
   test("creates OpenAuth worker with multiple providers and bindings", async (scope) => {
     const resourceId = `${BRANCH_PREFIX}-openauth-multi`;
-
-    const authStore = await KVNamespace("auth-store-multi", {
-      title: `${resourceId}-auth-store`,
-      adopt: true,
-    });
 
     const cacheStore = await KVNamespace("cache-store", {
       title: `${resourceId}-cache`,
@@ -247,7 +206,6 @@ describe("OpenAuth", () => {
             scopes: ["email"],
           },
         },
-        storage: authStore,
         bindings: {
           CACHE: cacheStore,
         },
@@ -262,6 +220,8 @@ describe("OpenAuth", () => {
       expect(openauth.providers).toHaveProperty("google");
       expect(openauth.providers).toHaveProperty("facebook");
       expect(openauth.bindings.CACHE).toBe(cacheStore);
+      expect(openauth.store).toBeDefined();
+      expect(openauth.app).toBeDefined();
 
       // Verify all providers are listed in health check
       const response = await openauth.fetch("/");
@@ -278,24 +238,18 @@ describe("OpenAuth", () => {
   test("returns error response when no providers are specified", async (scope) => {
     const resourceId = `${BRANCH_PREFIX}-openauth-no-providers`;
 
-    const authStore = await KVNamespace("auth-store-error", {
-      title: `${resourceId}-auth-store`,
-      adopt: true,
-    });
-
     let openauth: any;
     try {
       openauth = await OpenAuth(resourceId, import.meta, {
         name: resourceId,
         providers: {},
-        storage: authStore,
         adopt: true,
       });
 
       // Test that the worker returns an error response
       const response = await openauth.fetch("/");
       expect(response.status).toBe(500);
-      
+
       const text = await response.text();
       expect(text).toContain("At least one OAuth provider must be configured");
     } finally {
@@ -304,8 +258,8 @@ describe("OpenAuth", () => {
     }
   });
 
-  test("returns error response when storage is not provided", async (scope) => {
-    const resourceId = `${BRANCH_PREFIX}-openauth-no-storage`;
+  test("creates auth store automatically when not provided", async (scope) => {
+    const resourceId = `${BRANCH_PREFIX}-openauth-auto-store`;
 
     let openauth: any;
     try {
@@ -317,16 +271,17 @@ describe("OpenAuth", () => {
             clientSecret: secret("fake-github-client-secret"),
           },
         },
-        storage: null as any,
         adopt: true,
       });
 
-      // Test that the worker returns an error response
+      // Test that the auth store was automatically created
+      expect(openauth.store).toBeDefined();
+      expect(openauth.store.title).toMatch(/auth-store/);
+      expect(openauth.bindings.AUTH_STORE).toBe(openauth.store);
+
+      // Test that the worker is healthy
       const response = await openauth.fetch("/");
-      expect(response.status).toBe(500);
-      
-      const text = await response.text();
-      expect(text).toContain("Storage (KV Namespace) is required for session management");
+      expect(response.status).toBe(200);
     } finally {
       await destroy(scope);
       await assertOpenAuthDoesNotExist(openauth);
