@@ -10,8 +10,8 @@ import {
 } from "./worker.ts";
 import type { BaseSchema } from "valibot";
 import { Hono } from "hono";
-// TODO: Re-enable when implementing proper OpenAuth integration
-// import { issuer } from "@openauthjs/openauth";
+import { issuer } from "@openauthjs/openauth";
+import { CloudflareStorage } from "@openauthjs/openauth/storage/cloudflare";
 
 /**
  * Configuration for an OAuth provider
@@ -34,10 +34,37 @@ export interface OAuthProviderConfig {
 }
 
 /**
+ * Supported OAuth providers configuration
+ */
+export type SupportedProviders = {
+  github?: OAuthProviderConfig;
+  google?: OAuthProviderConfig;
+  discord?: OAuthProviderConfig;
+  facebook?: OAuthProviderConfig;
+  apple?: OAuthProviderConfig;
+  microsoft?: OAuthProviderConfig;
+  spotify?: OAuthProviderConfig;
+  twitter?: OAuthProviderConfig;
+  tiktok?: OAuthProviderConfig;
+  linkedin?: OAuthProviderConfig;
+  twitch?: OAuthProviderConfig;
+  code?: {
+    sendCode: (email: string, code: string) => Promise<void> | void;
+  };
+} & {
+  [key: string]:
+    | OAuthProviderConfig
+    | { sendCode: (email: string, code: string) => Promise<void> | void }
+    | undefined;
+};
+
+/**
  * Properties for creating an OpenAuth Worker
  */
-export interface OpenAuthProps<B extends Bindings = Bindings>
-  extends Omit<
+export interface OpenAuthProps<
+  B extends Bindings = Bindings,
+  S extends Record<string, any> = Record<string, any>,
+> extends Omit<
     BaseWorkerProps<B>,
     | "name"
     | "bindings"
@@ -57,78 +84,7 @@ export interface OpenAuthProps<B extends Bindings = Bindings>
    * OAuth provider configurations
    * Supports all OpenAuth providers: github, google, discord, facebook, apple, microsoft, spotify, twitter, tiktok, etc.
    */
-  providers: {
-    /**
-     * GitHub OAuth provider configuration
-     */
-    github?: OAuthProviderConfig;
-
-    /**
-     * Google OAuth provider configuration
-     */
-    google?: OAuthProviderConfig;
-
-    /**
-     * Discord OAuth provider configuration
-     */
-    discord?: OAuthProviderConfig;
-
-    /**
-     * Facebook OAuth provider configuration
-     */
-    facebook?: OAuthProviderConfig;
-
-    /**
-     * Apple OAuth provider configuration
-     */
-    apple?: OAuthProviderConfig;
-
-    /**
-     * Microsoft OAuth provider configuration
-     */
-    microsoft?: OAuthProviderConfig;
-
-    /**
-     * Spotify OAuth provider configuration
-     */
-    spotify?: OAuthProviderConfig;
-
-    /**
-     * Twitter OAuth provider configuration
-     */
-    twitter?: OAuthProviderConfig;
-
-    /**
-     * TikTok OAuth provider configuration
-     */
-    tiktok?: OAuthProviderConfig;
-
-    /**
-     * LinkedIn OAuth provider configuration
-     */
-    linkedin?: OAuthProviderConfig;
-
-    /**
-     * Twitch OAuth provider configuration
-     */
-    twitch?: OAuthProviderConfig;
-
-    /**
-     * Code-based authentication provider (email/phone)
-     */
-    code?: {
-      /**
-       * Function to send authentication codes
-       */
-      sendCode: (email: string, code: string) => Promise<void> | void;
-    };
-  } & {
-    /**
-     * Additional custom OAuth providers
-     * Use this for any provider not explicitly listed above
-     */
-    [key: string]: OAuthProviderConfig | { sendCode: (email: string, code: string) => Promise<void> | void } | undefined;
-  };
+  providers: SupportedProviders;
 
   /**
    * KV Namespace for session storage
@@ -179,7 +135,7 @@ export interface OpenAuthProps<B extends Bindings = Bindings>
    * User schema definition for type safety
    * Should be a Valibot schema object
    */
-  subjects?: BaseSchema<any, any, any>;
+  subjects?: BaseSchema<S, S, any>;
 
   /**
    * Whether to adopt the Worker if it already exists when creating
@@ -199,15 +155,17 @@ export interface OpenAuthProps<B extends Bindings = Bindings>
   compatibilityFlags?: string[];
 }
 
-export function isOpenAuth(resource: Resource): resource is OpenAuth<any> {
+export function isOpenAuth(resource: Resource): resource is OpenAuth<any, any> {
   return resource[ResourceKind] === "cloudflare::OpenAuth";
 }
 
 /**
  * Output returned after OpenAuth Worker creation/update
  */
-export interface OpenAuth<B extends Bindings = Bindings>
-  extends Resource<"cloudflare::OpenAuth"> {
+export interface OpenAuth<
+  B extends Bindings = Bindings,
+  _S extends Record<string, any> = Record<string, any>,
+> extends Resource<"cloudflare::OpenAuth"> {
   /**
    * The ID of the worker
    */
@@ -238,12 +196,12 @@ export interface OpenAuth<B extends Bindings = Bindings>
   /**
    * The Hono app instance for adding custom routes
    */
-  app: any; // Hono app type
+  app: Hono;
 
   /**
    * OAuth provider configurations
    */
-  providers: OpenAuthProps<B>["providers"];
+  providers: SupportedProviders;
 
   /**
    * TTL configuration
@@ -300,11 +258,14 @@ export interface OpenAuth<B extends Bindings = Bindings>
  * console.log("Auth store:", auth.store.title);
  * ```
  */
-export function OpenAuth<const B extends Bindings>(
+export function OpenAuth<
+  const B extends Bindings,
+  const S extends Record<string, any> = Record<string, any>,
+>(
   id: string,
   meta: ImportMeta,
-  props: OpenAuthProps<B>,
-): Promise<OpenAuth<B>> & globalThis.Service {
+  props: OpenAuthProps<B, S>,
+): Promise<OpenAuth<B, S>> & globalThis.Service {
   // Create storage if not provided
   const authStore =
     props.storage ||
@@ -323,11 +284,9 @@ export function OpenAuth<const B extends Bindings>(
     bindings: {
       ...props.bindings,
       AUTH_STORE: authStore,
+      ...generateProviderBindings(props.providers),
     } as B & { AUTH_STORE: KVNamespaceResource },
-    env: {
-      ...props.env,
-      ...generateProviderEnvVars(props.providers),
-    },
+    env: props.env,
     url: props.url ?? true,
     adopt: props.adopt ?? false,
     compatibilityDate: props.compatibilityDate ?? "2025-04-26",
@@ -350,8 +309,11 @@ export function OpenAuth<const B extends Bindings>(
 
   // Transform the worker promise to include app and store properties
   const result = worker.then(async (workerResult) => {
-    const resolvedStore = await (typeof storeRef.current === 'string' ? storeRef.current : 
-                                 storeRef.current instanceof Promise ? await storeRef.current : storeRef.current);
+    const resolvedStore = await (typeof storeRef.current === "string"
+      ? storeRef.current
+      : storeRef.current instanceof Promise
+        ? await storeRef.current
+        : storeRef.current);
     return {
       ...workerResult,
       [ResourceKind]: "cloudflare::OpenAuth" as const,
@@ -361,8 +323,8 @@ export function OpenAuth<const B extends Bindings>(
       ttl: {
         reuse: props.ttl?.reuse ?? 60,
       },
-    } as OpenAuth<B>;
-  }) as Promise<OpenAuth<B>> & globalThis.Service;
+    } as OpenAuth<B, S>;
+  }) as Promise<OpenAuth<B, S>> & globalThis.Service;
 
   // Copy over service properties from original worker
   Object.setPrototypeOf(result, Object.getPrototypeOf(worker));
@@ -376,24 +338,27 @@ export function OpenAuth<const B extends Bindings>(
   return result;
 }
 
-function generateProviderEnvVars(
-  providers: OpenAuthProps["providers"],
-): Record<string, string> {
-  const env: Record<string, string> = {};
+function generateProviderBindings(
+  providers: SupportedProviders,
+): Record<string, Secret> {
+  const bindings: Record<string, Secret> = {};
 
   for (const [providerName, config] of Object.entries(providers)) {
-    if (config && 'clientId' in config && 'clientSecret' in config) {
+    if (config && "clientId" in config && "clientSecret" in config) {
       const upperProvider = providerName.toUpperCase();
-      env[`${upperProvider}_CLIENT_ID`] = config.clientId.unencrypted;
-      env[`${upperProvider}_CLIENT_SECRET`] = config.clientSecret.unencrypted;
+      bindings[`${upperProvider}_CLIENT_ID`] = config.clientId;
+      bindings[`${upperProvider}_CLIENT_SECRET`] = config.clientSecret;
     }
   }
 
-  return env;
+  return bindings;
 }
 
-async function generateOpenAuthHandler<B extends Bindings>(
-  props: OpenAuthProps<B>,
+async function generateOpenAuthHandler<
+  B extends Bindings,
+  S extends Record<string, any>,
+>(
+  props: OpenAuthProps<B, S>,
   app: Hono,
   request: Request,
   env: any,
@@ -406,6 +371,39 @@ async function generateOpenAuthHandler<B extends Bindings>(
     });
   }
 
+  // Create OpenAuth issuer with the configured providers
+  const authProviders = buildOpenAuthProviders(props.providers, env);
+  const storage = CloudflareStorage({
+    namespace: env.AUTH_STORE,
+  });
+
+  // Create the OpenAuth issuer
+  const auth = issuer({
+    subjects: (props.subjects as any) || {
+      user: (claims: any) => ({
+        id: claims.sub || claims.email || `user:${Date.now()}`,
+        email: claims.email,
+        name: claims.name,
+      }),
+    },
+    storage,
+    providers: authProviders,
+    success:
+      props.onSuccess ||
+      (async (ctx: any, value: any) => {
+        // Default success handler - create a generic user subject
+        return ctx.subject("user", {
+          id:
+            value.claims?.sub ||
+            value.claims?.email ||
+            `${value.provider}:${Date.now()}`,
+          email: value.claims?.email,
+          name: value.claims?.name,
+          provider: value.provider,
+        });
+      }),
+  });
+
   // Add health check endpoint
   app.get("/", (c) => {
     return c.json({
@@ -415,33 +413,15 @@ async function generateOpenAuthHandler<B extends Bindings>(
     });
   });
 
-  // TODO: Create OpenAuth issuer with the configured providers
-  // For now, create a placeholder that mimics the expected behavior
-  const authProviders = buildOpenAuthProviders(props.providers, env);
-
-  // Add auth endpoints for compatibility
-  app.get("/auth", (c) => {
-    return c.text("OpenAuth endpoint", 404);
-  });
-
-  app.get("/auth/:provider", (c) => {
-    const provider = c.req.param("provider");
-    if (authProviders[provider]) {
-      return c.text(`OAuth endpoint for ${provider}`, 200);
-    }
-    return c.text("Provider not found", 404);
-  });
-
-  // TODO: Implement proper OpenAuth issuer integration
-  // This is a placeholder implementation that needs to be replaced
-  // with actual OpenAuth issuer functionality
+  // Mount the OpenAuth issuer on the app
+  app.mount("/auth", auth.fetch);
 
   // Handle the request through the Hono app
   return app.fetch(request, env, ctx);
 }
 
 function buildOpenAuthProviders(
-  providers: OpenAuthProps["providers"],
+  providers: SupportedProviders,
   env: any,
 ): Record<string, any> {
   const openAuthProviders: Record<string, any> = {};
@@ -450,19 +430,42 @@ function buildOpenAuthProviders(
     if (!config) continue;
 
     if (providerName === "code" && "sendCode" in config) {
-      // TODO: Handle code provider - requires dynamic import for CodeProvider and CodeUI
-      console.warn("Code provider not yet implemented");
+      // Code provider configuration - this needs to be implemented based on actual OpenAuth API
+      console.warn(
+        "Code provider not yet fully implemented - needs proper OpenAuth integration",
+      );
     } else if ("clientId" in config && "clientSecret" in config) {
-      // For now, create a placeholder that will be replaced with actual OpenAuth provider implementation
-      // TODO: Implement proper provider loading using OpenAuth's provider system
+      const upperProvider = providerName.toUpperCase();
+      const clientId = env[`${upperProvider}_CLIENT_ID`];
+      const clientSecret = env[`${upperProvider}_CLIENT_SECRET`];
+
+      // For now, create basic provider configuration objects
+      // TODO: Replace with actual OpenAuth provider instances when available
       openAuthProviders[providerName] = {
         type: providerName,
-        clientId: env[`${providerName.toUpperCase()}_CLIENT_ID`],
-        clientSecret: env[`${providerName.toUpperCase()}_CLIENT_SECRET`],
-        scopes: config.scopes || [],
+        clientId,
+        clientSecret,
+        scope: config.scopes?.join(" ") || getDefaultScope(providerName),
       };
     }
   }
 
   return openAuthProviders;
+}
+
+function getDefaultScope(provider: string): string {
+  const defaultScopes: Record<string, string> = {
+    github: "user:email",
+    google: "openid email profile",
+    discord: "identify email",
+    facebook: "email",
+    apple: "email name",
+    microsoft: "openid email profile",
+    spotify: "user-read-email",
+    twitter: "tweet.read users.read",
+    tiktok: "user.info.basic",
+    linkedin: "r_liteprofile r_emailaddress",
+    twitch: "user:read:email",
+  };
+  return defaultScopes[provider] || "email";
 }
