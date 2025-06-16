@@ -453,19 +453,20 @@ function buildOpenAuthProviders(
   return openAuthProviders;
 }
 
-function getDefaultScope(provider: string): string {
+function getDefaultScope(providerName: string): string {
   const defaultScopes: Record<string, string> = {
-    github: "user:email",
-    google: "openid email profile",
+    github: "user:email read:user",
+    google: "openid profile email",
     discord: "identify email",
     facebook: "email",
     apple: "email name",
-    microsoft: "openid email profile",
-    spotify: "user-read-email",
+    microsoft: "openid profile email",
+    spotify: "user-read-email user-read-private",
     twitter: "tweet.read users.read",
     tiktok: "user.info.basic",
     linkedin: "r_liteprofile r_emailaddress",
     twitch: "user:read:email",
   };
-  return defaultScopes[provider] || "email";
+
+  return defaultScopes[providerName] || "openid profile email";
 }
