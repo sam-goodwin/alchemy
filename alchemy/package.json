@@ -108,6 +108,7 @@
     }
   },
   "dependencies": {
+    "@openauthjs/openauth": "^0.4.3",
     "unenv": "2.0.0-rc.15"
   },
   "peerDependencies": {
@@ -145,6 +146,7 @@
     "prettier": "^3.0.0",
     "stripe": "^17.0.0",
     "turndown": "^7.0.0",
+    "valibot": "^1.0.0",
     "yaml": "^2.0.0",
     "zod": "^3.0.0"
   },
