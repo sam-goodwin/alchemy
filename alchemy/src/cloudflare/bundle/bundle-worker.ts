@@ -1,3 +1,4 @@
+import kleur from "kleur";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { Bundle } from "../../esbuild/bundle.ts";
@@ -20,6 +21,7 @@ export type NoBundleResult = {
 
 export async function bundleWorkerScript<B extends Bindings>(
   props: WorkerProps<B> & {
+    name: string;
     entrypoint: string;
     compatibilityDate: string;
     compatibilityFlags: string[];
@@ -44,10 +46,16 @@ export async function bundleWorkerScript<B extends Bindings>(
     const rules = (
       props.rules ?? [
         {
-          globs: ["**/*.js", "**/*.mjs", "**/*.wasm"],
+          globs: [
+            "**/*.js",
+            "**/*.mjs",
+            "**/*.wasm",
+            ...(props.uploadSourceMaps ? ["**/*.js.map"] : []),
+          ],
         },
       ]
     ).flatMap((rule) => rule.globs);
+
     const files = Array.from(
       new Set(
         (
@@ -63,12 +71,25 @@ export async function bundleWorkerScript<B extends Bindings>(
         ).flat(),
       ),
     );
+    const useColor = !(process.env.CI || process.env.NO_COLOR);
+    logger.log(
+      `${useColor ? kleur.gray("worker:") : "worker:"} ${useColor ? kleur.blue(props.name) : props.name}`,
+    );
+    logger.log(
+      `${useColor ? kleur.gray("main:") : "main:"} ${useColor ? kleur.blue(main) : main}`,
+    );
+    logger.log(
+      `${useColor ? kleur.gray("dist:") : "dist:"} ${useColor ? kleur.blue(path.relative(process.cwd(), rootDir)) : path.relative(process.cwd(), rootDir)}:`,
+    );
+    // End of Selection
     return Object.fromEntries(
       await Promise.all(
-        files.map(async (file) => [
-          file,
-          await fs.readFile(path.resolve(rootDir, file)),
-        ]),
+        files.map(async (file, i) => {
+          logger.log(
+            kleur.blue(`${i < files.length - 1 ? "├─" : "└─"} ${file}`),
+          );
+          return [file, await fs.readFile(path.resolve(rootDir, file))];
+        }),
       ),
     );
   }

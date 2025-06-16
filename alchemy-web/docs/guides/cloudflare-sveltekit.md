@@ -10,114 +10,129 @@ This guide walks through how to deploy a SvelteKit application to Cloudflare Wor
 
 ## Create a new SvelteKit Project
 
-Start by creating a new SvelteKit project:
+Start by creating a new SvelteKit project using Alchemy:
 
 ::: code-group
 
 ```sh [bun]
-bun create svelte@latest my-sveltekit-app
+bunx alchemy create my-sveltekit-app --template=sveltekit
 cd my-sveltekit-app
-bun install
 ```
 
 ```sh [npm]
-npm create svelte@latest my-sveltekit-app
+npx alchemy create my-sveltekit-app --template=sveltekit
 cd my-sveltekit-app
-npm install
 ```
 
 ```sh [pnpm]
-pnpm create svelte@latest my-sveltekit-app
+pnpm dlx alchemy create my-sveltekit-app --template=sveltekit
 cd my-sveltekit-app
-pnpm install
 ```
 
 ```sh [yarn]
-yarn create svelte@latest my-sveltekit-app
+yarn dlx alchemy create my-sveltekit-app --template=sveltekit
 cd my-sveltekit-app
-yarn install
 ```
 
 :::
+
+The CLI will automatically:
+
+- Create a new SvelteKit project with TypeScript
+- Install all required dependencies including `@sveltejs/adapter-cloudflare`, `alchemy`, and `@cloudflare/workers-types`
+- Configure SvelteKit for Cloudflare Workers deployment
+- Generate the deployment configuration with Vite plugin setup
 
 > [!NOTE]
 > See Svelte's [Introduction](https://svelte.dev/docs/kit/introduction) guide for more details on SvelteKit applications.
 
-## Install Cloudflare Adapter and Dependencies
+## Explore the Generated Files
 
-Install the required dependencies:
+Let's explore the key files that were created for you:
 
-::: code-group
+### SvelteKit Configuration
 
-```sh [bun]
-bun add @sveltejs/adapter-cloudflare alchemy cloudflare
-bun add -D @cloudflare/workers-types
-```
-
-```sh [npm]
-npm install @sveltejs/adapter-cloudflare alchemy cloudflare
-npm install --save-dev @cloudflare/workers-types
-```
-
-```sh [pnpm]
-pnpm add @sveltejs/adapter-cloudflare alchemy cloudflare
-pnpm add -D @cloudflare/workers-types
-```
-
-```sh [yarn]
-yarn add @sveltejs/adapter-cloudflare alchemy cloudflare
-yarn add -D @cloudflare/workers-types
-```
-
-:::
-
-## Configure SvelteKit for Cloudflare
-
-Update your `svelte.config.js` to use the Cloudflare adapter:
+The `svelte.config.js` file is already configured for Cloudflare deployment:
 
 ```js
-import adapter from '@sveltejs/adapter-cloudflare';
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import adapter from "@sveltejs/adapter-cloudflare";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	preprocess: vitePreprocess(),
-	kit: {
-		adapter: adapter()
-	}
+  preprocess: vitePreprocess(),
+  kit: {
+    adapter: adapter(),
+  },
 };
 
 export default config;
 ```
 
-Create or update your `vite.config.ts` to configure the `cloudflare:workers` module:
+### Vite Configuration
+
+The `vite.config.ts` file is configured with Cloudflare Workers development support:
 
 ```ts
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
-import { cloudflareWorkersDevEnvironmentShim, external } from 'alchemy/cloudflare';
+import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from "vite";
 
 export default defineConfig({
-	plugins: [
-		sveltekit(),
-		cloudflareWorkersDevEnvironmentShim()
-	],
-	define: {
-		global: 'globalThis',
-	},
-	build: {
-		rollupOptions: {
-			external
-		}
-	}
+  plugins: [sveltekit()],
 });
 ```
 
-## Create `alchemy.run.ts`
+### Deployment Configuration
 
-Create an `alchemy.run.ts` file in the root of your project:
+The `alchemy.run.ts` file contains your infrastructure setup:
 
-```ts
+```typescript
+/// <reference types="@types/node" />
+
+import alchemy from "alchemy";
+import { SvelteKit } from "alchemy/cloudflare";
+
+const app = await alchemy("my-sveltekit-app");
+
+export const worker = await SvelteKit("website", {
+  command: "bun run build",
+});
+
+console.log({
+  url: worker.url,
+});
+
+await app.finalize();
+```
+
+### Type Definitions
+
+The `types/env.d.ts` file provides type-safe access to Cloudflare bindings:
+
+```typescript
+// This file infers types for the cloudflare:workers environment from your Alchemy Worker.
+// @see https://alchemy.run/docs/concepts/bindings.html#type-safe-bindings
+
+import type { worker } from "../alchemy.run.ts";
+
+export type CloudflareEnv = typeof worker.Env;
+
+declare global {
+  type Env = CloudflareEnv;
+}
+
+declare module "cloudflare:workers" {
+  namespace Cloudflare {
+    export interface Env extends CloudflareEnv {}
+  }
+}
+```
+
+## Add Cloudflare Resources
+
+Let's enhance the `alchemy.run.ts` file to add KV storage and R2 buckets:
+
+```typescript
 import alchemy from "alchemy";
 import { KVNamespace, R2Bucket, SvelteKit } from "alchemy/cloudflare";
 
@@ -147,37 +162,15 @@ await app.finalize();
 
 ## Configure SvelteKit Types
 
-Create `src/env.ts` to define your Cloudflare bindings with type safety:
+Now that we have bindings, let's update the type configuration. The generated `types/env.d.ts` already provides the correct types, but let's also update `src/app.d.ts` to use these types:
 
 ```ts
-import type { website } from "../alchemy.run.js";
-
-export interface CloudflarePlatform {
-  env: typeof website.Env;
-  context: ExecutionContext;
-  caches: CacheStorage & { default: Cache };
-}
+import type { CloudflarePlatform } from "./env";
 
 declare global {
-  export type CloudflareEnv = typeof website.Env;
-}
-
-declare module "cloudflare:workers" {
-  namespace Cloudflare {
-    export interface Env extends CloudflareEnv {}
+  namespace App {
+    interface Platform extends CloudflarePlatform {}
   }
-}
-```
-
-Then update `src/app.d.ts` to use these types:
-
-```ts
-import type { CloudflarePlatform } from './env';
-
-declare global {
-	namespace App {
-		interface Platform extends CloudflarePlatform {}
-	}
 }
 
 export {};
@@ -187,47 +180,49 @@ Alternatively, you can define types directly in `src/app.d.ts`:
 
 ```ts
 declare global {
-	namespace App {
-		interface Platform {
-			env: {
-				STORAGE: R2Bucket;
-				AUTH_STORE: KVNamespace;
-			};
-			context: ExecutionContext;
-			caches: CacheStorage & { default: Cache };
-		}
-	}
+  namespace App {
+    interface Platform {
+      env: {
+        STORAGE: R2Bucket;
+        AUTH_STORE: KVNamespace;
+      };
+      context: ExecutionContext;
+      caches: CacheStorage & { default: Cache };
+    }
+  }
 }
 
 export {};
 ```
 
 > [!NOTE]
-> The `src/env.ts` approach provides better type safety since `.ts` files are type-checked, while `.d.ts` files are not. It also automatically derives types from your Alchemy configuration. The traditional `app.d.ts` approach is simpler but requires manual type definitions. Both approaches work with SvelteKit's adapter system by extending the `App.Platform` interface.
+> The `types/env.d.ts` approach provides better type safety since `.ts` files are type-checked, while `.d.ts` files are not. It also automatically derives types from your Alchemy configuration. The traditional `app.d.ts` approach is simpler but requires manual type definitions. Both approaches work with SvelteKit's adapter system by extending the `App.Platform` interface.
 
 ## Using Cloudflare Bindings
 
 Both type configurations support two ways to access Cloudflare resources:
 
 **Option 1: Direct runtime import (recommended)**
+
 ```ts
 // +page.server.ts
 import { env } from "cloudflare:workers";
 
 export const load = async () => {
-	const kvData = await env.AUTH_STORE?.get('some-key');
-	const r2Object = await env.STORAGE?.get('some-file');
-	return { kvData };
+  const kvData = await env.AUTH_STORE?.get("some-key");
+  const r2Object = await env.STORAGE?.get("some-file");
+  return { kvData };
 };
 ```
 
 **Option 2: Via platform parameter**
+
 ```ts
 // +page.server.ts
 export const load = async ({ platform }) => {
-	const kvData = await platform?.env?.AUTH_STORE?.get('some-key');
-	const r2Object = await platform?.env?.STORAGE?.get('some-file');
-	return { kvData };
+  const kvData = await platform?.env?.AUTH_STORE?.get("some-key");
+  const r2Object = await platform?.env?.STORAGE?.get("some-file");
+  return { kvData };
 };
 ```
 
@@ -265,19 +260,19 @@ Now we can run and deploy our Alchemy stack:
 ::: code-group
 
 ```sh [bun]
-bun ./alchemy.run
+bun run deploy
 ```
 
 ```sh [npm]
-npx tsx ./alchemy.run
+npm run deploy
 ```
 
 ```sh [pnpm]
-pnpm tsx ./alchemy.run
+pnpm run deploy
 ```
 
 ```sh [yarn]
-yarn tsx ./alchemy.run
+yarn run deploy
 ```
 
 :::
@@ -286,7 +281,7 @@ It should output the URL of your deployed site:
 
 ```sh
 {
-  url: "https://your-site.your-sub-domain.workers.dev",
+	url: "https://your-site.your-sub-domain.workers.dev",
 }
 ```
 
@@ -318,8 +313,24 @@ yarn run dev
 
 For illustrative purposes, let's destroy the Alchemy stack:
 
-```sh
-bun ./alchemy.run --destroy
+::: code-group
+
+```sh [bun]
+bun run destroy
 ```
 
-You're done! Happy SvelteKit'ing 🚀 
+```sh [npm]
+npm run destroy
+```
+
+```sh [pnpm]
+pnpm run destroy
+```
+
+```sh [yarn]
+yarn run destroy
+```
+
+:::
+
+You're done! Happy SvelteKit'ing 🚀

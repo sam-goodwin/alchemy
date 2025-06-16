@@ -10,158 +10,129 @@ This guide demonstrates how to deploy a Redwood application with Drizzle to Clou
 
 ## Create a new Redwood Project
 
-Start by creating a new Redwood project using the Drizzle template:
+Start by creating a new Redwood project using Alchemy:
 
 ::: code-group
 
 ```sh [bun]
-bunx degit redwoodjs/example-drizzle my-cloudflare-app
+bunx alchemy create my-cloudflare-app --template=rwsdk
 cd my-cloudflare-app
-bun install
 ```
 
 ```sh [npm]
-npx degit redwoodjs/example-drizzle my-cloudflare-app
+npx alchemy create my-cloudflare-app --template=rwsdk
 cd my-cloudflare-app
-npm install
 ```
 
 ```sh [pnpm]
-pnpm dlx degit redwoodjs/example-drizzle my-cloudflare-app
+pnpm dlx alchemy create my-cloudflare-app --template=rwsdk
 cd my-cloudflare-app
-pnpm install
 ```
 
 ```sh [yarn]
-yarn dlx degit redwoodjs/example-drizzle my-cloudflare-app
+yarn dlx alchemy create my-cloudflare-app --template=rwsdk
 cd my-cloudflare-app
-yarn install
 ```
 
 :::
 
-Install `cloudflare` and `alchemy`:
+The CLI will automatically:
 
-::: code-group
+- Create a new Redwood SDK project with Drizzle
+- Install all required dependencies including `alchemy` and `@cloudflare/workers-types`
+- Run the initial development setup
+- Configure the deployment infrastructure with D1 database and Durable Objects
 
-```sh [bun]
-bun add alchemy cloudflare
-```
+## Explore the Generated Files
 
-```sh [npm]
-npm install alchemy cloudflare
-```
+Let's explore the key files that were created for you:
 
-```sh [pnpm]
-pnpm add alchemy cloudflare
-```
+### Deployment Configuration
 
-```sh [yarn]
-yarn add alchemy cloudflare
-```
+The `alchemy.run.ts` file contains your infrastructure setup with D1 database and Durable Objects:
 
-:::
-
-## Create `alchemy.run.ts`
-
-```ts
-// ./alchemy.run.ts
-import "alchemy/cloudflare";
+```typescript
+/// <reference types="@types/node" />
 import alchemy from "alchemy";
-import { D1Database, Redwood } from "alchemy/cloudflare";
+import {
+  D1Database,
+  DurableObjectNamespace,
+  Redwood,
+} from "alchemy/cloudflare";
 
-const app = await alchemy("cloudflare-redwood", {
-  stage: process.env.USER ?? "dev",
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
-  quiet: process.argv.includes("--verbose") ? false : true,
-});
+const app = await alchemy("my-cloudflare-app");
 
-// (resources go here)
-
-await app.finalize(); // must be at end
-```
-
-> [!NOTE]
-> See the [Getting Started](../getting-started) guide if this is unfamiliar.
-
-## Create Redwood and Database
-
-Import the `Redwood` and `D1Database` resources to configure your application:
-
-```ts
-const database = await D1Database("redwood-db", {
-  name: "redwood-db",
+const database = await D1Database("database", {
+  name: "my-cloudflare-app-db",
   migrationsDir: "drizzle",
 });
 
-export const website = await Redwood("redwood-website", {
+export const worker = await Redwood("website", {
+  name: "my-cloudflare-app-website",
+  command: "bun run build",
   bindings: {
+    AUTH_SECRET_KEY: alchemy.secret(process.env.AUTH_SECRET_KEY),
     DB: database,
+    SESSION_DURABLE_OBJECT: new DurableObjectNamespace("session", {
+      className: "SessionDurableObject",
+    }),
   },
 });
-```
 
-Log out the website's URL:
-```ts
 console.log({
-  url: website.url
-})
+  url: worker.url,
+});
+
+await app.finalize();
 ```
 
-## Deploy Redwood Application
+### Type Definitions
 
-Login to Cloudflare:
+The `types/env.d.ts` file provides type-safe access to Cloudflare bindings:
 
-::: code-group
+```typescript
+// This file infers types for the cloudflare:workers environment from your Alchemy Worker.
+// @see https://alchemy.run/docs/concepts/bindings.html#type-safe-bindings
 
-```sh [bun]
-bun wrangler login
-```
+import type { worker } from "../alchemy.run.ts";
 
-```sh [npm]
-npx wrangler login
-```
+export type CloudflareEnv = typeof worker.Env;
 
-```sh [pnpm]
-pnpm wrangler login
-```
+declare global {
+  type Env = CloudflareEnv;
+}
 
-```sh [yarn]
-yarn wrangler login
-```
-
-:::
-
-Run `alchemy.run.ts` script to deploy:
-
-::: code-group
-
-```sh [bun]
-bun ./alchemy.run
-```
-
-```sh [npm]
-npx tsx ./alchemy.run
-```
-
-```sh [pnpm]
-pnpm tsx ./alchemy.run
-```
-
-```sh [yarn]
-yarn tsx ./alchemy.run
-```
-
-:::
-
-It should log out the URL of your deployed site:
-```sh
-{
-  url: "https://your-site.your-sub-domain.workers.dev",
+declare module "cloudflare:workers" {
+  namespace Cloudflare {
+    export interface Env extends CloudflareEnv {}
+  }
 }
 ```
 
-Click the endpoint to see your Redwood application!
+### Environment Configuration
+
+The CLI also updated your `.env` and `.env.example` files with the required Alchemy password:
+
+```sh
+# .env
+ALCHEMY_PASSWORD=change-me
+
+# .env.example
+ALCHEMY_PASSWORD=your-alchemy-password
+```
+
+### Package Scripts
+
+The `package.json` has been updated with convenient deployment scripts:
+
+```json
+{
+  "scripts": {
+    "deploy": "tsx --env-file .env ./alchemy.run.ts",
+    "destroy": "tsx --env-file .env ./alchemy.run.ts --destroy"
+  }
+}
+```
 
 ## Working with Drizzle Schema and Migrations
 
@@ -194,8 +165,12 @@ export const users = sqliteTable("users", {
   salt: text("salt"),
   resetToken: text("reset_token"),
   resetTokenExpiresAt: integer("reset_token_expires_at"),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(
+    sql`CURRENT_TIMESTAMP`
+  ),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(
+    sql`CURRENT_TIMESTAMP`
+  ),
 });
 
 // Add a new posts table
@@ -204,8 +179,12 @@ export const posts = sqliteTable("posts", {
   title: text("title").notNull(),
   body: text("body").notNull(),
   userId: text("user_id").references(() => users.id),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(
+    sql`CURRENT_TIMESTAMP`
+  ),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(
+    sql`CURRENT_TIMESTAMP`
+  ),
 });
 ```
 
@@ -235,6 +214,62 @@ yarn migrate:new
 
 This will create a new migration file in the `drizzle` directory.
 
+## Deploy Redwood Application
+
+Login to Cloudflare:
+
+::: code-group
+
+```sh [bun]
+bun wrangler login
+```
+
+```sh [npm]
+npx wrangler login
+```
+
+```sh [pnpm]
+pnpm wrangler login
+```
+
+```sh [yarn]
+yarn wrangler login
+```
+
+:::
+
+Run the deploy script to deploy:
+
+::: code-group
+
+```sh [bun]
+bun run deploy
+```
+
+```sh [npm]
+npm run deploy
+```
+
+```sh [pnpm]
+pnpm run deploy
+```
+
+```sh [yarn]
+yarn run deploy
+```
+
+:::
+
+It should log out the URL of your deployed site:
+
+```sh
+{
+  url: "https://your-site.your-sub-domain.workers.dev",
+}
+```
+
+Click the endpoint to see your Redwood application!
+
 ### Deploy with Migrations
 
 Now that we've modified the schema and generated migrations, let's redeploy our application with the updated database schema:
@@ -242,25 +277,24 @@ Now that we've modified the schema and generated migrations, let's redeploy our 
 ::: code-group
 
 ```sh [bun]
-bun ./alchemy.run
+bun run deploy
 ```
 
 ```sh [npm]
-npx tsx ./alchemy.run
+npm run deploy
 ```
 
 ```sh [pnpm]
-pnpm tsx ./alchemy.run
+pnpm run deploy
 ```
 
 ```sh [yarn]
-yarn tsx ./alchemy.run
+yarn run deploy
 ```
 
 :::
 
 The D1Database resource will automatically apply migrations from the directory we specified earlier (`migrationsDir: "drizzle"`).
-
 
 ## Local Development
 
@@ -305,19 +339,19 @@ That's it! You can now tear down the app (if you want to):
 ::: code-group
 
 ```sh [bun]
-bun ./alchemy.run --destroy
+bun run destroy
 ```
 
 ```sh [npm]
-npx tsx ./alchemy.run --destroy
+npm run destroy
 ```
 
 ```sh [pnpm]
-pnpm tsx ./alchemy.run --destroy
+pnpm run destroy
 ```
 
 ```sh [yarn]
-yarn tsx ./alchemy.run --destroy
+yarn run destroy
 ```
 
 :::

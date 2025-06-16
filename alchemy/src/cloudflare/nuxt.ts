@@ -53,10 +53,11 @@ export async function Nuxt<B extends Bindings>(
   // Call the underlying Website resource with Nuxt defaults
   return Website(id, {
     ...props,
+    noBundle: props?.noBundle ?? true,
     // Default build command, can be overridden by props.command
     command: props?.command ?? "bun run build",
     // Default entry point for cloudflare-module preset
-    main: props?.main ?? "./index.ts",
+    main: props?.main ?? "./.output/server/index.mjs",
     // Default static assets directory for cloudflare-module preset
     assets: props?.assets ?? path.join(".output", "public"),
     // Ensure nodejs_compat flag is included for Nuxt compatibility

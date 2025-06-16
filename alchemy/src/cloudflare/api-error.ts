@@ -94,6 +94,9 @@ export async function handleApiError(
   const errors: { message: string }[] = json?.errors || [
     { message: response.statusText },
   ];
-  const errorMessage = `Error ${response.status} ${action} ${resourceType}${resourceName ? ` '${resourceName}'` : ""}: ${errors[0]?.message || response.statusText}`;
+  const errorMessage = `Error ${response.status} ${action} ${resourceType}${
+    resourceName ? ` '${resourceName}'` : ""
+  }: ${errors.map((error) => error.message).join(", ")}`;
+  // End of Selection
   throw new CloudflareApiError(errorMessage, response, errors);
 }

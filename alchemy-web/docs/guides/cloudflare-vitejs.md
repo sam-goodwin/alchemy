@@ -10,98 +10,143 @@ This guide demonstrates how to deploy a Vite.js React TypeScript application wit
 
 ## Create a new Vite.js Project
 
-Start by creating a new Vite.js project:
+Start by creating a new Vite.js project using Alchemy:
 
 ::: code-group
 
 ```sh [bun]
-bun create cloudflare@latest my-react-app --framework=react --platform=workers --no-deploy
+bunx alchemy create my-react-app --template=vite
+cd my-react-app
 ```
 
 ```sh [npm]
-npm create cloudflare@latest my-react-app -- --framework=react --platform=workers --no-deploy
+npx alchemy create my-react-app --template=vite
+cd my-react-app
 ```
 
 ```sh [pnpm]
-pnpm create cloudflare@latest my-react-app -- --framework=react --platform=workers --no-deploy
+pnpm dlx alchemy create my-react-app --template=vite
+cd my-react-app
 ```
 
 ```sh [yarn]
-yarn create cloudflare@latest my-react-app -- --framework=react --platform=workers --no-deploy
+yarn dlx alchemy create my-react-app --template=vite
+cd my-react-app
 ```
 
 :::
 
-## Install dependencies:
+The CLI will automatically:
 
-::: code-group
+- Create a new Vite.js React TypeScript project
+- Install all required dependencies including `alchemy`, `@cloudflare/workers-types`, and the Cloudflare Vite plugin
+- Configure Vite for Cloudflare Workers deployment
+- Generate the deployment configuration and Worker endpoint
 
-```sh [bun]
-bun add -D alchemy cloudflare @cloudflare/workers-types
+## Explore the Generated Files
+
+Let's explore the key files that were created for you:
+
+### Vite Configuration
+
+The `vite.config.ts` file is already configured with the Cloudflare plugin:
+
+```typescript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+import { cloudflare } from "@cloudflare/vite-plugin";
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), cloudflare()],
+});
 ```
 
-```sh [npm]
-npm install --save-dev alchemy cloudflare @cloudflare/workers-types
+### TypeScript Configuration
+
+The `tsconfig.json` is configured for Cloudflare Workers:
+
+```json
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "lib": ["es2021"],
+    "jsx": "react-jsx",
+    "module": "es2022",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["@cloudflare/workers-types"]
+  },
+  "exclude": ["test"],
+  "include": ["types/**/*.ts", "src/**/*.ts"]
+}
 ```
 
-```sh [pnpm]
-pnpm add -D alchemy cloudflare @cloudflare/workers-types
+### Worker API Endpoint
+
+The `worker/index.ts` file contains a simple API endpoint:
+
+```typescript
+export default {
+  fetch(request) {
+    const url = new URL(request.url);
+
+    if (url.pathname.startsWith("/api/")) {
+      return Response.json({
+        name: "Cloudflare",
+      });
+    }
+    return new Response(null, { status: 404 });
+  },
+} satisfies ExportedHandler<Env>;
 ```
 
-```sh [yarn]
-yarn add -D alchemy cloudflare @cloudflare/workers-types
-```
+### Deployment Configuration
 
-:::
+The `alchemy.run.ts` file contains your infrastructure setup:
 
-## Remove Unnecessary files
-
-Cloudflare's Vite.js template uses `wrangler.jsonc` and `wrangler types` to generate types which are not used by Alchemy.
-
-Let's remove these:
-
-```sh
-rm -rf worker-configuration.d.ts wrangler.jsonc
-```
-
-## Create `alchemy.run.ts`
-
-`alchemy.run.ts` can be thought of as kinda like the `wrangler.jsonc` except in pure TypeScript code.
-
-Let's create it and use the `Vite` from `alchemy/cloudflare` to build and deploy our Vite.js project to Cloudflare.
-
-```ts
-/// <reference types="node" />
+```typescript
+/// <reference types="@types/node" />
 
 import alchemy from "alchemy";
 import { Vite } from "alchemy/cloudflare";
 
-const app = await alchemy("cloudflare-vite", {
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
-});
+const app = await alchemy("my-react-app");
 
-export const website = await Vite("vite-website", {
+export const worker = await Vite("website", {
   main: "./worker/index.ts",
   command: "bun run build",
 });
 
 console.log({
-  url: website.url,
+  url: worker.url,
 });
 
 await app.finalize();
 ```
 
-## Configure Alchemy Types
+### Type Definitions
 
-As mentioned, Alchemy does not use `wrangler types` to generate `worker-configuration.d.ts` types. Instead, types are inferred from your Alchemy code directly.
+The `types/env.d.ts` file provides type-safe access to Cloudflare bindings:
 
-To configure this, first create `./worker/env.ts` with the following content:
+```typescript
+// This file infers types for the cloudflare:workers environment from your Alchemy Worker.
+// @see https://alchemy.run/docs/concepts/bindings.html#type-safe-bindings
 
-```ts
-import type { website } from "../alchemy.run.ts";
+import type { worker } from "../alchemy.run.ts";
 
-export type CloudflareEnv = typeof website.Env;
+export type CloudflareEnv = typeof worker.Env;
 
 declare global {
   type Env = CloudflareEnv;
@@ -111,19 +156,6 @@ declare module "cloudflare:workers" {
   namespace Cloudflare {
     export interface Env extends CloudflareEnv {}
   }
-}
-```
-
-Then, replace `tsconfig.worker.json` with the following content:
-
-```json
-{
-  "extends": "./tsconfig.node.json",
-  "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
-    "types": ["@cloudflare/workers-types"]
-  },
-  "include": ["./worker"]
 }
 ```
 
@@ -156,24 +188,24 @@ yarn wrangler login
 
 ## Deploy Static Site
 
-Run `alchemy.run.ts` script to deploy:
+Run the deploy script to deploy:
 
 ::: code-group
 
 ```sh [bun]
-bun ./alchemy.run
+bun run deploy
 ```
 
 ```sh [npm]
-npx tsx ./alchemy.run
+npm run deploy
 ```
 
 ```sh [pnpm]
-pnpm tsx ./alchemy.run
+pnpm run deploy
 ```
 
 ```sh [yarn]
-yarn tsx ./alchemy.run
+yarn run deploy
 ```
 
 :::
@@ -195,19 +227,19 @@ Cloudflare's Vite.js plugin can be run in `dev` mode:
 ::: code-group
 
 ```sh [bun]
-bun vite dev
+bun run dev
 ```
 
 ```sh [npm]
-npx vite dev
+npm run dev
 ```
 
 ```sh [pnpm]
-pnpm vite dev
+pnpm run dev
 ```
 
 ```sh [yarn]
-yarn vite dev
+yarn run dev
 ```
 
 :::
@@ -240,19 +272,19 @@ That's it! You can now tear down the app (if you want to):
 ::: code-group
 
 ```sh [bun]
-bun ./alchemy.run --destroy
+bun run destroy
 ```
 
 ```sh [npm]
-npx tsx ./alchemy.run --destroy
+npm run destroy
 ```
 
 ```sh [pnpm]
-pnpm tsx ./alchemy.run --destroy
+pnpm run destroy
 ```
 
 ```sh [yarn]
-yarn tsx ./alchemy.run --destroy
+yarn run destroy
 ```
 
 :::

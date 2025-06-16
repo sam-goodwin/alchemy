@@ -1,9 +1,16 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.0.0-beta.5/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
   "files": {
     "includes": [
+      "./src/**/*.ts",
       "./**/package.json",
       "./**/biome.json",
+      "./alchemy/bin/**/*.ts",
       "./alchemy/src/**/*.ts",
       "./alchemy/src/**/*.tsx",
       "./alchemy/src/**/*.js",

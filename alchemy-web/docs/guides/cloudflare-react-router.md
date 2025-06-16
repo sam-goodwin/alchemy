@@ -10,110 +10,84 @@ This guide demonstrates how to deploy a [React Router](https://reactrouter.com/)
 
 ## Create a new React Router Project
 
-Start by creating new React Router project using the [Cloudflare template](https://developers.cloudflare.com/workers/frameworks/framework-guides/react-router/). 
+Start by creating a new React Router project using Alchemy:
+
+::: code-group
+
+```sh [bun]
+bunx alchemy create my-react-router-app --template=react-router
+cd my-react-router-app
+```
+
+```sh [npm]
+npx alchemy create my-react-router-app --template=react-router
+cd my-react-router-app
+```
+
+```sh [pnpm]
+pnpm dlx alchemy create my-react-router-app --template=react-router
+cd my-react-router-app
+```
+
+```sh [yarn]
+yarn dlx alchemy create my-react-router-app --template=react-router
+cd my-react-router-app
+```
+
+:::
+
+The CLI will automatically:
+
+- Create a new React Router project using the Cloudflare template
+- Install all required dependencies including `alchemy` and `@cloudflare/workers-types`
+- Configure the project for Cloudflare Workers deployment
+- Generate the deployment configuration with proper TypeScript setup
 
 > [!NOTE]
-> This template assumes you're using wrangler. We will adapt it to Alchemy (and learn some Alchemy concepts along the way).
+> This template is based on Cloudflare's React Router template but adapted to work with Alchemy instead of wrangler.
 
+## Explore the Generated Files
 
-::: code-group
+Let's explore the key files that were created for you:
 
-```sh [bun]
-bun create cloudflare@latest my-react-router-app --framework=react-router
-```
+### Deployment Configuration
 
-```sh [npm]
-npm create cloudflare@latest -- my-react-router-app --framework=react-router
-```
+The `alchemy.run.ts` file contains your infrastructure setup:
 
-```sh [pnpm]
-pnpm create cloudflare@latest my-react-router-app --framework=react-router
-```
-
-```sh [yarn]
-yarn create cloudflare my-react-router-app --framework=react-router
-```
-
-:::
-
-## Remove Unnecessary files
-
-Cloudflare's React Router template uses `wrangler.jsonc` and `wrangler types` to generate types which are not used by Alchemy. Let's remove these.
-
-```sh
-cd ./my-react-router-app
-rm -rf worker-configuration.d.ts wrangler.jsonc
-```
-
-## Install Dependenices
-
-Now install the alchemy and cloudflare dependencies.
-
-::: code-group
-
-```sh [bun]
-bun add alchemy cloudflare
-bun add -D @cloudflare/workers-types
-```
-
-```sh [npm]
-npm install alchemy cloudflare
-bun install --save-dev @cloudflare/workers-types
-```
-
-```sh [pnpm]
-pnpm add alchemy cloudflare
-pnpm add -D @cloudflare/workers-types
-```
-
-```sh [yarn]
-yarn add alchemy cloudflare
-yarn add -D @cloudflare/workers-types
-```
-:::
-
-## Create `alchemy.run.ts`
-
-`alchemy.run.ts` can be thought of as kinda like the `wrangler.jsonc` except in pure TypeScript code.
-
-Let's create it and use the `ReactRouter` from `alchemy/cloudflare` to build and deploy our React Router project.
-
-```ts
-/// <reference types="node" />
+```typescript
+/// <reference types="@types/node" />
 
 import alchemy from "alchemy";
 import { ReactRouter } from "alchemy/cloudflare";
 
-const app = await alchemy("my-react-router-app", {
-  stage: process.env.USER ?? "dev",
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
-});
+const app = await alchemy("my-react-router-app");
 
-export const website = await ReactRouter("website", {
+export const worker = await ReactRouter("website", {
   main: "./workers/app.ts",
   command: "bun run build",
 });
 
 console.log({
-  url: website.url,
+  url: worker.url,
 });
 
 await app.finalize();
 ```
 
-## Configure Alchemy Types
+### Type Definitions
 
-As mentioned, Alchemy does not use `wrangler types` to generate `worker-configuration.d.ts` types. Instead, types are inferred from your Alchemy code directly.
+The `types/env.d.ts` file provides type-safe access to Cloudflare bindings:
 
-To configure this, first create `./workers/env.ts` with the following content:
+```typescript
+// This file infers types for the cloudflare:workers environment from your Alchemy Worker.
+// @see https://alchemy.run/docs/concepts/bindings.html#type-safe-bindings
 
-```ts
-import type { website } from "../alchemy.run.ts";
+import type { worker } from "../alchemy.run.ts";
 
-export type CloudflareEnv = typeof website.Env;
+export type CloudflareEnv = typeof worker.Env;
 
 declare global {
-  type Env = CloudflareEnv
+  type Env = CloudflareEnv;
 }
 
 declare module "cloudflare:workers" {
@@ -123,7 +97,9 @@ declare module "cloudflare:workers" {
 }
 ```
 
-Then, update `tsconfig.json` to include `./workers/env.ts` and `@cloudflare/workers-types` as global types:
+### TypeScript Configuration
+
+The CLI updated the `tsconfig.json` to include proper Cloudflare types:
 
 ```json
 {
@@ -138,11 +114,12 @@ Then, update `tsconfig.json` to include `./workers/env.ts` and `@cloudflare/work
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
-    // register Alchemy and Cloudflare types globally
-    "types": ["./workers/env.ts", "@cloudflare/workers-types"]
+    "types": ["@cloudflare/workers-types", "./types/env.d.ts"]
   }
 }
 ```
+
+The CLI also modified the `tsconfig.node.json` to exclude unnecessary files and properly reference the types.
 
 ## Log in to Cloudflare
 
@@ -165,6 +142,7 @@ pnpm wrangler login
 ```sh [yarn]
 yarn wrangler login
 ```
+
 :::
 
 > [!TIP]
@@ -177,36 +155,77 @@ Now we can run and deploy our Alchemy stack:
 ::: code-group
 
 ```sh [bun]
-bun ./alchemy.run
+bun run deploy
 ```
 
 ```sh [npm]
-npx tsx ./alchemy.run
+npm run deploy
 ```
 
 ```sh [pnpm]
-pnpm tsx ./alchemy.run
+pnpm run deploy
 ```
 
 ```sh [yarn]
-yarn tsx ./alchemy.run
+yarn run deploy
 ```
 
 :::
 
 It will log out the URL of your new React Router website hosted on Cloudflare:
+
 ```
 {
   url: "https://website.${your-sub-domain}.workers.dev",
 }
 ```
 
+## Local Development
+
+To run your application locally:
+
+::: code-group
+
+```sh [bun]
+bun run dev
+```
+
+```sh [npm]
+npm run dev
+```
+
+```sh [pnpm]
+pnpm run dev
+```
+
+```sh [yarn]
+yarn run dev
+```
+
+:::
+
 ## Destroy
 
-For illustrative purposes, let's destroy the Alchemy stack.
+For illustrative purposes, let's destroy the Alchemy stack:
 
-```sh
-bun ./alchemy.run.ts --destroy
+::: code-group
+
+```sh [bun]
+bun run destroy
 ```
+
+```sh [npm]
+npm run destroy
+```
+
+```sh [pnpm]
+pnpm run destroy
+```
+
+```sh [yarn]
+yarn run destroy
+```
+
+:::
 
 You're done! Happy React-Router'ing 😎

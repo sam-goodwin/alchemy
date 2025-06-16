@@ -6,18 +6,23 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sam-goodwin/alchemy",
+    "url": "git+https://github.com/sam-goodwin/alchemy.git",
     "directory": "alchemy"
   },
   "scripts": {
-    "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b",
+    "build:cli": "./scripts/bundle-cli.sh",
+    "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b && bun run build:cli",
+    "docs:gen": "rm -rf ./docs && typedoc",
     "postbuild": "cpx 'src/**/*/types.d.ts' lib",
-    "publish:npm": "cp ../README.md . && bun run build && npm publish && rm README.md",
-    "docs:gen": "rm -rf ./docs && typedoc"
+    "publish:npm": "cp ../README.md . && bun run build && bun run build:cli && npm publish && rm README.md"
+  },
+  "bin": {
+    "alchemy": "bin/alchemy.mjs"
   },
   "author": "Sam Goodwin <sam@alchemy.run>",
   "homepage": "https://alchemy.run",
   "files": [
+    "bin",
     "lib",
     "src"
   ],
@@ -157,6 +162,7 @@
     "@cloudflare/puppeteer": "^1.0.2",
     "@cloudflare/workers-types": "^4.20250303.0",
     "@iarna/toml": "^2.2.5",
+    "@inquirer/prompts": "^7.0.0",
     "@octokit/rest": "^21.1.1",
     "@types/bun": "latest",
     "@types/diff": "^5.0.0",

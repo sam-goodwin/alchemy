@@ -10,85 +10,124 @@ This guide walks through deploying a full-stack Nuxt 3 application with a backen
 
 ## Create a new Nuxt 3 Project
 
-Start by creating a new Nuxt 3 project:
+Start by creating a new Nuxt 3 project using Alchemy:
 
 ::: code-group
 
 ```sh [bun]
-bun create nuxt-app 
+bunx alchemy create my-nuxt-app --template=nuxt
 cd my-nuxt-app
-bun install
 ```
 
 ```sh [npm]
-npm create nuxt-app 
+npx alchemy create my-nuxt-app --template=nuxt
 cd my-nuxt-app
-npm install
 ```
 
 ```sh [pnpm]
-pnpm create nuxt-app 
+pnpm dlx alchemy create my-nuxt-app --template=nuxt
 cd my-nuxt-app
-pnpm install
 ```
 
 ```sh [yarn]
-yarn create nuxt-app 
+yarn dlx alchemy create my-nuxt-app --template=nuxt
 cd my-nuxt-app
-yarn install
 ```
 
 :::
 
-Install alchemy and Cloudflare:
+The CLI will automatically:
 
-::: code-group
+- Create a new Nuxt 3 project structure
+- Install all required dependencies including `alchemy` and `@cloudflare/workers-types`
+- Configure Nuxt for Cloudflare Workers deployment
+- Generate the deployment configuration
 
-```sh [bun]
-bun add alchemy cloudflare
-```
+## Explore the Generated Files
 
-```sh [npm]
-npm install alchemy cloudflare
-```
+Let's explore the key files that were created for you:
 
-```sh [pnpm]
-pnpm add alchemy cloudflare
-```
+### Nuxt Configuration
 
-```sh [yarn]
-yarn add alchemy cloudflare
-```
-
-:::
-
-## Configure Nuxt for Cloudflare
-
-Update `nuxt.config.ts` to work with Cloudflare Workers:
+The `nuxt.config.ts` file is already configured for Cloudflare deployment:
 
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
-  compatibilityDate: "2025-04-21",
+  compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
   nitro: {
-    preset: "cloudflare-module",
-    prerender: {
-      routes: ["/"],
-      autoSubfolderIndex: false,
+    preset: "cloudflare_module",
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat: true,
     },
   },
+  modules: ["nitro-cloudflare-dev"],
 });
 ```
 
-## Create `alchemy.run.ts`
+### Deployment Configuration
 
-Create an `alchemy.run.ts` file in the root of your project. We'll build this file step by step:
-
-### 1. Set up imports and initialize app
+The `alchemy.run.ts` file contains your infrastructure setup:
 
 ```typescript
-// ./alchemy.run.ts
+/// <reference types="@types/node" />
+
+import alchemy from "alchemy";
+import { Nuxt } from "alchemy/cloudflare";
+
+const app = await alchemy("my-nuxt-app");
+
+export const worker = await Nuxt("website", {
+  command: "bun run build",
+});
+
+console.log({
+  url: worker.url,
+});
+
+await app.finalize();
+```
+
+### Type Definitions
+
+The `types/env.d.ts` file provides type-safe access to Cloudflare bindings:
+
+```typescript
+// This file infers types for the cloudflare:workers environment from your Alchemy Worker.
+// @see https://alchemy.run/docs/concepts/bindings.html#type-safe-bindings
+
+import type { worker } from "../alchemy.run.ts";
+
+export type CloudflareEnv = typeof worker.Env;
+
+declare global {
+  type Env = CloudflareEnv;
+}
+
+declare module "cloudflare:workers" {
+  namespace Cloudflare {
+    export interface Env extends CloudflareEnv {}
+  }
+}
+```
+
+### Server API and Middleware
+
+The CLI also creates example server routes and middleware:
+
+- `server/api/hello.ts` - Example API endpoint
+- `server/middleware/hello.ts` - Request logging middleware
+- `server/middleware/auth.ts` - Authentication context example
+
+## Add Pipeline and R2 Storage
+
+Now let's enhance the `alchemy.run.ts` file to add R2 storage and a data pipeline:
+
+```typescript
+/// <reference types="@types/node" />
+
 import alchemy from "alchemy";
 import { Pipeline, R2Bucket, Nuxt } from "alchemy/cloudflare";
 
@@ -101,19 +140,13 @@ const app = await alchemy("nuxt-pipeline-app", {
   quiet: !process.argv.includes("--verbose"),
   password: process.env.ALCHEMY_PASS,
 });
-```
 
-### 2. Create R2 bucket for data storage
-
-```typescript
+// Create R2 bucket for data storage
 const bucket = await R2Bucket("bucket", {
   name: R2_BUCKET_NAME,
 });
-```
 
-### 3. Configure data pipeline
-
-```typescript
+// Configure data pipeline
 const pipeline = await Pipeline("pipeline", {
   name: PIPELINE_NAME,
   source: [{ type: "binding", format: "json" }],
@@ -134,15 +167,10 @@ const pipeline = await Pipeline("pipeline", {
     },
   },
 });
-```
 
-> [!CAUTION]
-> Set `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `ALCHEMY_PASS` environment variables before deployment.
-
-### 4. Configure Nuxt website with bindings
-
-```typescript
-export const website = await Nuxt("website", {
+// Configure Nuxt website with bindings
+export const worker = await Nuxt("website", {
+  command: "bun run build",
   bindings: {
     R2_BUCKET: bucket,
     PIPELINE: pipeline,
@@ -150,35 +178,18 @@ export const website = await Nuxt("website", {
 });
 
 console.log({
-  url: website.url,
+  url: worker.url,
 });
 
 await app.finalize();
 ```
 
-
-## Infer Binding Types
-
-Create an `src/env.d.ts` file to support type hints for Cloudflare bindings:
-
-```typescript
-// src/env.d.ts
-/// <reference types="@cloudflare/workers-types" />
-
-import type { website } from './alchemy.run';
-
-export type WorkerEnv = typeof website.Env;
-
-declare module 'cloudflare:workers' {
-  namespace Cloudflare {
-    export interface Env extends WorkerEnv {}
-  }
-}
-```
+> [!CAUTION]
+> Set `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `ALCHEMY_PASS` environment variables before deployment.
 
 ## Add API Route for Pipeline
 
-Create a Nuxt server API route to send data to the pipeline:
+Create a new API route to send data to the pipeline:
 
 ```typescript
 // server/api/pipeline.post.ts
@@ -209,7 +220,7 @@ export default defineEventHandler(async (event) => {
 
 ## Create Frontend Interface
 
-Create a simple form to interact with the pipeline:
+Update the main page to interact with the pipeline:
 
 ```vue
 <!-- pages/index.vue -->
@@ -285,7 +296,6 @@ button {
 </style>
 ```
 
-
 ## Deploy Your Application
 
 Login to Cloudflare:
@@ -315,19 +325,19 @@ Run your Alchemy script to deploy the application:
 ::: code-group
 
 ```sh [bun]
-bun ./alchemy.run
+bun run deploy
 ```
 
 ```sh [npm]
-npx tsx ./alchemy.run
+npm run deploy
 ```
 
 ```sh [pnpm]
-pnpm tsx ./alchemy.run
+pnpm run deploy
 ```
 
 ```sh [yarn]
-yarn tsx ./alchemy.run
+yarn run deploy
 ```
 
 :::
@@ -370,7 +380,7 @@ This will start a local development server:
 
 ```sh
 Nuxt 3.9.0 with Nitro 2.8.1
- 
+
   ➜ Local:    http://localhost:3000/
   ➜ Network:  use --host to expose this
 ```
@@ -382,19 +392,19 @@ When you're finished experimenting, you can tear down the application:
 ::: code-group
 
 ```sh [bun]
-bun ./alchemy.run --destroy
+bun run destroy
 ```
 
 ```sh [npm]
-npx tsx ./alchemy.run --destroy
+npm run destroy
 ```
 
 ```sh [pnpm]
-pnpm tsx ./alchemy.run --destroy
+pnpm run destroy
 ```
 
 ```sh [yarn]
-yarn tsx ./alchemy.run --destroy
+yarn run destroy
 ```
 
 :::
