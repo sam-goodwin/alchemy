@@ -1,0 +1,27 @@
+node_modules/
+dist/
+lib/
+.out/
+.test/
+.env
+*.tsbuildinfo
+.alchemy/
+.git/
+.github/
+.husky/
+.cursor/
+.repomix-output.txt
+wrangler.jsonc
+
+# Ignore build artifacts
+examples/*/.alchemy
+examples/*/dist
+examples/*/node_modules
+
+# Ignore editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

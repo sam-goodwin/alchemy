@@ -1,0 +1,14 @@
+{
+  "name": "Alchemy Development Environment",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "terminals": [
+    {
+      "name": "Tanstack Dev Server",
+      "command": "cd /workspace/examples/cloudflare-tanstack-start && bun run dev",
+      "description": "Runs the Tanstack Start development server for the example application"
+    }
+  ]
+}
