@@ -1,2 +1,1 @@
-bin/*
-!bin/*.ts
+bin/alchemy.mjs

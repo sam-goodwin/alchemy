@@ -1,67 +1,81 @@
 #!/usr/bin/env node
-import { parseArgs } from "node:util";
-import { createAlchemy } from "./create-alchemy.ts";
 
-// Parse command-line arguments. We allow unknown flags because different
-// sub-commands may accept different sets.
-const { values, positionals } = parseArgs({
-  allowPositionals: true,
-  // We keep the option list flat – sub-commands will decide which ones they care about.
-  options: {
-    template: { type: "string" },
-    yes: { type: "boolean", short: "y" },
-    overwrite: { type: "boolean" },
-    help: { type: "boolean", short: "h" },
-    version: { type: "boolean", short: "v" },
-  },
+import { createCli, trpcServer, zod as z } from "trpc-cli";
+import { createAlchemy } from "./create-alchemy.ts";
+import {
+  PackageManagerSchema,
+  ProjectNameSchema,
+  TemplateSchema,
+  type CreateInput,
+} from "./types.ts";
+
+const t = trpcServer.initTRPC.create();
+
+const router = t.router({
+  create: t.procedure
+    .meta({
+      description: "Create a new Alchemy project",
+    })
+    .input(
+      z.tuple([
+        ProjectNameSchema.optional(),
+        z
+          .object({
+            template: TemplateSchema.optional(),
+            packageManager: PackageManagerSchema.optional(),
+            yes: z
+              .boolean()
+              .optional()
+              .default(false)
+              .describe("Skip prompts and use defaults"),
+            overwrite: z
+              .boolean()
+              .optional()
+              .default(false)
+              .describe("Overwrite existing directory"),
+            bun: z
+              .boolean()
+              .optional()
+              .default(false)
+              .describe("Use Bun as the package manager"),
+            npm: z
+              .boolean()
+              .optional()
+              .default(false)
+              .describe("Use npm as the package manager"),
+            pnpm: z
+              .boolean()
+              .optional()
+              .default(false)
+              .describe("Use pnpm as the package manager"),
+            yarn: z
+              .boolean()
+              .optional()
+              .default(false)
+              .describe("Use Yarn as the package manager"),
+          })
+          .optional()
+          .default({}),
+      ]),
+    )
+    .mutation(async ({ input }) => {
+      const [name, options] = input;
+      const combinedInput: CreateInput = {
+        name,
+        ...options,
+      };
+      await createAlchemy(combinedInput);
+    }),
 });
 
-// First positional is the sub-command (e.g. `create`)
-const command = positionals.shift();
+export type AppRouter = typeof router;
 
-const usage = `Usage: alchemy <command> [options]
+const cli = createCli({
+  router,
+  name: "alchemy",
+  version: "0.31.0",
+  description:
+    "🧪 Welcome to Alchemy! Creating infrastructure as code with JavaScript and TypeScript.",
+});
 
-Available commands:
-  create    Scaffold a new project
-`;
-
-if (!command) {
-  console.error(usage);
-  process.exit(1);
-}
-
-switch (command) {
-  case "create": {
-    // The first remaining positional is treated as the project name.
-    const name = positionals.shift();
-
-    // If the user explicitly requested help or version, forward the flags even
-    // when no project name is provided so the underlying handler can display
-    // the appropriate information.
-    if (values.help || values.version) {
-      await createAlchemy({
-        name,
-        template: values.template as string | undefined,
-        yes: values.yes as boolean | undefined,
-        overwrite: values.overwrite as boolean | undefined,
-        help: values.help as boolean | undefined,
-        version: values.version as boolean | undefined,
-      });
-      break;
-    }
-
-    await createAlchemy({
-      name,
-      template: values.template as string | undefined,
-      yes: values.yes as boolean | undefined,
-      overwrite: values.overwrite as boolean | undefined,
-      help: values.help as boolean | undefined,
-      version: values.version as boolean | undefined,
-    });
-    break;
-  }
-
-  default:
-    console.error(`Unknown command: ${command}`);
-    process.exit(1);
-}
+cli.run();
