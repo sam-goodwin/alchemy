@@ -15,6 +15,7 @@ import { isRuntime } from "./runtime/global.ts";
 import { Scope } from "./scope.ts";
 import { secret } from "./secret.ts";
 import type { StateStoreType } from "./state.ts";
+import { DOStateStore } from "./cloudflare/do-state-store/store.ts";
 import { logger } from "./util/logger.ts";
 import { TelemetryClient } from "./util/telemetry/client.ts";
 import type { LoggerApi } from "./util/cli.ts";
@@ -169,6 +170,11 @@ async function _alchemy(
       ...cliOptions,
       ...options,
     };
+
+    // Default to DOStateStore in CI environment
+    if (process.env.CI && !mergedOptions.stateStore) {
+      mergedOptions.stateStore = (scope) => new DOStateStore(scope);
+    }
 
     const phase = isRuntime ? "read" : (mergedOptions?.phase ?? "up");
     const telemetryClient =
