@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import type { queue, worker } from "../alchemy.run.js";
+import type { queue, worker } from "../alchemy.run.ts";
 export * from "./do.js";
 export * from "./workflow.js";
 
