@@ -12,7 +12,7 @@ import {
   type Resource,
   type ResourceProps,
 } from "./resource.ts";
-import { Scope } from "./scope.ts";
+import { Scope, type PendingDeletions } from "./scope.ts";
 import { serialize } from "./serde.ts";
 import type { State } from "./state.ts";
 import { formatFQN } from "./util/cli.ts";
@@ -88,6 +88,7 @@ async function _apply<Out extends Resource>(
       };
       await scope.state.set(resource[ResourceID], state);
     }
+    const oldOutput = state.output;
 
     const alwaysUpdate =
       options?.alwaysUpdate ?? provider.options?.alwaysUpdate ?? false;
@@ -179,6 +180,17 @@ async function _apply<Out extends Resource>(
         parent: scope,
       },
       async (scope) => {
+        const children = await scope.state.list();
+        if (children.length > 0) {
+          // TODO(sam): we need to determine how to make it possible to replace resources with children
+          // e.g. we can move the children resources and delete them later
+          // ... but, this seems like it could lead to tricky bugs where the replacement resource creates children
+          // ... that then conflict with the replaced resource's children and are either deleted or brick the stack
+          // For now, we just disallow it.
+          throw new Error(
+            `Resource "${resource[ResourceFQN]}" has children and cannot be replaced.`,
+          );
+        }
         options?.resolveInnerScope?.(scope);
         return provider.handler.bind(ctx)(resource[ResourceID], props);
       },
@@ -213,9 +225,15 @@ async function _apply<Out extends Resource>(
       props,
       // deps: [...deps],
     });
-    // if (output !== undefined) {
-    //   resource[Provide](output as Out);
-    // }
+    if (isReplaced) {
+      const pendingDeletions =
+        (await scope.get<PendingDeletions>("pendingDeletions")) ?? [];
+      pendingDeletions.push({
+        resource: oldOutput,
+        oldProps: state.oldProps,
+      });
+      await scope.set("pendingDeletions", pendingDeletions);
+    }
     return output as any;
   } catch (error) {
     scope.telemetryClient.record({
