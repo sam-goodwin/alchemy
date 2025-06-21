@@ -15,5 +15,10 @@
     "allowJs": true,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true
-  }
+  },
+  "references": [
+    {
+      "path": "./tsconfig.workers.json"
+    }
+  ]
 }

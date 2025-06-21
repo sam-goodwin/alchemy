@@ -93,6 +93,16 @@ export interface D1DatabaseProps extends CloudflareApiOptions {
    * This is analogous to wrangler's `migrations_dir`.
    */
   migrationsDir?: string;
+  /**
+   * Whether to emulate the database locally when Alchemy is running in watch mode.
+   */
+  dev?: {
+    /**
+     * Whether to run the database remotely instead of locally
+     * @default false
+     */
+    remote?: boolean;
+  };
 }
 
 export function isD1Database(
@@ -352,6 +362,7 @@ const D1DatabaseResource = Resource(
       type: "d1",
       id: dbData.result.uuid || "",
       name: databaseName,
+      dev: props.dev,
       fileSize: dbData.result.file_size,
       numTables: dbData.result.num_tables,
       version: dbData.result.version,

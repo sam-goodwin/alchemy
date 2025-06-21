@@ -2,6 +2,10 @@ import packageJson from "../../package.json" with { type: "json" };
 import type { Phase } from "../alchemy.ts";
 import { dedent } from "./dedent.ts";
 
+declare global {
+  var _ALCHEMY_WARNINGS: Set<string> | undefined;
+}
+
 // ANSI color codes
 const colors = {
   reset: "\x1b[0m",
@@ -28,27 +32,28 @@ const colorize = (text: string, color: ColorName): string => {
   return `${colors[color]}${text}${colors.reset}`;
 };
 
-export type Task = {
+export interface Task {
   prefix?: string;
-  prefixColor?: string;
+  prefixColor?: ColorName;
   resource?: string;
   message: string;
   status?: "pending" | "success" | "failure";
-};
+}
 
-export type LoggerApi = {
+export interface LoggerApi {
   log: (...args: unknown[]) => void;
   warn: (...args: unknown[]) => void;
+  warnOnce: (message: string) => void;
   error: (...args: unknown[]) => void;
   task: (id: string, data: Task) => void;
   exit: () => void;
-};
+}
 
-type AlchemyInfo = {
+interface AlchemyInfo {
   phase: Phase;
   stage: string;
   appName: string;
-};
+}
 
 let loggerApi: LoggerApi | null = null;
 export const createLoggerInstance = (
@@ -67,6 +72,7 @@ export const createDummyLogger = (): LoggerApi => {
     log: () => {},
     error: () => {},
     warn: () => {},
+    warnOnce: () => {},
     task: () => {},
     exit: () => {},
   };
@@ -87,6 +93,12 @@ export const createFallbackLogger = (alchemyInfo: AlchemyInfo): LoggerApi => {
       console.error(colorize("ERROR", "redBright"), ...args),
     warn: (...args: unknown[]) =>
       console.warn(colorize("WARN", "yellowBright"), ...args),
+    warnOnce: (message: string) => {
+      globalThis._ALCHEMY_WARNINGS ??= new Set();
+      if (globalThis._ALCHEMY_WARNINGS.has(message)) return;
+      globalThis._ALCHEMY_WARNINGS.add(message);
+      console.warn(colorize("WARN", "yellowBright"), message);
+    },
     task: (_id: string, data: Task) => {
       const prefix = data.prefix ? `[${data.prefix}]` : "";
 

@@ -125,12 +125,13 @@ export const ProjectDomain = Resource(
     _id: string,
     { accessToken, ...props }: ProjectDomainProps & { accessToken?: Secret },
   ): Promise<ProjectDomain> {
+    const api = await createVercelApi({
+      baseUrl: "https://api.vercel.com/v10",
+      accessToken,
+    });
+
     switch (this.phase) {
       case "create": {
-        const api = await createVercelApi({
-          baseUrl: "https://api.vercel.com/v10",
-          accessToken,
-        });
         const domain = (await api
           .post(`/projects/${props.project}/domains`, props)
           .then((res) => res.json())) as ProjectDomain;
@@ -141,10 +142,6 @@ export const ProjectDomain = Resource(
       case "update": {
         const { gitBranch, redirect, redirectStatusCode } = props;
 
-        const api = await createVercelApi({
-          baseUrl: "https://api.vercel.com/v9",
-          accessToken,
-        });
         const domain = (await api
           .patch(`/projects/${props.project}/domains/${this.output.name}`, {
             gitBranch,
@@ -157,10 +154,6 @@ export const ProjectDomain = Resource(
       }
 
       case "delete": {
-        const api = await createVercelApi({
-          baseUrl: "https://api.vercel.com/v9",
-          accessToken,
-        });
         await api.delete(
           `/projects/${props.project}/domains/${this.output.name}`,
         );

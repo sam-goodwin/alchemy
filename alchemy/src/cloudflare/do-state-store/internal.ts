@@ -182,24 +182,6 @@ async function getWorkerStatus(api: CloudflareApi, workerName: string) {
   };
 }
 
-export async function getAccountSubdomain(api: CloudflareApi) {
-  const key = `subdomain:${api.accountId}`;
-  const cached = cache.get(key);
-  if (cached) {
-    return cached;
-  }
-  const res = await api.get(`/accounts/${api.accountId}/workers/subdomain`);
-  if (!res.ok) {
-    throw new Error(
-      `Failed to get account subdomain: ${res.status} ${res.statusText}`,
-    );
-  }
-  const json: { result: { subdomain: string } } = await res.json();
-  const subdomain = json.result.subdomain;
-  cache.set(key, subdomain);
-  return subdomain;
-}
-
 async function bundleWorkerScript() {
   const result = await bundle({
     entryPoint: path.join(__dirname, "worker.ts"),

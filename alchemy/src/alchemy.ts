@@ -15,9 +15,9 @@ import { isRuntime } from "./runtime/global.ts";
 import { Scope } from "./scope.ts";
 import { secret } from "./secret.ts";
 import type { StateStoreType } from "./state.ts";
+import type { LoggerApi } from "./util/cli.ts";
 import { logger } from "./util/logger.ts";
 import { TelemetryClient } from "./util/telemetry/client.ts";
-import type { LoggerApi } from "./util/cli.ts";
 
 /**
  * Parses CLI arguments to extract alchemy options
@@ -31,6 +31,14 @@ function parseCliArgs(): Partial<AlchemyOptions> {
     options.phase = "destroy";
   } else if (args.includes("--read")) {
     options.phase = "read";
+  }
+
+  if (
+    args.includes("--dev") ||
+    args.includes("--watch") ||
+    process.execArgv.includes("--watch")
+  ) {
+    options.dev = true;
   }
 
   // Parse quiet flag
@@ -327,6 +335,12 @@ export interface AlchemyOptions {
    * @default "up"
    */
   phase?: Phase;
+  /**
+   * Determines whether Alchemy will run in dev mode.
+   *
+   * @default - `true` if `--dev` or `--watch` is passed as a CLI argument, `false` otherwise
+   */
+  dev?: boolean;
   /**
    * Name to scope the resource state under (e.g. `.alchemy/{stage}/..`).
    *

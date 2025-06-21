@@ -182,7 +182,7 @@
     "cloudflare": "^4.2.0",
     "cpx": "^1.5.0",
     "libsodium-wrappers": "^0.7.15",
-    "miniflare": "^4.0.0",
+    "miniflare": "^4.20250617.3",
     "openpgp": "^6.1.0",
     "prettier": "^3.5.3",
     "turndown": "^7.2.0",

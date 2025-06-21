@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "types": [
+      "@cloudflare/workers-types",
+      "@types/node"
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "types/**/*",
+    "alchemy.run.ts"
+  ]
+}

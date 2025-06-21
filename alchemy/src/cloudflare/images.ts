@@ -56,4 +56,18 @@
  */
 export class Images {
   public readonly type = "images";
+  public readonly dev?: {
+    remote?: boolean;
+  };
+  constructor(props?: {
+    dev?: {
+      /**
+       * Whether to run the images binding remotely instead of locally
+       * @default false
+       */
+      remote?: boolean;
+    };
+  }) {
+    this.dev = props?.dev;
+  }
 }

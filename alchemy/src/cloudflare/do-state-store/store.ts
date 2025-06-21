@@ -4,11 +4,8 @@ import type { Scope } from "../../scope.ts";
 import type { State, StateStore } from "../../state.ts";
 import { deserializeState } from "../../state.ts";
 import { createCloudflareApi, type CloudflareApiOptions } from "../api.ts";
-import {
-  DOStateStoreClient,
-  getAccountSubdomain,
-  upsertStateStoreWorker,
-} from "./internal.ts";
+import { getAccountSubdomain } from "../worker/subdomain.ts";
+import { DOStateStoreClient, upsertStateStoreWorker } from "./internal.ts";
 
 export interface DOStateStoreOptions extends CloudflareApiOptions {
   /**
@@ -95,6 +92,11 @@ export class DOStateStore implements StateStore {
         this.options.worker?.force ?? false,
       ),
     ]);
+    if (!subdomain) {
+      throw new Error(
+        "Failed to access state store worker because the workers.dev subdomain is not available.",
+      );
+    }
     const client = new DOStateStoreClient({
       app: this.scope.appName ?? "alchemy",
       stage: this.scope.stage,

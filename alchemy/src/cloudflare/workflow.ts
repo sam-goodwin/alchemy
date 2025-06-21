@@ -25,6 +25,13 @@ export interface WorkflowProps {
    * @default - bound worker script
    */
   scriptName?: string;
+  dev?: {
+    /**
+     * Whether to run the workflow remotely instead of locally
+     * @default false
+     */
+    remote?: boolean;
+  };
 }
 
 export function isWorkflow(binding: Binding): binding is Workflow {

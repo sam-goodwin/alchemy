@@ -1,4 +1,3 @@
-import type { NodeJSCompatMode } from "miniflare";
 import { logger } from "../../util/logger.ts";
 
 /**
@@ -19,8 +18,12 @@ export async function getNodeJSCompatMode(
   props?: {
     noBundle?: boolean;
   },
-): Promise<NodeJSCompatMode> {
-  const { getNodeCompat } = await import("miniflare");
+) {
+  const { getNodeCompat } = await import("miniflare").catch(() => {
+    throw new Error(
+      "Miniflare is not installed, but is required to determine the Node.js compatibility mode for Workers. Please run `npm install miniflare`.",
+    );
+  });
   const {
     mode,
     hasNodejsCompatFlag,
@@ -43,6 +46,12 @@ export async function getNodeJSCompatMode(
   if (props?.noBundle && hasNodejsCompatV2Flag) {
     logger.warn(
       "`nodejs_compat_v2` compatibility flag and `--no-bundle` can't be used together. If you want to polyfill Node.js built-ins and disable Wrangler's bundling, please polyfill as part of your own bundling process.",
+    );
+  }
+
+  if (mode === "v1") {
+    throw new Error(
+      "You must set your compatibilty date >= 2024-09-23 when using 'nodejs_compat' compatibility flag",
     );
   }
 

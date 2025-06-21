@@ -9,6 +9,7 @@ export const logger = new Proxy({} as LoggerApi, {
         log: console.log,
         error: console.error,
         warn: console.warn,
+        warnOnce: console.warn,
         task: () => {},
         exit: () => {},
       } as LoggerApi);

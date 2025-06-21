@@ -34,11 +34,6 @@ export async function bundleWorkerScript<B extends Bindings>(
     props.compatibilityFlags,
   );
 
-  if (nodeJsCompatMode === "v1") {
-    throw new Error(
-      "You must set your compatibilty date >= 2024-09-23 when using 'nodejs_compat' compatibility flag",
-    );
-  }
   const main = props.entrypoint;
 
   if (props.noBundle) {

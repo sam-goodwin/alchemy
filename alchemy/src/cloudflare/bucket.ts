@@ -87,6 +87,17 @@ export interface BucketProps {
    * Whether to adopt an existing bucket
    */
   adopt?: boolean;
+
+  /**
+   * Whether to emulate the bucket locally when Alchemy is running in watch mode.
+   */
+  dev?: {
+    /**
+     * Whether to run the bucket remotely instead of locally
+     * @default false
+     */
+    remote?: boolean;
+  };
 }
 
 /**
@@ -248,6 +259,7 @@ const R2BucketResource = Resource(
       jurisdiction: props.jurisdiction || "default",
       type: "r2_bucket",
       accountId: api.accountId,
+      dev: props.dev,
     });
   },
 );

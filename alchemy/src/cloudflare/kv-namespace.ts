@@ -41,6 +41,17 @@ export interface KVNamespaceProps extends CloudflareApiOptions {
    * @default true
    */
   delete?: boolean;
+
+  /**
+   * Whether to emulate the KV namespace locally when Alchemy is running in watch mode.
+   */
+  dev?: {
+    /**
+     * Whether to run the KV namespace remotely instead of locally
+     * @default false
+     */
+    remote?: boolean;
+  };
 }
 
 /**
@@ -251,6 +262,7 @@ const _KVNamespace = Resource(
       namespaceId,
       title: props.title,
       values: props.values,
+      dev: props.dev,
       createdAt: createdAt,
       modifiedAt: Date.now(),
     });

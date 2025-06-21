@@ -1,5 +1,6 @@
 import path from "node:path";
 import type { Context } from "../context.ts";
+import { assertNever } from "../util/assert-never.ts";
 import { logger } from "../util/logger.ts";
 import { slugify } from "../util/slugify.ts";
 import {
@@ -193,8 +194,8 @@ export interface WorkerMetadata {
   }[];
 }
 
-export async function prepareWorkerMetadata<B extends Bindings>(
-  ctx: Context<Worker<B>>,
+export function prepareWorkerMetadata<B extends Bindings>(
+  ctx: Pick<Context<Worker<B>>, "fqn">,
   oldBindings: WorkerBindingSpec[] | undefined,
   oldTags: string[] | undefined,
   props: WorkerProps & {
@@ -203,7 +204,7 @@ export async function prepareWorkerMetadata<B extends Bindings>(
     workerName: string;
   },
   assetUploadResult?: AssetUploadResult,
-): Promise<WorkerMetadata> {
+): WorkerMetadata {
   // we use Cloudflare Worker tags to store a mapping between Alchemy's stable identifier and the binding name
   // e.g.
   // {
@@ -496,7 +497,7 @@ export async function prepareWorkerMetadata<B extends Bindings>(
       });
     } else {
       // @ts-expect-error - we should never reach here
-      throw new Error(`Unsupported binding type: ${binding.type}`);
+      assertNever(binding, `Unsupported binding type: ${binding.type}`);
     }
   }
 
