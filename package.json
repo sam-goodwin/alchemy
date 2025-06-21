@@ -53,5 +53,8 @@
       "biome check --write --no-errors-on-unmatched",
       "biome check --no-errors-on-unmatched"
     ]
+  },
+  "dependencies": {
+    "effect": "^3.16.8"
   }
 }
