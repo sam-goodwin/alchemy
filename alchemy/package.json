@@ -83,6 +83,10 @@
       "bun": "./src/sentry/index.ts",
       "import": "./lib/sentry/index.js"
     },
+    "./sqlite": {
+      "bun": "./src/sqlite/index.ts",
+      "import": "./lib/sqlite/index.js"
+    },
     "./stripe": {
       "bun": "./src/stripe/index.ts",
       "import": "./lib/stripe/index.js"
