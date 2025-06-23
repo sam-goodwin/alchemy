@@ -12,6 +12,7 @@
     { "path": "./examples/cloudflare-redwood/tsconfig.json" },
     { "path": "./examples/cloudflare-vite/tsconfig.json" },
     { "path": "./examples/cloudflare-worker-bootstrap/tsconfig.json" },
-    { "path": "./examples/cloudflare-worker/tsconfig.json" }
+    { "path": "./examples/cloudflare-worker/tsconfig.json" },
+    { "path": "./examples/prisma-app/tsconfig.json" }
   ]
 }

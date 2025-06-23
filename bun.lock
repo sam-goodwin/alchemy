@@ -287,6 +287,12 @@
       "name": "docker",
       "version": "0.0.0",
     },
+    "examples/prisma-app": {
+      "name": "prisma-app",
+      "dependencies": {
+        "alchemy": "workspace:*",
+      },
+    },
     "stacks": {
       "name": "alchemy-stacks",
       "version": "0.0.1",
@@ -3131,6 +3137,8 @@
     "pretty-ms": ["pretty-ms@9.2.0", "", { "dependencies": { "parse-ms": "^4.0.0" } }, "sha512-4yf0QO/sllf/1zbZWYnvWw3NxCQwLXKzIj0G849LSufP15BXKM0rbD2Z3wVnkMfjdn/CB0Dpp444gYAACdsplg=="],
 
     "printable-characters": ["printable-characters@1.0.42", "", {}, "sha512-dKp+C4iXWK4vVYZmYSd0KBH5F/h1HoZRsbJ82AVKRO3PEo8L4lBS/vLwhVtpwwuYcoIsVY+1JYKR268yn480uQ=="],
+
+    "prisma-app": ["prisma-app@workspace:examples/prisma-app"],
 
     "prismjs": ["prismjs@1.30.0", "", {}, "sha512-DEvV2ZF2r2/63V+tK8hQvrR2ZGn10srHbXviTlcv7Kpzw8jWiNTqbVgjO3IY8RxrrOUF8VPMQQFysYYYv0YZxw=="],
 
