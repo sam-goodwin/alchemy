@@ -1,19 +1,35 @@
-import {
-  CreateBucketCommand,
-  DeleteBucketCommand,
-  GetBucketAclCommand,
-  GetBucketLocationCommand,
-  GetBucketTaggingCommand,
-  GetBucketVersioningCommand,
-  HeadBucketCommand,
-  NoSuchBucket,
-  PutBucketTaggingCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
-import type { Context } from "../context.ts";
-import { Resource } from "../resource.ts";
-import { ignore } from "../util/ignore.ts";
-import { retry } from "./retry.ts";
+import { Effect } from "effect";
+import { createAwsClient } from "./client.ts";
+import { EffectResource } from "./effect-resource.ts";
+
+/**
+ * AWS S3 API response interfaces for type safety
+ */
+interface S3LocationResponse {
+  LocationConstraint?: string;
+}
+
+interface S3TaggingResponse {
+  Tagging?: {
+    TagSet?: Array<{ Key: string; Value: string }>;
+  };
+}
+
+interface S3VersioningResponse {
+  VersioningConfiguration?: {
+    Status?: "Enabled" | "Suspended";
+  };
+}
+
+interface S3AclResponse {
+  AccessControlPolicy?: {
+    AccessControlList?: {
+      Grant?: Array<{
+        Permission?: string;
+      }>;
+    };
+  };
+}
 
 /**
  * Properties for creating or updating an S3 bucket
@@ -127,108 +143,89 @@ export interface Bucket extends Resource<"s3::Bucket">, BucketProps {
  *   }
  * });
  */
-export const Bucket = Resource(
+export const Bucket = EffectResource<Bucket, BucketProps>(
   "s3::Bucket",
-  async function (this: Context<Bucket>, _id: string, props: BucketProps) {
-    const client = new S3Client({});
+  function* (_id, props) {
+    const client = yield* createAwsClient({ service: "s3" });
 
     if (this.phase === "delete") {
-      await ignore(NoSuchBucket.name, () =>
-        retry(() =>
-          client.send(
-            new DeleteBucketCommand({
-              Bucket: props.bucketName,
-            }),
-          ),
-        ),
-      );
-      return this.destroy();
+      yield* client
+        .delete(`/${props.bucketName}`)
+        .pipe(Effect.catchAll(() => Effect.unit));
+      return yield* this.destroy();
     }
-    try {
-      // Check if bucket exists
-      await retry(() =>
-        client.send(
-          new HeadBucketCommand({
-            Bucket: props.bucketName,
-          }),
-        ),
+
+    // Helper function to create tagging XML
+    const createTaggingXml = (tags: Record<string, string>) => {
+      const tagSet = Object.entries(tags).map(([Key, Value]) => ({
+        Key,
+        Value,
+      }));
+      return `<Tagging><TagSet>${tagSet
+        .map(
+          ({ Key, Value }) =>
+            `<Tag><Key>${Key}</Key><Value>${Value}</Value></Tag>`,
+        )
+        .join("")}</TagSet></Tagging>`;
+    };
+
+    // Try to check if bucket exists and update tags if needed
+    const bucketExists = yield* client
+      .request("HEAD", `/${props.bucketName}`)
+      .pipe(
+        Effect.map(() => true),
+        Effect.catchTag("AwsNotFoundError", () => Effect.succeed(false)),
       );
 
+    if (bucketExists) {
       // Update tags if they changed and bucket exists
       if (this.phase === "update" && props.tags) {
-        await retry(() =>
-          client.send(
-            new PutBucketTaggingCommand({
-              Bucket: props.bucketName,
-              Tagging: {
-                TagSet: Object.entries(props.tags!).map(([Key, Value]) => ({
-                  Key,
-                  Value,
-                })),
-              },
-            }),
-          ),
-        );
+        const taggingXml = createTaggingXml(props.tags);
+        yield* client.put(`/${props.bucketName}?tagging`, taggingXml, {
+          "Content-Type": "application/xml",
+        });
       }
-    } catch (error: any) {
-      if (error.name === "NotFound") {
-        // Create bucket if it doesn't exist
-        await retry(() =>
-          client.send(
-            new CreateBucketCommand({
-              Bucket: props.bucketName,
-              // Add tags during creation if specified
-              ...(props.tags && {
-                Tagging: {
-                  TagSet: Object.entries(props.tags).map(([Key, Value]) => ({
-                    Key,
-                    Value,
-                  })),
-                },
-              }),
-            }),
-          ),
-        );
-      } else {
-        throw error;
+    } else {
+      // Create bucket if it doesn't exist
+      yield* client.put(`/${props.bucketName}`);
+
+      // Add tags after creation if specified
+      if (props.tags) {
+        const taggingXml = createTaggingXml(props.tags);
+        yield* client.put(`/${props.bucketName}?tagging`, taggingXml, {
+          "Content-Type": "application/xml",
+        });
       }
     }
 
-    // Get bucket details
+    // Get bucket details in parallel
     const [locationResponse, versioningResponse, aclResponse] =
-      await Promise.all([
-        retry(() =>
-          client.send(
-            new GetBucketLocationCommand({ Bucket: props.bucketName }),
-          ),
-        ),
-        retry(() =>
-          client.send(
-            new GetBucketVersioningCommand({ Bucket: props.bucketName }),
-          ),
-        ),
-        retry(() =>
-          client.send(new GetBucketAclCommand({ Bucket: props.bucketName })),
-        ),
+      yield* Effect.all([
+        client.get<S3LocationResponse>(`/${props.bucketName}?location`, {
+          Host: `${props.bucketName}.s3.amazonaws.com`,
+        }),
+        client.get<S3VersioningResponse>(`/${props.bucketName}?versioning`),
+        client.get<S3AclResponse>(`/${props.bucketName}?acl`),
       ]);
 
-    const region = locationResponse.LocationConstraint || "us-east-1";
+    const region = locationResponse?.LocationConstraint || "us-east-1";
 
-    // Get tags if they exist
+    // Get tags if they weren't provided
     let tags = props.tags;
     if (!tags) {
-      try {
-        const taggingResponse = await retry(() =>
-          client.send(
-            new GetBucketTaggingCommand({ Bucket: props.bucketName }),
-          ),
+      const taggingResponse = yield* client
+        .get<S3TaggingResponse>(`/${props.bucketName}?tagging`)
+        .pipe(
+          Effect.catchTag("AwsNotFoundError", () => Effect.succeed(null)), // Tags don't exist - OK
         );
-        tags = Object.fromEntries(
-          taggingResponse.TagSet?.map(({ Key, Value }) => [Key, Value]) || [],
-        );
-      } catch (error: any) {
-        if (error.name !== "NoSuchTagSet") {
-          throw error;
+
+      if (taggingResponse) {
+        // Parse XML response to extract tags
+        const tagSet = taggingResponse.Tagging?.TagSet;
+        if (Array.isArray(tagSet)) {
+          tags = Object.fromEntries(
+            tagSet.map(({ Key, Value }) => [Key, Value]) || [],
+          );
         }
       }
     }
@@ -240,8 +237,9 @@ export const Bucket = Resource(
       bucketRegionalDomainName: `${props.bucketName}.s3.${region}.amazonaws.com`,
       region,
       hostedZoneId: getHostedZoneId(region),
-      versioningEnabled: versioningResponse.Status === "Enabled",
-      acl: aclResponse.Grants?.[0]?.Permission?.toLowerCase(),
+      versioningEnabled:
+        versioningResponse?.VersioningConfiguration?.Status === "Enabled",
+      acl: aclResponse?.AccessControlPolicy?.AccessControlList?.Grant?.[0]?.Permission?.toLowerCase(),
       ...(tags && { tags }),
     });
   },
