@@ -63,6 +63,10 @@
       "bun": "./src/docker/index.ts",
       "import": "./lib/docker/index.js"
     },
+    "./docker/api": {
+      "bun": "./src/docker/api/index.ts",
+      "import": "./lib/docker/api/index.js"
+    },
     "./esbuild": {
       "bun": "./src/esbuild/index.ts",
       "import": "./lib/esbuild/index.js"
@@ -193,6 +197,8 @@
     "libsodium-wrappers": "^0.7.15",
     "miniflare": "^4.20250617.3",
     "nitro-cloudflare-dev": "^0.2.2",
+    "openapi-fetch": "^0.14.0",
+    "openapi-typescript": "^7.8.0",
     "openpgp": "^6.1.0",
     "picocolors": "^1.1.1",
     "prettier": "^3.5.3",
