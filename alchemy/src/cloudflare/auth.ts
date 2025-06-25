@@ -1,8 +1,14 @@
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import open from "open";
 import type { Secret } from "../secret.ts";
+import { HTTPServer } from "../util/http-server.ts";
+import { logger } from "../util/logger.ts";
+import { memoize } from "../util/memoize.ts";
 import { createXdgAppPaths } from "../util/xdg-paths.ts";
+
 /**
  * Authentication options for Cloudflare API
  */
@@ -72,162 +78,277 @@ export async function getCloudflareAuthHeaders(
     };
   }
   // Wrangler OAuth Token
-  const authConfig = await getRefreshedAuthConfig();
-  if (authConfig.oauth_token) {
+  const authConfig = await getRefreshedAuthConfig().catch(() => null);
+  if (authConfig?.oauth_token) {
     return {
       Authorization: `Bearer ${authConfig.oauth_token}`,
     };
-  }
-  throw new Error(
-    "Cloudflare authentication required. Did you forget to login with `wrangler login` or set CLOUDFLARE_API_TOKEN, CLOUDFLARE_API_KEY?",
-  );
-}
-
-async function refreshAuthToken(
-  options: WranglerConfig,
-): Promise<WranglerConfig> {
-  const response = await fetch("https://dash.cloudflare.com/oauth2/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: options.refresh_token!,
-      client_id: "54d11594-84e4-41aa-b438-e81b8fa78ee7",
-    }).toString(),
-  });
-
-  if (!response.ok) {
+  } else {
     throw new Error(
-      `Failed to refresh auth token: ${response.status} ${response.statusText}`,
+      "Cloudflare authentication required. Did you forget to login with `wrangler login` or set CLOUDFLARE_API_TOKEN, CLOUDFLARE_API_KEY?",
     );
   }
-
-  const data: any = await response.json();
-  if (!data.access_token) {
-    throw new Error("Failed to refresh auth token - no access token returned");
-  }
-
-  options.oauth_token = data.access_token;
-  options.refresh_token = data.refresh_token;
-  options.expiration_time = new Date(
-    Date.now() + data.expires_in * 1000,
-  ).toISOString();
-  options.scopes = data.scope?.split(" ") || [];
-
-  return options;
 }
+
+const isInteractive = () => {
+  return process.stdin.isTTY && process.stdout.isTTY && !process.env.CI;
+};
+
+const getRefreshedAuthConfig = memoize(
+  async () => {
+    const filePath = await resolveWranglerConfigFile();
+    const { config, write } = await readWranglerConfig(filePath)
+      .then(async (config) => {
+        if (config.expiration_time.getTime() > Date.now() + 1000 * 10) {
+          return { write: false, config };
+        }
+        const refreshed = await oauth.refresh(config.refresh_token);
+        return { write: true, config: refreshed };
+      })
+      .catch(async (error) => {
+        if (isInteractive()) {
+          const authConfig = await oauth.authorize();
+          return { write: true, config: authConfig };
+        } else {
+          throw error;
+        }
+      });
+    if (write) {
+      await writeWranglerConfig(filePath, config).catch(() => null);
+    }
+    return config;
+  },
+  () => "cloudflare:wrangler-oauth",
+);
 
 interface WranglerConfig {
-  path: string;
-  oauth_token?: string;
-  refresh_token?: string;
-  expiration_time?: string;
-  scopes?: string[];
-  /** exists is `false` if the config file doesn't exist, like in CI */
-  exists?: boolean;
-  /** @deprecated - this field was only provided by the deprecated v1 `wrangler config` command. */
-  api_token?: string;
+  oauth_token: string;
+  refresh_token: string;
+  expiration_time: Date;
+  scopes: string[];
 }
 
-async function getRefreshedAuthConfig(): Promise<WranglerConfig> {
-  let authConfig = await readWranglerConfig();
-  if (authConfig.expiration_time) {
-    const expiry = new Date(authConfig.expiration_time);
-    // if expiring in 10s
-    if (expiry.getTime() < Date.now() + 10 * 1000) {
-      authConfig = await refreshAuthToken(authConfig);
-      authConfigCache[authConfig.path] = authConfig;
-      await writeWranglerConfig(authConfig);
-    }
+async function resolveWranglerConfigFile() {
+  const configDir = createXdgAppPaths(".wrangler").config();
+  const legacyConfigDir = path.join(os.homedir(), ".wrangler");
+  const filePath = path.join("config", "default.toml");
+  const isDirectory = await fs
+    .stat(legacyConfigDir)
+    .then((stat) => stat.isDirectory())
+    .catch(() => false);
+  return path.join(isDirectory ? legacyConfigDir : configDir, filePath);
+}
+
+async function readWranglerConfig(path: string): Promise<WranglerConfig> {
+  const toml = await import("@iarna/toml");
+  const text = await fs.readFile(path, "utf-8");
+  const data = toml.parse(text.replace(/\r\n/g, "\n"));
+  if (
+    typeof data.oauth_token !== "string" ||
+    typeof data.refresh_token !== "string" ||
+    !Array.isArray(data.scopes)
+  ) {
+    throw new Error("Invalid wrangler config");
   }
-  return authConfig;
-}
-
-async function writeWranglerConfig(config: WranglerConfig) {
-  if (config.exists === false) return;
-
-  const TOML = await import("@iarna/toml");
-  const configPath = await findWranglerConfig();
-  config = {
-    ...config,
+  return {
+    oauth_token: data.oauth_token,
+    refresh_token: data.refresh_token,
+    expiration_time: new Date(data.expiration_time as any),
+    scopes: data.scopes as string[],
   };
-  // @ts-ignore - i put this here
-  delete config.path;
-  const toml = TOML.stringify(config as any);
-  await fs.writeFile(configPath, toml);
 }
 
-// cache the file once per process
-const authConfigCache: Record<string, WranglerConfig> = {};
-
-async function readWranglerConfig(): Promise<WranglerConfig> {
-  const configPath = await findWranglerConfig();
-  try {
-    const config = (authConfigCache[configPath] ??= await parseTOML(
-      await fs.readFile(configPath, "utf-8"),
-    ));
-    config.path = configPath;
-
-    return config;
-  } catch (e: any) {
-    if (e.code === "ENOENT") {
-      // The config doesn't exist
-      return {
-        path: configPath,
-        exists: false,
-      };
-    }
-
-    throw e;
-  }
-}
-
-let wranglerConfigPath: string | undefined;
-
-async function findWranglerConfig(): Promise<string> {
-  if (wranglerConfigPath) {
-    return wranglerConfigPath;
-  }
-  const environment = process.env.WRANGLER_API_ENVIRONMENT ?? "production";
-  const filePath = path.join(
-    "config",
-    `${environment === "production" ? "default.toml" : `${environment}.toml`}`,
-  );
-
-  const xdgAppPaths = createXdgAppPaths(".wrangler");
-  //TODO: We should implement a custom path --global-config and/or the WRANGLER_HOME type environment variable
-  const configDir = xdgAppPaths.config(); // New XDG compliant config path
-  const legacyConfigDir = path.join(os.homedir(), ".wrangler"); // Legacy config in user's home directory
-
-  // Check for the .wrangler directory in root if it is not there then use the XDG compliant path.
-  wranglerConfigPath = path.join(
-    (await isDirectory(legacyConfigDir)) ? legacyConfigDir : configDir,
+async function writeWranglerConfig(filePath: string, config: WranglerConfig) {
+  const toml = await import("@iarna/toml");
+  await fs.mkdir(path.dirname(filePath), { recursive: true }).catch(() => null);
+  await fs.writeFile(
     filePath,
+    toml.stringify({ ...config, scopes: config.scopes }),
   );
-  return wranglerConfigPath;
 }
 
-async function parseTOML(input: string): Promise<any> {
-  const TOML = await import("@iarna/toml");
-  try {
-    // Normalize CRLF to LF to avoid hitting https://github.com/iarna/iarna-toml/issues/33.
-    const normalizedInput = input.replace(/\r\n/g, "\n");
-    return TOML.parse(normalizedInput);
-  } catch (err: any) {
-    const { name } = err;
-    if (name !== "TomlError") {
-      throw err;
+const DefaultScopes = {
+  "account:read":
+    "See your account info such as account details, analytics, and memberships.",
+  "user:read":
+    "See your user info such as name, email address, and account memberships.",
+  "workers:write":
+    "See and change Cloudflare Workers data such as zones, KV storage, namespaces, scripts, and routes.",
+  "workers_kv:write":
+    "See and change Cloudflare Workers KV Storage data such as keys and namespaces.",
+  "workers_routes:write":
+    "See and change Cloudflare Workers data such as filters and routes.",
+  "workers_scripts:write":
+    "See and change Cloudflare Workers scripts, durable objects, subdomains, triggers, and tail data.",
+  "workers_tail:read": "See Cloudflare Workers tail and script data.",
+  "d1:write": "See and change D1 Databases.",
+  "pages:write":
+    "See and change Cloudflare Pages projects, settings and deployments.",
+  "zone:read": "Grants read level access to account zone.",
+  "ssl_certs:write": "See and manage mTLS certificates for your account",
+  "ai:write": "See and change Workers AI catalog and assets",
+  "queues:write": "See and change Cloudflare Queues settings and data",
+  "pipelines:write":
+    "See and change Cloudflare Pipelines configurations and data",
+  "secrets_store:write":
+    "See and change secrets + stores within the Secrets Store",
+  "containers:write": "Manage Workers Containers",
+  "cloudchamber:write": "Manage Cloudchamber",
+} as const;
+
+const oauth = {
+  CLIENT_ID: "54d11594-84e4-41aa-b438-e81b8fa78ee7",
+  REDIRECT_URI: "http://localhost:8976/oauth/callback",
+  SUCCESS_URI:
+    "https://welcome.developers.workers.dev/wrangler-oauth-consent-granted",
+  DENIED_URI:
+    "https://welcome.developers.workers.dev/wrangler-oauth-consent-denied",
+
+  async authorize() {
+    const { promise, resolve, reject } =
+      Promise.withResolvers<WranglerConfig>();
+    const authorization = this.generateAuthorizationURL();
+    const callback = new HTTPServer({
+      port: 8976,
+      fetch: async (req) => {
+        const url = new URL(req.url);
+        const error = url.searchParams.get("error");
+        const error_description = url.searchParams.get("error_description");
+        const code = url.searchParams.get("code");
+        const state = url.searchParams.get("state");
+        if (error || error_description) {
+          reject(
+            new Error(
+              `OAuth authorization failed: ${error} ${error_description}`,
+            ),
+          );
+          return Response.redirect(this.DENIED_URI, 307);
+        }
+        if (!code) {
+          reject(new Error("Missing code from OAuth callback"));
+          return Response.redirect(this.DENIED_URI, 307);
+        }
+        if (!state || state !== authorization.state) {
+          reject(new Error("Invalid state from OAuth callback"));
+          return Response.redirect(this.DENIED_URI, 307);
+        }
+        try {
+          const res = await oauth.exchange(code, authorization.verifier);
+          resolve(res);
+          return Response.redirect(this.SUCCESS_URI, 307);
+        } catch (error) {
+          reject(
+            new Error("Failed to exchange code for token", { cause: error }),
+          );
+          return Response.redirect(this.DENIED_URI, 307);
+        }
+      },
+    });
+    logger.log(
+      [
+        "Opening browser to authorize with Cloudflare...",
+        "If you are not automatically redirected, please open the following URL in your browser:",
+        authorization.url,
+      ].join("\n"),
+    );
+    open(authorization.url);
+    const timeout = setTimeout(
+      () => reject(new Error("OAuth authorization timed out")),
+      1000 * 60 * 5,
+    );
+    return promise.finally(() => {
+      clearTimeout(timeout);
+      callback.stop();
+    });
+  },
+
+  generateAuthorizationURL() {
+    const state = crypto.randomBytes(32).toString("base64url");
+    const verifier = crypto.randomBytes(96).toString("base64url");
+    const challenge = crypto
+      .createHash("sha256")
+      .update(verifier)
+      .digest("base64url");
+    const scopes = [...Object.keys(DefaultScopes), "offline_access"];
+    const url = new URL("https://dash.cloudflare.com/oauth2/auth");
+    url.search = new URLSearchParams({
+      response_type: "code",
+      client_id: oauth.CLIENT_ID,
+      redirect_uri: oauth.REDIRECT_URI,
+      scope: scopes.join(" "),
+      state,
+      code_challenge: challenge,
+      code_challenge_method: "S256",
+    }).toString();
+    return { url: url.toString(), state, verifier };
+  },
+
+  async exchange(code: string, verifier: string) {
+    const body = new URLSearchParams({
+      code,
+      grant_type: "authorization_code",
+      code_verifier: verifier,
+      client_id: oauth.CLIENT_ID,
+      redirect_uri: oauth.REDIRECT_URI,
+    });
+    const res = await fetch("https://dash.cloudflare.com/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: body.toString(),
+    });
+    if (!res.ok) {
+      throw new Error(
+        `Failed to exchange code for token: ${res.status} ${res.statusText} - ${await res.text()}`,
+      );
     }
-    throw new Error("TOML parse error");
-  }
+    const tokens = (await res.json()) as OAuthTokens;
+    return toWranglerConfig(tokens);
+  },
+
+  async refresh(refreshToken: string) {
+    const res = await fetch("https://dash.cloudflare.com/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_id: oauth.CLIENT_ID,
+      }).toString(),
+    });
+    if (!res.ok) {
+      throw new Error(
+        `Failed to refresh access token: ${res.status} ${res.statusText} - ${await res.text()}`,
+      );
+    }
+    const tokens = (await res.json()) as OAuthTokens;
+    return toWranglerConfig(tokens);
+  },
+};
+
+function toWranglerConfig(tokens: OAuthTokens): WranglerConfig {
+  return {
+    oauth_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
+    expiration_time: new Date(Date.now() + tokens.expires_in * 1000),
+    scopes: tokens.scope.split(" "),
+  };
 }
 
-async function isDirectory(dir: string) {
-  try {
-    return (await fs.stat(dir)).isDirectory();
-  } catch (_err) {
-    return false;
-  }
+// interface OAuthError {
+//   error: string;
+//   error_verbose: string;
+//   error_description: string;
+//   error_hint: string;
+//   status_code: number;
+// }
+
+interface OAuthTokens {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  scope: string;
 }
