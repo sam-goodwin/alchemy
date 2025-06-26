@@ -19,13 +19,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache VitePress cache and OG images
+      - name: Cache Astro resources
         uses: actions/cache@v4
         with:
           path: |
-            alchemy-web/.vitepress/cache
-            alchemy-web/public/og-images
-          key: ${{ runner.os }}-vitepress-cache
+            alchemy-web/.astro
+          key: ${{ runner.os }}-astro-cache
 
       - name: Setup Alchemy Environment
         uses: ./.github/actions/setup-alchemy
