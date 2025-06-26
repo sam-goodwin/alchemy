@@ -3,6 +3,7 @@
 title: Deploy with TypeScript
 template: splash
 editUrl: false
+pagefind: false
 hero:
   tagline: Manage your infrastructure with a single file. Supports Cloudflare, AWS, and more. 
   actions:
