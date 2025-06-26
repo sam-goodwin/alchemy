@@ -1,25 +1,20 @@
 ---
-import { getCollection } from "astro:content";
+import { getEntry } from "astro:content";
 
 export const prerender = false;
-
-const docs = await getCollection("docs");
-
-const pages = Object.fromEntries(
-  // @ts-expect-error - Types aren't correct here, should figure out why
-  docs.map(({ id, slug, data }) => [id, { data, slug }])
-);
 
 // Get route from params
 const route = Astro.params.route ?? "index";
 
-// Find the matching page data
-const pageData = pages[route];
-if (!pageData) {
+// Get the specific entry directly
+const entry = await getEntry("docs", route);
+if (!entry) {
   return Astro.redirect("/404");
 }
 
-const { data } = pageData;
+const { data } = entry;
+
+console.log(data);
 
 // Set response headers for HTML
 Astro.response.headers.set("Content-Type", "text/html");
