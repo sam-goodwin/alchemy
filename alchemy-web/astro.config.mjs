@@ -50,6 +50,7 @@ export default defineConfig({
       },
       components: {
         Hero: "./src/components/Hero.astro",
+        PageTitle: "./src/components/PageTitle.astro",
       },
       sidebar: [
         {
