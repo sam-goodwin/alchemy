@@ -1,0 +1,151 @@
+---
+import { getCollection } from "astro:content";
+
+export const prerender = false;
+
+const docs = await getCollection("docs");
+
+const pages = Object.fromEntries(
+  // @ts-expect-error - Types aren't correct here, should figure out why
+  docs.map(({ id, slug, data }) => [id, { data, slug }])
+);
+
+// Get route from params
+const route = Astro.params.route ?? "index";
+
+// Find the matching page data
+const pageData = pages[route];
+if (!pageData) {
+  return Astro.redirect("/404");
+}
+
+const { data } = pageData;
+
+// Set response headers for HTML
+Astro.response.headers.set("Content-Type", "text/html");
+---
+
+<div class="og-container">
+  <div class="content">
+    <div class="logo">
+      <img src="/alchemy-logo.svg" alt="Alchemy" class="logo-image" />
+    </div>
+    <h1 class="title">{data.title}</h1>
+    {data.description && <p class="description">{data.description}</p>}
+  </div>
+
+  <div class="character-container">
+    <div class="character-circle">
+      <img src="/alchemist.webp" alt="Alchemist" class="character-image" />
+    </div>
+  </div>
+</div>
+
+<style>
+  :root {
+    --og-width: 1200px;
+    --og-height: 630px;
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: black;
+  }
+
+  .og-container {
+    width: var(--og-width);
+    height: var(--og-height);
+    background: linear-gradient(
+      125deg,
+      #0f0f23 0%,
+      #1a0d2e 15%,
+      #2d1b69 25%,
+      #1e3a8a 40%,
+      #0c4a6e 55%,
+      #164e63 70%,
+      #1f2937 85%,
+      #111827 100%
+    );
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .content {
+    flex: 1;
+    padding-left: 80px;
+    padding-right: 40px;
+    z-index: 2;
+    max-width: 650px;
+  }
+
+  .logo {
+    margin-bottom: 30px;
+  }
+
+  .logo-image {
+    height: 60px;
+    width: auto;
+  }
+
+  .title {
+    font-size: 72px;
+    font-weight: bold;
+    color: white;
+    margin: 0 0 30px 0;
+    line-height: 1.1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  .description {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.4;
+    margin: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  .character-container {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+  }
+
+  .character-circle {
+    width: 450px;
+    height: 450px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(138, 43, 226, 0.3) 0%,
+      rgba(30, 144, 255, 0.2) 50%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .character-image {
+    width: 420px;
+    height: 420px;
+    object-fit: contain;
+    object-position: center;
+  }
+</style>

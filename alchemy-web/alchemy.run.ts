@@ -1,5 +1,5 @@
 import alchemy from "alchemy";
-import { DOStateStore, Website } from "alchemy/cloudflare";
+import { DOStateStore, Website, Worker } from "alchemy/cloudflare";
 import { GitHubComment } from "alchemy/github";
 
 const app = await alchemy("alchemy:website", {
@@ -12,6 +12,15 @@ const website = await Website("alchemy-website-test", {
   assets: "dist",
   wrangler: false,
   version: process.env.PULL_REQUEST,
+});
+
+export const ogWorker = await Worker("alchemy-og-worker", {
+  entrypoint: "./src/og-worker.ts",
+  routes: [
+    {
+      pattern: "og.alchemy.run/*",
+    },
+  ],
 });
 
 if (process.env.PULL_REQUEST) {
