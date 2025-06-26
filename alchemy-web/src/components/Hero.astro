@@ -73,7 +73,12 @@ const product = await Product("pro-plan", {
             <Code code={codeContent} lang="typescript" theme="vitesse-light" />
           </div>
           <div id="code-block-dark" class="code-theme dark-theme">
-            <Code code={codeContent} lang="typescript" theme="vitesse-dark" />
+            <Code
+              code={codeContent}
+              lang="typescript"
+              theme="vitesse-dark"
+              theme="vitesse-dark"
+            />
           </div>
         </div>
       </div>
@@ -84,7 +89,6 @@ const product = await Product("pro-plan", {
 <style>
   /* CSS Custom Properties */
   :root {
-    /* Dark mode (default) */
     --hero-code-bg: #121212;
     --hero-code-border: rgba(255, 255, 255, 0.1);
     --hero-code-text: #e5e7eb;
