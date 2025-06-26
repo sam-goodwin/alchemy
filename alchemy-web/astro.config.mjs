@@ -9,6 +9,7 @@ import starlightThemeNextjs from "starlight-nextjs-theme";
 // https://astro.build/config
 export default defineConfig({
   site: "https://alchemy.run",
+  output: "static",
   adapter: cloudflare({}),
   prefetch: !import.meta.env.DEV,
   integrations: [
