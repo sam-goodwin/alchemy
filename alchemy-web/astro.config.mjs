@@ -1,5 +1,4 @@
 // @ts-check
-import cloudflare from "@astrojs/cloudflare";
 import sitemap from "@astrojs/sitemap";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
@@ -10,7 +9,6 @@ import starlightThemeNextjs from "starlight-nextjs-theme";
 export default defineConfig({
   site: "https://alchemy.run",
   output: "static",
-  adapter: cloudflare({}),
   prefetch: !import.meta.env.DEV,
   integrations: [
     sitemap({

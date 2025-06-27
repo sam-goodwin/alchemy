@@ -1,20 +1,31 @@
 ---
-import { getEntry } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
 
-export const prerender = false;
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
 
-// Get route from params
-const route = Astro.params.route ?? "index";
+  const paths = docs.map((doc: CollectionEntry<"docs">) => ({
+    params: { route: doc.id },
+    props: { entry: doc },
+  }));
 
-// Get the specific entry directly
-const entry = await getEntry("docs", route);
-if (!entry) {
-  return Astro.redirect("/404");
+  // Add a specific path for the root `/og/` route that maps to index
+  const indexDoc = docs.find(
+    (doc: CollectionEntry<"docs">) => doc.id === "index"
+  );
+  if (indexDoc) {
+    paths.push({
+      params: { route: undefined }, // This handles the empty route case
+      props: { entry: indexDoc },
+    });
+  }
+
+  return paths;
 }
 
+// Get the entry from props (passed from getStaticPaths)
+const { entry }: { entry: CollectionEntry<"docs"> } = Astro.props;
 const { data } = entry;
-
-console.log(data);
 
 // Set response headers for HTML
 Astro.response.headers.set("Content-Type", "text/html");
