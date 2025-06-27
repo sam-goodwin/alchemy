@@ -1,0 +1,12 @@
+---
+import BlogMarkdownContent from 'starlight-blog/components/MarkdownContent.astro';
+import NovaMarkdownContent from 'starlight-theme-nova/components/MarkdownContent.astro';
+
+const props = Astro.props;
+---
+
+<BlogMarkdownContent {...props}>
+  <NovaMarkdownContent {...props}>
+    <slot />
+  </NovaMarkdownContent>
+</BlogMarkdownContent>

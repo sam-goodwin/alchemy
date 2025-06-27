@@ -1,10 +1,8 @@
 ---
-title: "My decade long journey with IaC and why it needs to be un-bundled"
-date: "2025-04-08"
-description: "An intro to my blog journey."
+title: Why IaC needs to be un-bundled
+date: 2025-04-08
+excerpt: A post on my decade long journey with Infrastructure-as-Code, why I built my own minimal library in pure TypeScript and why I think you should at least entertain the idea of "un-bundling IaC" and returning to simplicity.
 ---
-
-A post on my decade long journey with Infrastructure-as-Code, why I built my own minimal library in pure TypeScript and why I think you should at least entertain the idea of "un-bundling IaC" and returning to simplicity.
 
 I built alchemy after years of working with every other option, from CloudFormation, CDK, to Pulumi, Terraform and Kubernetes. IaC is non-negotiable in my opinion, and is one of my favorite technologies as a developer.
 

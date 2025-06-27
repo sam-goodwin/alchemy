@@ -1,0 +1,12 @@
+---
+import BlogThemeSelect from 'starlight-blog/components/ThemeSelect.astro';
+import NovaThemeSelect from 'starlight-theme-nova/components/ThemeSelect.astro';
+
+const props = Astro.props;
+---
+
+<BlogThemeSelect {...props}>
+  <NovaThemeSelect {...props}>
+    <slot />
+  </NovaThemeSelect>
+</BlogThemeSelect>
