@@ -37,7 +37,11 @@ Astro.response.headers.set("Content-Type", "text/html");
       <img src="/alchemy-logo.svg" alt="Alchemy" class="logo-image" />
     </div>
     <h1 class="title">{data.title}</h1>
-    {data.description && <p class="description">{data.description}</p>}
+    {
+      (data.description || data.excerpt) && (
+        <p class="description">{data.description || data.excerpt}</p>
+      )
+    }
   </div>
 
   <div class="character-container">

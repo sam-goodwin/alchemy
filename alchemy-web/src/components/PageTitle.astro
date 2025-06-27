@@ -42,11 +42,16 @@ const breadcrumbData = await Promise.all(
     };
   })
 );
+
+// We don't want to show the blog breadcrumb on the blog page
+const isBlog = (crumbs: typeof breadcrumbData) => {
+  return crumbs[0].displayName === "blog";
+};
 ---
 
 <div class="page-title-wrapper">
   {
-    breadcrumbData.length > 0 && (
+    breadcrumbData.length > 0 && !isBlog(breadcrumbData) && (
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         <span class="breadcrumb-path">
           {breadcrumbData.map((crumb, index) => (
