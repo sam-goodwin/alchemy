@@ -2,6 +2,7 @@
 import sitemap from "@astrojs/sitemap";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
+import starlightBlog from "starlight-blog";
 import starlightLlmsTxt from "starlight-llms-txt";
 import starlightThemeNextjs from "starlight-nextjs-theme";
 
@@ -72,7 +73,7 @@ export default defineConfig({
           autogenerate: { directory: "providers", collapsed: true },
         },
       ],
-      plugins: [starlightThemeNextjs(), starlightLlmsTxt()],
+      plugins: [starlightThemeNextjs(), starlightLlmsTxt(), starlightBlog()],
     }),
   ],
   trailingSlash: "ignore",
