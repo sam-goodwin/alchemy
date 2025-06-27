@@ -15,12 +15,13 @@ const website = await Website("alchemy-website-test", {
 });
 
 export const ogWorker = await Worker("alchemy-og-worker", {
-  entrypoint: "./src/og-worker.ts",
-  routes: [
-    {
-      pattern: "og.alchemy.run/*",
-    },
-  ],
+  entrypoint: "./src/workers/og-worker.ts",
+  routes: ["og.alchemy.run/*"],
+});
+
+export const posthogWorker = await Worker("alchemy-posthog-worker", {
+  entrypoint: "./src/workers/posthog-worker.ts",
+  routes: ["ph.alchemy.run/*"],
 });
 
 if (process.env.PULL_REQUEST) {
