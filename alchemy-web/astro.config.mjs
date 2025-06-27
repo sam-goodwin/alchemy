@@ -2,6 +2,7 @@
 import sitemap from "@astrojs/sitemap";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
+import starlightBlog from "starlight-blog";
 // import theme from "starlight-nextjs-theme";
 // import theme from 'starlight-theme-flexoki';
 // import theme from 'starlight-theme-rapide';
@@ -70,6 +71,7 @@ export default defineConfig({
       },
       components: {
         Hero: "./src/components/Hero.astro",
+        MarkdownContent: "./src/components/MarkdownContent.astro",
       },
       sidebar: [
         {
@@ -101,7 +103,7 @@ export default defineConfig({
           "github-dark-dimmed",
         ],
       },
-      plugins: [theme()],
+      plugins: [theme(), starlightBlog()],
     }),
   ],
   trailingSlash: "ignore",
