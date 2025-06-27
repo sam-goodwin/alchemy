@@ -4,3 +4,7 @@
   --sl-color-accent: #0C991B;
   --sl-color-accent-high: #E6C965;
 } 
+
+.sl-markdown-content a:is(:hover, :focus-visible):not(:where(.not-content *)) {
+  color: var(--sl-color-accent);
+}

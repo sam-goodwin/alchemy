@@ -5,22 +5,18 @@ import { defineConfig } from "astro/config";
 import starlightLlmsTxt from "starlight-llms-txt";
 import starlightThemeNextjs from "starlight-nextjs-theme";
 
-
 // https://astro.build/config
 export default defineConfig({
   site: "https://alchemy.run",
-  // only needed if we use SSR
-  // adapter: cloudflare({
-  //   imageService: "passthrough",
-  // }),
+  output: "static",
   prefetch: !import.meta.env.DEV,
   integrations: [
     sitemap({
-      filter: (page) => !page.endsWith(".html") && !page.endsWith(".md"),
+      filter: (page) => !page.endsWith(".html") && !page.endsWith(".md") && !page.endsWith(".mdx"),
     }),
     starlight({
       title: "Alchemy",
-      favicon: "/public/flask.svg",
+      favicon: "/flask.svg",
       logo: {
         src: "/public/alchemy-logo.svg",
         replacesTitle: true,
@@ -29,6 +25,7 @@ export default defineConfig({
         './src/styles/custom.css',
       ],
       prerender: true,
+      routeMiddleware: './src/routeData.ts',
       social: [
         {
           icon: "github",
@@ -51,6 +48,7 @@ export default defineConfig({
       },
       components: {
         Hero: "./src/components/Hero.astro",
+        PageTitle: "./src/components/PageTitle.astro",
       },
       sidebar: [
         {
