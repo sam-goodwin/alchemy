@@ -1,5 +1,7 @@
 # Welcome to TanStack.com!
 
+[![Deployed with Alchemy](https://alchemy.run/alchemy-badge.svg)](https://alchemy.run)
+
 This site is built with TanStack Router!
 
 - [TanStack Router Docs](https://tanstack.com/router)

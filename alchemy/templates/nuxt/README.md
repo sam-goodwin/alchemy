@@ -1,5 +1,7 @@
 # Nuxt Minimal Starter
 
+[![Deployed with Alchemy](https://alchemy.run/alchemy-badge.svg)](https://alchemy.run)
+
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 ## Setup
