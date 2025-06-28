@@ -5,4 +5,4 @@
  * The build date used as the default worker compatibility date.
  * This is set to the date when the package was built.
  */
-export const BUILD_DATE = "2025-06-26";
+export const BUILD_DATE = "2025-06-27";

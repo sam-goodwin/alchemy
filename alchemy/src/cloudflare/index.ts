@@ -38,6 +38,7 @@ export * from "./queue-consumer.ts";
 export * from "./queue.ts";
 export * from "./r2-rest-state-store.ts";
 export * from "./react-router.ts";
+export * from "./redirect-rule.ts";
 export * from "./redwood.ts";
 export * from "./route.ts";
 export * from "./secret-key.ts";
