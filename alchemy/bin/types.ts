@@ -81,3 +81,8 @@ export type CreateInput = {
 export type CLIInput = CreateInput & {
   projectDirectory?: string;
 };
+
+export type BootstrapInput = {
+  force?: boolean;
+  yes?: boolean;
+};

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { createCli, trpcServer, zod as z } from "trpc-cli";
+import { bootstrapAlchemy, type BootstrapInput } from "./commands/bootstrap.ts";
 import { createAlchemy } from "./commands/create.ts";
 import { getPackageVersion } from "./services/get-package-version.ts";
 import {
@@ -72,6 +73,38 @@ const router = t.router({
         yes: isTest || options.yes,
       };
       await createAlchemy(combinedInput);
+    }),
+  bootstrap: t.procedure
+    .meta({
+      description: "Bootstrap Cloudflare DOStateStore for Alchemy",
+    })
+    .input(
+      z.tuple([
+        z
+          .object({
+            force: z
+              .boolean()
+              .optional()
+              .default(false)
+              .describe("Force overwrite existing token and redeploy worker"),
+            yes: z
+              .boolean()
+              .optional()
+              .default(false)
+              .describe("Skip prompts and use defaults"),
+          })
+          .optional()
+          .default({}),
+      ]),
+    )
+    .mutation(async ({ input }) => {
+      const [options] = input;
+      const isTest = process.env.NODE_ENV === "test";
+      const combinedInput: BootstrapInput = {
+        ...options,
+        yes: isTest || options.yes,
+      };
+      await bootstrapAlchemy(combinedInput);
     }),
 });
 
