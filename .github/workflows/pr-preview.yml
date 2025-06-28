@@ -30,47 +30,22 @@ jobs:
         id: deploy
         run: |
           echo "Deploying website preview for PR #${{ github.event.pull_request.number }}"
-          bun ./stacks/src/website.run.ts 2>&1 | tee deploy.log
-
-          # Extract the website URL from the logs
-          WEBSITE_URL=$(grep -o 'https://[^[:space:]]*\.workers\.dev' deploy.log | head -1)
-          echo "website_url=$WEBSITE_URL" >> $GITHUB_OUTPUT
+          cd alchemy-web
+          bun run deploy 2>&1 | tee deploy.log
         env:
+          GITHUB_SHA: ${{ github.event.pull_request.head.sha }}
+          PULL_REQUEST: ${{ github.event.pull_request.number }}
           BRANCH_PREFIX: pr-${{ github.event.pull_request.number }}
           ALCHEMY_STATE_STORE: cloudflare
+          ALCHEMY_STATE_TOKEN: ${{ env.ALCHEMY_STATE_TOKEN }}
           AWS_REGION: us-west-2
+          # Pass GitHub token for GitHubComment resource
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # All secrets loaded from SSM parameter
           ALCHEMY_PASSWORD: ${{ env.ALCHEMY_PASSWORD }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_KEY: ${{ env.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ env.CLOUDFLARE_EMAIL }}
-
-      - name: Find existing comment
-        id: find-comment
-        uses: peter-evans/find-comment@v3
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
-          body-includes: "<!-- alchemy-website-preview -->"
-
-      - name: Create or update PR comment
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            <!-- alchemy-website-preview -->
-            ## 🚀 Website Preview Deployed
-
-            Your website preview is ready! 
-
-            **Preview URL:** ${{ steps.deploy.outputs.website_url }}
-
-            This preview was built from commit ${{ github.event.pull_request.head.sha }}
-
-            ---
-            <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
-          edit-mode: replace
 
   cleanup-preview:
     if: ${{ github.event.action == 'closed' }}
@@ -91,36 +66,19 @@ jobs:
       - name: Cleanup Website Preview
         run: |
           echo "Cleaning up website preview for PR #${{ github.event.pull_request.number }}"
-          bun ./stacks/src/website.run.ts --destroy
+          # Change to alchemy-web directory to run the same alchemy.run.ts with --destroy flag
+          cd alchemy-web
+          bun run alchemy.run.ts --destroy
         env:
+          PULL_REQUEST: ${{ github.event.pull_request.number }}
           BRANCH_PREFIX: pr-${{ github.event.pull_request.number }}
           ALCHEMY_STATE_STORE: cloudflare
+          ALCHEMY_STATE_TOKEN: ${{ env.ALCHEMY_STATE_TOKEN }}
           AWS_REGION: us-west-2
+          # Pass GitHub token for GitHubComment resource
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # All secrets loaded from SSM parameter
           ALCHEMY_PASSWORD: ${{ env.ALCHEMY_PASSWORD }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_KEY: ${{ env.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ env.CLOUDFLARE_EMAIL }}
-
-      - name: Update PR comment
-        uses: peter-evans/find-comment@v3
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
-          body-includes: "<!-- alchemy-website-preview -->"
-
-      - name: Update comment with cleanup status
-        if: steps.find-comment.outputs.comment-id != ''
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          body: |
-            <!-- alchemy-website-preview -->
-            ## 🧹 Website Preview Cleaned Up
-
-            The website preview for this PR has been cleaned up as the PR was closed.
-
-            ---
-            <sub>🤖 Preview resources have been removed from Cloudflare.</sub>
-          edit-mode: replace

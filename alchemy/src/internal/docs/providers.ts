@@ -199,6 +199,8 @@ async function generateProviderDocs({
         See ${alchemy.file("./README.md")} to understand the overview of Alchemy.
         See ${alchemy.file("./.cursorrules")} to better understand the structure and convention of an Alchemy Resource.
 
+        Documentation should be written in the mdx format for an Astro Starlight documentation site.
+
         Relevant files for the ${providerName} Service:
         ${alchemy.files(files)}
         

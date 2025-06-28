@@ -63,7 +63,7 @@ export type Astro<B extends Bindings> = B extends { ASSETS: any }
  */
 export async function Astro<B extends Bindings>(
   id: string,
-  props: AstroProps<B>,
+  props: AstroProps<B> = {},
 ): Promise<Astro<B>> {
   if (props?.bindings?.ASSETS) {
     throw new Error("ASSETS binding is reserved for internal use");

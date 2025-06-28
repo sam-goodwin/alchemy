@@ -1,0 +1,11 @@
+/* Custom Starlight styles */
+:root {
+  --sl-color-text-accent: #D4AF37;
+  --sl-color-accent: #0C991B;
+  --sl-color-accent-high: #E6C965;
+} 
+
+[data-theme="light"] {
+  --sl-color-accent: #3EA248;
+  --sl-color-text-accent: #B38D12;
+}

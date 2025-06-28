@@ -1,2 +1,3 @@
-.vitepress/cache
-.vitepress/.temp
+.wrangler
+.astro
+node_modules
