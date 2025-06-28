@@ -1,6 +1,7 @@
 import type { Context } from "../context.ts";
-import { Image, type ImageProps, type ImageRegistry } from "../docker/image.ts";
+import { Image, type ImageProps } from "../docker/image.ts";
 import { Resource } from "../resource.ts";
+import { Scope } from "../scope.ts";
 import { secret } from "../secret.ts";
 import {
   type CloudflareApi,
@@ -17,6 +18,9 @@ export interface ContainerProps
   instanceType?: InstanceType;
   observability?: DeploymentObservability;
   schedulingPolicy?: SchedulingPolicy;
+  dev?: {
+    remote?: boolean;
+  };
 }
 
 /**
@@ -40,6 +44,9 @@ export type Container<T = any> = {
   instanceType?: InstanceType;
   observability?: DeploymentObservability;
   schedulingPolicy?: SchedulingPolicy;
+  dev?: {
+    remote?: boolean;
+  };
   /**
    * @internal
    */
@@ -50,48 +57,55 @@ export async function Container<T>(
   id: string,
   props: ContainerProps,
 ): Promise<Container<T>> {
-  // Otherwise, obtain Cloudflare registry credentials automatically
-  const api = await createCloudflareApi(props);
-  const creds = await getContainerCredentials(api);
-
-  const registry: ImageRegistry = {
-    server: "registry.cloudflare.com",
-    username: creds.username || creds.user!,
-    password: secret(creds.password),
-  };
-
-  // Ensure repository name is namespaced with accountId
-  const repoBase = props.name ?? id;
-  const repoName = repoBase.includes("/")
-    ? repoBase
-    : `${api.accountId}/${repoBase}`;
-
-  // Replace disallowed "latest" tag with timestamp
-  const finalTag =
+  const name = props.name ?? id;
+  const tag =
     props.tag === undefined || props.tag === "latest"
       ? `latest-${Date.now()}`
       : props.tag;
 
-  const image = await Image(id, {
-    build: props.build,
-    name: repoName,
-    tag: finalTag,
-    skipPush: false,
-    registry,
-  });
-
-  return {
+  const output: Omit<Container<T>, "image"> = {
     type: "container",
     id,
-    name: props.name ?? id,
+    name,
     className: props.className,
-    image,
     maxInstances: props.maxInstances,
     scriptName: props.scriptName,
     instanceType: props.instanceType,
     observability: props.observability,
     schedulingPolicy: props.schedulingPolicy,
     sqlite: true,
+    dev: props.dev,
+  };
+
+  if (Scope.current.dev && !props.dev?.remote) {
+    const image = await Image(id, {
+      name: `cloudflare-dev/${name}`, // prefix used by Miniflare
+      tag,
+      build: props.build,
+    });
+
+    return {
+      ...output,
+      image,
+    };
+  }
+
+  const api = await createCloudflareApi(props);
+  const credentials = await getContainerCredentials(api);
+
+  const image = await Image(id, {
+    name: `${api.accountId}/${name}`,
+    tag,
+    registry: {
+      server: "registry.cloudflare.com",
+      username: credentials.username || credentials.user!,
+      password: secret(credentials.password),
+    },
+  });
+
+  return {
+    ...output,
+    image,
   };
 }
 

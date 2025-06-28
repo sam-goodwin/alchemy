@@ -83,6 +83,50 @@ This will build your Dockerfile and prepare it for publishing to Cloudflare's Im
 > });
 > ```
 
+## Development Mode
+
+Container resources have special behavior in development mode to support local testing:
+
+### Local Development
+
+By default, when running in dev mode (using `--dev` flag), Container images are **not** pushed to Cloudflare's registry. Instead, they use a local `cloudflare-dev/` prefix that Miniflare can read from your local Docker daemon:
+
+```ts
+const container = await Container<MyContainer>("my-container", {
+  className: "MyContainer",
+  // In dev mode: uses local Docker image with cloudflare-dev/ prefix
+  // In production: pushes to Cloudflare's registry
+});
+```
+
+### Remote Development
+
+If you need to use a Container with a remote Worker during development, set `dev: { remote: true }` to push the image to Cloudflare:
+
+```ts
+const container = await Container<MyContainer>("my-container", {
+  className: "MyContainer",
+  dev: {
+    remote: true // Forces push to Cloudflare registry even in dev mode
+  }
+});
+```
+
+> [!WARNING]
+> **Limitations with Remote Containers**
+> - If you set `dev: { remote: true }` on a Container, it cannot be used as a local binding in development
+> - Remote container bindings are not supported for locally emulated workers
+
+### Startup Warnings
+
+When calling `container.fetch()` while the container is still starting up, you may see this warning in the console:
+
+```
+Error checking if container is ready: connect(): Connection refused: container port not found. Make sure you exposed the port in your container definition.
+```
+
+This warning can be safely ignored - the binding still works correctly and this is expected behavior during container startup.
+
 ## Bind to Worker
 
 To deploy the `Container` to Cloudflare, you need to bind it to a `Worker`:

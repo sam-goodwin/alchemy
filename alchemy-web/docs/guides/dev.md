@@ -140,6 +140,7 @@ The following bindings are supported in dev mode:
 | Analytics Engine | ✅ | ❌ | ❌ |
 | Assets | ✅ | ❌ | ❌ |
 | Browser Rendering | ❌ | ✅ | ❌ |
+| Container | ✅ | ✅ | ❌ |
 | D1 Database | ✅ | ✅ | ✅ |
 | Dispatch Namespace | ❌ | ✅ | ❌ |
 | Durable Object Namespace | ✅ | ❌ | ❌ |
@@ -163,6 +164,8 @@ The following bindings are supported in dev mode:
 - Hot reloading for Workers is only supported when the `entrypoint` property is set. To hot reload an inline script, you must use an external watcher to monitor your `alchemy.run.ts` file.
 - Local Workers can push to remote queues, but cannot consume from them.
 - Hyperdrive support is experimental. Hyperdrive configurations that use Cloudflare Access are not supported, and only configurations provisioned in the same `alchemy.run.ts` file will work. This is a [limitation from Cloudflare that is actively being worked on](https://developers.cloudflare.com/workers/development-testing/#unsupported-remote-bindings).
+- Container bindings with `dev: { remote: true }` cannot be used as local bindings in development mode.
+- You may see "Connection refused" errors in the console when containers are starting up - these can be safely ignored.
 
 ## Best Practices
 
