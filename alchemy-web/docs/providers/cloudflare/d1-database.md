@@ -29,7 +29,34 @@ import { D1Database } from "alchemy/cloudflare";
 const db = await D1Database("users-db", {
   name: "users-db",
   migrationsDir: "./migrations",
-  migrationsTable: "schema_migrations",
+  migrationsTable: "schema_migrations", // Custom table name for tracking migrations
+});
+```
+
+## Custom Migration Table
+
+By default, D1Database uses a table named `d1_migrations` to track migration history. You can customize this table name using the `migrationsTable` property, which is useful for compatibility with tools like Drizzle:
+
+```ts
+import { D1Database } from "alchemy/cloudflare";
+
+// Use custom migration table (compatible with Drizzle)
+const db = await D1Database("my-db", {
+  name: "my-db",
+  migrationsDir: "./migrations",
+  migrationsTable: "drizzle_migrations",
+});
+```
+
+If you don't specify `migrationsTable`, it defaults to `d1_migrations`:
+
+```ts
+import { D1Database } from "alchemy/cloudflare";
+
+// Uses default migration table 'd1_migrations'
+const db = await D1Database("my-db", {
+  name: "my-db",
+  migrationsDir: "./migrations",
 });
 ```
 

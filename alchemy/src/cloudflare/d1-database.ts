@@ -218,6 +218,23 @@ export async function D1Database(
  * });
  *
  * @example
+ * // Create a database with migrations using a custom migration table (compatible with Drizzle)
+ * const dbWithCustomMigrations = await D1Database("mydb", {
+ *   name: "mydb",
+ *   migrationsDir: "./migrations",
+ *   migrationsTable: "drizzle_migrations",
+ * });
+ *
+ * @example
+ * // Create a database with custom migration table and ID column for maximum compatibility
+ * const dbWithCustomMigrations = await D1Database("mydb", {
+ *   name: "mydb",
+ *   migrationsDir: "./migrations",
+ *   migrationsTable: "custom_migrations",
+ *   migrationsIdColumn: "migration_name", // explicit column name override
+ * });
+ *
+ * @example
  * // Clone an existing database by ID
  * const clonedDb = await D1Database("cloned-db", {
  *   name: "cloned-db",
