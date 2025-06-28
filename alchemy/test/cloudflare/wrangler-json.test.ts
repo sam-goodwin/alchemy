@@ -136,7 +136,8 @@ describe("WranglerJson Resource", () => {
 
         expect(spec).toMatchObject({
           name,
-          main: entrypoint,
+          // main should now be relative to the wrangler.json file location
+          main: path.relative(process.cwd(), entrypoint),
           compatibility_date: worker.compatibilityDate,
           compatibility_flags: worker.compatibilityFlags,
         });
@@ -517,6 +518,66 @@ describe("WranglerJson Resource", () => {
           bucket_name: r2Bucket.name,
           preview_bucket_name: r2Bucket.name,
         });
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true });
+        await destroy(scope);
+      }
+    });
+
+    test("paths are relative to wrangler.json file location", async (scope) => {
+      const name = `${BRANCH_PREFIX}-test-worker-path-resolution`;
+      const tempDir = path.join(".out", "path-resolution-test");
+      const subDir = path.join(tempDir, "packages", "backend");
+      const entrypoint = path.join(
+        tempDir,
+        "packages",
+        "backend",
+        "src",
+        "index.ts",
+      );
+      const wranglerPath = path.join(subDir, "wrangler.jsonc");
+
+      try {
+        // Clean up and create directory structure
+        await fs.rm(tempDir, { recursive: true, force: true });
+        await fs.mkdir(path.join(tempDir, "packages", "backend", "src"), {
+          recursive: true,
+        });
+        await fs.writeFile(entrypoint, esmWorkerScript);
+
+        const worker = await Worker(name, {
+          format: "esm",
+          entrypoint,
+          compatibilityFlags: ["nodejs_compat"],
+          adopt: true,
+        });
+
+        const { spec } = await WranglerJson(
+          `${BRANCH_PREFIX}-test-wrangler-json-path-resolution`,
+          {
+            worker,
+            path: wranglerPath,
+          },
+        );
+
+        // Verify the main path is relative to the wrangler.json file location
+        // The entrypoint is at packages/backend/src/index.ts
+        // The wrangler.json is at packages/backend/wrangler.jsonc
+        // So main should be "./src/index.ts" (relative to packages/backend/)
+        expect(spec.main).toBe("src/index.ts");
+        expect(spec.name).toBe(name);
+
+        // Verify the wrangler.jsonc file was actually created
+        const wranglerExists = await fs
+          .access(wranglerPath)
+          .then(() => true)
+          .catch(() => false);
+        expect(wranglerExists).toBe(true);
+
+        // Verify the content matches our expectation
+        const wranglerContent = await fs.readFile(wranglerPath, "utf-8");
+        const wranglerJson = JSON.parse(wranglerContent);
+        expect(wranglerJson.main).toBe("src/index.ts");
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true });
         await destroy(scope);

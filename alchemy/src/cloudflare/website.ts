@@ -195,19 +195,16 @@ export default {
       } as WorkerProps<any> & { name: string };
 
       if (wrangler) {
-        // paths in wrangler.jsonc must be relative to it
-        const relativeToWrangler = <S extends string | undefined>(f: S): S =>
-          (f ? path.relative(path.dirname(wranglerJsonPath), f) : f) as S;
         await WranglerJson("wrangler.jsonc", {
           path: wranglerJsonPath,
           worker: workerProps,
-          main: relativeToWrangler(wranglerMainPath),
+          main: wranglerMainPath,
           // hard-code the assets directory because we haven't yet included the assets binding
           assets: {
             binding: "ASSETS",
-            // path must be relative to the wrangler.jsonc file
-            directory: relativeToWrangler(assetsDirPath),
+            directory: assetsDirPath,
           },
+          cwd: cwd,
         });
       }
 
