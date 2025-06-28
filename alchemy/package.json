@@ -83,6 +83,10 @@
       "bun": "./src/os/index.ts",
       "import": "./lib/os/index.js"
     },
+    "./railway": {
+      "bun": "./src/railway/index.ts",
+      "import": "./lib/railway/index.js"
+    },
     "./sentry": {
       "bun": "./src/sentry/index.ts",
       "import": "./lib/sentry/index.js"
