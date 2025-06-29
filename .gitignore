@@ -19,4 +19,4 @@ wrangler.jsonc
 
 .smoke
 .svelte-kit
-
+.claude/*.local.json

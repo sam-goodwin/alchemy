@@ -3,17 +3,30 @@ import { execa } from "execa";
 import * as fs from "fs-extra";
 import type { PackageManager, ProjectContext } from "../types.ts";
 
-export function detectPackageManager(): PackageManager {
-  if (fs.pathExistsSync("bun.lockb")) return "bun";
-  if (fs.pathExistsSync("pnpm-lock.yaml")) return "pnpm";
-  if (fs.pathExistsSync("yarn.lock")) return "yarn";
+export function detectPackageManager(
+  path: string = process.cwd(),
+): PackageManager {
+  if (fs.pathExistsSync(`${path}/deno.lock`)) return "deno";
+  if (
+    fs.pathExistsSync(`${path}/deno.json`) ||
+    fs.pathExistsSync(`${path}/deno.jsonc`)
+  )
+    return "deno";
+  if (fs.pathExistsSync(`${path}/bun.lockb`)) return "bun";
+  if (fs.pathExistsSync(`${path}/pnpm-lock.yaml`)) return "pnpm";
+  if (fs.pathExistsSync(`${path}/yarn.lock`)) return "yarn";
 
   if (process.env.npm_execpath?.includes("bun")) {
     return "bun";
   }
 
+  if (process.env.DENO) {
+    return "deno";
+  }
+
   const userAgent = process.env.npm_config_user_agent;
   if (userAgent) {
+    if (userAgent.startsWith("deno")) return "deno";
     if (userAgent.startsWith("bun")) return "bun";
     if (userAgent.startsWith("pnpm")) return "pnpm";
     if (userAgent.startsWith("yarn")) return "yarn";
@@ -60,6 +73,15 @@ export function getPackageManagerCommands(pm: PackageManager) {
       run: "yarn",
       create: "yarn create",
       x: "yarn dlx",
+    },
+    deno: {
+      init: "deno init",
+      install: "deno install",
+      add: "deno add",
+      addDev: "deno add",
+      run: "deno task",
+      create: "deno run -A",
+      x: "deno run -A",
     },
   };
 
