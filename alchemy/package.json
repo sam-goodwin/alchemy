@@ -35,6 +35,10 @@
       "bun": "./src/index.ts",
       "import": "./lib/index.js"
     },
+    "./llms": {
+      "bun": "./src/llms.ts",
+      "import": "./lib/llms.js"
+    },
     "./ai": {
       "bun": "./src/ai/index.ts",
       "import": "./lib/ai/index.js"

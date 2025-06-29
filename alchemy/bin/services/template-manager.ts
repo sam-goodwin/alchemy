@@ -2,7 +2,6 @@ import { log, spinner } from "@clack/prompts";
 import { execa } from "execa";
 import * as fs from "fs-extra";
 import { globby } from "globby";
-import { existsSync } from "node:fs";
 import * as path from "node:path";
 import { join } from "node:path";
 
@@ -21,11 +20,17 @@ export async function copyTemplate(
 ): Promise<void> {
   const templatePath = path.join(PKG_ROOT, "templates", templateName);
 
-  if (!existsSync(templatePath)) {
+  if (!fs.existsSync(templatePath)) {
     throw new Error(`Template '${templateName}' not found at ${templatePath}`);
   }
 
-  const filesToRename = ["_gitignore", "_npmrc", "_env", "_env.example"];
+  const filesToRename = [
+    "_gitignore",
+    "_npmrc",
+    "_env",
+    "_env.example",
+    "_prettierignore",
+  ];
 
   try {
     const copySpinner = spinner();
@@ -90,7 +95,7 @@ async function updateTemplatePackageJson(
 ): Promise<void> {
   const packageJsonPath = join(context.path, "package.json");
 
-  if (!existsSync(packageJsonPath)) {
+  if (!fs.existsSync(packageJsonPath)) {
     return;
   }
 

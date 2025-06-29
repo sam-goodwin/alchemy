@@ -11,15 +11,23 @@ import {
   text,
 } from "@clack/prompts";
 import * as fs from "fs-extra";
-import { existsSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 import pc from "picocolors";
 
 import { throwWithContext } from "../errors.ts";
 import { detectPackageManager } from "../services/package-manager.ts";
 import { copyTemplate } from "../services/template-manager.ts";
-import type { CreateInput, ProjectContext, TemplateType } from "../types.ts";
+import type {
+  CreateInput,
+  EditorType,
+  ProjectContext,
+  TemplateType,
+} from "../types.ts";
 import { ProjectNameSchema, TEMPLATE_DEFINITIONS } from "../types.ts";
+import {
+  ensureVibeRulesPostinstall,
+  installAlchemyRules,
+} from "./vibe-rules.ts";
 
 const isTest = process.env.NODE_ENV === "test";
 
@@ -88,13 +96,7 @@ async function createProjectContext(
   }
 
   const path = resolve(process.cwd(), name);
-  let packageManager = options.packageManager || detectedPm;
-
-  // Override package manager if specific flags are provided
-  if (options.bun) packageManager = "bun";
-  else if (options.npm) packageManager = "npm";
-  else if (options.pnpm) packageManager = "pnpm";
-  else if (options.yarn) packageManager = "yarn";
+  let packageManager = options.pm || detectedPm;
 
   let shouldInstall = true;
   if (options.install !== undefined) {
@@ -132,7 +134,7 @@ async function createProjectContext(
 async function handleDirectoryOverwrite(
   context: ProjectContext,
 ): Promise<void> {
-  if (!existsSync(context.path)) {
+  if (!fs.existsSync(context.path)) {
     return;
   }
 
@@ -189,19 +191,65 @@ async function initializeTemplate(context: ProjectContext): Promise<void> {
       `Template initialization failed for '${context.template}'`,
     );
   }
+}
 
-  // Create .gitignore if it doesn't exist
-  const gitignorePath = join(context.path, ".gitignore");
-  if (!existsSync(gitignorePath)) {
-    try {
-      await fs.writeFile(
-        gitignorePath,
-        "node_modules/\n.env\n.env.local\ndist/\nlib/\n.wrangler/\nwrangler.jsonc\n*.tsbuildinfo\n",
-      );
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      log.warn(`Failed to create .gitignore: ${errorMsg}`);
+async function setupVibeRules(context: ProjectContext): Promise<void> {
+  let selectedEditor: EditorType | undefined = context.options.vibeRules;
+
+  if (!selectedEditor && !context.isTest && !context.options.yes) {
+    const setupResult = await confirm({
+      message: "Setup vibe-rules for AI development assistance?",
+      initialValue: true,
+    });
+
+    if (isCancel(setupResult) || !setupResult) {
+      return;
     }
+
+    const editorResult = await select({
+      message: "Which editor would you like to configure?",
+      options: [
+        { label: "Cursor", value: "cursor" },
+        { label: "Windsurf", value: "windsurf" },
+        { label: "VSCode", value: "vscode" },
+        { label: "Zed", value: "zed" },
+        { label: "Claude Code", value: "claude-code" },
+        { label: "Gemini", value: "gemini" },
+        { label: "Codex", value: "codex" },
+        { label: "Amp", value: "amp" },
+        { label: "Cline Rules", value: "clinerules" },
+        { label: "Roo", value: "roo" },
+        { label: "Unified (.rules)", value: "unified" },
+      ],
+    });
+
+    if (isCancel(editorResult)) {
+      return;
+    }
+
+    selectedEditor = editorResult;
+  }
+
+  if (!selectedEditor) {
+    return;
+  }
+
+  const s = spinner();
+  s.start("Configuring vibe-rules...");
+
+  try {
+    await installAlchemyRules({
+      editor: selectedEditor,
+      packageManager: context.packageManager,
+      cwd: context.path,
+    });
+
+    s.stop("vibe-rules configured");
+
+    await ensureVibeRulesPostinstall(context.path, selectedEditor);
+  } catch (error) {
+    s.stop("Failed to configure vibe-rules");
+    throwWithContext(error, "Failed to configure vibe-rules");
   }
 }
 
@@ -227,6 +275,8 @@ ${pc.cyan("📦 Install dependencies:")}
 
 `
         : "";
+
+    await setupVibeRules(context);
 
     note(
       `
