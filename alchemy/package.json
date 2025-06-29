@@ -10,10 +10,14 @@
     "directory": "alchemy"
   },
   "scripts": {
-    "build:cli": "./scripts/bundle-cli.sh",
+    "build:cli": "run-script-os",
+    "build:cli:windows": "powershell -File ./scripts/bundle-cli.ps1",
+    "build:cli:default": "./scripts/bundle-cli.sh",
     "build:workers": "bun ./scripts/build-workers.ts",
     "build": "bun ./scripts/generate-build-date.ts && rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b && bun run build:cli && bun run build:workers",
-    "dev:cli": "./scripts/bundle-cli.sh --watch",
+    "dev:cli": "run-script-os",
+    "dev:cli:windows": "powershell -File ./scripts/bundle-cli.ps1 --watch",
+    "dev:cli:default": "./scripts/bundle-cli.sh --watch",
     "docs:gen": "rm -rf ./docs && typedoc",
     "postbuild": "cpx 'src/**/*/types.d.ts' lib",
     "publish:npm": "cp ../README.md . && bun run build && bun run build:cli && npm publish && rm README.md"

@@ -48,7 +48,11 @@ export type PendingDeletions = Array<{
 }>;
 
 // TODO: support browser
-const DEFAULT_STAGE = process.env.ALCHEMY_STAGE ?? process.env.USER ?? "dev";
+const DEFAULT_STAGE =
+  process.env.ALCHEMY_STAGE ??
+  process.env.USER ??
+  process.env.USERNAME ??
+  "dev";
 
 declare global {
   var __ALCHEMY_STORAGE__: AsyncLocalStorage<Scope>;

@@ -197,11 +197,17 @@ async function _alchemy(
     const stage = new Scope({
       ...mergedOptions,
       scopeName:
-        mergedOptions?.stage ?? process.env.ALCHEMY_STAGE ?? process.env.USER,
+        mergedOptions?.stage ??
+        process.env.ALCHEMY_STAGE ??
+        process.env.USER ??
+        process.env.USERNAME,
       parent: root,
       appName,
       stage:
-        mergedOptions?.stage ?? process.env.ALCHEMY_STAGE ?? process.env.USER,
+        mergedOptions?.stage ??
+        process.env.ALCHEMY_STAGE ??
+        process.env.USER ??
+        process.env.USERNAME,
     });
     try {
       Scope.storage.enterWith(root);

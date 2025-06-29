@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import path from "node:path";
+import { posix as path } from "node:path";
 import { afterAll, expect } from "vitest";
 import { alchemy } from "../src/alchemy.ts";
 import { Bundle } from "../src/esbuild/bundle.ts";

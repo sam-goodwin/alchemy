@@ -124,9 +124,11 @@ describe("Image", () => {
       });
     } catch (error) {
       expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe(
-        "ENOENT: no such file or directory, access '/non/existent/path'",
-      );
+      const message = (error as Error).message;
+      expect(
+        message.startsWith("ENOENT: no such file or directory, access"),
+      ).toBe(true);
+      expect(message).toMatch(/non[\\/]+existent[\\/]+path/);
     } finally {
       await alchemy.destroy(scope);
     }

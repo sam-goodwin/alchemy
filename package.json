@@ -45,6 +45,7 @@
     "jsonc-parser": "^3.3.1",
     "lint-staged": "^15.3.0",
     "openai": "^4.103.0",
+    "run-script-os": "^1.1.6",
     "typescript": "latest",
     "vite": "^6.3.5",
     "vitest": "^3.1.4",
