@@ -19,7 +19,7 @@ export const TemplateSchema = z
 export type TemplateType = z.infer<typeof TemplateSchema>;
 
 export const PackageManagerSchema = z
-  .enum(["bun", "npm", "pnpm", "yarn"])
+  .enum(["bun", "npm", "pnpm", "yarn", "deno"])
   .describe("Package manager");
 export type PackageManager = z.infer<typeof PackageManagerSchema>;
 
@@ -73,6 +73,7 @@ export type CreateInput = {
   npm?: boolean;
   pnpm?: boolean;
   yarn?: boolean;
+  deno?: boolean;
   yes?: boolean;
   overwrite?: boolean;
   install?: boolean;

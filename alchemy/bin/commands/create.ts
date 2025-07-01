@@ -95,6 +95,7 @@ async function createProjectContext(
   else if (options.npm) packageManager = "npm";
   else if (options.pnpm) packageManager = "pnpm";
   else if (options.yarn) packageManager = "yarn";
+  else if (options.deno) packageManager = "deno";
 
   let shouldInstall = true;
   if (options.install !== undefined) {
