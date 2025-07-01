@@ -1,5 +1,7 @@
 # my-alchemy-app
 
+[![Deployed with Alchemy](https://alchemy.run/alchemy-badge.svg)](https://alchemy.run)
+
 To install dependencies:
 
 ```bash
