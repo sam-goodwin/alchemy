@@ -14,6 +14,7 @@
     "target": "ESNext",
     "allowJs": true,
     "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true
+    "rewriteRelativeImportExtensions": true,
+    "incremental": true
   }
 }
