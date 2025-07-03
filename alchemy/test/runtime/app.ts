@@ -7,7 +7,7 @@ import { Queue } from "../../src/cloudflare/queue.js";
 import { Worker } from "../../src/cloudflare/worker.js";
 
 const app = await alchemy("my-bootstrap-ap", {
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
+  phase: process.argv.includes("--destroy") ? "destroy" : "apply",
 });
 
 const bucket = await R2Bucket("my-bootstrap-bucket", {

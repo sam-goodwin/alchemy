@@ -339,7 +339,7 @@ To use your custom state store, pass it to the Alchemy app initialization:
 ```typescript
 const app = await alchemy("my-app", {
   stage: "prod",
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
+  phase: process.argv.includes("--destroy") ? "destroy" : "apply",
   stateStore: (scope) => new InMemoryStateStore(scope)
 });
 

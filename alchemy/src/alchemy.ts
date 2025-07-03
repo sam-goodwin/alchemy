@@ -32,6 +32,10 @@ function parseCliArgs(): Partial<AlchemyOptions> {
     options.phase = "destroy";
   } else if (args.includes("--read")) {
     options.phase = "read";
+  } else if (args.includes("--apply")) {
+    options.phase = "apply";
+  } else if (args.includes("--up")) {
+    options.phase = "up";
   }
 
   if (
@@ -76,14 +80,14 @@ export const alchemy: Alchemy = _alchemy as any;
  * @example
  * // Simple usage with automatic CLI argument parsing
  * const app = await alchemy("my-app");
- * // Now supports: --destroy, --read, --quiet, --stage my-stage
+ * // Now supports: --destroy, --read, --apply, --up (deprecated), --quiet, --stage my-stage
  * // Environment variables: PASSWORD, ALCHEMY_PASSWORD, ALCHEMY_STAGE, USER
  *
  * @example
  * // Create an application scope with explicit options (overrides CLI args)
  * const app = await alchemy("github:alchemy", {
  *   stage: "prod",
- *   phase: "up",
+ *   phase: "apply",
  *   // Required for encrypting/decrypting secrets
  *   password: process.env.SECRET_PASSPHRASE
  * });
@@ -118,7 +122,7 @@ export interface Alchemy {
   /**
    * Creates a new application scope with the given name and options.
    * Used to create and manage resources with proper secret handling.
-   * Automatically parses CLI arguments: --destroy, --read, --quiet, --stage <name>
+   * Automatically parses CLI arguments: --destroy, --read, --apply, --up (deprecated), --quiet, --stage <name>
    * Environment variables: PASSWORD, ALCHEMY_PASSWORD, ALCHEMY_STAGE, USER
    *
    * @example
@@ -179,7 +183,15 @@ async function _alchemy(
       ...options,
     };
 
-    const phase = isRuntime ? "read" : (mergedOptions?.phase ?? "up");
+    const phase = isRuntime ? "read" : (mergedOptions?.phase ?? "apply");
+
+    // Show deprecation warning if "up" phase is explicitly used
+    if (mergedOptions?.phase === "up") {
+      logger.warn(
+        `The "up" phase is deprecated and will be removed in a future version. Please use "apply" instead.`,
+      );
+    }
+
     const telemetryClient =
       mergedOptions?.parent?.telemetryClient ??
       TelemetryClient.create({
@@ -338,7 +350,8 @@ async function _alchemy(
   ].join("\n");
 }
 
-export type Phase = "up" | "destroy" | "read";
+export const PhaseOptions = ["apply", "up", "destroy", "read"] as const;
+export type Phase = (typeof PhaseOptions)[number];
 
 export interface AlchemyOptions {
   /**
@@ -348,7 +361,7 @@ export interface AlchemyOptions {
   /**
    * Determines whether the resources will be created/updated or deleted.
    *
-   * @default "up"
+   * @default "apply"
    */
   phase?: Phase;
   /**
@@ -446,10 +459,19 @@ async function run<T>(
           RunOptions,
           (this: Scope, scope: Scope) => Promise<T>,
         ]);
+  const phase = isRuntime ? "read" : (options?.phase ?? "apply");
+
+  // Show deprecation warning if "up" phase is explicitly used
+  if (options?.phase === "up") {
+    logger.warn(
+      `The "up" phase is deprecated and will be removed in a future version. Please use "apply" instead.`,
+    );
+  }
+
   const telemetryClient =
     options?.parent?.telemetryClient ??
     TelemetryClient.create({
-      phase: isRuntime ? "read" : (options?.phase ?? "up"),
+      phase,
       enabled: options?.telemetry ?? true,
       quiet: options?.quiet ?? false,
     });

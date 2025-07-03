@@ -1,23 +1,26 @@
 ---
 order: 2
 title: Phase
-description: Master the three execution phases in Alchemy - up, destroy, and read. Learn when to use each phase for deploying, tearing down, or accessing your infrastructure.
+description: Master the three execution phases in Alchemy - apply, destroy, and read. Learn when to use each phase for deploying, tearing down, or accessing your infrastructure.
 ---
 
 # Phase
 
 An Alchemy app can run in one of three phases:
-1. `"up"` - resources should be created, updated and deleted as necessary.
+1. `"apply"` - resources should be created, updated and deleted as necessary.
 2. `"destroy"` - all resources in the stage should be deleted and the program should not proceed
 3. `"read"` - run the program end-to-end but do not create, update or delete any resources
 
-## `"up"`
+> [!NOTE]
+> The `"up"` phase is deprecated but still supported for backward compatibility. Use `"apply"` instead.
 
-The **Up** phase creates, updates and deletes resources. This is the default mode and the most common. It's how you deploy your app (synchronize resources).
+## `"apply"`
+
+The **Apply** phase creates, updates and deletes resources. This is the default mode and the most common. It's how you deploy your app (synchronize resources).
 
 ```ts
 const app = await alchemy("my-app", {
-  phase: "up"
+  phase: "apply"
 });
 
 const worker = await Worker("my-app", { .. }); // <- will be created or updated
@@ -63,7 +66,7 @@ await app.finalize() // <- will not delete any orphaned resources
 > ```ts
 > // ./alchemy.run.ts
 > const app = await alchemy({
->   phase: process.env.PHASE ?? "up"    
+>   phase: process.env.PHASE ?? "apply"    
 > });
 >
 > // export your infrastructure

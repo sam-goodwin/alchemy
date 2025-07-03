@@ -136,7 +136,7 @@ export function test(meta: ImportMeta, defaultOptions?: TestOptions): test {
     scopeName: `${defaultOptions.prefix ? `${defaultOptions.prefix}-` : ""}${path.basename(meta.filename)}`,
     // parent: globalTestScope,
     stateStore: defaultOptions?.stateStore,
-    phase: "up",
+    phase: "apply",
     telemetryClient: new NoopTelemetryClient(),
   });
 

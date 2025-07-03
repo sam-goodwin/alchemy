@@ -4,7 +4,7 @@ import { Orange, R2RestStateStore } from "alchemy/cloudflare";
 const BRANCH_PREFIX = process.env.BRANCH_PREFIX ?? "";
 
 const app = await alchemy("cloudflare-orange", {
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
+  phase: process.argv.includes("--destroy") ? "destroy" : "apply",
   stateStore:
     process.env.ALCHEMY_STATE_STORE === "cloudflare"
       ? (scope) => new R2RestStateStore(scope)

@@ -16,7 +16,7 @@ import { S3StateStore } from "alchemy/aws";
 
 const app = await alchemy("my-app", {
   stage: "prod",
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
+  phase: process.argv.includes("--destroy") ? "destroy" : "apply",
   stateStore: (scope) => new S3StateStore(scope, {
     bucketName: "my-app-alchemy-state",
     region: "us-east-1"

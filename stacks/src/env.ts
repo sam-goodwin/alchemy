@@ -24,7 +24,7 @@ export default {
       ? "destroy"
       : process.argv.includes("--read")
         ? "read"
-        : "up"),
+        : "apply"),
   // pass the password in (you can get it from anywhere, e.g. stdin)
   password: process.env.SECRET_PASSPHRASE,
   quiet: process.argv.includes("--quiet"),

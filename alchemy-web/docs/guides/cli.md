@@ -82,7 +82,7 @@ const app = await alchemy("my-app");
 
 // Explicit options override CLI args
 const app = await alchemy("my-app", {
-  phase: "up", // This overrides --destroy or --read
+  phase: "apply", // This overrides --destroy or --read
   stage: "prod", // This overrides --stage
   quiet: false, // This overrides --quiet
 });

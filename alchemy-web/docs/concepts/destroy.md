@@ -13,7 +13,7 @@ Resource destruction in Alchemy removes resources from both your state file and 
 ```typescript
 // Destroys all resources in the application
 const app = await alchemy("my-app", {
-  phase: "destroy"  // or process.argv.includes("--destroy") ? "destroy" : "up"
+  phase: "destroy"  // or process.argv.includes("--destroy") ? "destroy" : "apply"
 });
 ```
 Use for: Complete teardown of environments, cleaning up all infrastructure managed by the app.
@@ -41,7 +41,7 @@ Use for: Targeted cleanup of specific resources or test resources without affect
 // In alchemy.run.ts
 const app = await alchemy("my-app", {
   stage: "dev",
-  phase: process.argv.includes("--destroy") ? "destroy" : "up"
+  phase: process.argv.includes("--destroy") ? "destroy" : "apply"
 });
 
 // Run with: bun ./alchemy.run.ts --destroy

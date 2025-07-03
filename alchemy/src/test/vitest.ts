@@ -141,7 +141,7 @@ export function test(
   const scope = new Scope({
     scopeName: `${defaultOptions.prefix ? `${defaultOptions.prefix}-` : ""}${path.basename(meta.filename)}`,
     stateStore: defaultOptions?.stateStore,
-    phase: "up",
+    phase: "apply",
     telemetryClient: new NoopTelemetryClient(),
     quiet: defaultOptions.quiet,
   });

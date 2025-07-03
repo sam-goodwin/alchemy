@@ -102,7 +102,7 @@ import { DOStateStore } from "alchemy/cloudflare";
 // Set CLOUDFLARE_API_KEY, CLOUDFLARE_EMAIL, and ALCHEMY_STATE_TOKEN env vars
 const app = await alchemy("my-app", {
   stage: "prod",
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
+  phase: process.argv.includes("--destroy") ? "destroy" : "apply",
   stateStore: (scope) => new DOStateStore(scope)
 });
 ```
@@ -117,7 +117,7 @@ import { DOStateStore } from "alchemy/cloudflare";
 
 const app = await alchemy("my-app", {
   stage: "prod", 
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
+  phase: process.argv.includes("--destroy") ? "destroy" : "apply",
   stateStore: (scope) => new DOStateStore(scope, {
     // Cloudflare API credentials
     apiKey: alchemy.secret(process.env.CLOUDFLARE_API_KEY),
@@ -141,7 +141,7 @@ Alchemy also supports state storage using Cloudflare R2, though DOStateStore is 
 // Example with Cloudflare R2 state store
 const app = await alchemy("my-app", {
   stage: "prod",
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
+  phase: process.argv.includes("--destroy") ? "destroy" : "apply",
   stateStore: (scope) => new R2RestStateStore(scope, {
     apiKey: alchemy.secret(process.env.CLOUDFLARE_API_KEY),
     email: process.env.CLOUDFLARE_EMAIL,
@@ -159,7 +159,7 @@ import { S3StateStore } from "alchemy/aws";
 
 const app = await alchemy("my-app", {
   stage: "prod",
-  phase: process.argv.includes("--destroy") ? "destroy" : "up",
+  phase: process.argv.includes("--destroy") ? "destroy" : "apply",
   stateStore: (scope) => new S3StateStore(scope, {
     bucketName: "my-app-alchemy-state",
     region: "us-east-1"

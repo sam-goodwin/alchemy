@@ -4,7 +4,7 @@ import * as docker from "alchemy/docker";
 // Initialize Alchemy
 const app = await alchemy("docker", {
   // Determine the phase based on command line arguments
-  phase: process.argv[2] === "destroy" ? "destroy" : "up",
+  phase: process.argv[2] === "destroy" ? "destroy" : "apply",
   stage: process.argv[3],
   quiet: process.argv.includes("--quiet"),
 });

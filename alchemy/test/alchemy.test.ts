@@ -11,7 +11,7 @@ const test = alchemy.test(import.meta, {
 describe("alchemy.run", async () => {
   describe("read mode", async () => {
     test("can create a scope", async (scope) => {
-      expect(scope.phase).toBe("up");
+      expect(scope.phase).toBe("apply");
 
       await alchemy.run("child", { phase: "read" }, async (child) => {
         expect(child.phase).toBe("read");
