@@ -16,7 +16,7 @@
     "deploy:repo": "bun ./stacks/src/repo.run.ts",
     "deploy:website": "bun ./stacks/src/website.run.ts",
     "deploy:telemetry": "bun ./stacks/src/telemetry.run.ts",
-    "generate:aws-control": "bun ./scripts/generate-aws-control.ts",
+    "generate:aws-control": "bun ./scripts/generate-aws-control.ts",  
     "publish:npm": "bun run --filter alchemy publish:npm",
     "test": "bun ./alchemy/test/run.ts",
     "test:force": "vitest run",

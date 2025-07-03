@@ -5,6 +5,9 @@ import type {
   WorkerOptions,
 } from "miniflare";
 import path from "node:path";
+import { WebSocketServer, type WebSocket as WsWebSocket } from "ws";
+import { parseConsoleAPICall } from "../../util/chrome-devtools/parse-console-api-called.ts";
+import { colorize } from "../../util/cli.ts";
 import { findOpenPort } from "../../util/find-open-port.ts";
 import { logger } from "../../util/logger.ts";
 import {
@@ -24,6 +27,7 @@ class MiniflareServer {
   workers = new Map<string, WorkerOptions>();
   servers = new Map<string, HTTPServer>();
   mixedModeProxies = new Map<string, MixedModeProxy>();
+  inspectorPort?: number;
 
   stream = new WritableStream<{
     worker: MiniflareWorkerOptions;
@@ -93,9 +97,94 @@ class MiniflareServer {
       port: worker.port ?? (await findOpenPort()),
       fetch: this.createRequestHandler(worker.name as string),
     });
+
+    // We proxy the chrome-devtools protocol because miniflare checks for
+    // origins; and inspect.localhost is not a valid origin.
+    this.setupInspectorWebSocketProxy(server, worker);
+
     this.servers.set(worker.name, server);
     await server.ready;
     return server;
+  }
+
+  private setupInspectorWebSocketProxy(
+    server: HTTPServer,
+    worker: MiniflareWorkerOptions,
+  ) {
+    const wss = new WebSocketServer({
+      server: server.server,
+    });
+
+    const inspectorUrl = `ws://localhost:${this.inspectorPort}/${worker.name}`;
+
+    setTimeout(() => {
+      let inspectorWs = new WebSocket(inspectorUrl);
+      let clients: Array<WsWebSocket> = [];
+
+      const assignInspector = () => {
+        //* we need these to make sure our proxy actually acts as an inspector
+        const spawnMessages = [
+          `{"id":1,"method":"Network.enable","params":{"maxPostDataSize":65536,"reportDirectSocketTraffic":true}}`,
+          `{"id":2,"method":"Network.setAttachDebugStack","params":{"enabled":true}}`,
+          `{"id":3,"method":"Runtime.enable","params":{}}`,
+          `{"id":4,"method":"Debugger.enable","params":{"maxScriptsCacheSize":10000000}}`,
+          `{"id":5,"method":"Debugger.setPauseOnExceptions","params":{"state":"none"}}`,
+          `{"id":6,"method":"Debugger.setAsyncCallStackDepth","params":{"maxDepth":32}}`,
+          `{"id":7,"method":"Profiler.enable","params":{}}`,
+          `{"id":8,"method":"Network.clearAcceptedEncodingsOverride","params":{}}`,
+          `{"id":9,"method":"Debugger.setBlackboxPatterns","params":{"patterns":["/node_modules/|^node:"],"skipAnonymous":false}}`,
+          `{"id":10,"method":"Runtime.runIfWaitingForDebugger","params":{}}`,
+        ];
+
+        inspectorWs.onmessage = (event) => {
+          const json = JSON.parse(event.data.toString());
+          if (
+            json.method === "Runtime.consoleAPICalled" &&
+            worker.logToConsole
+          ) {
+            //todo(michael): countReset isn't working in the console (works in devtools)
+            parseConsoleAPICall(
+              event.data.toString(),
+              //todo(michael): are we comfortable using cyan here?
+              colorize(`[${worker.name}]`, "cyanBright"),
+            );
+          }
+          clients.forEach((client) => {
+            client.send(event.data);
+          });
+        };
+
+        inspectorWs.onerror = (error) => {
+          console.error(`[${worker.name}]: Inspector crashed:`, error);
+          // clientWs.close();
+        };
+
+        //todo(michael): on rebuild we should reconnect
+        inspectorWs.onclose = () => {};
+
+        inspectorWs.onopen = () => {
+          for (const message of spawnMessages) {
+            inspectorWs.send(message);
+          }
+        };
+
+        wss.on("connection", (clientWs) => {
+          // console.log("clientWs connected", clientWs);
+          clients.push(clientWs);
+
+          clientWs.on("message", function message(data) {
+            const json = JSON.parse(data.toString());
+            if (json.id > 10) {
+              //* we ignore the first 10 messages because they are just setup messages
+              inspectorWs.send(data.toString());
+            }
+          });
+        });
+        //todo(michael): figure out what we're waiting for
+        // (seems to be server ready but also, not really?)
+      };
+      assignInspector();
+    }, 1000);
   }
 
   private async dispose() {
@@ -137,6 +226,23 @@ class MiniflareServer {
   private createRequestHandler(name: string) {
     return async (req: Request) => {
       try {
+        const url = new URL(req.url);
+        const subdomain = url.hostname.split(".")[0];
+        if (subdomain === "inspect") {
+          if (url.pathname === "/" && url.searchParams.get("ws") == null) {
+            return Response.redirect(
+              `http://inspect.localhost:${url.port}?ws=localhost:${url.port}`,
+              302,
+            );
+          }
+          const app = await fetch(
+            `http://devtools.devprod.cloudflare.dev/${url.pathname === "/" ? "js_app" : url.pathname}`,
+          );
+          app.headers.delete("content-encoding");
+          app.headers.delete("content-length");
+          return app;
+        }
+
         if (!this.miniflare) {
           return new Response(
             "[Alchemy] Miniflare is not initialized. Please try again.",
@@ -175,7 +281,8 @@ class MiniflareServer {
 
   private async miniflareOptions(): Promise<MiniflareOptions> {
     const { getDefaultDevRegistryPath } = await import("miniflare");
-    return {
+    this.inspectorPort = this.inspectorPort ?? (await findOpenPort());
+    const options = {
       workers: Array.from(this.workers.values()),
       defaultPersistRoot: path.join(process.cwd(), ".alchemy/miniflare"),
       unsafeDevRegistryPath: getDefaultDevRegistryPath(),
@@ -187,7 +294,10 @@ class MiniflareServer {
       r2Persist: true,
       secretsStorePersist: true,
       workflowsPersist: true,
+      inspectorPort: this.inspectorPort,
+      handleRuntimeStdio: () => {},
     };
+    return options;
   }
 }
 
