@@ -34,11 +34,7 @@ function parseCliArgs(): Partial<AlchemyOptions> {
     options.phase = "read";
   }
 
-  if (
-    args.includes("--dev") ||
-    args.includes("--watch") ||
-    process.execArgv.includes("--watch")
-  ) {
+  if (args.includes("--dev")) {
     options.dev = true;
   }
 

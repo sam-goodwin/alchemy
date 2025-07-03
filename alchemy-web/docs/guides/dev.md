@@ -26,7 +26,7 @@ This starts Alchemy in development mode, which will:
 
 ### Watching Your Alchemy Configuration
 
-Alchemy does not watch your `alchemy.run.ts` file for changes. To automatically apply changes to your configuration, you can the watch mode associated with your runtime environment. For example:
+Alchemy does not watch your `alchemy.run.ts` file for changes. To automatically apply changes to your configuration, you can use the watch mode associated with your runtime environment. For example:
 
 ```bash
 # Using bun's watch mode
@@ -36,7 +36,15 @@ bun run --watch alchemy.run.ts
 npx tsx --watch alchemy.run.ts
 ```
 
-Development mode is enabled automatically when the `--watch` flag is detected.
+Note that `--watch` and `--dev` are independent flags. The `--watch` flag provides file watching for automatic restarts, while `--dev` enables development mode with local emulation. You can use them together if desired:
+
+```bash
+# Watch for changes AND run in dev mode
+bun run --watch alchemy.run.ts --dev
+
+# Watch for changes in production mode (default)
+bun run --watch alchemy.run.ts
+```
 
 ### Programmatic Configuration
 
