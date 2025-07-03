@@ -140,6 +140,40 @@ const worker = await Worker("frontend", {
 });
 ```
 
+## Compatibility Presets
+
+Compatibility presets provide common sets of compatibility flags to avoid having to remember which flags are needed for specific use cases:
+
+```ts
+import { Worker } from "alchemy/cloudflare";
+
+const worker = await Worker("nodejs-worker", {
+  name: "nodejs-worker",
+  entrypoint: "./src/api.ts",
+  compatibility: "node", // Automatically includes nodejs_compat flag
+});
+```
+
+### Available Presets
+
+- **`"node"`**: Enables Node.js compatibility by including the `nodejs_compat` flag
+
+### Combining with Custom Flags
+
+Preset flags are automatically combined with any custom `compatibilityFlags` you provide:
+
+```ts
+import { Worker } from "alchemy/cloudflare";
+
+const worker = await Worker("advanced-worker", {
+  name: "advanced-worker", 
+  entrypoint: "./src/api.ts",
+  compatibility: "node", // Adds nodejs_compat
+  compatibilityFlags: ["experimental_feature"], // Additional flags
+  // Result: ["nodejs_compat", "experimental_feature"]
+});
+```
+
 ## Cron Triggers
 
 Schedule recurring tasks:

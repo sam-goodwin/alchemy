@@ -24,6 +24,10 @@ import { logger } from "../util/logger.ts";
 import { withExponentialBackoff } from "../util/retry.ts";
 import { CloudflareApiError, handleApiError } from "./api-error.ts";
 import {
+  type CompatibilityPreset,
+  unionCompatibilityFlags,
+} from "./compatibility-presets.ts";
+import {
   type CloudflareApi,
   type CloudflareApiOptions,
   createCloudflareApi,
@@ -203,6 +207,15 @@ export interface BaseWorkerProps<
    * The compatibility flags for the worker
    */
   compatibilityFlags?: string[];
+
+  /**
+   * Compatibility preset to automatically include common compatibility flags
+   * 
+   * - "node": Includes nodejs_compat flag for Node.js compatibility
+   * 
+   * @default undefined (no preset)
+   */
+  compatibility?: CompatibilityPreset;
 
   /**
    * Configuration for static assets
@@ -819,7 +832,13 @@ export function Worker<const B extends Bindings>(
         ...(props as any),
         url: true,
         compatibilityFlags: Array.from(
-          new Set(["nodejs_compat", ...(props.compatibilityFlags ?? [])]),
+          new Set([
+            "nodejs_compat",
+            ...unionCompatibilityFlags(
+              props.compatibility,
+              props.compatibilityFlags
+            ),
+          ]),
         ),
         entrypoint: meta!.filename,
         name: workerName,
@@ -969,7 +988,10 @@ export const _Worker = Resource(
 
     const compatibilityDate =
       props.compatibilityDate ?? DEFAULT_COMPATIBILITY_DATE;
-    const compatibilityFlags = props.compatibilityFlags ?? [];
+    const compatibilityFlags = unionCompatibilityFlags(
+      props.compatibility,
+      props.compatibilityFlags
+    );
 
     if (this.scope.dev && this.phase !== "delete" && props.dev !== false) {
       // Get current timestamp
