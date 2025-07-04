@@ -2,7 +2,6 @@
 import { Code } from "astro:components";
 // import { Code } from '@astrojs/starlight/components';
 
-
 export interface Props {
   title: string;
   tagline: string;
@@ -30,7 +29,6 @@ const price = await Price("basic-license", {
   unitAmount: 2999, // $29.99
   product: "prod_xyz"
 });`;
-
 ---
 
 <div class="hero">
@@ -75,7 +73,11 @@ const price = await Price("basic-license", {
             <Code code={codeContent} lang="typescript" theme="github-light" />
           </div>
           <div id="code-block-dark" class="code-theme dark-theme">
-            <Code code={codeContent} lang="typescript" theme="github-dark-dimmed" />
+            <Code
+              code={codeContent}
+              lang="typescript"
+              theme="github-dark-dimmed"
+            />
           </div>
         </div>
       </div>
@@ -84,55 +86,65 @@ const price = await Price("basic-license", {
 </div>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Modern+Antiqua&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+  @import url("https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Modern+Antiqua&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 
   /* Hero-specific CSS variables */
   :root {
     /* Hero Section Colors - Dark Theme */
     --hero-text-primary: #ffffff;
-    --hero-text-secondary: #E5E7EB;    /* Keep subtitle white */
-    --hero-title-accent: #A78BFA;      /* Purple only for title gradient */
+    --hero-text-secondary: #e5e7eb; /* Keep subtitle white */
+    --hero-title-accent: #a78bfa; /* Purple only for title gradient */
     --hero-code-bg: #121212;
     --hero-code-border: rgba(255, 255, 255, 0.2);
     --hero-code-text: #e5e7eb;
     --hero-code-title: #d1d5db;
-    --hero-dot-color: #4B5563;
+    --hero-dot-color: #4b5563;
     --hero-shadow: rgba(0, 0, 0, 0.3);
-    --hero-accent: #F3F4F6;            /* Keep buttons white */
-    --hero-glow-color: rgba(167, 139, 250, 0.1); /* Subtle purple glow for dark theme */
+    --hero-accent: #f3f4f6; /* Keep buttons white */
+    --hero-glow-color: rgba(
+      167,
+      139,
+      250,
+      0.1
+    ); /* Subtle purple glow for dark theme */
     --hero-noise-opacity: 0.4;
   }
 
   :root[data-theme="light"] {
     /* Hero Section Colors - Light Theme */
-    --hero-text-primary: #6B46C1;      /* Medium purple - clearly purple but not too bright */
-    --hero-text-secondary: #374151;    /* Keep subtitle dark gray */
-    --hero-title-accent: #5B21B6;      /* Deeper purple for title */
+    --hero-text-primary: #6b46c1; /* Medium purple - clearly purple but not too bright */
+    --hero-text-secondary: #374151; /* Keep subtitle dark gray */
+    --hero-title-accent: #5b21b6; /* Deeper purple for title */
     --hero-code-bg: #ffffff;
     --hero-code-border: rgba(0, 0, 0, 0.15);
     --hero-code-text: #374151;
     --hero-code-title: #4b5563;
-    --hero-dot-color: #D1D5DB;
+    --hero-dot-color: #d1d5db;
     --hero-shadow: rgba(0, 0, 0, 0.1);
-    --hero-accent: #111827;            /* Keep buttons dark */
-    --hero-glow-color: rgba(147, 51, 234, 0.15); /* Brighter purple glow for light theme */
+    --hero-accent: #111827; /* Keep buttons dark */
+    --hero-glow-color: rgba(
+      147,
+      51,
+      234,
+      0.15
+    ); /* Brighter purple glow for light theme */
     --hero-noise-opacity: 0.3;
   }
 
   /* Global page background override - only for pages with hero class */
   :global(body:has(.hero)) {
-    background: 
-        radial-gradient(
-            circle at 50% 50%,
-            var(--hero-glow-color) 0%,
-            transparent 85%
-        ),
-        linear-gradient(
-            135deg,
-            var(--sl-color-bg) 0%,
-            var(--sl-color-bg-nav) 100%
-        );
+    background:
+      radial-gradient(
+        circle at 50% 50%,
+        var(--hero-glow-color) 0%,
+        transparent 85%
+      ),
+      linear-gradient(
+        135deg,
+        var(--sl-color-bg) 0%,
+        var(--sl-color-bg-nav) 100%
+      );
     min-height: 100vh;
     position: relative;
   }
@@ -293,7 +305,6 @@ const price = await Price("basic-license", {
     justify-content: center;
     flex-wrap: wrap;
     margin-top: 1.5rem;
-    
   }
 
   .hero-button {

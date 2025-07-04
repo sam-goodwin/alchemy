@@ -1,0 +1,191 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+
+  const paths = docs.map((doc: CollectionEntry<"docs">) => ({
+    params: { route: doc.id },
+    props: { entry: doc },
+  }));
+
+  // Add a specific path for the root `/og/` route that maps to index
+  const indexDoc = docs.find(
+    (doc: CollectionEntry<"docs">) => doc.id === "index"
+  );
+  if (indexDoc) {
+    paths.push({
+      params: { route: undefined }, // This handles the empty route case
+      props: { entry: indexDoc },
+    });
+  }
+
+  return paths;
+}
+
+// Get the entry from props (passed from getStaticPaths)
+const { entry }: { entry: CollectionEntry<"docs"> } = Astro.props;
+const { data } = entry;
+
+// Set response headers for HTML
+Astro.response.headers.set("Content-Type", "text/html");
+---
+
+<div class="og-container">
+  <div class="content">
+    <div class="logo">
+      <img src="/alchemy-logo-dark.svg" alt="Alchemy" class="logo-image" />
+    </div>
+    <h1 class="title">{data.title}</h1>
+    {data.description && <p class="description">{data.description}</p>}
+  </div>
+
+  <div class="character-container">
+    <div class="character-circle">
+      <img src="/alchemist.webp" alt="Alchemist" class="character-image" />
+    </div>
+  </div>
+</div>
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Modern+Antiqua&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+  :root {
+    --og-width: 1200px;
+    --og-height: 630px;
+    /* Hero-inspired colors for dark theme */
+    --hero-text-primary: #ffffff;
+    --hero-title-accent: #a78bfa;
+    --hero-glow-color: rgba(167, 139, 250, 0.1);
+    --hero-noise-opacity: 0.4;
+    --sl-color-bg: #090a0f;
+    --sl-color-bg-nav: #0e0f17;
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: black;
+  }
+
+  .og-container {
+    width: var(--og-width);
+    height: var(--og-height);
+    background:
+      radial-gradient(
+        circle at 50% 50%,
+        var(--hero-glow-color) 0%,
+        transparent 85%
+      ),
+      linear-gradient(
+        135deg,
+        var(--sl-color-bg) 0%,
+        var(--sl-color-bg-nav) 100%
+      );
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    font-family: "IBM Plex Serif", Georgia, serif;
+  }
+
+  /* Noise overlay */
+  .og-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: var(--hero-noise-opacity);
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+    z-index: 1;
+  }
+
+  .content {
+    flex: 1;
+    padding-left: 80px;
+    padding-right: 40px;
+    z-index: 2;
+    max-width: 714px;
+  }
+
+  .logo {
+    margin-bottom: 30px;
+  }
+
+  .logo-image {
+    height: 60px;
+    width: auto;
+  }
+
+  .title {
+    font-size: 72px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 30px 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    /* Dark mode gradient from Hero */
+    background: linear-gradient(
+      135deg,
+      var(--hero-text-primary) 0%,
+      var(--hero-title-accent) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .description {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    color: #e5e7eb;
+    line-height: 1.4;
+    margin: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    font-family: "IBM Plex Sans", sans-serif;
+  }
+
+  .character-container {
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+  }
+
+  .character-circle {
+    width: 348px;
+    height: 348px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(167, 139, 250, 0.3) 0%,
+      rgba(147, 51, 234, 0.2) 50%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(167, 139, 250, 0.2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+  }
+
+  .character-image {
+    width: 348px;
+    height: 348px;
+    object-fit: contain;
+    object-position: center;
+  }
+</style>

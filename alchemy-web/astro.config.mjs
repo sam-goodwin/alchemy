@@ -22,7 +22,7 @@ export default defineConfig({
   prefetch: true,
   integrations: [
     sitemap({
-      filter: (page) => !page.endsWith(".html") && !page.endsWith(".md"),
+      filter: (page) => !page.endsWith(".html") && !page.endsWith(".md") && !page.endsWith(".mdx"),
     }),
     // expressiveCode({
     //   themes: [{}]
@@ -40,6 +40,7 @@ export default defineConfig({
         './src/styles/custom.css',
       ],
       prerender: true,
+      routeMiddleware: './src/routeData.ts',
       social: [
         {
           icon: "github",
@@ -62,6 +63,7 @@ export default defineConfig({
       },
       components: {
         Hero: "./src/components/Hero.astro",
+        PageTitle: "./src/components/PageTitle.astro",
       },
       sidebar: [
         {
