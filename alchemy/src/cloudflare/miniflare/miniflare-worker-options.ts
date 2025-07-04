@@ -7,6 +7,7 @@ import assert from "node:assert";
 import { assertNever } from "../../util/assert-never.ts";
 import { logger } from "../../util/logger.ts";
 import { Self, type Binding, type WorkerBindingSpec } from "../bindings.ts";
+import type { WorkerBundle } from "../bundle/index.ts";
 import type { WorkerProps } from "../worker.ts";
 
 export type MiniflareWorkerOptions = Pick<
@@ -18,7 +19,7 @@ export type MiniflareWorkerOptions = Pick<
   | "format"
 > & {
   name: string;
-  script: string;
+  bundle: WorkerBundle;
   port?: number;
 };
 
@@ -206,9 +207,9 @@ function buildRemoteBinding(
   }
 }
 
-export function buildMiniflareWorkerOptions({
+export async function buildMiniflareWorkerOptions({
   name: workerName,
-  script,
+  bundle,
   bindings,
   format,
   eventSources,
@@ -217,11 +218,18 @@ export function buildMiniflareWorkerOptions({
   remoteProxyConnectionString,
 }: MiniflareWorkerOptions & {
   remoteProxyConnectionString: RemoteProxyConnectionString | undefined;
-}): WorkerOptions {
+}): Promise<WorkerOptions> {
   const options: WorkerOptions = {
     name: workerName,
-    script,
-    modules: format !== "cjs",
+    modules: await Promise.all(
+      bundle.files.map(async (file) => ({
+        type: (format === "cjs" ? "CommonJS" : "ESModule") as
+          | "CommonJS"
+          | "ESModule",
+        path: file.name,
+        contents: await file.text(),
+      })),
+    ),
     compatibilityDate,
     compatibilityFlags,
     unsafeDirectSockets: [{ entrypoint: undefined, proxy: true }],

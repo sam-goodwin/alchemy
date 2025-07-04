@@ -100,7 +100,7 @@ async function refreshAuthToken(
 
   if (!response.ok) {
     throw new Error(
-      `Failed to refresh auth token: ${response.status} ${response.statusText}`,
+      `Failed to refresh auth token: ${response.status} ${response.statusText} ${await response.text()}`,
     );
   }
 

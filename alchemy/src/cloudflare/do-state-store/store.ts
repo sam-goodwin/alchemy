@@ -4,7 +4,7 @@ import type { Scope } from "../../scope.ts";
 import type { State, StateStore } from "../../state.ts";
 import { deserializeState } from "../../state.ts";
 import { createCloudflareApi, type CloudflareApiOptions } from "../api.ts";
-import { getAccountSubdomain } from "../worker/subdomain.ts";
+import { getAccountSubdomain } from "../worker/shared.ts";
 import { DOStateStoreClient, upsertStateStoreWorker } from "./internal.ts";
 
 export interface DOStateStoreOptions extends CloudflareApiOptions {

@@ -3,7 +3,7 @@ import { withExponentialBackoff } from "../../util/retry.ts";
 import { handleApiError } from "../api-error.ts";
 import type { CloudflareApi } from "../api.ts";
 import type { WorkerMetadata } from "../worker-metadata.ts";
-import { getWorkerTemplate } from "../worker/get-worker-template.ts";
+import { getWorkerTemplate } from "../worker/shared.ts";
 import type { DOStateStoreAPI } from "./types.ts";
 
 interface DOStateStoreClientOptions {

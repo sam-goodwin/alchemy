@@ -19,18 +19,18 @@ const REQUIRED_UNENV_ALIAS_NAMESPACE = "required-unenv-alias";
  *
  * @returns ESBuild plugin
  */
-export async function nodeJsCompatPlugin(): Promise<Plugin> {
-  // `unenv` and `@cloudflare/unenv-preset` only publish esm
-  const { defineEnv } = await import("unenv");
-  const { cloudflare } = await import("@cloudflare/unenv-preset");
-  const { alias, inject, external, polyfill } = defineEnv({
-    presets: [cloudflare],
-    npmShims: true,
-  }).env;
-
+export function esbuildPluginHybridNodeCompat(): Plugin {
   return {
     name: "hybrid-nodejs_compat",
-    setup(build) {
+    setup: async (build) => {
+      // `unenv` and `@cloudflare/unenv-preset` only publish esm
+      const { defineEnv } = await import("unenv");
+      const { cloudflare } = await import("@cloudflare/unenv-preset");
+      const { alias, inject, external, polyfill } = defineEnv({
+        presets: [cloudflare],
+        npmShims: true,
+      }).env;
+
       errorOnServiceWorkerFormat(build);
       handleRequireCallsToNodeJSBuiltins(build);
       handleUnenvAliasedPackages(build, alias, external);

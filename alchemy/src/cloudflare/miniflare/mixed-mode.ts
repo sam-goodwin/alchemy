@@ -3,9 +3,8 @@ import { createCloudflareApi, type CloudflareApi } from "../api.ts";
 import type { WorkerBindingSpec } from "../bindings.ts";
 import type { CloudflareApiResponse } from "../types.ts";
 import type { WorkerMetadata } from "../worker-metadata.ts";
-import { getWorkerTemplate } from "./get-worker-template.ts";
+import { getAccountSubdomain, getWorkerTemplate } from "../worker/shared.ts";
 import { HTTPServer } from "./http-server.ts";
-import { getAccountSubdomain } from "./subdomain.ts";
 
 type WranglerSessionConfig =
   | {

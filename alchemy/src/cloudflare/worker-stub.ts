@@ -7,7 +7,7 @@ import {
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.ts";
-import { configureURL } from "./worker.ts";
+import { WorkerSubdomain } from "./worker-subdomain.ts";
 
 /**
  * Properties for creating a Worker stub
@@ -109,15 +109,20 @@ export const WorkerStub = Resource("cloudflare::WorkerStub", async function <
   }
 
   // Configure URL if requested (defaults to true)
-  const enableUrl = props.url ?? true;
-  const workerUrl = await configureURL(this, api, props.name, enableUrl);
+  const subdomain =
+    props.url !== false
+      ? await WorkerSubdomain("url", {
+          ...props,
+          scriptName: props.name,
+        })
+      : undefined;
 
   // Return the worker stub info
   return this({
     type: "service",
     __rpc__: props.rpc as unknown as RPC,
     ...props,
-    url: workerUrl,
+    url: subdomain?.url,
   }) as WorkerStub<RPC>;
 });
 

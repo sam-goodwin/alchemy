@@ -59,7 +59,7 @@ class MiniflareServer {
   private async set(worker: MiniflareWorkerOptions) {
     this.workers.set(
       worker.name as string,
-      buildMiniflareWorkerOptions({
+      await buildMiniflareWorkerOptions({
         ...worker,
         remoteProxyConnectionString:
           await this.maybeCreateMixedModeProxy(worker),

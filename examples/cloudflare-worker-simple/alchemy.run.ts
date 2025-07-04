@@ -37,6 +37,9 @@ export const worker1 = await Worker("worker", {
     DO: doNamespace,
   },
   compatibilityFlags: ["nodejs_compat"],
+  dev: {
+    remote: true,
+  },
 });
 export const worker2 = await Worker("worker2", {
   name: "cloudflare-worker-simple-2",
@@ -46,6 +49,9 @@ export const worker2 = await Worker("worker2", {
     DO: doNamespace,
   },
   compatibilityFlags: ["nodejs_compat"],
+  dev: {
+    remote: true,
+  },
 });
 
 console.log(`worker1.url: ${worker1.url}`);
