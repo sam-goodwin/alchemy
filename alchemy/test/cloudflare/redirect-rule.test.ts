@@ -24,8 +24,11 @@ const test = alchemy.test(import.meta, {
 });
 const testDomain = "alchemy-test.us";
 
+const isEnabled = !!process.env.ALL_TESTS;
+
 let zone: Zone;
 test.beforeAll(async (_scope) => {
+  if (!isEnabled) return;
   zone = await Zone(`${testDomain}-zone`, {
     name: testDomain,
     type: "full",
@@ -35,7 +38,7 @@ test.beforeAll(async (_scope) => {
 });
 
 // this test relies on DNS prop and is therefore flaky
-describe.skipIf(!process.env.ALL_TESTS)("RedirectRule", () => {
+describe.skipIf(!isEnabled)("RedirectRule", () => {
   // Use BRANCH_PREFIX for deterministic, non-colliding test resources
 
   test("create, update, and delete redirect rule with expression", async (scope) => {

@@ -18,8 +18,8 @@
     "deploy:telemetry": "bun ./stacks/src/telemetry.run.ts",
     "generate:aws-control": "bun ./scripts/generate-aws-control.ts",
     "publish:npm": "bun run --filter alchemy publish:npm",
-    "test": "bun ./alchemy/test/run.ts",
-    "test:force": "vitest run",
+    "test": "vitest run",
+    "test:smoke": "vitest run ./alchemy/test/smoke.test.ts",
     "bump": "bun ./scripts/bump.ts",
     "prepare": "husky"
   },

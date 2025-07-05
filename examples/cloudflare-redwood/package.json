@@ -30,7 +30,7 @@
     "alchemy": "workspace:*",
     "dotenv": "^16.5.0",
     "drizzle-orm": "beta",
-    "rwsdk": "^0.0.83"
+    "rwsdk": "^0.1.10"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",

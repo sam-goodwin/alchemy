@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b",
-    "deploy": "bun run ./alchemy.run.ts",
-    "destroy": "bun run ./alchemy.run.ts --destroy",
-    "watch": "bun --watch ./alchemy.run.ts",
-    "dev": "bun --watch ./alchemy.run.ts --dev"
+    "deploy": "bun run --env-file ../../.env ./alchemy.run.ts",
+    "destroy": "bun run --env-file ../../.env ./alchemy.run.ts --destroy",
+    "watch": "bun --watch --env-file ../../.env ./alchemy.run.ts",
+    "dev": "bun --watch --env-file ../../.env ./alchemy.run.ts --dev"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",

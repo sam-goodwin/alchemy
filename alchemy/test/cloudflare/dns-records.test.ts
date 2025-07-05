@@ -15,10 +15,13 @@ const test = alchemy.test(import.meta, {
 
 const testDomain = `${BRANCH_PREFIX}-test-2.com`;
 
+const isEnabled = process.env.ALL_TESTS;
+
 let zone: Zone;
 
 let scope: Scope | undefined;
 test.beforeAll(async (_scope) => {
+  if (!isEnabled) return;
   zone = await Zone(`${BRANCH_PREFIX}-zone`, {
     name: testDomain,
   });
@@ -31,7 +34,7 @@ afterAll(async () => {
   }
 });
 
-describe("DnsRecords Resource", async () => {
+describe.skipIf(!isEnabled)("DnsRecords Resource", async () => {
   // Use BRANCH_PREFIX for deterministic, non-colliding resource names
   const api = await createCloudflareApi();
 

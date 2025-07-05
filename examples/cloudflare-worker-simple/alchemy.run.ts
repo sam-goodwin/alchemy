@@ -30,6 +30,7 @@ const doNamespace = new DurableObjectNamespace("DO", {
 export const worker1 = await Worker("worker", {
   name: "cloudflare-worker-simple",
   entrypoint: "src/worker1.ts",
+  adopt: true,
   bindings: {
     KV: kv,
     D1: d1,
@@ -41,6 +42,7 @@ export const worker1 = await Worker("worker", {
 export const worker2 = await Worker("worker2", {
   name: "cloudflare-worker-simple-2",
   entrypoint: "src/worker2.ts",
+  adopt: true,
   bindings: {
     WORKER: worker1,
     DO: doNamespace,

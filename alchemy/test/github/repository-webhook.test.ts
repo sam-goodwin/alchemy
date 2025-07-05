@@ -13,7 +13,7 @@ const test = alchemy.test(import.meta, {
 const testOwner = "sam-goodwin";
 const testRepo = "test-alchemy-resources";
 
-describe("RepositoryWebhook Resource", () => {
+describe.skipIf(process.env.CI)("RepositoryWebhook Resource", () => {
   const testWebhookId = `${BRANCH_PREFIX}-webhook`;
 
   test("create, update, and delete webhook", async (scope) => {

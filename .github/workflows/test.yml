@@ -22,8 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # we need this so that test pruning works
-          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
       # node is needed for vitest
@@ -41,24 +39,36 @@ jobs:
       - name: Check Types and Lint
         run: bun run check
 
-      # Disabling tests - we are too slow, going to go with trunk based development as recommended by @tvanhens
+      - name: Run tests
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            bun run test:smoke
+          else
+            bun run test
+          fi
+        env:
+          ALCHEMY_PASSWORD: ${{ env.ALCHEMY_PASSWORD }}
+          ALCHEMY_STATE_S3_BUCKET: alchemy-state-5104rt
+          ALCHEMY_STATE_STORE: cloudflare
+          ALCHEMY_STATE_TOKEN: ${{ env.ALCHEMY_STATE_TOKEN }}
+          AWS_REGION: us-west-2
+          BRANCH_PREFIX: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || github.ref_name }}
+          CI: true
+          CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_KEY: ${{ env.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_BUCKET_NAME: ${{ env.CLOUDFLARE_BUCKET_NAME }}
+          CLOUDFLARE_EMAIL: ${{ env.CLOUDFLARE_EMAIL }}
+          NEON_API_KEY: ${{ env.NEON_API_KEY }}
+          OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
+          PLANETSCALE_API_TOKEN: ${{ env.PLANETSCALE_API_TOKEN }}
+          PLANETSCALE_ORG_ID: ${{ env.PLANETSCALE_ORG_ID }}
+          R2_ACCESS_KEY_ID: ${{ env.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ env.R2_SECRET_ACCESS_KEY }}
+          SECRET_PASSPHRASE: ${{ env.SECRET_PASSPHRASE }}
+          SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ env.SENTRY_ORG }}
+          STRIPE_API_KEY: ${{ env.STRIPE_API_KEY }}
+          UPSTASH_API_KEY: ${{ env.UPSTASH_API_KEY }}
+          UPSTASH_EMAIL: sam@alchemy.run
+          VERCEL_ACCESS_TOKEN: ${{ env.VERCEL_ACCESS_TOKEN }}
 
-      # - name: Run affected tests
-      #   uses: ./.github/actions/run-with-alchemy-env
-      #   with:
-      #     branch-prefix: pr-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}
-      #     command: |
-      #       # Determine the base commit depending on event type
-      #       if [ "${{ github.event_name }}" == "pull_request_target" ] || [ "${{ github.event_name }}" == "pull_request" ]; then
-      #         # For pull requests, use PR base commit
-      #         BASE_COMMIT="${{ github.event.pull_request.base.sha }}"
-      #       elif [ "${{ github.event_name }}" == "push" ]; then
-      #         # For pushes, use the commit before the push
-      #         BASE_COMMIT="${{ github.event.before }}"
-      #       else
-      #         # For manual runs, use a few commits back to ensure sufficient coverage
-      #         BASE_COMMIT="HEAD~10"
-      #       fi
-
-      #       echo "Running tests changed since commit: $BASE_COMMIT"
-      #       bun run test --since "$BASE_COMMIT" --vitest

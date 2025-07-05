@@ -13,7 +13,7 @@ const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
 });
 
-describe("Zone Resource", () => {
+describe.skipIf(!process.env.ALL_TESTS)("Zone Resource", () => {
   // Use BRANCH_PREFIX for deterministic, non-colliding zone names
   const testDomain = `${BRANCH_PREFIX}-test.dev`;
 

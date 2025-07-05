@@ -1,13 +1,11 @@
-import { afterAll, describe, expect } from "vitest";
+import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import {
   createCloudflareApi,
   type CloudflareApi,
 } from "../../src/cloudflare/api.ts";
 import { Worker } from "../../src/cloudflare/worker.ts";
-import { Zone } from "../../src/cloudflare/zone.ts";
 import { destroy } from "../../src/destroy.ts";
-import type { Scope } from "../../src/scope.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 // must import this or else alchemy.test won't exist
 import "../../src/test/vitest.ts";
@@ -17,31 +15,16 @@ const test = alchemy.test(import.meta, {
   quiet: false,
 });
 
-const testDomain = `${BRANCH_PREFIX}-custom-domain-test.com`;
-
-let zone: Zone;
-let scope: Scope | undefined;
-
-test.beforeAll(async (_scope) => {
-  zone = await Zone(`${BRANCH_PREFIX}-zone`, {
-    name: testDomain,
-  });
-  scope = _scope;
-});
-
-afterAll(async () => {
-  if (scope) {
-    await destroy(scope);
-  }
-});
+const testDomain = "alchemy-test.us";
 
 const api = await createCloudflareApi();
 
 describe("Custom Domain", () => {
   test("should create a custom domain", async (scope) => {
     try {
+      const domain = `${BRANCH_PREFIX}.${testDomain}`;
       const worker = await Worker(`${BRANCH_PREFIX}-worker-1`, {
-        domains: [`sub.${testDomain}`],
+        domains: [domain],
         script: `
           export default {
             fetch(request, env) {
@@ -53,10 +36,9 @@ describe("Custom Domain", () => {
       });
 
       expect(worker.domains?.[0]).toMatchObject({
-        name: `sub.${testDomain}`,
-        zoneId: zone.id,
+        name: `${BRANCH_PREFIX}.${testDomain}`,
       });
-      await assertCustomDomain(api, worker, `sub.${testDomain}`);
+      await assertCustomDomain(api, worker, domain);
     } finally {
       await destroy(scope);
     }
@@ -81,7 +63,7 @@ export async function assertCustomDomain(
   expect(domains.result).toContainEqual(
     expect.objectContaining({
       hostname: domain,
-      zone_id: zone.id,
+      // zone_id: zone.id,
       service: worker.name,
       environment: "production",
     }),

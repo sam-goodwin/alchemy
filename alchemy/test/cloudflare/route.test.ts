@@ -17,10 +17,13 @@ const test = alchemy.test(import.meta, {
 
 const testDomain = `${BRANCH_PREFIX}-route-test.com`;
 
+const isEnabled = !!process.env.ALL_TESTS;
+
 let zone: Zone;
 let scope: Scope | undefined;
 
 test.beforeAll(async (_scope) => {
+  if (!isEnabled) return;
   zone = await Zone(`${BRANCH_PREFIX}-zone`, {
     name: testDomain,
   });
@@ -33,7 +36,13 @@ afterAll(async () => {
   }
 });
 
-describe("Route Resource", () => {
+// this can have a 1hour throttle timeout, so will skip it by default
+// e.g.
+// Cloudflare Rate Limit Exceeded at 2025-07-05T08:29:27.625Z: You have
+// exceeded the rate limit for adding or deleting zones. Please try again
+// n 1 hour.
+// ... truly insane
+describe.skipIf(!isEnabled)("Route Resource", () => {
   // Use BRANCH_PREFIX for deterministic, non-colliding resource names
   const testId = `${BRANCH_PREFIX}-test-route`;
 
