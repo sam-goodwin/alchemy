@@ -26,6 +26,14 @@ jobs:
           aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-west-2
 
+      - name: Cache Astro cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            alchemy-web/node_modules/.astro
+            alchemy-web/.astro
+          key: astro-pr-cache-${{ github.event.pull_request.number }}
+
       - name: Deploy Website Preview
         id: deploy
         run: bun deploy:website
