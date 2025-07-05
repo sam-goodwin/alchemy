@@ -149,6 +149,15 @@ export interface ContainerApplicationProps extends CloudflareApiOptions {
     namespaceId: string;
   };
   rollout?: ContainerApplicationRollout;
+  /**
+   * Whether to adopt an existing container application with the same name.
+   *
+   * If `true`, the resource will attempt to adopt an existing container application
+   * instead of failing when one already exists with the same name.
+   *
+   * @default false
+   */
+  adopt?: boolean;
 }
 
 export type SchedulingPolicy =
@@ -233,6 +242,21 @@ export interface ContainerApplication
  *     })
  *   }
  * });
+ *
+ * @example
+ * // Adopt an existing container application
+ * const existingApp = await ContainerApplication("existing-app", {
+ *   name: "existing-app",
+ *   adopt: true, // Will adopt instead of failing if already exists
+ *   image: await Image("updated-app", {
+ *     name: "updated-app",
+ *     build: {
+ *       context: "./docker/updated"
+ *     }
+ *   }),
+ *   instances: 2,
+ *   maxInstances: 5
+ * });
  */
 export const ContainerApplication = Resource(
   "cloudflare::ContainerApplication",
@@ -288,29 +312,78 @@ export const ContainerApplication = Resource(
         name: application.name,
       });
     } else {
-      const application = await createContainerApplication(api, {
-        name: props.name,
-        scheduling_policy: props.schedulingPolicy ?? "default",
-        instances: props.instances ?? 1,
-        max_instances: props.maxInstances ?? 1,
-        durable_objects: props.durableObjects
-          ? {
-              namespace_id: props.durableObjects.namespaceId,
-            }
-          : undefined,
-        constraints: {
-          tier: 1,
-        },
-        configuration: {
-          image: imageReference,
-          instance_type: props.instanceType ?? "dev",
-          observability: {
-            logs: {
-              enabled: true,
+      let application: ContainerApplicationData;
+
+      try {
+        application = await createContainerApplication(api, {
+          name: props.name,
+          scheduling_policy: props.schedulingPolicy ?? "default",
+          instances: props.instances ?? 1,
+          max_instances: props.maxInstances ?? 1,
+          durable_objects: props.durableObjects
+            ? {
+                namespace_id: props.durableObjects.namespaceId,
+              }
+            : undefined,
+          constraints: {
+            tier: 1,
+          },
+          configuration: {
+            image: imageReference,
+            instance_type: props.instanceType ?? "dev",
+            observability: {
+              logs: {
+                enabled: true,
+              },
             },
           },
-        },
-      });
+        });
+      } catch (error) {
+        // Check if this is an "already exists" error and adopt is enabled
+        if (
+          props.adopt &&
+          error instanceof Error &&
+          error.message.includes("already exists")
+        ) {
+          // Find the existing container application
+          const existingApplication = await findContainerApplicationByName(
+            api,
+            props.name,
+          );
+
+          if (!existingApplication) {
+            throw new Error(
+              `Failed to find existing container application '${props.name}' for adoption`,
+            );
+          }
+
+          // Update the existing application with new properties
+          application = await updateContainerApplication(
+            api,
+            existingApplication.id,
+            {
+              instances: props.instances ?? existingApplication.instances,
+              max_instances:
+                props.maxInstances ?? existingApplication.max_instances,
+              scheduling_policy:
+                props.schedulingPolicy ?? existingApplication.scheduling_policy,
+              configuration,
+            },
+          );
+
+          // Create a rollout for the updated configuration
+          await createContainerApplicationRollout(api, application.id, {
+            description: "Update configuration on adoption",
+            strategy: "rolling",
+            kind: props.rollout?.kind ?? "full_auto",
+            step_percentage: props.rollout?.stepPercentage ?? 25,
+            target_configuration: configuration,
+          });
+        } else {
+          // Re-throw the error if adopt is false or different error
+          throw error;
+        }
+      }
 
       return this({
         id: application.id,
@@ -376,6 +449,14 @@ export async function listContainerApplications(
   throw Error(
     `Failed to list container applications: ${response.errors.map((e) => e.message).join(", ")}`,
   );
+}
+
+export async function findContainerApplicationByName(
+  api: CloudflareApi,
+  name: string,
+): Promise<ContainerApplicationData | undefined> {
+  const applications = await listContainerApplications(api);
+  return applications.find((app) => app.name === name);
 }
 
 export interface CreateContainerApplicationBody {
