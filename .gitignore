@@ -19,6 +19,7 @@ wrangler.jsonc
 
 .smoke
 smoke
+!smoke/.gitkeep
 .svelte-kit
 
 .astro
