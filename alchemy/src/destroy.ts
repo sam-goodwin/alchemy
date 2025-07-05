@@ -119,6 +119,7 @@ export async function destroy<Type extends string>(
       seq: instance[ResourceSeq],
       props: options?.replace?.props ?? state.props,
       state,
+      isReplacement: false,
       replace: () => {
         throw new Error("Cannot replace a resource that is being deleted");
       },

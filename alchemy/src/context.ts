@@ -46,6 +46,10 @@ export interface BaseContext<Out extends Resource> {
   id: ResourceID;
   fqn: ResourceFQN;
   scope: Scope;
+  /**
+   * Indicates whether this resource is being created as a replacement for another resource
+   */
+  isReplacement: boolean;
   get<T>(key: string): Promise<T | undefined>;
   set<T>(key: string, value: T): Promise<void>;
   delete<T>(key: string): Promise<T | undefined>;
@@ -88,6 +92,7 @@ export function context<
   state,
   replace,
   props,
+  isReplacement = false,
 }: {
   scope: Scope;
   phase: "create" | "update" | "delete";
@@ -98,6 +103,7 @@ export function context<
   props: Props;
   state: State<Kind, Props, Out>;
   replace: () => never;
+  isReplacement?: boolean;
 }): Context<Out> {
   type InternalSymbols =
     | typeof ResourceID
@@ -133,6 +139,7 @@ export function context<
     output: state.output,
     props,
     replace,
+    isReplacement,
     get: (key: string) => state.data[key],
     set: async (key: string, value: any) => {
       state.data[key] = value;

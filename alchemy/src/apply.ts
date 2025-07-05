@@ -164,6 +164,7 @@ async function _apply<Out extends Resource>(
       seq: resource[ResourceSeq],
       props: state.oldProps,
       state,
+      isReplacement: false,
       replace: () => {
         if (phase === "create") {
           throw new Error(
@@ -216,6 +217,7 @@ async function _apply<Out extends Resource>(
                 seq: resource[ResourceSeq],
                 props: state.props,
                 state,
+                isReplacement: true,
                 replace: () => {
                   throw new Error(
                     `Resource ${resource[ResourceKind]} ${resource[ResourceFQN]} cannot be replaced in create phase.`,

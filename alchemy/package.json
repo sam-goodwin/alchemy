@@ -84,6 +84,10 @@
       "bun": "./src/os/index.ts",
       "import": "./lib/os/index.js"
     },
+    "./planetscale": {
+      "bun": "./src/planetscale/index.ts",
+      "import": "./lib/planetscale/index.js"
+    },
     "./sentry": {
       "bun": "./src/sentry/index.ts",
       "import": "./lib/sentry/index.js"
