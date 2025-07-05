@@ -1,6 +1,7 @@
 export * from "./account-api-token.ts";
 export * from "./account-id.ts";
 export * from "./ai-gateway.ts";
+export * from "./api-gateway-operation.ts";
 export * from "./ai.ts";
 export * from "./analytics-engine.ts";
 export * from "./api-error.ts";
@@ -42,6 +43,7 @@ export * from "./react-router.ts";
 export * from "./redirect-rule.ts";
 export * from "./redwood.ts";
 export * from "./route.ts";
+export * from "./schema-validation.ts";
 export * from "./secret-key.ts";
 export * from "./secret.ts";
 export * from "./secrets-store.ts";
