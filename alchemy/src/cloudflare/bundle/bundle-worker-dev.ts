@@ -5,6 +5,7 @@ import { createAliasPlugin } from "./alias-plugin.ts";
 import { external, external_als } from "./external.ts";
 import { getNodeJSCompatMode } from "./nodejs-compat-mode.ts";
 import { nodeJsCompatPlugin } from "./nodejs-compat.ts";
+import { nodeJsImportWarningPlugin } from "./nodejs-import-warning-plugin.ts";
 import { wasmPlugin } from "./wasm-plugin.ts";
 
 interface DevWorkerContext {
@@ -71,7 +72,9 @@ export async function createWorkerDevContext<B extends Bindings>(
     plugins: [
       wasmPlugin,
       ...(props.bundle?.plugins ?? []),
-      ...(nodeJsCompatMode === "v2" ? [await nodeJsCompatPlugin()] : []),
+      nodeJsCompatMode === "v2"
+        ? await nodeJsCompatPlugin()
+        : nodeJsImportWarningPlugin(nodeJsCompatMode),
       ...(props.bundle?.alias
         ? [
             createAliasPlugin({

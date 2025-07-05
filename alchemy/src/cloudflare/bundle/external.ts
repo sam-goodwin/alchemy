@@ -1,5 +1,5 @@
 // https://developers.cloudflare.com/workers/runtime-apis/nodejs/#supported-nodejs-apis
-const nodejs_compat = [
+export const nodejs_compat = [
   "node:async_hooks",
   "node:assert",
   "node:buffer",
