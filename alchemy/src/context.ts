@@ -17,7 +17,11 @@ export type Context<
 > = CreateContext<Out> | UpdateContext<Out, Props> | DeleteContext<Out, Props>;
 
 export interface CreateContext<Out extends Resource> extends BaseContext<Out> {
+  /**
+   * @deprecated Use `event` instead. Will be removed in a future version.
+   */
   phase: "create";
+  event: "create";
   output?: undefined;
   props?: undefined;
 }
@@ -26,7 +30,11 @@ export interface UpdateContext<
   Out extends Resource,
   Props extends ResourceProps = ResourceProps,
 > extends BaseContext<Out> {
+  /**
+   * @deprecated Use `event` instead. Will be removed in a future version.
+   */
   phase: "update";
+  event: "update";
   output: Out;
   props: Props;
 }
@@ -35,7 +43,11 @@ export interface DeleteContext<
   Out extends Resource,
   Props extends ResourceProps = ResourceProps,
 > extends BaseContext<Out> {
+  /**
+   * @deprecated Use `event` instead. Will be removed in a future version.
+   */
   phase: "delete";
+  event: "delete";
   output: Out;
   props: Props;
 }
@@ -130,6 +142,7 @@ export function context<
     id: id,
     fqn: fqn,
     phase,
+    event: phase,
     output: state.output,
     props,
     replace,
