@@ -1,6 +1,10 @@
 import os from "node:os";
 import type { Phase } from "../../alchemy.ts";
-import { INGEST_URL, TELEMETRY_DISABLED } from "./constants.ts";
+import {
+  POSTHOG_CLIENT_API_HOST,
+  POSTHOG_PROJECT_ID,
+  TELEMETRY_DISABLED,
+} from "./constants.ts";
 import { context } from "./context.ts";
 import type { Telemetry } from "./types.ts";
 
@@ -92,12 +96,22 @@ export class TelemetryClient implements ITelemetryClient {
     if (events.length === 0) {
       return;
     }
-    const response = await fetch(INGEST_URL, {
+    const response = await fetch(`${POSTHOG_CLIENT_API_HOST}/batch`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(events),
+      body: JSON.stringify({
+        api_key: POSTHOG_PROJECT_ID,
+        historical_migration: false,
+        batch: events.map((e) => ({
+          event: e.event,
+          properties: {
+            distinct_id: this.context?.sessionId,
+          },
+          timestamp: new Date(e.timestamp).toISOString(),
+        })),
+      }),
     });
     if (!response.ok) {
       throw new Error(

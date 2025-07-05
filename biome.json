@@ -17,6 +17,7 @@
       "./alchemy/test/**/*.ts",
       "./alchemy-web/**/*.ts",
       "./alchemy-web/**/*.js",
+      "./alchemy-web/**/*.mjs",
       "./scripts/**/*.ts",
       "./stacks/**/*.ts",
       "./examples/*/src/**/*.ts",

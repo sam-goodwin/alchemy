@@ -1,6 +1,15 @@
 import alchemy from "alchemy";
-import { DOStateStore, Website } from "alchemy/cloudflare";
+import { DOStateStore, Website, Worker } from "alchemy/cloudflare";
 import { GitHubComment } from "alchemy/github";
+
+const POSTHOG_DESTINATION_HOST =
+  process.env.POSTHOG_DESTINATION_HOST ?? "us.i.posthog.com";
+//* this is not a secret, its public
+const POSTHOG_PROJECT_ID =
+  process.env.POSTHOG_PROJECT_ID ??
+  "phc_1ZjunjRSQE5ij2xv0ir2tATiewyR6hLssSIiKrGQlBi";
+const ZONE = process.env.ZONE ?? "alchemy.run";
+const POSTHOG_PROXY_HOST = `ph.${ZONE}`;
 
 const stage = process.env.STAGE ?? process.env.PULL_REQUEST ?? "dev";
 
@@ -10,20 +19,35 @@ const app = await alchemy("alchemy:website", {
 });
 
 const domain =
-  stage === "prod"
-    ? "alchemy.run"
-    : stage === "dev"
-      ? "dev.alchemy.run"
-      : undefined;
+  stage === "prod" ? ZONE : stage === "dev" ? `dev.${ZONE}` : undefined;
+
+await Worker("posthog-proxy", {
+  adopt: true,
+  name: "alchemy-posthog-proxy",
+  script: `export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+    url.hostname = "${POSTHOG_DESTINATION_HOST}";
+    url.protocol = "https";
+    const response = await fetch(url.toString(), request);
+    return response;
+  },
+};`,
+  domains: [POSTHOG_PROXY_HOST],
+});
 
 const website = await Website("website", {
   name: "alchemy-website",
   command: "bun run build",
-  assets: "dist",
+  assets: "./dist",
   adopt: true,
   wrangler: false,
   version: stage === "prod" ? undefined : stage,
   domains: domain ? [domain] : undefined,
+  env: {
+    POSTHOG_CLIENT_API_HOST: `https://${POSTHOG_PROXY_HOST}`,
+    POSTHOG_PROJECT_ID: POSTHOG_PROJECT_ID,
+  },
 });
 
 const url = domain ? `https://${domain}` : website.url;

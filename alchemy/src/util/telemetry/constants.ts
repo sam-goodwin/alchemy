@@ -8,6 +8,8 @@ export const TELEMETRY_DISABLED =
   !!process.env.ALCHEMY_TELEMETRY_DISABLED || !!process.env.DO_NOT_TRACK;
 
 // TODO(sam): replace with permanent URL
-export const INGEST_URL =
-  process.env.ALCHEMY_TELEMETRY_URL ??
-  "https://5fbb5d5ca66f44b685468684cfceb325.pipelines.cloudflare.com";
+export const POSTHOG_CLIENT_API_HOST =
+  process.env.POSTHOG_CLIENT_API_HOST ?? "https://ph.alchemy.run";
+export const POSTHOG_PROJECT_ID =
+  process.env.POSTHOG_PROJECT_ID ??
+  "phc_A51Mi7Q63TvnNrvRMgvBxE1il0DAL66rVg4LdWPRsfK";
