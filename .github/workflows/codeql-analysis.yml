@@ -1,0 +1,89 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+    types: [opened, reopened, synchronize]
+  schedule:
+    # Run CodeQL analysis at 6:30 AM UTC every Monday
+    - cron: "30 6 * * 1"
+  workflow_dispatch:
+
+# Ensure only one CodeQL workflow runs at a time
+concurrency:
+  group: "codeql-${{ github.ref }}"
+  cancel-in-progress: true
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript"]
+        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
+        # Use only 'javascript' to cover both JavaScript and TypeScript
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch enough history for CodeQL to analyze changes effectively
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # Use the custom configuration file for detailed analysis settings
+          config-file: ./.github/codeql/codeql-config.yml
+
+      # Install dependencies to help CodeQL understand the codebase better
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+
+      # Autobuild attempts to build any compiled languages (C/C++, C#, Go, or Java).
+      # If this step fails, then you should remove it and run the build manually (see below)
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      # ℹ️ Command-line programs to run using the OS shell.
+      # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
+
+      #   If the Autobuild fails above, remove it and uncomment the following three lines.
+      #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
+
+      # - run: |
+      #     echo "Run, Build Application using script"
+      #     ./location_of_script_within_repo/buildscript.sh
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+      # Upload results as artifacts for debugging if needed
+      - name: Upload CodeQL results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: codeql-results-${{ matrix.language }}
+          path: ${{ runner.temp }}/codeql_databases/
+          retention-days: 5
