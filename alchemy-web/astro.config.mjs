@@ -2,6 +2,7 @@
 import sitemap from "@astrojs/sitemap";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
+import starlightBlog from "starlight-blog";
 import starlightLlmsTxt from "starlight-llms-txt";
 // import theme from "starlight-nextjs-theme";
 // import theme from 'starlight-theme-flexoki';
@@ -110,7 +111,7 @@ export default defineConfig({
           "github-dark-dimmed",
         ],
       },
-      plugins: [theme(), starlightLlmsTxt()],
+      plugins: [theme(), starlightLlmsTxt(), starlightBlog()],
     }),
   ],
   trailingSlash: "ignore",

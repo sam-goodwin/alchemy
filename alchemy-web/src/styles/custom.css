@@ -34,3 +34,50 @@
   --sl-color-accent-low: color-mix(in srgb, #F3E8FF 40%, transparent);    /* Subtle hover states, borders */
   --sl-color-accent-light: color-mix(in srgb, #F3E8FF 60%, transparent);  /* Light accent backgrounds */
 }
+
+/* Overrides for posts listing page */
+.content-panel .posts {
+  /* Make sure there's space between the first title and page top */
+  margin-top: 2rem;
+
+  /* Reduce the gap between the post heading and excerpt */
+  & .preview {
+    gap: 0;
+  }
+
+  /* Reduce the bottom margin from the post title to bring the post date closer */
+  & h2 {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Remove the top margin from the post date */
+  & .metadata {
+    margin-top: 0;
+  }
+}
+
+.header .social-icons  {
+  gap: 0.5rem;
+
+  /* Hide the RSS icon from the header */
+  & > a[href*="rss.xml"] {
+    display: none;
+  }
+
+  /* disable the border on the social icons */
+  & > * {
+    border: none;
+  }
+}
+
+.header .right-group {
+  /* Override the blog link color */
+  & a[href="/blog/"] {
+    color: var(--sl-color);
+  }
+
+  /* Remove the right border from the blog link */
+  &>*:has(a[href="/blog/"]) {
+    border-inline-end: none;
+  }
+}
