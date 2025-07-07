@@ -37,12 +37,18 @@ export default defineConfig({
         },
         {
           tag: "script",
-          content: postHogScript
-            .replace(
-              "<POSTHOG_CLIENT_API_HOST>",
-              process.env.POSTHOG_CLIENT_API_HOST,
-            )
-            .replace("<POSTHOG_PROJECT_ID>", process.env.POSTHOG_PROJECT_ID),
+          content:
+            process.env.NODE_ENV === "production"
+              ? postHogScript
+                  .replace(
+                    "<POSTHOG_CLIENT_API_HOST>",
+                    process.env.POSTHOG_CLIENT_API_HOST,
+                  )
+                  .replace(
+                    "<POSTHOG_PROJECT_ID>",
+                    process.env.POSTHOG_PROJECT_ID,
+                  )
+              : "",
         },
         {
           tag: "script",
