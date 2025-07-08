@@ -19,7 +19,7 @@ At a bare minimum, you need to create a `Workflow` object as a stable reference 
 ```ts
 import { Workflow } from "alchemy/cloudflare";
 
-const orderProcessor = new Workflow("orderProcessor");
+const orderProcessor = Workflow"orderProcessor");
 ```
 
 If you're paying close attention, you'll notice that we call `new Workflow` instead of `await Workflow` like you might have come to expect from Alchemy Resources.
@@ -131,7 +131,7 @@ import { Worker, Workflow } from "alchemy/cloudflare";
 const host = await Worker("Host", {
   entrypoint: "./workflow-provider.ts", 
   bindings: {
-    SHARED_PROCESSOR: new Workflow("shared-processor", {
+    SHARED_PROCESSOR: Workflow"shared-processor", {
       className: "SharedProcessor",
       workflowName: "shared-processing-workflow",
     }),
@@ -157,7 +157,7 @@ import { Worker, Workflow } from "alchemy/cloudflare";
 
 const hostWorkerName = "host"
 
-const workflow = new Workflow("shared-processor", {
+const workflow = Workflow"shared-processor", {
   className: "SharedProcessor",
   workflowName: "shared-processing-workflow",
   scriptName: hostWorkerName

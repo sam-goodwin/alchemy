@@ -216,12 +216,12 @@ describe("Worker Resource", () => {
 
     try {
       // Test 1: Duplicate DurableObjectNamespace IDs
-      const namespace1 = new DurableObjectNamespace("duplicate-id", {
+      const namespace1 = DurableObjectNamespace("duplicate-id", {
         className: "Counter1",
         scriptName: workerName,
       });
 
-      const namespace2 = new DurableObjectNamespace("duplicate-id", {
+      const namespace2 = DurableObjectNamespace("duplicate-id", {
         className: "Counter2",
         scriptName: workerName,
       });
@@ -328,13 +328,10 @@ describe("Worker Resource", () => {
 `;
 
     // Create a Durable Object namespace
-    const counterNamespace = new DurableObjectNamespace(
-      "test-counter-namespace",
-      {
-        className: "Counter",
-        scriptName: workerName,
-      },
-    );
+    const counterNamespace = DurableObjectNamespace("test-counter-namespace", {
+      className: "Counter",
+      scriptName: workerName,
+    });
 
     // Create a KV namespace
     const testKv = await KVNamespace("test-kv-namespace", {
@@ -1292,7 +1289,7 @@ describe("Worker Resource", () => {
 
     try {
       // Create an Analytics Engine dataset
-      dataset = new AnalyticsEngineDataset("test-analytics-dataset", {
+      dataset = AnalyticsEngineDataset("test-analytics-dataset", {
         dataset: `${BRANCH_PREFIX}-test-analytics-dataset`,
       });
 
@@ -1622,7 +1619,7 @@ describe("Worker Resource", () => {
         `,
         format: "esm",
         bindings: {
-          MY_DO: new DurableObjectNamespace("test-counter-migration", {
+          MY_DO: DurableObjectNamespace("test-counter-migration", {
             className: "MyDO2",
             scriptName: workerName,
           }),
@@ -1642,7 +1639,7 @@ describe("Worker Resource", () => {
         `,
         format: "esm",
         bindings: {
-          MY_DO: new DurableObjectNamespace("test-counter-migration", {
+          MY_DO: DurableObjectNamespace("test-counter-migration", {
             className: "MyDO3",
             scriptName: workerName,
           }),

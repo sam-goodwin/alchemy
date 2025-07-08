@@ -41,7 +41,7 @@ describe("AI Resource Binding", () => {
         format: "esm",
         url: true, // Enable workers.dev URL to test the worker
         bindings: {
-          MYAI: new Ai(),
+          MYAI: Ai(),
         },
       });
 

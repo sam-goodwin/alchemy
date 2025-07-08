@@ -40,7 +40,7 @@ describe("Browser Rendering Resource", () => {
         compatibilityFlags: ["nodejs_compat"], // Required for puppeteer
         url: true, // Enable workers.dev URL to test the worker
         bindings: {
-          MYBROWSER: new BrowserRendering(),
+          MYBROWSER: BrowserRendering(),
           BROWSER_KV_DEMO: kvNamespace,
         },
         bundle: {

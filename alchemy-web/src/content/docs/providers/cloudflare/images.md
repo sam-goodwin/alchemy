@@ -12,7 +12,7 @@ Create a basic Images binding for image processing.
 ```ts
 import { Images } from "alchemy/cloudflare";
 
-const images = new Images();
+const images = Images();
 ```
 
 ## Bind to a Worker
@@ -22,7 +22,7 @@ Bind the Images service to a Worker to enable image processing capabilities.
 ```ts
 import { Worker, Images } from "alchemy/cloudflare";
 
-const images = new Images();
+const images = Images();
 
 await Worker("image-processor", {
   name: "image-processor",

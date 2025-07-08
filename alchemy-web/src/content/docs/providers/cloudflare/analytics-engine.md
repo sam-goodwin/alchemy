@@ -12,7 +12,7 @@ Create a basic Analytics Engine dataset binding.
 ```ts
 import { AnalyticsEngineDataset } from "alchemy/cloudflare";
 
-const analytics = new AnalyticsEngineDataset("analytics", {
+const analytics = AnalyticsEngineDataset("analytics", {
   dataset: "my-analytics-dataset",
 });
 ```
@@ -25,7 +25,7 @@ Attach the Analytics Engine dataset to a Worker for event tracking.
 // alchemy.run.ts
 import { Worker, AnalyticsEngineDataset } from "alchemy/cloudflare";
 
-const analytics = new AnalyticsEngineDataset("analytics", {
+const analytics = AnalyticsEngineDataset("analytics", {
   dataset: "user-events",
 });
 

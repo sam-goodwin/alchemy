@@ -3,13 +3,25 @@ import type { Binding } from "./bindings.ts";
 /**
  * Properties for creating a Durable Object Namespace
  */
-export interface DurableObjectNamespaceInput {
+export interface DurableObjectNamespaceProps {
   className: string;
   scriptName?: string | undefined;
   environment?: string | undefined;
   sqlite?: boolean | undefined;
   namespaceId?: string | undefined;
 }
+
+export type DurableObjectNamespace<T = any> = {
+  type: "durable_object_namespace";
+  id: string;
+  className: string;
+  scriptName?: string;
+  environment?: string;
+  sqlite?: boolean;
+  namespaceId?: string;
+  // @ts-ignore - phantom type
+  __service__: T;
+};
 
 export function isDurableObjectNamespace(
   binding: Binding,
@@ -20,48 +32,47 @@ export function isDurableObjectNamespace(
 }
 
 /**
- * @example
- * // Create a basic Durable Object namespace for stateful chat rooms
- * const rooms = new DurableObjectNamespace("chat-rooms", {
- *   className: "ChatRoom"
- * });
+ * Creates a Durable Object namespace binding.
  *
  * @example
+ * ```ts
+ * // Create a basic Durable Object namespace for stateful chat rooms
+ * const rooms = DurableObjectNamespace("chat-rooms", {
+ *   className: "ChatRoom"
+ * });
+ * ```
+ *
+ * @example
+ * ```ts
  * // Create a Durable Object with SQLite storage for user data
- * const users = new DurableObjectNamespace("user-store", {
+ * const users = DurableObjectNamespace("user-store", {
  *   className: "User",
  *   sqlite: true
  * });
+ * ```
  *
  * @example
+ * ```ts
  * // Create a Durable Object in production for game state management
- * const game = new DurableObjectNamespace("game-state", {
+ * const game = DurableObjectNamespace("game-state", {
  *   className: "GameState",
  *   scriptName: "game-worker",
  *   environment: "production"
  * });
+ * ```
  */
-export class DurableObjectNamespace<T = any>
-  implements DurableObjectNamespaceInput
-{
-  public readonly type = "durable_object_namespace" as const;
-  // alias for bindingName to be consistent with other bindings
-  public readonly className: string;
-  public readonly scriptName?: string | undefined;
-  public readonly environment?: string | undefined;
-  public readonly sqlite?: boolean | undefined;
-  public readonly namespaceId?: string | undefined;
-
-  // @ts-ignore - phantom type
-  protected readonly __service__: T;
-
-  constructor(
-    public readonly id: string,
-    input: DurableObjectNamespaceInput,
-  ) {
-    this.className = input.className;
-    this.scriptName = input.scriptName;
-    this.environment = input.environment;
-    this.sqlite = input.sqlite;
-  }
+export function DurableObjectNamespace<T = any>(
+  id: string,
+  props: DurableObjectNamespaceProps,
+): DurableObjectNamespace<T> {
+  return {
+    type: "durable_object_namespace",
+    id,
+    className: props.className,
+    scriptName: props.scriptName,
+    environment: props.environment,
+    sqlite: props.sqlite,
+    namespaceId: props.namespaceId,
+    __service__: undefined!,
+  };
 }

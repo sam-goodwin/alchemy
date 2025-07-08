@@ -107,7 +107,7 @@ declare module "cloudflare:workers" {
 ### Creating Durable Object Namespace
 ```typescript
 // Use 'new' instead of 'await' for DurableObjectNamespace
-const counter = new DurableObjectNamespace("counter", {
+const counter = DurableObjectNamespace("counter", {
   className: "Counter",
   sqlite: true, // Enable SQLite storage
 });
@@ -161,7 +161,7 @@ export default {
 const sharedCounter = host.bindings.SHARED_COUNTER;
 
 // Method 2: Reference by worker script name
-const counter = new DurableObjectNamespace("counter", {
+const counter = DurableObjectNamespace("counter", {
   className: "Counter",
   scriptName: "provider-worker"
 });
@@ -353,7 +353,7 @@ describe("Worker Tests", () => {
 ## Common Issues
 
 - **Missing finalize()**: Resources won't be cleaned up properly
-- **Wrong DurableObject syntax**: Use `new DurableObjectNamespace()` not `await`
+- **Wrong DurableObject syntax**: Use `DurableObjectNamespace()` not `await`
 - **Type errors**: Set up env.d.ts file for binding types
 - **State conflicts**: Use different stages/prefixes for different environments
 - **Resource adoption**: Use `adopt: true` when migrating existing resources

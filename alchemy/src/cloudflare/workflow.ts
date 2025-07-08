@@ -34,31 +34,50 @@ export interface WorkflowProps {
   };
 }
 
+export type Workflow<PARAMS = unknown> = {
+  type: "workflow";
+  /**
+   * Phantom property to preserve workflow params at the type level.
+   * No value exists.
+   */
+  _PARAMS: PARAMS;
+  id: string;
+  workflowName: string;
+  className: string;
+  scriptName?: string;
+};
+
 export function isWorkflow(binding: Binding): binding is Workflow {
   return typeof binding === "object" && binding.type === "workflow";
 }
 
-export class Workflow<PARAMS = unknown> {
-  public readonly type = "workflow";
-  /**
-   * Phantom property to preserve workflow params at the type level.
-   *
-   * No value exists.
-   */
-  public readonly _PARAMS: PARAMS = undefined!;
+/**
+ * Creates a workflow binding for orchestrating and automating tasks.
+ *
+ * @example
+ * ```ts
+ * // Create a basic workflow
+ * const workflow = Workflow("my-workflow", {
+ *   workflowName: "my-workflow",
+ *   className: "MyWorkflow"
+ * });
+ * ```
+ */
+export function Workflow<PARAMS = unknown>(
+  id: string,
+  props: WorkflowProps = {},
+): Workflow<PARAMS> {
+  const workflowName = props.workflowName ?? props.className ?? id;
+  const className = props.className ?? workflowName;
 
-  public readonly workflowName: string;
-  public readonly className: string;
-  public readonly scriptName?: string;
-
-  constructor(
-    public readonly id: string,
-    props: WorkflowProps = {},
-  ) {
-    this.workflowName = props.workflowName ?? props.className ?? id;
-    this.className = props.className ?? this.workflowName;
-    this.scriptName = props.scriptName;
-  }
+  return {
+    type: "workflow",
+    _PARAMS: undefined!,
+    id,
+    workflowName,
+    className,
+    scriptName: props.scriptName,
+  };
 }
 
 export interface WorkflowMetadata {

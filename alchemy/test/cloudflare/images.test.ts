@@ -25,7 +25,7 @@ describe("Images Binding", () => {
         entrypoint: path.join(import.meta.dirname, "images-handler.ts"),
         format: "esm",
         bindings: {
-          IMAGES: new Images(),
+          IMAGES: Images(),
         },
       });
 

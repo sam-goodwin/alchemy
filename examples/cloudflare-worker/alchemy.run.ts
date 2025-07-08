@@ -35,11 +35,11 @@ export const worker = await Worker("worker", {
       adopt: true,
     }),
     QUEUE: queue,
-    WORKFLOW: new Workflow("OFACWorkflow", {
+    WORKFLOW: Workflow("OFACWorkflow", {
       className: "OFACWorkflow",
       workflowName: "ofac-workflow",
     }),
-    DO: new DurableObjectNamespace<HelloWorldDO>("HelloWorldDO", {
+    DO: DurableObjectNamespace<HelloWorldDO>("HelloWorldDO", {
       className: "HelloWorldDO",
       sqlite: true,
     }),

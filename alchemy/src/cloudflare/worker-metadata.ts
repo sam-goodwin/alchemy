@@ -219,7 +219,7 @@ export async function prepareWorkerMetadata(
   // we use Cloudflare Worker tags to store a mapping between Alchemy's stable identifier and the binding name
   // e.g.
   // {
-  //   BINDING_NAME: new DurableObjectNamespace("stable-id")
+  //   BINDING_NAME: DurableObjectNamespace("stable-id")
   // }
   // will be stored as alchemy:do:stable-id:BINDING_NAME
   // TODO(sam): should we base64 encode to ensure no `:` collision risk?

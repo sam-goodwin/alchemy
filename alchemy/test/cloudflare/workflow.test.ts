@@ -199,7 +199,7 @@ describe("Workflow", () => {
     let worker: Worker | undefined;
     try {
       // Create a workflow instance
-      const emailWorkflow = new Workflow("email-notifier", {
+      const emailWorkflow = Workflow("email-notifier", {
         className: "EmailNotifier",
         workflowName: "email-notification-workflow",
       });
@@ -243,7 +243,7 @@ describe("Workflow", () => {
       expect(result.details.status).toBeTruthy();
 
       // Create a new workflow binding and update the worker
-      const orderWorkflow = new Workflow("order-processor", {
+      const orderWorkflow = Workflow("order-processor", {
         className: "OrderProcessor",
         workflowName: "order-processing-workflow",
       });
@@ -325,7 +325,7 @@ describe("Workflow", () => {
         url: true, // Enable workers.dev URL
         bindings: {
           // Create a workflow for the provider worker
-          SHARED_ORDER_WORKFLOW: new Workflow("shared-order-processor", {
+          SHARED_ORDER_WORKFLOW: Workflow("shared-order-processor", {
             className: "SharedOrderProcessor",
             workflowName: "shared-order-processing-workflow",
             // No scriptName means it binds to its own script
@@ -348,7 +348,7 @@ describe("Workflow", () => {
         url: true, // Enable workers.dev URL
         bindings: {
           // Create a cross-script workflow binding using the same workflow details but with scriptName
-          SHARED_ORDER_WORKFLOW: new Workflow("shared-order-processor", {
+          SHARED_ORDER_WORKFLOW: Workflow("shared-order-processor", {
             className: "SharedOrderProcessor",
             workflowName: "shared-order-processing-workflow",
             scriptName: workflowWorkerName, // This makes it cross-script
@@ -444,7 +444,7 @@ describe("Workflow", () => {
         url: true, // Enable workers.dev URL
         bindings: {
           // Create a workflow for the provider worker
-          SHARED_NOTIFICATION_WORKFLOW: new Workflow(
+          SHARED_NOTIFICATION_WORKFLOW: Workflow(
             "shared-notification-processor",
             {
               className: "SharedNotificationProcessor",

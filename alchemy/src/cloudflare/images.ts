@@ -1,5 +1,25 @@
 /**
- * Cloudflare Images binding for image transformation and manipulation.
+ * Properties for creating an Images binding
+ */
+export interface ImagesProps {
+  dev?: {
+    /**
+     * Whether to run the images binding remotely instead of locally
+     * @default false
+     */
+    remote?: boolean;
+  };
+}
+
+export type Images = {
+  type: "images";
+  dev?: {
+    remote?: boolean;
+  };
+};
+
+/**
+ * Creates a Cloudflare Images binding for image transformation and manipulation.
  *
  * Provides access to Cloudflare Images API for transforming, drawing, and outputting images
  * within Workers. The binding requires no configuration - just the binding name.
@@ -9,10 +29,11 @@
  * - For deployed Workers: image transforms must be enabled for the zone
  *
  * @example
+ * ```ts
  * // Create an Images binding and bind to a Worker:
  * import { Worker, Images } from "alchemy/cloudflare";
  *
- * const images = new Images();
+ * const images = Images();
  *
  * const worker = await Worker("image-processor", {
  *   name: "image-processor",
@@ -21,8 +42,10 @@
  *     IMAGES: images
  *   }
  * });
+ * ```
  *
  * @example
+ * ```ts
  * // Runtime usage - Basic image transformation:
  * export default {
  *   async fetch(request: Request, env: any): Promise<Response> {
@@ -36,8 +59,10 @@
  *     return response.response();
  *   }
  * };
+ * ```
  *
  * @example
+ * ```ts
  * // Runtime usage - Advanced transformations with overlays:
  * const watermark: ReadableStream = await fetchWatermark();
  * const image: ReadableStream = await fetchMainImage();
@@ -51,23 +76,13 @@
  *   .output({ format: "image/avif" });
  *
  * return response.response();
+ * ```
  *
  * @see https://developers.cloudflare.com/images/transform-images/bindings/
  */
-export class Images {
-  public readonly type = "images";
-  public readonly dev?: {
-    remote?: boolean;
+export function Images(props?: ImagesProps): Images {
+  return {
+    type: "images",
+    dev: props?.dev,
   };
-  constructor(props?: {
-    dev?: {
-      /**
-       * Whether to run the images binding remotely instead of locally
-       * @default false
-       */
-      remote?: boolean;
-    };
-  }) {
-    this.dev = props?.dev;
-  }
 }

@@ -18,14 +18,14 @@ At a bare minimum, you need to create a `DurableObjectNamespace` object as a sta
 ```ts
 import { DurableObjectNamespace } from "alchemy/cloudflare";
 
-const counter = new DurableObjectNamespace("counter", {
+const counter = DurableObjectNamespace("counter", {
   className: "Counter",
   // whether you want a sqllite db per DO (usually yes!)
   sqlite: true,
 });
 ```
 
-If you're paying close attention, you'll notice that we call `new DurableObjectNamespace` instead of `await DurableObjectNamespace` like you might have come to expect from Alchemy Resources.
+If you're paying close attention, you'll notice that we call `DurableObjectNamespace` instead of `await DurableObjectNamespace` like you might have come to expect from Alchemy Resources.
 
 This is because of oddities in Cloudflare's API design. Durable Object namespaces are not resources in the traditional sense because they cannot exist without a Worker.
 
@@ -143,7 +143,7 @@ import { Worker, DurableObjectNamespace } from "alchemy/cloudflare";
 const host = await Worker("Host", {
   entrypoint: "./do-provider.ts",
   bindings: {
-    SHARED_COUNTER: new DurableObjectNamespace("shared-counter", {
+    SHARED_COUNTER: DurableObjectNamespace("shared-counter", {
       className: "SharedCounter",
       sqlite: true,
     }),
@@ -169,7 +169,7 @@ import { Worker, DurableObjectNamespace } from "alchemy/cloudflare";
 
 const hostWorkerName = "host";
 
-const durableObject = new DurableObjectNamespace("shared-counter", {
+const durableObject = DurableObjectNamespace("shared-counter", {
   className: "SharedCounter",
   scriptName: hostWorkerName,
   sqlite: true,

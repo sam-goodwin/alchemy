@@ -226,7 +226,7 @@ describe("WranglerJson Resource", () => {
           format: "esm",
           entrypoint,
           bindings: {
-            AI: new Ai(),
+            AI: Ai(),
           },
           adopt: true,
         });
@@ -261,13 +261,13 @@ describe("WranglerJson Resource", () => {
         await fs.writeFile(entrypoint, doWorkerScript);
 
         // Create durable object namespaces
-        const counterNamespace = new DurableObjectNamespace("counter", {
+        const counterNamespace = DurableObjectNamespace("counter", {
           className: "Counter",
           scriptName: name,
           sqlite: false,
         });
 
-        const sqliteCounterNamespace = new DurableObjectNamespace(
+        const sqliteCounterNamespace = DurableObjectNamespace(
           "sqlite-counter",
           {
             className: "SqliteCounter",
@@ -346,7 +346,7 @@ describe("WranglerJson Resource", () => {
         await fs.writeFile(entrypoint, wfWorkerScript);
 
         // Create durable object namespaces
-        const workflow = new Workflow("test-workflow", {
+        const workflow = Workflow("test-workflow", {
           className: "TestWorkflow",
           workflowName: "test-workflow",
           scriptName: "other-script",
@@ -594,10 +594,10 @@ describe("WranglerJson Resource", () => {
         format: "esm",
         entrypoint,
         bindings: {
-          AI: new Ai(),
-          BROWSER: new BrowserRendering(),
+          AI: Ai(),
+          BROWSER: BrowserRendering(),
           DISPATCH: await DispatchNamespace("dispatch"),
-          IMAGES: new Images(),
+          IMAGES: Images(),
           VECTORIZE: await VectorizeIndex("vector", {
             name: "vector",
             dimensions: 768,

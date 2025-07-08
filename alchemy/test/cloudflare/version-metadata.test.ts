@@ -30,7 +30,7 @@ describe("VersionMetadata Binding", () => {
         format: "esm",
         url: true,
         bindings: {
-          VERSION_METADATA: new VersionMetadata(),
+          VERSION_METADATA: VersionMetadata(),
         },
       });
 

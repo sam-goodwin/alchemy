@@ -42,7 +42,7 @@ import {
 } from "alchemy/cloudflare";
 
 const kv = await KVNamespace("cache", { title: "cache-store" });
-const users = new DurableObjectNamespace("users", { className: "Users" });
+const users = DurableObjectNamespace("users", { className: "Users" });
 
 export const worker = await Worker("api", {
   name: "api-worker",
@@ -309,7 +309,7 @@ const dataWorker = await Worker("data-worker", {
   entrypoint: "./src/data.ts",
   bindings: {
     // Bind to its own durable object
-    STORAGE: new DurableObjectNamespace("storage", {
+    STORAGE: DurableObjectNamespace("storage", {
       className: "DataStorage",
     }),
   },

@@ -12,7 +12,7 @@ Create a basic Durable Object namespace for stateful chat rooms.
 ```ts
 import { DurableObjectNamespace } from "alchemy/cloudflare";
 
-const rooms = new DurableObjectNamespace("chat-rooms", {
+const rooms = DurableObjectNamespace("chat-rooms", {
   className: "ChatRoom",
 });
 ```
@@ -24,7 +24,7 @@ Create a Durable Object with SQLite storage for user data.
 ```ts
 import { DurableObjectNamespace } from "alchemy/cloudflare";
 
-const users = new DurableObjectNamespace("user-store", {
+const users = DurableObjectNamespace("user-store", {
   className: "User",
   sqlite: true,
 });
@@ -37,7 +37,7 @@ Create a Durable Object in production for game state management.
 ```ts
 import { DurableObjectNamespace } from "alchemy/cloudflare";
 
-const game = new DurableObjectNamespace("game-state", {
+const game = DurableObjectNamespace("game-state", {
   className: "GameState",
   scriptName: "game-worker",
   environment: "production",
@@ -51,7 +51,7 @@ Bind a Durable Object namespace to a Worker to enable access.
 ```ts
 import { Worker, DurableObjectNamespace } from "alchemy/cloudflare";
 
-const counter = new DurableObjectNamespace("counter", {
+const counter = DurableObjectNamespace("counter", {
   className: "Counter",
 });
 
@@ -76,7 +76,7 @@ const dataWorker = await Worker("data-worker", {
   entrypoint: "./src/data.ts",
   bindings: {
     // Bind to its own durable object
-    STORAGE: new DurableObjectNamespace("storage", {
+    STORAGE: DurableObjectNamespace("storage", {
       className: "DataStorage",
     }),
   },

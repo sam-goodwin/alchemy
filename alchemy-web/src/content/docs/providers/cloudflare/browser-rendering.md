@@ -17,7 +17,7 @@ const worker = await Worker("browser-worker", {
   entrypoint: "./src/browser.ts",
   compatibilityFlags: ["nodejs_compat"],
   bindings: {
-    BROWSER: new BrowserRendering(),
+    BROWSER: BrowserRendering(),
   },
 });
 ```

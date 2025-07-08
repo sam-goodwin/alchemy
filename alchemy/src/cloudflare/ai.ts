@@ -9,7 +9,7 @@
  * ```ts
  * import { Worker, Ai } from "alchemy/cloudflare";
  *
- * const ai = new Ai();
+ * const ai = Ai();
  *
  * await Worker("my-worker", {
  *   name: "my-worker",
@@ -22,12 +22,17 @@
  *
  * @see https://developers.cloudflare.com/workers-ai/
  */
-export class Ai<Models extends AiModelListType = AiModelListType> {
-  public readonly type = "ai";
+export function Ai<Models extends AiModelListType = AiModelListType>() {
+  return {
+    type: "ai",
+    _phantom: undefined! as Models,
+  } as const;
+}
 
+export type Ai<Models extends AiModelListType = AiModelListType> = {
+  type: "ai";
   /**
    * @internal
    */
-  ///@ts-ignore
   _phantom: Models;
-}
+};

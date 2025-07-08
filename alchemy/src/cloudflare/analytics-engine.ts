@@ -6,21 +6,30 @@ export interface AnalyticsEngineDatasetProps {
   dataset: string;
 }
 
+export type AnalyticsEngineDataset = {
+  type: "analytics_engine";
+  id: string;
+  dataset: string;
+};
+
 /**
+ * Creates a binding for an Analytics Engine dataset.
+ *
  * @example
+ * ```ts
  * // Create a binding for an Analytics Engine dataset
- * const dataset = new AnalyticsEngineDataset("ae-dataset", {
+ * const dataset = AnalyticsEngineDataset("ae-dataset", {
  *   dataset: "WEATHER",
  * });
+ * ```
  */
-export class AnalyticsEngineDataset {
-  public readonly type = "analytics_engine" as const;
-  public readonly dataset: string;
-
-  constructor(
-    public readonly id: string,
-    input: AnalyticsEngineDatasetProps,
-  ) {
-    this.dataset = input.dataset;
-  }
+export function AnalyticsEngineDataset(
+  id: string,
+  props: AnalyticsEngineDatasetProps,
+): AnalyticsEngineDataset {
+  return {
+    type: "analytics_engine",
+    id,
+    dataset: props.dataset,
+  };
 }

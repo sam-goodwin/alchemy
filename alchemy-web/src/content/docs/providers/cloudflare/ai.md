@@ -12,7 +12,7 @@ Create a basic AI binding for text generation:
 ```ts
 import { Worker, Ai } from "alchemy/cloudflare";
 
-const ai = new Ai();
+const ai = Ai();
 
 await Worker("ai-worker", {
   name: "ai-worker",
@@ -30,7 +30,7 @@ Use AI models for text generation tasks. See the [text generation models](https:
 ```ts
 import { Worker, Ai } from "alchemy/cloudflare";
 
-const ai = new Ai();
+const ai = Ai();
 
 await Worker("text-generator", {
   name: "text-generator",
@@ -63,7 +63,7 @@ Generate embeddings for semantic search and similarity. See the [text embeddings
 ```ts
 import { Worker, Ai } from "alchemy/cloudflare";
 
-const ai = new Ai();
+const ai = Ai();
 
 await Worker("embeddings-worker", {
   name: "embeddings-worker",
@@ -96,7 +96,7 @@ Classify images using computer vision models. See the [image classification mode
 ```ts
 import { Worker, Ai } from "alchemy/cloudflare";
 
-const ai = new Ai();
+const ai = Ai();
 
 await Worker("image-classifier", {
   name: "image-classifier",
@@ -135,7 +135,7 @@ const aiGateway = await AiGateway("my-gateway", {
   name: "my-ai-gateway",
 });
 
-const ai = new Ai();
+const ai = Ai();
 
 await Worker("gateway-ai-worker", {
   name: "gateway-ai-worker",
@@ -226,7 +226,7 @@ interface MyAiModels {
   };
 }
 
-const ai = new Ai<MyAiModels>();
+const ai = Ai<MyAiModels>();
 ```
 
 ## Bind to a Worker
@@ -234,7 +234,7 @@ const ai = new Ai<MyAiModels>();
 ```ts
 import { Worker, Ai } from "alchemy/cloudflare";
 
-const ai = new Ai();
+const ai = Ai();
 
 await Worker("my-worker", {
   name: "my-worker",

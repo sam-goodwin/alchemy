@@ -12,7 +12,7 @@ Create a basic workflow that can be bound to a Worker.
 ```ts
 import { Workflow } from "alchemy/cloudflare";
 
-const workflow = await Workflow("my-workflow", {
+const workflow = Workflow("my-workflow", {
   workflowName: "my-workflow",
   className: "MyWorkflow",
 });
@@ -25,7 +25,7 @@ Reference a workflow implemented in a different worker script using `scriptName`
 ```ts
 import { Workflow } from "alchemy/cloudflare";
 
-const workflow = await Workflow("shared-workflow", {
+const workflow = Workflow("shared-workflow", {
   workflowName: "my-workflow",
   className: "MyWorkflow",
   scriptName: "shared-worker",
@@ -39,7 +39,7 @@ Bind a workflow to a Worker to use its functionality.
 ```ts
 import { Worker, Workflow } from "alchemy/cloudflare";
 
-const workflow = await Workflow("my-workflow", {
+const workflow = Workflow("my-workflow", {
   workflowName: "my-workflow",
   className: "MyWorkflow",
 });

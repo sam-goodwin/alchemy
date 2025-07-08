@@ -15,7 +15,7 @@ export const worker = await Redwood("website", {
   bindings: {
     AUTH_SECRET_KEY: alchemy.secret(process.env.AUTH_SECRET_KEY),
     DB: database,
-    SESSION_DURABLE_OBJECT: new DurableObjectNamespace("session", {
+    SESSION_DURABLE_OBJECT: DurableObjectNamespace("session", {
       className: "SessionDurableObject",
     }),
   },

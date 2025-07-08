@@ -615,8 +615,8 @@ export function WorkerRef<
  * @example
  * // Create a real-time chat worker using Durable Objects
  * // for state management:
- * const chatRooms = new DurableObjectNamespace("chat-rooms");
- * const userStore = new DurableObjectNamespace("user-store");
+ * const chatRooms = DurableObjectNamespace("chat-rooms");
+ * const userStore = DurableObjectNamespace("user-store");
  *
  * const chat = await Worker("chat", {
  *   name: "chat-worker",
@@ -690,7 +690,7 @@ export function WorkerRef<
  *   entrypoint: "./src/data.ts",
  *   bindings: {
  *     // Bind to its own durable object
- *     STORAGE: new DurableObjectNamespace("storage", {
+ *     STORAGE: DurableObjectNamespace("storage", {
  *       className: "DataStorage"
  *     })
  *   }
@@ -1501,13 +1501,13 @@ export const _Worker = Resource(
             bindingName,
             isDurableObjectNamespace(binding) &&
             binding.scriptName === undefined
-              ? new DurableObjectNamespace(binding.id, {
+              ? DurableObjectNamespace(binding.id, {
                   ...binding,
                   // re-export this binding mapping to the host worker (this worker)
                   scriptName: workerName,
                 })
               : isWorkflow(binding) && binding.scriptName === undefined
-                ? new Workflow(binding.id, {
+                ? Workflow(binding.id, {
                     ...binding,
                     // re-export this binding mapping to the host worker (this worker)
                     scriptName: workerName,
