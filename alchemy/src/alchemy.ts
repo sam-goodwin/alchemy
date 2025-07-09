@@ -394,6 +394,12 @@ export interface AlchemyOptions {
    * If not provided, the default fallback logger will be used.
    */
   logger?: LoggerApi;
+  /**
+   * Whether to persist runtime logs to a file.
+   *
+   * @default true
+   */
+  persistLogs?: boolean;
 }
 
 export interface ScopeOptions extends AlchemyOptions {

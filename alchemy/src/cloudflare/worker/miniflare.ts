@@ -6,6 +6,7 @@ import {
   type WorkerOptions,
 } from "miniflare";
 import path from "node:path";
+import { InspectorProxy } from "../../util/chrome-devtools/inspector-proxy.ts";
 import { findOpenPort } from "../../util/find-open-port.ts";
 import { logger } from "../../util/logger.ts";
 import {
@@ -25,6 +26,8 @@ class MiniflareServer {
   workers = new Map<string, WorkerOptions>();
   servers = new Map<string, HTTPServer>();
   mixedModeProxies = new Map<string, MixedModeProxy>();
+  inspectorPort?: number;
+  inspectorProxies: Map<string, InspectorProxy> = new Map();
 
   stream = new WritableStream<{
     worker: MiniflareWorkerOptions;
@@ -70,6 +73,10 @@ class MiniflareServer {
       await withErrorRewrite(
         this.miniflare.setOptions(await this.miniflareOptions()),
       );
+      const inspectorProxy = this.inspectorProxies.get(worker.name);
+      if (inspectorProxy) {
+        await inspectorProxy.reconnect();
+      }
     } else {
       const { Miniflare } = await import("miniflare").catch(() => {
         throw new Error(
@@ -95,6 +102,15 @@ class MiniflareServer {
       port: worker.port ?? (await findOpenPort()),
       fetch: this.createRequestHandler(worker.name as string),
     });
+    const inspectorProxy = new InspectorProxy(
+      server.server,
+      `ws://localhost:${this.inspectorPort}/${worker.name}`,
+      {
+        consoleIdentifier: worker.logToConsole ? worker.name : undefined,
+      },
+    );
+    this.inspectorProxies.set(worker.name, inspectorProxy);
+
     this.servers.set(worker.name, server);
     await server.ready;
     return server;
@@ -139,6 +155,23 @@ class MiniflareServer {
   private createRequestHandler(name: string) {
     return async (req: Request) => {
       try {
+        const url = new URL(req.url);
+        const subdomain = url.hostname.split(".")[0];
+        if (subdomain === "inspect") {
+          if (url.pathname === "/" && url.searchParams.get("ws") == null) {
+            return Response.redirect(
+              `http://inspect.localhost:${url.port}?ws=localhost:${url.port}`,
+              302,
+            );
+          }
+          const app = await fetch(
+            `http://devtools.devprod.cloudflare.dev/${url.pathname === "/" ? "js_app" : url.pathname}`,
+          );
+          app.headers.delete("content-encoding");
+          app.headers.delete("content-length");
+          return app;
+        }
+
         if (!this.miniflare) {
           return new Response(
             "[Alchemy] Miniflare is not initialized. Please try again.",
@@ -177,7 +210,8 @@ class MiniflareServer {
 
   private async miniflareOptions(): Promise<MiniflareOptions> {
     const { getDefaultDevRegistryPath } = await import("miniflare");
-    return {
+    this.inspectorPort = this.inspectorPort ?? (await findOpenPort());
+    const options = {
       workers: Array.from(this.workers.values()),
       defaultPersistRoot: path.join(process.cwd(), ".alchemy/miniflare"),
       unsafeDevRegistryPath: getDefaultDevRegistryPath(),
@@ -189,7 +223,10 @@ class MiniflareServer {
       r2Persist: true,
       secretsStorePersist: true,
       workflowsPersist: true,
+      inspectorPort: this.inspectorPort,
+      handleRuntimeStdio: () => {},
     };
+    return options;
   }
 }
 

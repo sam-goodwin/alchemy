@@ -41,6 +41,7 @@ export interface ScopeOptions {
   dev?: boolean;
   telemetryClient?: ITelemetryClient;
   logger?: LoggerApi;
+  persistLogs?: boolean;
 }
 
 export type PendingDeletions = Array<{
@@ -111,6 +112,7 @@ export class Scope {
   public readonly logger: LoggerApi;
   public readonly telemetryClient: ITelemetryClient;
   public readonly dataMutex: AsyncMutex;
+  public readonly persistLogs: boolean;
 
   private isErrored = false;
   private finalized = false;
@@ -184,6 +186,7 @@ export class Scope {
     this.telemetryClient =
       options.telemetryClient ?? this.parent?.telemetryClient!;
     this.dataMutex = new AsyncMutex();
+    this.persistLogs = options.persistLogs ?? this.parent?.persistLogs ?? true;
   }
 
   public get root(): Scope {

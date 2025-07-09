@@ -25,7 +25,7 @@ const shouldDisableColors = (): boolean => {
 };
 
 // Apply color if colors are enabled
-const colorize = (text: string, color: ColorName): string => {
+export const colorize = (text: string, color: ColorName): string => {
   if (shouldDisableColors()) {
     return text;
   }

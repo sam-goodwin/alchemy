@@ -20,6 +20,7 @@ export type MiniflareWorkerOptions = Pick<
   name: string;
   script: string;
   port?: number;
+  logToConsole: boolean;
 };
 
 type BindingType = Exclude<Binding, string | Self>["type"];
@@ -225,6 +226,7 @@ export function buildMiniflareWorkerOptions({
     compatibilityDate,
     compatibilityFlags,
     unsafeDirectSockets: [{ entrypoint: undefined, proxy: true }],
+    unsafeInspectorProxy: true,
     containerEngine: {
       localDocker: {
         socketPath:
