@@ -7,12 +7,12 @@ import {
 } from "miniflare";
 import path from "node:path";
 import { findOpenPort } from "../../util/find-open-port.ts";
+import { HTTPServer } from "../../util/http-server.ts";
 import { logger } from "../../util/logger.ts";
 import {
   promiseWithResolvers,
   type PromiseWithResolvers,
 } from "../../util/promise-with-resolvers.ts";
-import { HTTPServer } from "./http-server.ts";
 import {
   buildMiniflareWorkerOptions,
   buildRemoteBindings,

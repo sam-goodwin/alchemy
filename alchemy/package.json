@@ -150,6 +150,8 @@
     "jszip": "^3.0.0",
     "kleur": "^4.1.5",
     "libsodium-wrappers": "^0.7.15",
+    "neverthrow": "^8.2.0",
+    "open": "^10.1.2",
     "pathe": "^2.0.3",
     "turndown": "^7.0.0",
     "unenv": "2.0.0-rc.15",

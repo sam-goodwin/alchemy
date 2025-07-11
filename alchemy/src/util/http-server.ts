@@ -1,7 +1,7 @@
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { Readable } from "node:stream";
-import { promiseWithResolvers } from "../../util/promise-with-resolvers.ts";
+import { promiseWithResolvers } from "./promise-with-resolvers.ts";
 
 export class HTTPServer {
   server: http.Server;

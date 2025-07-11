@@ -1,5 +1,6 @@
 import type { Secret } from "../secret.ts";
 import { logger } from "../util/logger.ts";
+import { memoize } from "../util/memoize.ts";
 import { CloudflareApiError } from "./api-error.ts";
 import {
   getCloudflareAuthHeaders,
@@ -55,82 +56,66 @@ export interface CloudflareOrganization {
   roles: string[];
 }
 
-const accountCache: Record<string, CloudflareAccount[]> = {};
-
-export async function getCloudflareAccounts(
-  options: CloudflareAuthOptions,
-): Promise<CloudflareAccount[]> {
-  const cacheKey = JSON.stringify({
-    apiKey: options.apiKey?.unencrypted,
-    apiToken: options.apiToken?.unencrypted,
-    email: options.email,
-  });
-  if (accountCache[cacheKey]) {
-    return accountCache[cacheKey];
-  }
-
-  const headers = await getCloudflareAuthHeaders(options);
-  const accounts = await fetch(
-    "https://api.cloudflare.com/client/v4/accounts",
-    {
-      headers,
-    },
-  );
-
-  if (accounts.ok) {
-    return (accountCache[cacheKey] ??= ((await accounts.json()) as any).result);
-  } else {
-    throw new CloudflareApiError(
-      `Failed to get accounts for authorized user, please make sure you're authenticated (see: https://alchemy.run/guides/cloudflare/) or explicitly set the Cloudflare Account ID (see: https://alchemy.run/guides/cloudflare/#account-id)`,
-      accounts,
-    );
-  }
-}
-
-const emailCache: Record<string, string> = {};
-
-export async function getUserEmailFromApiKey(apiKey: string): Promise<string> {
-  if (emailCache[apiKey]) {
-    return emailCache[apiKey];
-  }
-
-  try {
-    const baseUrl = "https://api.cloudflare.com/client/v4";
-
-    // Call the /user endpoint to get user information
-    const response = await fetch(`${baseUrl}/user`, {
-      headers: {
-        "Content-Type": "application/json",
-        "X-Auth-Key": apiKey,
+export const getCloudflareAccounts = memoize(
+  async (options: CloudflareAuthOptions): Promise<CloudflareAccount[]> => {
+    const headers = await getCloudflareAuthHeaders(options);
+    const accounts = await fetch(
+      "https://api.cloudflare.com/client/v4/accounts",
+      {
+        headers,
       },
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to get user information: ${response.status} ${response.statusText}`,
+    );
+    if (accounts.ok) {
+      return ((await accounts.json()) as any).result;
+    } else {
+      throw new CloudflareApiError(
+        `Failed to get accounts for authorized user, please make sure you're authenticated (see: https://alchemy.run/guides/cloudflare/) or explicitly set the Cloudflare Account ID (see: https://alchemy.run/guides/cloudflare/#account-id)`,
+        accounts,
       );
     }
+  },
+);
 
-    const data = (await response.json()) as {
-      success: boolean;
-      result: {
-        id: string;
-        email: string;
-        name: string;
-        [key: string]: any;
+export const getUserEmailFromApiKey = memoize(
+  async (apiKey: string): Promise<string> => {
+    try {
+      // Call the /user endpoint to get user information
+      const response = await fetch(
+        "https://api.cloudflare.com/client/v4/user",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "X-Auth-Key": apiKey,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get user information: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const data = (await response.json()) as {
+        success: boolean;
+        result: {
+          id: string;
+          email: string;
+          name: string;
+          [key: string]: any;
+        };
       };
-    };
 
-    if (!data.success || !data.result || !data.result.email) {
-      throw new Error("Cloudflare API did not return valid user information");
+      if (!data.success || !data.result || !data.result.email) {
+        throw new Error("Cloudflare API did not return valid user information");
+      }
+
+      return data.result.email;
+    } catch (error) {
+      logger.error("Error retrieving email from Cloudflare API:", error);
+      throw new Error(
+        "Failed to automatically discover email for API Key authentication",
+      );
     }
-
-    emailCache[apiKey] = data.result.email;
-    return data.result.email;
-  } catch (error) {
-    logger.error("Error retrieving email from Cloudflare API:", error);
-    throw new Error(
-      "Failed to automatically discover email for API Key authentication",
-    );
-  }
-}
+  },
+);

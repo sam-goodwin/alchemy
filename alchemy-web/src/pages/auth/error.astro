@@ -1,0 +1,17 @@
+---
+import AuthLayout from '../../components/AuthLayout.astro';
+---
+
+<AuthLayout
+  title="Authentication Error"
+  message="We couldn't complete the authentication process.<br>Please try again."
+  variant="error"
+  primaryAction={{
+    text: "Learn More",
+    href: "/guides/cloudflare/"
+  }}
+  secondaryAction={{
+    text: "Close",
+    onClick: "window.close()"
+  }}
+/>

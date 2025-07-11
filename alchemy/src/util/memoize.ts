@@ -24,12 +24,23 @@ export function memoize<F extends (...args: any[]) => Promise<any>>(
   };
 }
 
-const defaultKeyFn = (...args: any[]) => {
-  const hash = createHash("sha256");
-  args.forEach((arg) => {
-    if (arg) {
-      hash.update(JSON.stringify(arg));
+export function memoizeSync<F extends (...args: any[]) => any>(
+  fn: F,
+  keyFn: (...args: Parameters<F>) => string = defaultKeyFn,
+) {
+  const cache = new Map<string, ReturnType<F>>();
+  return (...args: Parameters<F>): ReturnType<F> => {
+    const key = keyFn(...args);
+    const cached = cache.get(key);
+    if (cached) {
+      return cached;
     }
-  });
-  return hash.digest("hex");
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+}
+
+export const defaultKeyFn = (...args: any[]) => {
+  return createHash("sha256").update(JSON.stringify(args)).digest("hex");
 };

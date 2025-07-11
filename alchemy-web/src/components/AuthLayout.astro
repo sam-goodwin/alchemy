@@ -1,0 +1,310 @@
+---
+export interface Props {
+  title: string;
+  message: string;
+  variant?: 'success' | 'error';
+  primaryAction: {
+    text: string;
+    href?: string;
+    onClick?: string;
+  };
+  secondaryAction: {
+    text: string;
+    href?: string;
+    onClick?: string;
+  };
+}
+
+const { title, message, variant = 'success', primaryAction, secondaryAction } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title} - Alchemy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-content">
+      <div class="logo-container">
+        <img src="/alchemy-logo-light.svg" alt="Alchemy" class="logo logo-light" />
+        <img src="/alchemy-logo-dark.svg" alt="Alchemy" class="logo logo-dark" />
+      </div>
+      
+      <h1 class={`title ${variant === 'error' ? 'error' : ''}`}>{title}</h1>
+      
+      <p class="message" set:html={message} />
+      
+      <div class="button-container">
+        {primaryAction.href ? (
+          <a href={primaryAction.href} class="primary-button">{primaryAction.text}</a>
+        ) : (
+          <button class="primary-button" onclick={primaryAction.onClick}>{primaryAction.text}</button>
+        )}
+        
+        {secondaryAction.href ? (
+          <a href={secondaryAction.href} class="secondary-button">{secondaryAction.text}</a>
+        ) : (
+          <button class="secondary-button" onclick={secondaryAction.onClick}>{secondaryAction.text}</button>
+        )}
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* CSS Variables matching Hero.astro styling */
+    :root {
+      --bg-dark: #0a0a0a;
+      --bg-light: #ffffff;
+      --text-primary-dark: #ffffff;
+      --text-primary-light: #6B46C1;
+      --text-secondary-dark: #E5E7EB;
+      --text-secondary-light: #374151;
+      --accent-purple: #A78BFA;
+      --accent-purple-light: #9333EA;
+      --border-dark: rgba(255, 255, 255, 0.2);
+      --border-light: rgba(0, 0, 0, 0.15);
+      --glow-dark: rgba(167, 139, 250, 0.1);
+      --glow-light: rgba(147, 51, 234, 0.15);
+      --error-red: #EF4444;
+      --error-red-light: #DC2626;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans', system-ui, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary-dark);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background gradient and glow effect */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(
+        circle at center,
+        var(--glow-dark) 0%,
+        transparent 70%
+      );
+      pointer-events: none;
+    }
+
+    /* Noise texture overlay */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.4;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+    }
+
+    .auth-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 500px;
+      padding: 2rem;
+    }
+
+    .auth-content {
+      text-align: center;
+    }
+
+    .logo-container {
+      margin-bottom: 3rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .logo {
+      height: 40px;
+      width: auto;
+    }
+
+    .logo-dark {
+      display: block;
+    }
+
+    .logo-light {
+      display: none;
+    }
+
+    .title {
+      font-family: 'IBM Plex Serif', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .title.error {
+      color: var(--error-red);
+    }
+
+    .message {
+      font-size: 1.1rem;
+      color: var(--text-secondary-dark);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .button-container {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .primary-button,
+    .secondary-button {
+      padding: 0.75rem 2rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      font-family: inherit;
+    }
+
+    .primary-button {
+      background: var(--accent-purple);
+      color: var(--bg-dark);
+      border: none;
+    }
+
+    .primary-button:hover {
+      background: color-mix(in srgb, var(--accent-purple) 80%, white 20%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+    }
+
+    .secondary-button {
+      background: transparent;
+      color: var(--text-primary-dark);
+      border: 2px solid var(--border-dark);
+    }
+
+    .secondary-button:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--accent-purple);
+      transform: translateY(-2px);
+    }
+
+    /* Light theme support */
+    @media (prefers-color-scheme: light) {
+      body {
+        background: var(--bg-light);
+        color: var(--text-primary-light);
+      }
+
+      body::before {
+        background: radial-gradient(
+          circle at center,
+          var(--glow-light) 0%,
+          transparent 70%
+        );
+      }
+
+      body::after {
+        opacity: 0.3;
+      }
+
+      .logo-dark {
+        display: none;
+      }
+
+      .logo-light {
+        display: block;
+      }
+
+      .title {
+        color: var(--text-primary-light);
+      }
+
+      .title.error {
+        color: var(--error-red-light);
+      }
+
+      .message {
+        color: var(--text-secondary-light);
+      }
+
+      .primary-button {
+        background: var(--accent-purple-light);
+        color: var(--bg-light);
+      }
+
+      .primary-button:hover {
+        background: color-mix(in srgb, var(--accent-purple-light) 80%, black 20%);
+        box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+      }
+
+      .secondary-button {
+        color: var(--text-primary-light);
+        border-color: var(--border-light);
+      }
+
+      .secondary-button:hover {
+        background: rgba(0, 0, 0, 0.05);
+        border-color: var(--accent-purple-light);
+      }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      .auth-container {
+        padding: 1.5rem;
+      }
+
+      .title {
+        font-size: 1.75rem;
+      }
+
+      .message {
+        font-size: 1rem;
+      }
+
+      .logo {
+        height: 32px;
+      }
+
+      .button-container {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .primary-button,
+      .secondary-button {
+        width: 100%;
+      }
+    }
+  </style>
+</body>
+</html>
