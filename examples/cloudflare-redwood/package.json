@@ -10,8 +10,10 @@
   "private": true,
   "scripts": {
     "build": "vite build",
-    "dev": "NODE_ENV=${NODE_ENV:-development} vite dev",
+    "dev": "NODE_ENV=${NODE_ENV:-development} bun --env-file ../../.env ./alchemy.run.ts --dev",
     "dev:init": "rw-scripts dev-init",
+    "deploy": "bun --env-file ../../.env ./alchemy.run.ts",
+    "destroy": "bun --env-file ../../.env ./alchemy.run.ts --destroy",
     "preview": "bun run build && bun run vite preview",
     "worker:run": "rw-scripts worker-run",
     "clean": "bun run clean:vite",
@@ -22,9 +24,7 @@
     "migrate:dev": "wrangler d1 migrations apply DB --local",
     "seed": "bun run worker:run ./src/db/seed.ts",
     "check": "bun run types",
-    "types": "bun run tsc",
-    "deploy": "bun tsx --env-file ../../.env ./alchemy.run.ts",
-    "destroy": "bun tsx --env-file ../../.env ./alchemy.run.ts --destroy"
+    "types": "bun run tsc"
   },
   "dependencies": {
     "alchemy": "workspace:*",

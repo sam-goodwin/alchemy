@@ -2,6 +2,7 @@ import path from "node:path";
 import { alchemy } from "../alchemy.ts";
 import { Exec } from "../os/exec.ts";
 import { Scope } from "../scope.ts";
+import { detectPackageManager } from "../util/detect-package-manager.ts";
 import { Assets } from "./assets.ts";
 import type { Bindings } from "./bindings.ts";
 import {
@@ -100,7 +101,6 @@ export interface WebsiteProps<B extends Bindings>
    */
   dev?: {
     command: string;
-    url: string;
   };
 
   /**
@@ -122,6 +122,14 @@ export interface WebsiteProps<B extends Bindings>
     ) => WranglerJsonSpec | Promise<WranglerJsonSpec>;
   };
 }
+
+const packageManager = detectPackageManager();
+const devCommand = {
+  npm: "npx vite dev",
+  bun: "bun vite dev",
+  pnpm: "pnpm vite dev",
+  yarn: "yarn vite dev",
+}[packageManager];
 
 export type Website<B extends Bindings> = B extends { ASSETS: any }
   ? never
@@ -189,12 +197,9 @@ export default {
 };`,
         url: props.url ?? true,
         adopt: props.adopt ?? true,
-        dev: props.dev
-          ? {
-              command: props.dev.command,
-              url: props.dev.url,
-            }
-          : undefined,
+        dev: {
+          command: props.dev?.command ?? devCommand,
+        },
       } as WorkerProps<any> & { name: string };
 
       if (wrangler) {
@@ -216,7 +221,7 @@ export default {
         });
       }
 
-      const isDev = scope.dev && !!props.dev;
+      const isDev = scope.dev || props.dev;
 
       if (props.command && !isDev) {
         await Exec("build", {

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "bun --env-file ../../.env ./alchemy.run.ts --dev",
     "build": "tsc -b && vite build",
     "deploy": "bun tsx --env-file ../../.env ./alchemy.run.ts",
     "destroy": "bun tsx --env-file ../../.env ./alchemy.run.ts --destroy",

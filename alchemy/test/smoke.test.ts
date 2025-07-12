@@ -69,13 +69,17 @@ async function fileExists(path: string): Promise<boolean> {
 
 async function runCommand(
   command: string,
-  cwd: string,
+  options: { cwd: string; env?: Record<string, string> },
 ): Promise<{ stdout: string; stderr: string }> {
-  console.log(`Running: ${command} in ${cwd}`);
+  console.log(`Running: ${command} in ${options.cwd}`);
 
   try {
     const result = await execAsync(command, {
-      cwd,
+      cwd: options.cwd,
+      env: {
+        ...process.env,
+        ...options.env,
+      },
       timeout: 300000, // 5 minutes timeout
       maxBuffer: 1024 * 1024 * 10, // 10MB buffer
     });
@@ -128,19 +132,23 @@ describe("Smoke Tests", () => {
     test(`${example.name} - deploy and destroy`, async () => {
       console.log(`--- Processing: ${example.name} ---`);
 
+      let devCommand: string;
       let deployCommand: string;
       let destroyCommand: string;
 
       if (example.hasEnvFile) {
         // Use npm scripts if .env file exists in root
+        devCommand = "bun run dev";
         deployCommand = "bun run deploy";
         destroyCommand = "bun run destroy";
       } else if (example.hasAlchemyRunFile) {
         // Use alchemy.run.ts if it exists
+        devCommand = "bun tsx ./alchemy.run.ts --dev";
         deployCommand = "bun tsx ./alchemy.run.ts";
         destroyCommand = "bun tsx ./alchemy.run.ts --destroy";
       } else {
         // Fallback to index.ts
+        devCommand = "bun ./index.ts --dev";
         deployCommand = "bun ./index.ts";
         destroyCommand = "bun ./index.ts --destroy";
       }
@@ -148,12 +156,26 @@ describe("Smoke Tests", () => {
       try {
         // pre-emptively try and destroy the example if it exists
         console.log(`Running destroy for ${example.name}...`);
-        let destroyResult = await runCommand(destroyCommand, example.path);
+        let destroyResult = await runCommand(destroyCommand, {
+          cwd: example.path,
+        });
         expect(destroyResult).toBeDefined();
+
+        console.log(`Running dev for ${example.name}...`);
+        const devResult = await runCommand(devCommand, {
+          cwd: example.path,
+          env: {
+            // this is how we force alchemy to exit on finalize in CI
+            ALCHEMY_TEST_KILL_ON_FINALIZE: "1",
+          },
+        });
+        expect(devResult).toBeDefined();
 
         // Run deploy command
         console.log(`Running deploy for ${example.name}...`);
-        const deployResult = await runCommand(deployCommand, example.path);
+        const deployResult = await runCommand(deployCommand, {
+          cwd: example.path,
+        });
         expect(deployResult).toBeDefined();
 
         // Verify state store behavior in CI
@@ -161,7 +183,9 @@ describe("Smoke Tests", () => {
 
         // Run destroy command
         console.log(`Running destroy for ${example.name}...`);
-        destroyResult = await runCommand(destroyCommand, example.path);
+        destroyResult = await runCommand(destroyCommand, {
+          cwd: example.path,
+        });
         expect(destroyResult).toBeDefined();
 
         // Verify cleanup in CI

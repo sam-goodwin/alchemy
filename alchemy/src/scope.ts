@@ -416,6 +416,10 @@ export class Scope {
     await this.rootTelemetryClient?.finalize()?.catch((error) => {
       this.logger.warn("Telemetry finalization failed:", error);
     });
+
+    if (!this.parent && process.env.ALCHEMY_TEST_KILL_ON_FINALIZE) {
+      process.exit(0);
+    }
   }
 
   public async destroyPendingDeletions() {

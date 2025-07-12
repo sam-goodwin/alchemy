@@ -348,7 +348,6 @@ export interface BaseWorkerProps<
       }
     | {
         command: string;
-        url: string;
         cwd?: string;
       };
 }
@@ -1020,15 +1019,16 @@ export const _Worker = Resource(
       }
 
       switch (dev.type) {
-        case "command":
-          createDevCommand({
+        case "command": {
+          const { url: commandUrl } = await createDevCommand({
             id,
             command: dev.command,
             cwd: dev.cwd ?? props.cwd ?? process.cwd(),
             env: props.env ?? {},
           });
-          url = dev.url;
+          url = commandUrl;
           break;
+        }
         case "miniflare": {
           url = await createMiniflare({
             id,
@@ -1366,7 +1366,6 @@ type Dev =
   | {
       type: "command";
       command: string;
-      url: string;
       cwd?: string;
       local: true;
     }
@@ -1780,7 +1779,7 @@ function createDevCommand(props: {
   command: string;
   cwd: string;
   env: Record<string, string>;
-}) {
+}): Promise<{ url: string }> {
   const persistFile = path.join(process.cwd(), ".alchemy", `${props.id}.pid`);
   if (existsSync(persistFile)) {
     const pid = Number.parseInt(readFileSync(persistFile, "utf8"));
@@ -1796,32 +1795,68 @@ function createDevCommand(props: {
       // ignore
     }
   }
-  const command = props.command.split(" ");
-  const proc = spawn(command[0], command.slice(1), {
-    cwd: props.cwd,
-    env: {
-      ...process.env,
-      ...props.env,
-      ALCHEMY_CLOUDFLARE_PERSIST_PATH: path.join(
-        process.cwd(),
-        ".alchemy",
-        "miniflare",
-      ),
-    },
-    stdio: ["inherit", "inherit", "inherit"],
-  });
-  cleanups.push(() => {
-    try {
-      unlinkSync(persistFile);
-    } catch {
-      // ignore
+
+  return new Promise((resolve, reject) => {
+    const command = props.command.split(" ");
+    const proc = spawn(command[0], command.slice(1), {
+      cwd: props.cwd,
+      env: {
+        ...process.env,
+        ...props.env,
+        ALCHEMY_CLOUDFLARE_PERSIST_PATH: path.join(
+          process.cwd(),
+          ".alchemy",
+          "miniflare",
+        ),
+        // Force colors in the child process since we're piping output
+        FORCE_COLOR: "1",
+      },
+      stdio: ["inherit", "pipe", "pipe"],
+    });
+
+    let urlFound = false;
+    const urlRegex = /http:\/\/localhost:\d+/;
+
+    const parseOutput = (data: Buffer) => {
+      if (!urlFound) {
+        const output = data.toString();
+        const match = output.match(urlRegex);
+        if (match) {
+          urlFound = true;
+          resolve({ url: match[0] });
+        }
+      }
+    };
+
+    // Handle stdout - parse for URL and write through with colors preserved
+    proc.stdout?.on("data", (data) => {
+      parseOutput(data);
+      process.stdout.write(data);
+    });
+
+    proc.stderr?.on("data", (data) => {
+      parseOutput(data);
+      process.stderr.write(data);
+    });
+
+    proc.on("error", (error) => {
+      reject(error);
+    });
+
+    cleanups.push(() => {
+      try {
+        unlinkSync(persistFile);
+      } catch {
+        // ignore
+      }
+      proc.kill();
+    });
+
+    if (proc.pid) {
+      mkdirSync(path.dirname(persistFile), { recursive: true });
+      writeFileSync(persistFile, proc.pid.toString());
     }
-    proc.kill();
   });
-  if (proc.pid) {
-    mkdirSync(path.dirname(persistFile), { recursive: true });
-    writeFileSync(persistFile, proc.pid.toString());
-  }
 }
 
 type PutWorkerOptions = WorkerProps & {
