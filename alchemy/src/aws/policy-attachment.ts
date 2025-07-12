@@ -69,7 +69,9 @@ export const PolicyAttachment = Resource(
     _id: string,
     props: PolicyAttachmentProps,
   ) {
-    const client = new IAMClient({});
+    const client = new IAMClient({
+      endpoint: process.env.AWS_ENDPOINT,
+    });
 
     if (this.phase === "delete") {
       await ignore(NoSuchEntityException.name, () =>

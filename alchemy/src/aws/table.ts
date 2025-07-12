@@ -143,7 +143,9 @@ export const Table = Resource(
     _id: string,
     props: TableProps,
   ): Promise<Table> {
-    const client = new DynamoDBClient({});
+    const client = new DynamoDBClient({
+      endpoint: process.env.AWS_ENDPOINT,
+    });
 
     if (this.phase === "delete") {
       await retry(async () => {

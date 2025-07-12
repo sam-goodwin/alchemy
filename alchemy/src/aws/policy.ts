@@ -233,7 +233,9 @@ export const Policy = Resource(
     _id: string,
     props: PolicyProps,
   ): Promise<Policy> {
-    const client = new IAMClient({});
+    const client = new IAMClient({
+      endpoint: process.env.AWS_ENDPOINT,
+    });
     const policyArn = `arn:aws:iam::${process.env.AWS_ACCOUNT_ID}:policy${props.path || "/"}${props.policyName}`;
 
     if (this.phase === "delete") {

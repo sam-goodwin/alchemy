@@ -179,7 +179,9 @@ export const SSMParameter = Resource(
     _id: string,
     props: SSMParameterProps,
   ): Promise<SSMParameter> {
-    const client = new SSMClient({});
+    const client = new SSMClient({
+      endpoint: process.env.AWS_ENDPOINT,
+    });
 
     if (this.phase === "delete") {
       try {

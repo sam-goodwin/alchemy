@@ -66,6 +66,7 @@ export class S3StateStore implements StateStore {
     this.bucketName = options.bucketName ?? "alchemy-state";
 
     this.client = new S3Client({
+      endpoint: process.env.AWS_ENDPOINT,
       region: options.region,
     });
   }

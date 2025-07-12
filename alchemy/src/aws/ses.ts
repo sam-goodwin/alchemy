@@ -165,7 +165,9 @@ export const SES = Resource(
     props: SESProps,
   ): Promise<SES> {
     // Create SES client
-    const client = new SESv2Client({});
+    const client = new SESv2Client({
+      endpoint: process.env.AWS_ENDPOINT,
+    });
 
     // Resource ID is either based on the configuration set name or email identity
     // const id =

@@ -310,7 +310,9 @@ export interface Function extends Resource<"lambda::Function">, FunctionProps {
 export const Function = Resource(
   "lambda::Function",
   async function (this: Context<Function>, _id: string, props: FunctionProps) {
-    const client = new LambdaClient({});
+    const client = new LambdaClient({
+      endpoint: process.env.AWS_ENDPOINT,
+    });
     const region = await resolveRegion(client);
 
     if (this.phase === "delete") {
