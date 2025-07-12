@@ -396,6 +396,7 @@ export interface AlchemyOptions {
    * If not provided, the default fallback logger will be used.
    */
   logger?: LoggerApi;
+  startDebugger?: boolean;
 }
 
 export interface ScopeOptions extends AlchemyOptions {

@@ -4,6 +4,7 @@ import type { Phase } from "./alchemy.ts";
 import { D1StateStore } from "./cloudflare/d1-state-store.ts";
 import { DOStateStore } from "./cloudflare/do-state-store/index.ts";
 import { destroy, destroyAll } from "./destroy.ts";
+import { RootDebuggerServer } from "./dev-tooling/root-debugger-server.ts";
 import { FileSystemStateStore } from "./fs/file-system-state-store.ts";
 import {
   ResourceFQN,
@@ -42,6 +43,7 @@ export interface ScopeOptions {
   dev?: "prefer-local" | "prefer-remote";
   telemetryClient?: ITelemetryClient;
   logger?: LoggerApi;
+  startDebugger?: boolean;
 }
 
 export type PendingDeletions = Array<{
@@ -112,6 +114,7 @@ export class Scope {
   public readonly logger: LoggerApi;
   public readonly telemetryClient: ITelemetryClient;
   public readonly dataMutex: AsyncMutex;
+  public readonly debuggerServer: RootDebuggerServer | undefined;
 
   private isErrored = false;
   private finalized = false;
@@ -180,6 +183,10 @@ export class Scope {
     this.telemetryClient =
       options.telemetryClient ?? this.parent?.telemetryClient!;
     this.dataMutex = new AsyncMutex();
+
+    if (options.startDebugger && this.parent == null) {
+      this.debuggerServer = new RootDebuggerServer();
+    }
   }
 
   public get root(): Scope {
@@ -233,6 +240,15 @@ export class Scope {
       this.telemetryClient.ready.catch((error) => {
         this.logger.warn("Telemetry initialization failed:", error);
       }),
+      this.debuggerServer?.init()?.then(
+        () =>
+          this.parent == null &&
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve(true);
+            }, 5000);
+          }),
+      ) ?? Promise.resolve(),
     ]);
   }
 

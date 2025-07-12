@@ -42,6 +42,9 @@ async function _apply<Out extends Resource>(
 ): Promise<Awaited<Out>> {
   const scope = resource[ResourceScope];
   const start = performance.now();
+  const loggerId =
+    scope.root.debuggerServer?.createExecutionContextForResource(resource)!;
+  await scope.root.init();
   try {
     const quiet = props?.quiet ?? scope.quiet;
     await scope.init();
@@ -107,6 +110,10 @@ async function _apply<Out extends Resource>(
         JSON.stringify(oldProps) === JSON.stringify(newProps) &&
         alwaysUpdate !== true
       ) {
+        scope.root.debuggerServer?.consoleLog(
+          loggerId,
+          "Skipped Resource (no changes)",
+        );
         if (!quiet) {
           logger.task(resource[ResourceFQN], {
             prefix: "skipped",
@@ -136,6 +143,10 @@ async function _apply<Out extends Resource>(
     state.oldProps = state.props;
     state.props = props;
 
+    scope.root.debuggerServer?.consoleLog(
+      loggerId,
+      `${phase === "create" ? "Creating" : "Updating"} Resource...`,
+    );
     if (!quiet) {
       logger.task(resource[ResourceFQN], {
         prefix: phase === "create" ? "creating" : "updating",
@@ -238,6 +249,10 @@ async function _apply<Out extends Resource>(
         throw error;
       }
     }
+    scope.root.debuggerServer?.consoleLog(
+      loggerId,
+      `${phase === "create" ? "Created" : isReplaced ? "Replaced" : "Updated"} Resource`,
+    );
     if (!quiet) {
       logger.task(resource[ResourceFQN], {
         prefix:
