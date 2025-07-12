@@ -1,0 +1,374 @@
+---
+title: Discord Bot
+description: Create and deploy a Discord bot with slash commands to Cloudflare Workers using Alchemy. Learn to handle interactions with type-safe bindings.
+sidebar:
+  order: 12
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+
+Build a Discord bot with slash commands that runs on Cloudflare Workers. This guide shows how to create a bot that responds to interactions via HTTP webhooks.
+
+<Steps>
+
+1. **Create a Discord Application**
+
+   :::note[Manual Step Required]
+   Discord requires applications to be created manually through their developer portal. Alchemy will manage the application after creation.
+   :::
+
+   First, create a Discord application on the [Discord Developer Portal](https://discord.com/developers/applications):
+   
+   - Click "New Application"
+   - Give it a name and create it
+   - Go to the "Bot" section
+   - Click "Reset Token" and save the token securely
+   - Under "Public Bot", ensure it's enabled if you want others to add your bot
+   
+   :::tip
+   Save your bot token in a `.env` file immediately. You can only view it once!
+   :::
+
+2. **Initialize your project**
+
+   Create a new project for your Discord bot:
+
+   ```sh
+   mkdir my-discord-bot
+   cd my-discord-bot
+   ```
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun init -y
+       bun add alchemy discord-interactions
+       bun add -D wrangler
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npm init -y
+       npm install alchemy discord-interactions
+       npm install -D wrangler
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm init
+       pnpm add alchemy discord-interactions
+       pnpm add -D wrangler
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn init -y
+       yarn add alchemy discord-interactions
+       yarn add -D wrangler
+       ```
+     </TabItem>
+   </Tabs>
+
+3. **Set up credentials**
+
+   Create a `.env` file with your Discord credentials:
+
+   ```sh
+   # Get these from Discord Developer Portal
+   DISCORD_TOKEN=your_bot_token_here
+   DISCORD_APPLICATION_ID=your_application_id_here
+   DISCORD_PUBLIC_KEY=your_public_key_here
+   
+   # For Alchemy encryption
+   ALCHEMY_PASSWORD=change-me-to-something-secure
+   ```
+
+   :::tip
+   You can find the Application ID and Public Key in the "General Information" section of your Discord application.
+   :::
+
+   :::caution
+   Never commit your `.env` file to version control. Add it to `.gitignore`.
+   :::
+
+4. **Login to Cloudflare**
+
+   Authenticate with your Cloudflare account:
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun wrangler login
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npx wrangler login
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm wrangler login
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn wrangler login
+       ```
+     </TabItem>
+   </Tabs>
+
+5. **Create your bot infrastructure**
+
+   Create `alchemy.run.ts`:
+
+   ```typescript
+   import alchemy, { secret } from "alchemy";
+   import { Worker } from "alchemy/cloudflare";
+   import { Application, SlashCommand, CommandOptionType } from "alchemy/discord";
+
+   const app = await alchemy("my-discord-bot");
+
+   // Get Discord credentials from environment
+   const botToken = secret(process.env.DISCORD_TOKEN!);
+   const publicKey = process.env.DISCORD_PUBLIC_KEY!;
+   const applicationId = process.env.DISCORD_APPLICATION_ID!;
+
+   // Create the interactions worker first
+   const worker = await Worker("discord-interactions", {
+     entrypoint: "./src/bot.ts",
+     bindings: {
+       DISCORD_PUBLIC_KEY: publicKey,
+       DISCORD_APPLICATION_ID: applicationId,
+       DISCORD_BOT_TOKEN: botToken,
+     },
+   });
+
+   // Configure Discord application with the worker URL
+   const discord = await Application("my-bot", {
+     name: "My Alchemy Bot",
+     description: "A Discord bot powered by Alchemy and Cloudflare Workers",
+     botToken,
+     interactionsEndpointUrl: worker.url,
+   });
+
+   // Create a ping command
+   const pingCommand = await SlashCommand("ping", {
+     application: discord,
+     name: "ping",
+     description: "Replies with pong!",
+   });
+
+   // Create a hello command with options
+   const helloCommand = await SlashCommand("hello", {
+     application: discord,
+     name: "hello",
+     description: "Say hello to someone",
+     options: [
+       {
+         type: CommandOptionType.STRING,
+         name: "name",
+         description: "Name to greet",
+         required: true,
+       },
+     ],
+   });
+
+   // Output important information
+   console.log(`\n✅ Bot deployed successfully!`);
+   console.log(`\n🤖 Bot invite URL:`);
+   console.log(`   ${discord.inviteUrl}`);
+   console.log(`\n📡 Worker URL: ${worker.url}`);
+   console.log(`🆔 Application ID: ${discord.id}`);
+
+   await app.finalize();
+   ```
+
+6. **Create the bot handler**
+
+   Create `src/bot.ts`:
+
+   ```typescript
+   import { verifyKey } from "discord-interactions";
+
+   export interface Env {
+     DISCORD_PUBLIC_KEY: string;
+     DISCORD_APPLICATION_ID: string;
+     DISCORD_BOT_TOKEN: string;
+   }
+
+   export default {
+     async fetch(request: Request, env: Env): Promise<Response> {
+       // Verify Discord signature
+       const signature = request.headers.get("X-Signature-Ed25519");
+       const timestamp = request.headers.get("X-Signature-Timestamp");
+       const body = await request.text();
+
+       const isValid = signature && timestamp && 
+         await verifyKey(body, signature, timestamp, env.DISCORD_PUBLIC_KEY);
+
+       if (!isValid) {
+         return new Response("Invalid signature", { status: 401 });
+       }
+
+       const interaction = JSON.parse(body);
+
+       // Handle Discord ping
+       if (interaction.type === 1) {
+         return Response.json({ type: 1 });
+       }
+
+       // Handle slash commands
+       if (interaction.type === 2) {
+         const { name, options } = interaction.data;
+
+         switch (name) {
+           case "ping":
+             return Response.json({
+               type: 4,
+               data: { content: "Pong! 🏓" }
+             });
+
+           case "hello":
+             const userName = options?.[0]?.value || "there";
+             return Response.json({
+               type: 4,
+               data: { content: `Hello ${userName}! 👋` }
+             });
+
+           default:
+             return Response.json({
+               type: 4,
+               data: { content: "Unknown command!" }
+             });
+         }
+       }
+
+       return new Response("Unknown interaction type", { status: 400 });
+     },
+   };
+   ```
+
+7. **Deploy your bot**
+
+   Run the deployment script:
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun ./alchemy.run.ts
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npx tsx ./alchemy.run.ts
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm tsx ./alchemy.run.ts
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn tsx ./alchemy.run.ts
+       ```
+     </TabItem>
+   </Tabs>
+
+   You'll see output like:
+   ```
+   ✅ Bot deployed successfully!
+
+   🤖 Bot invite URL:
+      https://discord.com/api/oauth2/authorize?client_id=1234567890123456789&permissions=0&scope=bot%20applications.commands
+
+   📡 Worker URL: https://discord-interactions.your-subdomain.workers.dev
+   🆔 Application ID: 1234567890123456789
+   ```
+
+8. **Add the bot to your server**
+
+   Click the bot invite URL from the output above to add the bot to your Discord server.
+
+9. **Test your bot**
+
+   In your Discord server, try the commands:
+   - Type `/ping` - the bot should respond with "Pong! 🏓"
+   - Type `/hello John` - the bot should respond with "Hello John! 👋"
+
+10. **Add more features**
+
+    Extend your bot with additional commands in `alchemy.run.ts`:
+
+    ```typescript
+    // Add an embed command
+    const embedCommand = await SlashCommand("embed", {
+      application: discord,
+      name: "embed",
+      description: "Send a rich embed message",
+    });
+    ```
+
+    Update `src/bot.ts` to handle the new command:
+
+    ```typescript
+    case "embed":
+      return Response.json({
+        type: 4,
+        data: {
+          embeds: [{
+            title: "Hello from Alchemy!",
+            description: "This is a rich embed message",
+            color: 0x5865f2, // Discord blurple
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: "Powered by Alchemy + Cloudflare Workers"
+            }
+          }]
+        },
+      });
+    ```
+
+11. **Clean up**
+
+    To remove all resources:
+
+    <Tabs syncKey="pkgManager">
+      <TabItem label="bun">
+        ```sh
+        bun ./alchemy.run.ts --destroy
+        ```
+      </TabItem>
+      <TabItem label="npm">
+        ```sh
+        npx tsx ./alchemy.run.ts --destroy
+        ```
+      </TabItem>
+      <TabItem label="pnpm">
+        ```sh
+        pnpm tsx ./alchemy.run.ts --destroy
+        ```
+      </TabItem>
+      <TabItem label="yarn">
+        ```sh
+        yarn tsx ./alchemy.run.ts --destroy
+        ```
+      </TabItem>
+    </Tabs>
+
+</Steps>
+
+## Next Steps
+
+- Add [Durable Objects](/guides/cloudflare-durable-objects) for stateful bot features
+- Store data with [D1 Database](/providers/cloudflare/d1-database) 
+- Create webhooks to send messages to channels
+- Implement user commands and message commands
+- Add button and select menu interactions
+
+## Resources
+
+- [Discord Developer Documentation](https://discord.com/developers/docs)
+- [Discord Application Commands](https://discord.com/developers/docs/interactions/application-commands)
+- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
