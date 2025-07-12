@@ -1219,8 +1219,13 @@ export const _Worker = Resource(
         }),
       );
       putWorkerResult = await promise.value;
-      const tail = await createTail(api, id, workerName);
-      cleanups.push(() => tail.close());
+      createTail(api, id, workerName)
+        .then((tail) => {
+          cleanups.push(() => tail.close());
+        })
+        .catch((error) => {
+          logger.error(`Failed to create tail for ${workerName}`, error);
+        });
     } else {
       putWorkerResult = await putWorkerWithAssets(props, await bundle.create());
     }

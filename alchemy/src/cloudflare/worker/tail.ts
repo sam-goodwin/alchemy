@@ -47,7 +47,12 @@ class TailClient {
     }
     const res = await this.api.post(
       `/accounts/${this.api.accountId}/workers/scripts/${this.scriptName}/tails`,
-      {},
+      { filters: [] },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
     );
     const json = (await res.json()) as CloudflareApiResponse<Tail>;
     if (!json.success) {
@@ -72,11 +77,7 @@ class TailClient {
       throw new Error(`Failed to connect to tail for ${this.scriptName}`);
     }
     const tail = await this.create();
-    const ws = new WebSocket(tail.url, {
-      headers: {
-        "Sec-WebSocket-Protocol": "trace-v1",
-      },
-    });
+    const ws = new WebSocket(tail.url, "trace-v1");
     ws.on("open", () => {
       this.ping(ws);
       if (DEBUG) {
@@ -92,7 +93,9 @@ class TailClient {
         return;
       }
       logger.log(`reconnecting to tail for "${this.scriptName}"`);
-      this.connect(attempt + 1);
+      setTimeout(() => {
+        this.connect(attempt + 1);
+      }, 1000);
     });
     ws.on("error", (event) => {
       logger.error(`error on tail for "${this.scriptName}": ${event}`);
