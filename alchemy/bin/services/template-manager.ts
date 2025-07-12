@@ -33,8 +33,8 @@ export async function copyTemplate(
   ];
 
   try {
-    const copySpinner = spinner();
-    copySpinner.start("Copying template files...");
+    const s = spinner();
+    s.start("Setting up project files...");
 
     const files = await globby("**/*", {
       cwd: templatePath,
@@ -57,8 +57,6 @@ export async function copyTemplate(
       await fs.copy(srcPath, destPath);
     }
 
-    copySpinner.stop("Template files copied successfully");
-
     await updateTemplatePackageJson(context);
 
     await addPackageDependencies({
@@ -66,25 +64,23 @@ export async function copyTemplate(
       projectDir: context.path,
     });
 
+    s.stop("Project files ready");
+
     if (context.options.install !== false) {
       const installSpinner = spinner();
       installSpinner.start("Installing dependencies...");
       try {
         await installDependencies(context);
-        installSpinner.stop("Dependencies installed successfully");
+        installSpinner.stop("Dependencies installed");
       } catch (error) {
         installSpinner.stop("Failed to install dependencies");
         throw error;
       }
-    } else {
-      log.info("Skipping dependency installation");
     }
 
     if (templateName === "rwsdk") {
       await handleRwsdkPostInstall(context);
     }
-
-    log.success("Project setup complete!");
   } catch (error) {
     throwWithContext(error, `Failed to copy template '${templateName}'`);
   }

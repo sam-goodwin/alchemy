@@ -73,6 +73,8 @@ export type CreateInput = {
   overwrite?: boolean;
   install?: boolean;
   vibeRules?: EditorType;
+  githubActions?: boolean;
+  git?: boolean;
 };
 
 export type CLIInput = CreateInput & {

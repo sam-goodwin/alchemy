@@ -1,4 +1,3 @@
-import { log } from "@clack/prompts";
 import fs from "fs-extra";
 import path from "node:path";
 
@@ -25,8 +24,6 @@ export const addPackageDependencies = async (opts: {
     const version = dependencyVersionMap[pkgName];
     if (version) {
       pkgJson.dependencies[pkgName] = version;
-    } else {
-      log.warn(`Warning: Dependency ${pkgName} not found in version map.`);
     }
   }
 
@@ -34,8 +31,6 @@ export const addPackageDependencies = async (opts: {
     const version = dependencyVersionMap[pkgName];
     if (version) {
       pkgJson.devDependencies[pkgName] = version;
-    } else {
-      log.warn(`Warning: Dev dependency ${pkgName} not found in version map.`);
     }
   }
 
