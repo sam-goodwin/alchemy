@@ -53,6 +53,27 @@ export async function createGitHubClient(
 ): Promise<Octokit> {
   const token = await getGitHubToken(options.token);
 
+  if (!token) {
+    logger.error(
+      "\n⚠️ GitHub token is required but not found. Please try one of the following:",
+    );
+    logger.error("1. Run 'gh auth login' to authenticate with the GitHub CLI");
+    logger.error(
+      "2. Set the GITHUB_TOKEN environment variable with a personal access token",
+    );
+    logger.error(
+      "3. Set the GITHUB_ACCESS_TOKEN environment variable (for actions with admin permissions)",
+    );
+    logger.error("4. Pass a token directly to the resource props");
+    logger.error(
+      "\nTo create a token, visit: https://github.com/settings/tokens",
+    );
+    logger.error(
+      "Required scopes: 'repo' for private repos or 'public_repo' for public repos\n",
+    );
+    throw new Error("GitHub token is required but not found");
+  }
+
   return new Octokit({
     auth: token,
   });
@@ -114,4 +135,25 @@ export async function verifyGitHubAuth(
     }
     throw error;
   }
+}
+
+/**
+ * Create an authenticated Octokit client and verify repository access
+ *
+ * @param options Options for creating and verifying the client
+ * @returns An authenticated and verified Octokit client
+ */
+export async function createAndVerifyGitHubClient(options: {
+  token?: string;
+  owner: string;
+  repository: string;
+  quiet?: boolean;
+}): Promise<Octokit> {
+  const octokit = await createGitHubClient({ token: options.token });
+
+  if (!options.quiet) {
+    await verifyGitHubAuth(octokit, options.owner, options.repository);
+  }
+
+  return octokit;
 }

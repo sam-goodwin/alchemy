@@ -1,7 +1,7 @@
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { logger } from "../util/logger.ts";
-import { createGitHubClient, verifyGitHubAuth } from "./client.ts";
+import { createAndVerifyGitHubClient } from "./client.ts";
 
 /**
  * Properties for creating or updating a GitHub Repository Environment
@@ -177,15 +177,13 @@ export const RepositoryEnvironment = Resource(
     _id: string,
     props: RepositoryEnvironmentProps,
   ): Promise<RepositoryEnvironment> {
-    // Create authenticated Octokit client
-    const octokit = await createGitHubClient({
+    // Create authenticated Octokit client and verify repository access
+    const octokit = await createAndVerifyGitHubClient({
       token: props.token,
+      owner: props.owner,
+      repository: props.repository,
+      quiet: this.quiet,
     });
-
-    // Verify authentication and permissions
-    if (!this.quiet) {
-      await verifyGitHubAuth(octokit, props.owner, props.repository);
-    }
 
     if (this.phase === "delete") {
       if (this.output?.id) {

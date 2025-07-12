@@ -3,7 +3,7 @@ import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import type { Secret } from "../secret.ts";
 import { logger } from "../util/logger.ts";
-import { createGitHubClient, verifyGitHubAuth } from "./client.ts";
+import { createAndVerifyGitHubClient } from "./client.ts";
 /**
  * Properties for creating or updating a GitHub Secret
  */
@@ -138,16 +138,14 @@ export const GitHubSecret = Resource(
     _id: string,
     props: GitHubSecretProps,
   ): Promise<GitHubSecretOutput> {
-    // Create authenticated Octokit client - will automatically handle token resolution
+    // Create authenticated Octokit client and verify repository access
     /// TODO: use fetch
-    const octokit = await createGitHubClient({
+    const octokit = await createAndVerifyGitHubClient({
       token: props.token?.unencrypted,
+      owner: props.owner,
+      repository: props.repository,
+      quiet: this.quiet,
     });
-
-    // Verify authentication and permissions
-    if (!this.quiet) {
-      await verifyGitHubAuth(octokit, props.owner, props.repository);
-    }
 
     // Determine if we're working with an environment secret or repository secret
     const isEnvironmentSecret = !!props.environment;
