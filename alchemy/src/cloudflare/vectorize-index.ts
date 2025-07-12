@@ -169,7 +169,7 @@ const _VectorizeIndex = Resource(
         if (
           props.adopt &&
           error instanceof CloudflareApiError &&
-          error.message.includes("already exists")
+          error.message.includes("vectorize.index.duplicate_name")
         ) {
           logger.log(`Index ${indexName} already exists, adopting it`);
           // Find the existing index
