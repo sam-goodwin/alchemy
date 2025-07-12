@@ -366,6 +366,7 @@ const worker = await Worker("api", {
   name: "api-worker",
   entrypoint: "./src/api.ts",
   routes: [
+    "backend.example.com/*",
     {
       pattern: "api.example.com/*",
       zoneId: zone.id,
@@ -433,12 +434,14 @@ const router = await Worker("platform-router", {
 });
 ```
 
-In your router, you can dynamically route to tenant workers:
+In your `./src/router.ts`, you can dynamically route to tenant workers:
 
 ```ts
 // src/router.ts
+import type { router } from "./alchemy.run.ts";
+
 export default {
-  async fetch(request: Request, env: { TENANT_WORKERS: DispatchNamespace }) {
+  async fetch(request: Request, env: typeof router.Env) {
     const url = new URL(request.url);
     const tenantId = url.hostname.split(".")[0];
 

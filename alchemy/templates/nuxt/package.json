@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "deploy": "bun --env-file=./.env ./alchemy.run.ts",
-    "destroy": "bun --env-file=./.env ./alchemy.run.ts --destroy",
-    "dev": "nuxt dev",
+    "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy",
+    "dev": "alchemy dev",
     "generate": "nuxt generate",
     "postinstall": "nuxt prepare",
     "preview": "nuxt preview"

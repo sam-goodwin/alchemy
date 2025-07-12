@@ -36,7 +36,9 @@ jobs:
 
       - name: Deploy Website Preview
         id: deploy
-        run: bun deploy:website
+        run: |
+          bun run build
+          bun deploy:website
         env:
           ALCHEMY_PASSWORD: ${{ env.ALCHEMY_PASSWORD }}
           ALCHEMY_STATE_STORE: cloudflare
@@ -67,7 +69,9 @@ jobs:
           aws-region: us-west-2
 
       - name: Cleanup Website Preview
-        run: bun deploy:website --destroy
+        run: |
+          bun run build
+          bun deploy:website --destroy --stage dev
         env:
           ALCHEMY_PASSWORD: ${{ env.ALCHEMY_PASSWORD }}
           ALCHEMY_STATE_STORE: cloudflare

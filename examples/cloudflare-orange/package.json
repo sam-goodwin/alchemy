@@ -4,11 +4,11 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "vite",
     "build": "vite build",
     "preview": "vite build && wrangler dev",
-    "deploy": "bun run --env-file ../../.env ./alchemy.run.ts",
-    "destroy": "bun run --env-file ../../.env ./alchemy.run.ts --destroy",
+    "deploy": "alchemy deploy --env-file ../../.env",
+    "destroy": "alchemy destroy --env-file ../../.env",
+    "dev": "alchemy dev --env-file ../../.env",
     "types": "orange types --no-wrangler"
   },
   "keywords": [],

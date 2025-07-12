@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b",
-    "deploy": "tsx ./alchemy.run.ts",
-    "destroy": "tsx ./alchemy.run.ts --destroy"
+    "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy",
+    "dev": "alchemy dev"
   },
   "devDependencies": {
     "alchemy": "workspace:*",

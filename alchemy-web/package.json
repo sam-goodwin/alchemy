@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "deploy": "bun ./alchemy.run.ts",
+    "deploy": "alchemy deploy",
     "preview": "astro preview",
     "astro": "astro"
   },

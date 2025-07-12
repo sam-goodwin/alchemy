@@ -5,9 +5,9 @@
   "version": "0.0.0",
   "scripts": {
     "build": "vite build",
-    "deploy": "bun --env-file=./.env ./alchemy.run.ts",
-    "destroy": "bun --env-file=./.env ./alchemy.run.ts --destroy",
-    "dev": "vite",
+    "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy",
+    "dev": "alchemy dev",
     "lint": "eslint .",
     "preview": "vite preview"
   },

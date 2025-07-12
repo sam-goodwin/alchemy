@@ -1,319 +1,351 @@
 ---
 title: CLI
-description: Learn how Alchemy automatically parses CLI arguments for common operations like destroy, read, quiet mode, and staging without requiring a traditional CLI tool.
+description: The `alchemy` CLI deploys, destroys, and runs your Alchemy programs.
 sidebar:
   order: 0
 ---
-
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Alchemy doesn't have a traditional CLI tool like `wrangler` or `terraform` because it's designed to be an embeddable TypeScript library. Instead, it provides automatic CLI argument parsing when you initialize an alchemy application, making it easy to run your infrastructure scripts with common options.
+Alchemy's CLI provides a convenient way to manage your infrastructure and create new projects.
 
-## No CLI, but CLI Arguments
+:::note[Embedding Alchemy]
+Alchemy is designed to be an embeddable library. The `alchemy` CLI is an optional convenience wrapper around the library. 
 
-Rather than building a separate CLI tool, Alchemy automatically parses CLI arguments when you call:
-
-```ts
-const app = await alchemy("my-app");
-```
-
-This design choice keeps Alchemy simple while still providing the convenience of CLI arguments for common operations.
-
-## Supported Arguments
-
-### Phase Control
-
-Control what phase your infrastructure script runs in:
-
-<Tabs syncKey="pkgManager">
-  <TabItem label="bun">
-    ```sh
-    # Deploy/update resources (default)
-    bun ./alchemy.run
-
-    # Read-only mode - doesn't modify resources
-    bun ./alchemy.run --read
-
-    # Destroy all resources
-    bun ./alchemy.run --destroy
-    ```
-  </TabItem>
-  <TabItem label="npm">
-    ```sh
-    # Deploy/update resources (default)
-    npx tsx ./alchemy.run
-
-    # Read-only mode - doesn't modify resources
-    npx tsx ./alchemy.run --read
-
-    # Destroy all resources
-    npx tsx ./alchemy.run --destroy
-    ```
-  </TabItem>
-  <TabItem label="pnpm">
-    ```sh
-    # Deploy/update resources (default)
-    pnpm tsx ./alchemy.run
-
-    # Read-only mode - doesn't modify resources
-    pnpm tsx ./alchemy.run --read
-
-    # Destroy all resources
-    pnpm tsx ./alchemy.run --destroy
-    ```
-  </TabItem>
-  <TabItem label="yarn">
-    ```sh
-    # Deploy/update resources (default)
-    yarn tsx ./alchemy.run
-
-    # Read-only mode - doesn't modify resources
-    yarn tsx ./alchemy.run --read
-
-    # Destroy all resources
-    yarn tsx ./alchemy.run --destroy
-    ```
-  </TabItem>
-</Tabs>
-
-Learn more about phases in the [phase concepts guide](/concepts/phase).
-
-### Output Control
-
-Control logging output:
-
-<Tabs syncKey="pkgManager">
-  <TabItem label="bun">
-    ```sh
-    # Quiet mode - suppress Create/Update/Delete messages  
-    bun ./alchemy.run --quiet
-    ```
-  </TabItem>
-  <TabItem label="npm">
-    ```sh
-    # Quiet mode - suppress Create/Update/Delete messages  
-    npx tsx ./alchemy.run --quiet
-    ```
-  </TabItem>
-  <TabItem label="pnpm">
-    ```sh
-    # Quiet mode - suppress Create/Update/Delete messages  
-    pnpm tsx ./alchemy.run --quiet
-    ```
-  </TabItem>
-  <TabItem label="yarn">
-    ```sh
-    # Quiet mode - suppress Create/Update/Delete messages  
-    yarn tsx ./alchemy.run --quiet
-    ```
-  </TabItem>
-</Tabs>
-
-### Environment Control
-
-Specify which stage/environment to target:
-
-<Tabs syncKey="pkgManager">
-  <TabItem label="bun">
-    ```sh
-    # Deploy to a specific stage
-    bun ./alchemy.run --stage production
-    bun ./alchemy.run --stage staging
-    bun ./alchemy.run --stage dev
-    ```
-  </TabItem>
-  <TabItem label="npm">
-    ```sh
-    # Deploy to a specific stage
-    npx tsx ./alchemy.run --stage production
-    npx tsx ./alchemy.run --stage staging
-    npx tsx ./alchemy.run --stage dev
-    ```
-  </TabItem>
-  <TabItem label="pnpm">
-    ```sh
-    # Deploy to a specific stage
-    pnpm tsx ./alchemy.run --stage production
-    pnpm tsx ./alchemy.run --stage staging
-    pnpm tsx ./alchemy.run --stage dev
-    ```
-  </TabItem>
-  <TabItem label="yarn">
-    ```sh
-    # Deploy to a specific stage
-    yarn tsx ./alchemy.run --stage production
-    yarn tsx ./alchemy.run --stage staging
-    yarn tsx ./alchemy.run --stage dev
-    ```
-  </TabItem>
-</Tabs>
-
-By default, the stage is set to `process.env.USER` (your username). You can also use `ALCHEMY_STAGE` or `PASSWORD` environment variables to control staging behavior.
-
-### Secret Management
-
-Provide encryption password via environment variable:
-
-<Tabs syncKey="pkgManager">
-  <TabItem label="bun">
-    ```sh
-    # Set password for encrypting/decrypting secrets
-    ALCHEMY_PASSWORD=my-secret-key bun ./alchemy.run
-    ```
-  </TabItem>
-  <TabItem label="npm">
-    ```sh
-    # Set password for encrypting/decrypting secrets
-    ALCHEMY_PASSWORD=my-secret-key npx tsx ./alchemy.run
-    ```
-  </TabItem>
-  <TabItem label="pnpm">
-    ```sh
-    # Set password for encrypting/decrypting secrets
-    ALCHEMY_PASSWORD=my-secret-key pnpm tsx ./alchemy.run
-    ```
-  </TabItem>
-  <TabItem label="yarn">
-    ```sh
-    # Set password for encrypting/decrypting secrets
-    ALCHEMY_PASSWORD=my-secret-key yarn tsx ./alchemy.run
-    ```
-  </TabItem>
-</Tabs>
-
-## How It Works
-
-When you call `alchemy("my-app")`, it automatically:
-
-1. Parses `process.argv` for supported arguments
-2. Merges CLI options with any explicit options you provide
-3. Explicit options always take precedence over CLI arguments
+When you initialize your app, Alchemy will automatically parse CLI arguments:
 
 ```ts
-// CLI args are parsed automatically
-const app = await alchemy("my-app");
-
-// Explicit options override CLI args
-const app = await alchemy("my-app", {
-  phase: "up", // This overrides --destroy or --read
-  stage: "prod", // This overrides --stage
-  quiet: false, // This overrides --quiet
-});
+const app = await alchemy("my-app")
 ```
 
-## Environment Variables
+The `alchemy` CLI passes through these arguments when it invokes your program.
+:::
 
-Alchemy also supports these environment variables:
+## `deploy`
 
-- `ALCHEMY_PASSWORD` - Password for encrypting/decrypting secrets
-- `ALCHEMY_STAGE` - Default stage name
-- `USER` - Fallback for stage name (uses your username)
-
-## Complete Example
-
-Here's how you might use CLI arguments in practice:
-
-```ts
-// alchemy.run.ts
-import alchemy from "alchemy";
-import { Worker } from "alchemy/cloudflare";
-
-const app = await alchemy("my-app");
-
-const worker = await Worker("api", {
-  script: "export default { fetch() { return new Response('Hello'); } }",
-});
-
-console.log({ url: worker.url });
-
-await app.finalize();
+```sh
+alchemy deploy [script] [options]
 ```
 
-Deploy commands:
+Deploy an Alchemy project by running `alchemy deploy`. 
 
-<Tabs syncKey="pkgManager">
+- `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
+- `--cwd` - Path to the project directory (defaults to current directory)
+- `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
+- `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
+- `--env-file` - Path to environment file to load
+- `--watch` - Watch for changes to infrastructure and redeploy automatically (default: false)
+- `-h, --help` - Display help for command
+
+:::tip
+
+Here are some examples of how to use the `deploy` command:
+
+```sh
+# deploy the default stage
+alchemy deploy 
+
+# specify a stage
+alchemy deploy --stage prod 
+
+# use a custom script
+alchemy deploy ./my-infra.ts 
+
+# use an environment file
+alchemy deploy --env-file .env.prod 
+
+# watch and deploy changes to the cloud
+alchemy deploy --watch 
+```
+:::
+
+:::note[Equivalent Runtime Commands]
+
+You can also run the deploy command directly with your preferred JavaScript runtime:
+
+<Tabs syncKey="runtime">
   <TabItem label="bun">
     ```sh
-    # Deploy
-    bun ./alchemy.run
-
-    # Deploy to Production
-    bun ./alchemy.run --stage production
-
-    # Read-only Check
-    bun ./alchemy.run --read
-
-    # Quiet Deploy
-    bun ./alchemy.run --quiet
-
-    # Destroy Everything
-    bun ./alchemy.run --destroy
-
-    # Deploy with Secrets
-    ALCHEMY_PASSWORD=my-secret-key bun ./alchemy.run
+    bun ./alchemy.run.ts
+    bun --watch ./alchemy.run.ts
     ```
   </TabItem>
-  <TabItem label="npm">
+  <TabItem label="tsx">
     ```sh
-    # Deploy
-    npx tsx ./alchemy.run
-
-    # Deploy to Production
-    npx tsx ./alchemy.run --stage production
-
-    # Read-only Check
-    npx tsx ./alchemy.run --read
-
-    # Quiet Deploy
-    npx tsx ./alchemy.run --quiet
-
-    # Destroy Everything
-    npx tsx ./alchemy.run --destroy
-
-    # Deploy with Secrets
-    ALCHEMY_PASSWORD=my-secret-key npx tsx ./alchemy.run
+    tsx ./alchemy.run.ts
+    tsx --watch ./alchemy.run.ts
     ```
   </TabItem>
-  <TabItem label="pnpm">
+  <TabItem label="node 22+">
     ```sh
-    # Deploy
-    pnpm tsx ./alchemy.run
-
-    # Deploy to Production
-    pnpm tsx ./alchemy.run --stage production
-
-    # Read-only Check
-    pnpm tsx ./alchemy.run --read
-
-    # Quiet Deploy
-    pnpm tsx ./alchemy.run --quiet
-
-    # Destroy Everything
-    pnpm tsx ./alchemy.run --destroy
-
-    # Deploy with Secrets
-    ALCHEMY_PASSWORD=my-secret-key pnpm tsx ./alchemy.run
+    node ./alchemy.run.ts
+    node --watch ./alchemy.run.ts
     ```
   </TabItem>
-  <TabItem label="yarn">
+  <TabItem label="node 20">
     ```sh
-    # Deploy
-    yarn tsx ./alchemy.run
-
-    # Deploy to Production
-    yarn tsx ./alchemy.run --stage production
-
-    # Read-only Check
-    yarn tsx ./alchemy.run --read
-
-    # Quiet Deploy
-    yarn tsx ./alchemy.run --quiet
-
-    # Destroy Everything
-    yarn tsx ./alchemy.run --destroy
-
-    # Deploy with Secrets
-    ALCHEMY_PASSWORD=my-secret-key yarn tsx ./alchemy.run
+    node --experimental-strip-types ./alchemy.run.ts
+    node --experimental-strip-types --watch ./alchemy.run.ts
     ```
   </TabItem>
-</Tabs> 
+  <TabItem label="deno">
+    ```sh
+    deno run -A ./alchemy.run.ts
+    deno run -A --watch ./alchemy.run.ts
+    ```
+  </TabItem>
+</Tabs>
+
+:::
+
+## `destroy`
+
+```sh
+alchemy destroy [script] [options]
+```
+
+Destroy all resources in an Alchemy project.
+
+- `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
+- `--cwd` - Path to the project directory (defaults to current directory)
+- `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
+- `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
+- `--env-file` - Path to environment file to load
+- `-h, --help` - Display help for command
+
+:::tip
+
+Here are some examples of how to use the `destroy` command:
+
+```sh
+# destroy the default stage
+alchemy destroy 
+
+# specify a stage
+alchemy destroy --stage prod 
+
+# use a custom script
+alchemy destroy ./my-infra.ts 
+
+# use an environment file
+alchemy destroy --env-file .env.prod 
+```
+:::
+
+:::note[Equivalent Runtime Commands]
+
+You can also run the destroy command directly with your preferred JavaScript runtime:
+
+<Tabs syncKey="runtime">
+  <TabItem label="bun">
+    ```sh
+    bun ./alchemy.run.ts --destroy
+    ```
+  </TabItem>
+  <TabItem label="tsx">
+    ```sh
+    tsx ./alchemy.run.ts --destroy
+    ```
+  </TabItem>
+  <TabItem label="node 22+">
+    ```sh
+    node ./alchemy.run.ts --destroy
+    ```
+  </TabItem>
+  <TabItem label="node 20">
+    ```sh
+    node --experimental-strip-types ./alchemy.run.ts --destroy
+    ```
+  </TabItem>
+  <TabItem label="deno">
+    ```sh
+    deno run -A ./alchemy.run.ts --destroy
+    ```
+  </TabItem>
+</Tabs>
+
+:::
+
+## `dev`
+
+```sh
+alchemy dev [script] [options]
+```
+
+Run an Alchemy program in dev-mode with local simulation and hot reloading.
+
+- `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
+- `--cwd` - Path to the project directory (defaults to current directory)
+- `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
+- `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
+- `--env-file` - Path to environment file to load
+- `-h, --help` - Display help for command
+
+:::tip
+
+Here are some examples of how to use the `dev` command:
+
+```sh
+# run dev mode with default settings
+alchemy dev
+
+# specify a stage
+alchemy dev --stage dev
+
+# use a custom script
+alchemy dev ./my-infra.ts
+
+# use an environment file
+alchemy dev --env-file .env.dev
+```
+:::
+
+:::note[Equivalent Runtime Commands]
+
+You can also run the dev command directly with your preferred JavaScript runtime:
+
+<Tabs syncKey="runtime">
+  <TabItem label="bun">
+    ```sh
+    bun --watch ./alchemy.run.ts --dev
+    ```
+  </TabItem>
+  <TabItem label="tsx">
+    ```sh
+    tsx --watch ./alchemy.run.ts --dev
+    ```
+  </TabItem>
+  <TabItem label="node 22+">
+    ```sh
+    node --watch ./alchemy.run.ts --dev
+    ```
+  </TabItem>
+  <TabItem label="node 20">
+    ```sh
+    node --experimental-strip-types --watch ./alchemy.run.ts --dev
+    ```
+  </TabItem>
+  <TabItem label="deno">
+    ```sh
+    deno run -A --watch ./alchemy.run.ts --dev
+    ```
+  </TabItem>
+</Tabs>
+
+:::
+
+## `run`
+
+```sh
+alchemy run [script] [options]
+```
+
+Run an Alchemy program with read-only access to your infrastructure. No changes will be applied to your resources.
+
+- `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
+- `--cwd` - Path to the project directory (defaults to current directory)
+- `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
+- `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
+- `--env-file` - Path to environment file to load
+- `--watch` - Watch for changes to infrastructure and redeploy automatically (default: `false`)
+- `-h, --help` - Display help for command
+
+:::tip
+
+Here are some examples of how to use the `run` command:
+
+```sh
+# run a script in read-only mode
+alchemy run ./scripts/my-script.ts
+
+# watch for changes and re-run
+alchemy run ./scripts/my-script.ts --watch
+
+# specify a stage
+alchemy run ./scripts/my-script.ts --stage dev
+
+# use an environment file
+alchemy run ./scripts/my-script.ts --env-file .env.prod
+```
+:::
+
+:::note[Equivalent Runtime Commands]
+
+You can also run the run command directly with your preferred JavaScript runtime:
+
+<Tabs syncKey="runtime">
+  <TabItem label="bun">
+    ```sh
+    bun ./alchemy.run.ts --read
+    bun --watch ./alchemy.run.ts --read
+    ```
+  </TabItem>
+  <TabItem label="tsx">
+    ```sh
+    tsx ./alchemy.run.ts --read
+    tsx --watch ./alchemy.run.ts --read
+    ```
+  </TabItem>
+  <TabItem label="node 22+">
+    ```sh
+    node ./alchemy.run.ts --read
+    node --watch ./alchemy.run.ts --read
+    ```
+  </TabItem>
+  <TabItem label="node 20">
+    ```sh
+    node --experimental-strip-types ./alchemy.run.ts --read
+    node --experimental-strip-types --watch ./alchemy.run.ts --read
+    ```
+  </TabItem>
+  <TabItem label="deno">
+    ```sh
+    deno run -A ./alchemy.run.ts --read
+    deno run -A --watch ./alchemy.run.ts --read
+    ```
+  </TabItem>
+</Tabs>
+
+:::
+
+
+## `create`
+
+```sh
+alchemy create [name] [options]
+```
+
+Create a new Alchemy project from a template.
+
+- `name` (optional): Project name or path
+- `--template` - Project template type (choices: "typescript", "vite", "astro", "react-router", "sveltekit", "tanstack-start", "rwsdk", "nuxt")
+- `--yes` - Skip prompts and use defaults (default: `false`)
+- `--overwrite` - Overwrite existing directory (default: `false`)
+- `--install` - Install dependencies after scaffolding
+- `--pm` - Package manager to use (choices: "bun", "npm", "pnpm", "yarn", "deno")
+- `--vibe-rules` - Setup vibe-rules for the specified editor (choices: "cursor", "windsurf", "vscode", "zed", "claude-code", "gemini", "codex", "amp", "clinerules", "roo", "unified")
+- `-h, --help` - Display help for command
+
+:::tip
+
+Here are some examples of how to use the `create` command:
+
+```sh
+# create a new project interactively
+alchemy create my-app
+
+# create with a specific template
+alchemy create my-app --template vite
+
+# skip prompts and use defaults
+alchemy create my-app --yes
+
+# specify package manager
+alchemy create my-app --pm bun
+
+# overwrite existing directory
+alchemy create my-app --overwrite
+
+# create without installing dependencies
+alchemy create my-app --no-install
+```
+:::

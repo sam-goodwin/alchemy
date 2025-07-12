@@ -53,27 +53,27 @@ DOStateStore provides a [State Store](/concepts/state) using a Cloudflare Worker
 
 4. **Deploy your app**
 
-   Run your Alchemy script to create the state store worker:
+   Use the Alchemy CLI to deploy and create the state store worker:
 
    <Tabs syncKey="pkgManager">
      <TabItem label="bun">
        ```sh
-       bun ./alchemy.run.ts
+       bun alchemy deploy
        ```
      </TabItem>
      <TabItem label="npm">
        ```sh
-       npx tsx ./alchemy.run.ts
+       npx alchemy deploy
        ```
      </TabItem>
      <TabItem label="pnpm">
        ```sh
-       pnpm tsx ./alchemy.run.ts
+       pnpm alchemy deploy
        ```
      </TabItem>
      <TabItem label="yarn">
        ```sh
-       yarn tsx ./alchemy.run.ts
+       yarn alchemy deploy
        ```
      </TabItem>
    </Tabs>

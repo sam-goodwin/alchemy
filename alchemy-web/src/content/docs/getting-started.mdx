@@ -23,28 +23,28 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
        ```sh
        bun init -y
        bun add alchemy
-       bun add -g wrangler
+       bun add -g alchemy wrangler
        ```
      </TabItem>
      <TabItem label="npm">
        ```sh
        npm init -y
        npm install alchemy
-       npm install -g wrangler
+       npm install -g alchemy wrangler
        ```
      </TabItem>
      <TabItem label="pnpm">
        ```sh
        pnpm init
        pnpm add alchemy
-       pnpm add -g wrangler
+       pnpm add -g alchemy wrangler
        ```
      </TabItem>
      <TabItem label="yarn">
        ```sh
        yarn init -y
        yarn add alchemy
-       yarn global add wrangler
+       yarn global add alchemy wrangler
        ```
      </TabItem>
    </Tabs>
@@ -115,27 +115,27 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
 
 5. **Start development mode**
 
-   Run with `--watch` for hot reloading during development:
+   Use the Alchemy CLI to run in development mode with hot reloading:
 
    <Tabs syncKey="pkgManager">
      <TabItem label="bun">
        ```sh
-       bun --watch ./alchemy.run.ts
+       bun alchemy dev
        ```
      </TabItem>
      <TabItem label="npm">
        ```sh
-       npx tsx --watch ./alchemy.run.ts
+       npx alchemy dev
        ```
      </TabItem>
      <TabItem label="pnpm">
        ```sh
-       pnpm tsx --watch ./alchemy.run.ts
+       pnpm alchemy dev
        ```
      </TabItem>
      <TabItem label="yarn">
        ```sh
-       yarn tsx --watch ./alchemy.run.ts
+       yarn alchemy dev
        ```
      </TabItem>
    </Tabs>
@@ -154,27 +154,25 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
 
 7. **Deploy to production**
 
-   Remove `--watch` to deploy to Cloudflare:
-
    <Tabs syncKey="pkgManager">
      <TabItem label="bun">
        ```sh
-       bun ./alchemy.run.ts
+       bun alchemy deploy
        ```
      </TabItem>
      <TabItem label="npm">
        ```sh
-       npx tsx ./alchemy.run.ts
+       npx alchemy deploy
        ```
      </TabItem>
      <TabItem label="pnpm">
        ```sh
-       pnpm tsx ./alchemy.run.ts
+       pnpm alchemy deploy
        ```
      </TabItem>
      <TabItem label="yarn">
        ```sh
-       yarn tsx ./alchemy.run.ts
+       yarn alchemy deploy
        ```
      </TabItem>
    </Tabs>
@@ -183,27 +181,27 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
 
 8. **(Optional) Tear down**
 
-   Pass `--destroy` to delete all of the resources:
+   Use the Alchemy CLI to delete all of the resources:
 
    <Tabs syncKey="pkgManager">
      <TabItem label="bun">
        ```sh
-       bun ./alchemy.run.ts --destroy
+       bun alchemy destroy
        ```
      </TabItem>
      <TabItem label="npm">
        ```sh
-       npx tsx ./alchemy.run.ts --destroy
+       npx alchemy destroy
        ```
      </TabItem>
      <TabItem label="pnpm">
        ```sh
-       pnpm tsx ./alchemy.run.ts --destroy
+       pnpm alchemy destroy
        ```
      </TabItem>
      <TabItem label="yarn">
        ```sh
-       yarn tsx ./alchemy.run.ts --destroy
+       yarn alchemy destroy
        ```
      </TabItem>
    </Tabs>
@@ -213,6 +211,7 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
 
 You've successfully deployed your first Cloudflare Worker with Alchemy! Here are some next steps:
 
+- [Learn about the Alchemy CLI](/concepts/cli) - Complete command reference and options
 - [Deploy a ViteJS site to Cloudflare](/guides/cloudflare-vitejs) - Build full-stack applications
 - [Learn about Cloudflare Workers](/guides/cloudflare-worker) - Advanced worker features
 - [Build your own Custom Resource](/guides/custom-resources) - Extend Alchemy

@@ -1,13 +1,18 @@
 {
   "name": "alchemy",
   "version": "0.45.5",
-  "type": "module",
-  "module": "./lib/index.js",
   "license": "Apache-2.0",
+  "author": "Sam Goodwin <sam@alchemy.run>",
+  "homepage": "https://alchemy.run",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sam-goodwin/alchemy.git",
     "directory": "alchemy"
+  },
+  "type": "module",
+  "module": "./lib/index.js",
+  "bin": {
+    "alchemy": "bin/alchemy.mjs"
   },
   "scripts": {
     "build:cli": "bun ./scripts/bundle-cli.ts",
@@ -18,11 +23,7 @@
     "postbuild": "cpx 'src/**/*/types.d.ts' lib && cpx 'src/**/*.txt' lib",
     "publish:npm": "cp ../README.md . && bun run build && bun run build:cli && npm publish && rm README.md"
   },
-  "bin": {
-    "alchemy": "bin/alchemy.mjs"
-  },
-  "author": "Sam Goodwin <sam@alchemy.run>",
-  "homepage": "https://alchemy.run",
+
   "files": [
     "bin",
     "drizzle",

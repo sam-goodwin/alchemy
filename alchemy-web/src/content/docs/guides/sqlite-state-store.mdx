@@ -32,29 +32,29 @@ See the [SQLiteStateStore documentation](/providers/sqlite/sqlite-state-store) f
    await app.finalize();
    ```
 
-2. **Run your app**
+2. **Deploy your app**
 
-   Execute your Alchemy script to initialize the SQLite state store:
+   Use the Alchemy CLI to deploy and initialize the SQLite state store:
 
    <Tabs syncKey="pkgManager">
      <TabItem label="bun">
        ```sh
-       bun ./alchemy.run.ts
+       bun alchemy deploy
        ```
      </TabItem>
      <TabItem label="npm">
        ```sh
-       npx tsx ./alchemy.run.ts
+       npx alchemy deploy
        ```
      </TabItem>
      <TabItem label="pnpm">
        ```sh
-       pnpm tsx ./alchemy.run.ts
+       pnpm alchemy deploy
        ```
      </TabItem>
      <TabItem label="yarn">
        ```sh
-       yarn tsx ./alchemy.run.ts
+       yarn alchemy deploy
        ```
      </TabItem>
    </Tabs>

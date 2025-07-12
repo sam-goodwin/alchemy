@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "bun run index.ts",
-    "deploy": "bun tsx --env-file ../../.env ./alchemy.run.ts",
-    "destroy": "bun tsx --env-file ../../.env ./alchemy.run.ts --destroy"
+    "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy",
+    "dev": "alchemy dev"
   },
   "dependencies": {
     "alchemy": "workspace:*"

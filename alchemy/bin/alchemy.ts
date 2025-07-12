@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 
-import { createCli, trpcServer, zod as z } from "trpc-cli";
+import { createCli, zod as z } from "trpc-cli";
 import { createAlchemy } from "./commands/create.ts";
+import { deploy } from "./commands/deploy.ts";
+import { destroy } from "./commands/destroy.ts";
+import { dev } from "./commands/dev.ts";
+import { run } from "./commands/run.ts";
 import { getPackageVersion } from "./services/get-package-version.ts";
+import { t } from "./trpc.ts";
 import {
   EditorSchema,
   PackageManagerSchema,
@@ -10,8 +15,6 @@ import {
   TemplateSchema,
   type CreateInput,
 } from "./types.ts";
-
-const t = trpcServer.initTRPC.create();
 
 const router = t.router({
   create: t.procedure
@@ -59,6 +62,10 @@ const router = t.router({
       };
       await createAlchemy(combinedInput);
     }),
+  deploy,
+  destroy,
+  dev,
+  run,
 });
 
 export type AppRouter = typeof router;

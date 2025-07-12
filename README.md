@@ -2,9 +2,9 @@
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sam-goodwin/alchemy)
 
-Alchemy is an embeddable, TypeScript-native Infrastructure-as-Code (IaC) library for modeling Resources that are Created, Updated and Deleted automatically. It's like Terraform, but in pure TypeScript.
+Alchemy is an embeddable, TypeScript-native Infrastructure-as-Code (IaC) library for modeling Resources that are Created, Updated and Deleted automatically.
 
-Unlike similar tools like Pulumi, Terraform, and CloudFormation, Alchemy is implemented in pure ESM-native TypeScript code with zero dependencies.
+Unlike similar tools like Pulumi, Terraform, and CloudFormation, Alchemy is implemented in pure ESM-native TypeScript code.
 
 Resources are simple memoized async functions that can run in any JavaScript runtime, including the browser, serverless functions and durable workflows.
 

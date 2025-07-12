@@ -7,7 +7,7 @@ sidebar:
   order: 0
 ---
 
-Alchemy is a TypeScript library that creates and manages cloud infrastructure when you run it. Instead of using a CLI or configuration files, you write a regular TypeScript program.
+Alchemy is a TypeScript library that creates and manages cloud infrastructure when you run it. Instead of using opinionated CLIs or configuration files, you write and run a regular TypeScript program.
 
 ## How it works
 
@@ -29,16 +29,21 @@ const worker = await Worker("api", {
 await app.finalize();
 ```
 
-Alchemy doesn't have a traditional CLI tool like `wrangler` or `terraform`. Instead, it automatically parses CLI arguments when you run your TypeScript scripts:
+You then "deploy" your infrastructure by running the script with `alchemy deploy` or manually with `bun` or `node`:
 
 ```bash
-bun ./alchemy.run.ts                # deploy to cloud
+alchemy deploy                      # deploy to cloud
+bun ./alchemy.run.ts                # <- equivalent to `alchemy deploy`
 bun ./alchemy.run.ts --destroy      # tear down (destroy all resources)
-bun ./alchemy.run.ts --read         # read-only mode
+bun ./alchemy.run.ts --read         # read-only mode (dry run)
 bun ./alchemy.run.ts --stage prod   # deploy to specific stage
 
+alchemy destroy                     # tear down (destroy all resources)
+bun ./alchemy.run.ts --destroy      # <- equivalent to `alchemy destroy`
+
 # local dev & hot redeployment
-bun --watch ./alchemy.run.ts        # hot redeployment to cloud
+alchemy dev                         # local development with hot redeployment
+bun --watch ./alchemy.run.ts        # <- equivalent to `alchemy dev`
 bun --watch ./alchemy.run.ts --dev  # local development with hot redeployment
 ```
 

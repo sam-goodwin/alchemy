@@ -20,7 +20,5 @@ wrangler.jsonc
 .smoke
 smoke
 .svelte-kit
-
 .claude/*.local.json
 .astro
-

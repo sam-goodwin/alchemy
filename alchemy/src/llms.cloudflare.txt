@@ -41,8 +41,9 @@ ALCHEMY_STATE_STORE=cloudflare
 
 ### Commands
 ```bash
-bun ./alchemy.run.ts           # Deploy
-bun ./alchemy.run.ts --destroy # Destroy all resources
+bun alchemy deploy            # Deploy
+bun alchemy dev               # Local development
+bun alchemy destroy           # Destroy all resources
 ```
 
 ## Workers

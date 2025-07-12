@@ -96,6 +96,7 @@ async function createProjectContext(
   }
 
   const path = resolve(process.cwd(), name);
+
   let packageManager = options.pm || detectedPm;
 
   let shouldInstall = true;

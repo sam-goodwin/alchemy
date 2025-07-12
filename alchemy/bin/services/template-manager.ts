@@ -103,14 +103,10 @@ async function updateTemplatePackageJson(
 
   packageJson.name = context.name;
 
-  const deployCommand =
-    context.packageManager === "bun"
-      ? "bun --env-file=./.env ./alchemy.run.ts"
-      : "tsx --env-file=./.env ./alchemy.run.ts";
-
   if (packageJson.scripts) {
-    packageJson.scripts.deploy = deployCommand;
-    packageJson.scripts.destroy = `${deployCommand} --destroy`;
+    packageJson.scripts.deploy = "alchemy deploy";
+    packageJson.scripts.destroy = "alchemy destroy";
+    packageJson.scripts.dev = "alchemy dev";
   }
 
   await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });

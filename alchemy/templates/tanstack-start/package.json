@@ -5,9 +5,9 @@
   "sideEffects": false,
   "scripts": {
     "build": "vite build",
-    "deploy": "bun --env-file=./.env ./alchemy.run.ts",
-    "destroy": "bun --env-file=./.env ./alchemy.run.ts --destroy",
-    "dev": "vite dev",
+    "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy",
+    "dev": "alchemy dev",
     "start": "node .output/server/index.mjs"
   },
   "dependencies": {

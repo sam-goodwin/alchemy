@@ -11,29 +11,55 @@ Alchemy's development mode provides a powerful local development experience for 
 
 > **Note:** Development mode is currently in beta. Some features may not work as expected.
 
+:::tip[CLI Reference]
+This guide covers local development concepts. For complete CLI command reference and options, see the [CLI documentation](/concepts/cli).
+:::
+
 ## Overview
 
-To run Alchemy in development mode, use the `--dev` flag when running your `alchemy.run.ts` script:
+To run Alchemy in development mode, use the [`alchemy dev`](/concepts/cli#dev) command:
+
+```bash
+alchemy dev
+```
+
+You can also specify additional options:
+
+```bash
+# run dev mode with default settings
+alchemy dev
+
+# specify a stage
+alchemy dev --stage dev
+
+# use a custom script
+alchemy dev ./my-infra.ts
+
+# use an environment file
+alchemy dev --env-file .env.dev
+```
+
+You can also run the development mode using your preferred package manager:
 
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```bash
-    bun run alchemy.run.ts --dev
+    bun alchemy dev
     ```
   </TabItem>
   <TabItem label="npm">
     ```bash
-    npx tsx alchemy.run.ts --dev
+    npx alchemy dev
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```bash
-    pnpm tsx alchemy.run.ts --dev
+    pnpm alchemy dev
     ```
   </TabItem>
   <TabItem label="yarn">
     ```bash
-    yarn tsx alchemy.run.ts --dev
+    yarn alchemy dev
     ```
   </TabItem>
 </Tabs>
@@ -45,36 +71,36 @@ This starts Alchemy in development mode, which will:
 
 ### Watching Your Alchemy Configuration
 
-Alchemy does not watch your `alchemy.run.ts` file for changes. To automatically apply changes to your configuration, you can the watch mode associated with your runtime environment. For example:
+The `alchemy dev` command automatically watches your `alchemy.run.ts` file for changes and restarts the development server when changes are detected.
 
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```bash
-    # Using bun's watch mode
-    bun run --watch alchemy.run.ts
+    # Using Alchemy CLI with bun
+    bun alchemy dev
     ```
   </TabItem>
   <TabItem label="npm">
     ```bash
-    # Using Node.js watch mode
-    npx tsx --watch alchemy.run.ts
+    # Using Alchemy CLI with npm
+    npx alchemy dev
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```bash
-    # Using pnpm watch mode
-    pnpm tsx --watch alchemy.run.ts
+    # Using Alchemy CLI with pnpm
+    pnpm alchemy dev
     ```
   </TabItem>
   <TabItem label="yarn">
     ```bash
-    # Using yarn watch mode
-    yarn tsx --watch alchemy.run.ts
+    # Using Alchemy CLI with yarn
+    yarn alchemy dev
     ```
   </TabItem>
 </Tabs>
 
-Development mode is enabled automatically when the `--watch` flag is detected.
+For more CLI options and commands, see the [CLI documentation](/concepts/cli).
 
 ### Programmatic Configuration
 
@@ -114,7 +140,7 @@ const website = await Website("my-website", {
 });
 ```
 
-If no command is specified, Alchemy will automatically detect and run the appropriate dev command based on your project's package manager:
+If no command is specified, Alchemy will automatically detect and run the appropriate dev command based on your project's configuration. For example, for a Vite project, it will run:
 
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">

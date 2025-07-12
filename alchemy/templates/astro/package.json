@@ -5,9 +5,9 @@
   "scripts": {
     "astro": "astro",
     "build": "astro check && astro build",
-    "deploy": "bun --env-file=./.env ./alchemy.run.ts",
-    "destroy": "bun --env-file=./.env ./alchemy.run.ts --destroy",
-    "dev": "astro dev",
+    "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy",
+    "dev": "alchemy dev",
     "preview": "astro preview"
   },
   "dependencies": {

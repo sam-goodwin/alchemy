@@ -23,27 +23,27 @@ You can store the token in your `.env` file
 CLOUDFLARE_API_TOKEN=<token>
 ```
 
-Or set when running your script:
+Or set when deploying your app:
 
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```sh
-    CLOUDFLARE_API_TOKEN=<token> bun ./alchemy.run.ts
+    CLOUDFLARE_API_TOKEN=<token> bun alchemy deploy
     ```
   </TabItem>
   <TabItem label="npm">
     ```sh
-    CLOUDFLARE_API_TOKEN=<token> npx tsx ./alchemy.run.ts
+    CLOUDFLARE_API_TOKEN=<token> npx alchemy deploy
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```sh
-    CLOUDFLARE_API_TOKEN=<token> pnpm tsx ./alchemy.run.ts
+    CLOUDFLARE_API_TOKEN=<token> pnpm alchemy deploy
     ```
   </TabItem>
   <TabItem label="yarn">
     ```sh
-    CLOUDFLARE_API_TOKEN=<token> yarn tsx ./alchemy.run.ts
+    CLOUDFLARE_API_TOKEN=<token> yarn alchemy deploy
     ```
   </TabItem>
 </Tabs>
@@ -89,27 +89,27 @@ First, make sure you've logged in with wrangler:
   </TabItem>
 </Tabs>
 
-Then, run your script (without `CLOUDFLARE_API_KEY` or `CLOUDFLARE_API_TOKEN` environment variables):
+Then, deploy your app (without `CLOUDFLARE_API_KEY` or `CLOUDFLARE_API_TOKEN` environment variables):
 
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```sh
-    bun ./alchemy.run.ts
+    bun alchemy deploy
     ```
   </TabItem>
   <TabItem label="npm">
     ```sh
-    npx tsx ./alchemy.run.ts
+    npx alchemy deploy
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```sh
-    pnpm tsx ./alchemy.run.ts
+    pnpm alchemy deploy
     ```
   </TabItem>
   <TabItem label="yarn">
     ```sh
-    yarn tsx ./alchemy.run.ts
+    yarn alchemy deploy
     ```
   </TabItem>
 </Tabs>
@@ -131,27 +131,27 @@ You can store the token in your `.env` file
 CLOUDFLARE_API_KEY=<token>
 ```
 
-Or set when running your script:
+Or set when deploying your app:
 
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```sh
-    CLOUDFLARE_API_KEY=<token> bun ./alchemy.run.ts
+    CLOUDFLARE_API_KEY=<token> bun alchemy deploy
     ```
   </TabItem>
   <TabItem label="npm">
     ```sh
-    CLOUDFLARE_API_KEY=<token> npx tsx ./alchemy.run.ts
+    CLOUDFLARE_API_KEY=<token> npx alchemy deploy
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```sh
-    CLOUDFLARE_API_KEY=<token> pnpm tsx ./alchemy.run.ts
+    CLOUDFLARE_API_KEY=<token> pnpm alchemy deploy
     ```
   </TabItem>
   <TabItem label="yarn">
     ```sh
-    CLOUDFLARE_API_KEY=<token> yarn tsx ./alchemy.run.ts
+    CLOUDFLARE_API_KEY=<token> yarn alchemy deploy
     ```
   </TabItem>
 </Tabs>
@@ -177,22 +177,22 @@ By default, Alchemy will use the `CLOUDFLARE_EMAIL` if set
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```sh
-    CLOUDFLARE_EMAIL=me@example.com CLOUDFLARE_API_KEY=<token> bun ./alchemy.run.ts
+    CLOUDFLARE_EMAIL=me@example.com CLOUDFLARE_API_KEY=<token> bun alchemy deploy
     ```
   </TabItem>
   <TabItem label="npm">
     ```sh
-    CLOUDFLARE_EMAIL=me@example.com CLOUDFLARE_API_KEY=<token> npx tsx ./alchemy.run.ts
+    CLOUDFLARE_EMAIL=me@example.com CLOUDFLARE_API_KEY=<token> npx alchemy deploy
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```sh
-    CLOUDFLARE_EMAIL=me@example.com CLOUDFLARE_API_KEY=<token> pnpm tsx ./alchemy.run.ts
+    CLOUDFLARE_EMAIL=me@example.com CLOUDFLARE_API_KEY=<token> pnpm alchemy deploy
     ```
   </TabItem>
   <TabItem label="yarn">
     ```sh
-    CLOUDFLARE_EMAIL=me@example.com CLOUDFLARE_API_KEY=<token> yarn tsx ./alchemy.run.ts
+    CLOUDFLARE_EMAIL=me@example.com CLOUDFLARE_API_KEY=<token> yarn alchemy deploy
     ```
   </TabItem>
 </Tabs>
@@ -218,25 +218,25 @@ By default, Alchemy will resolve the account ID from the API or OAuth token.
   <TabItem label="bun">
     ```sh
     # will use wrangler login and resolve the first account you have acces to (ideal for personal accounts)
-    bun ./alchemy.run.ts
+    bun alchemy deploy
     ```
   </TabItem>
   <TabItem label="npm">
     ```sh
     # will use wrangler login and resolve the first account you have acces to (ideal for personal accounts)
-    npx tsx ./alchemy.run.ts
+    npx alchemy deploy
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```sh
     # will use wrangler login and resolve the first account you have acces to (ideal for personal accounts)
-    pnpm tsx ./alchemy.run.ts
+    pnpm alchemy deploy
     ```
   </TabItem>
   <TabItem label="yarn">
     ```sh
     # will use wrangler login and resolve the first account you have acces to (ideal for personal accounts)
-    yarn tsx ./alchemy.run.ts
+    yarn alchemy deploy
     ```
   </TabItem>
 </Tabs>
@@ -250,22 +250,22 @@ You can override the default account ID with the `CLOUDFLARE_ACCOUNT_ID` environ
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```sh
-    CLOUDFLARE_ACCOUNT_ID=<account-id> bun ./alchemy.run.ts
+    CLOUDFLARE_ACCOUNT_ID=<account-id> bun alchemy deploy
     ```
   </TabItem>
   <TabItem label="npm">
     ```sh
-    CLOUDFLARE_ACCOUNT_ID=<account-id> npx tsx ./alchemy.run.ts
+    CLOUDFLARE_ACCOUNT_ID=<account-id> npx alchemy deploy
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```sh
-    CLOUDFLARE_ACCOUNT_ID=<account-id> pnpm tsx ./alchemy.run.ts
+    CLOUDFLARE_ACCOUNT_ID=<account-id> pnpm alchemy deploy
     ```
   </TabItem>
   <TabItem label="yarn">
     ```sh
-    CLOUDFLARE_ACCOUNT_ID=<account-id> yarn tsx ./alchemy.run.ts
+    CLOUDFLARE_ACCOUNT_ID=<account-id> yarn alchemy deploy
     ```
   </TabItem>
 </Tabs>
