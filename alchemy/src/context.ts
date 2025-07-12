@@ -57,7 +57,7 @@ export interface BaseContext<Out extends Resource> {
    * Indicate that this resource is being replaced.
    * This will cause the resource to be deleted at the end of the stack's CREATE phase.
    */
-  replace(): never;
+  replace(force?: boolean): Promise<never>;
   /**
    * Terminate the resource lifecycle handler and destroy the resource.
    *
@@ -102,7 +102,7 @@ export function context<
   seq: number;
   props: Props;
   state: State<Kind, Props, Out>;
-  replace: () => never;
+  replace: (force?: boolean) => Promise<never>;
   isReplacement?: boolean;
 }): Context<Out> {
   type InternalSymbols =

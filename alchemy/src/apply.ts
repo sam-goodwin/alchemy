@@ -1,5 +1,6 @@
 import { alchemy } from "./alchemy.ts";
 import { context } from "./context.ts";
+import { destroy } from "./destroy.ts";
 import {
   PROVIDERS,
   ResourceFQN,
@@ -33,7 +34,14 @@ export function apply<Out extends Resource>(
   return _apply(resource, props, options);
 }
 
-export class ReplacedSignal extends Error {}
+export class ReplacedSignal extends Error {
+  public force: boolean;
+
+  constructor(force?: boolean) {
+    super();
+    this.force = force ?? false;
+  }
+}
 
 async function _apply<Out extends Resource>(
   resource: PendingResource<Out>,
@@ -165,7 +173,7 @@ async function _apply<Out extends Resource>(
       props: state.oldProps,
       state,
       isReplacement: false,
-      replace: () => {
+      replace: async (force?: boolean) => {
         if (phase === "create") {
           throw new Error(
             `Resource ${resource[ResourceKind]} ${resource[ResourceFQN]} cannot be replaced in create phase.`,
@@ -177,8 +185,19 @@ async function _apply<Out extends Resource>(
           );
         }
 
+        if (force) {
+          await destroy(resource, {
+            quiet: scope.quiet,
+            strategy: "sequential",
+            replace: {
+              props: state.oldProps,
+              output: resource,
+            },
+          });
+        }
+
         isReplaced = true;
-        throw new ReplacedSignal();
+        throw new ReplacedSignal(force);
       },
     });
 
@@ -227,13 +246,15 @@ async function _apply<Out extends Resource>(
             )(resource[ResourceID], props),
         );
 
-        const pendingDeletions =
-          (await scope.get<PendingDeletions>("pendingDeletions")) ?? [];
-        pendingDeletions.push({
-          resource: oldOutput,
-          oldProps: state.oldProps,
-        });
-        await scope.set("pendingDeletions", pendingDeletions);
+        if (!error.force) {
+          const pendingDeletions =
+            (await scope.get<PendingDeletions>("pendingDeletions")) ?? [];
+          pendingDeletions.push({
+            resource: oldOutput,
+            oldProps: state.oldProps,
+          });
+          await scope.set("pendingDeletions", pendingDeletions);
+        }
       } else {
         throw error;
       }

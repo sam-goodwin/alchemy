@@ -1085,6 +1085,26 @@ export const _Worker = Resource(
       throw error;
     }
 
+    if (this.phase === "update") {
+      const oldName = this.output.name ?? this.output.id;
+      const newName = workerName;
+
+      if (oldName !== newName) {
+        if (dispatchNamespace) {
+          await this.replace(true);
+        } else {
+          const renameResponse = await api.patch(
+            `/accounts/${api.accountId}/workers/services/${oldName}`,
+            { id: newName },
+          );
+
+          if (!renameResponse.ok) {
+            await handleApiError(renameResponse, "rename", "worker", oldName);
+          }
+        }
+      }
+    }
+
     let assetsBinding: Assets | undefined;
     const workflowsBindings: Workflow[] = [];
     const containersBindings: Container[] = [];

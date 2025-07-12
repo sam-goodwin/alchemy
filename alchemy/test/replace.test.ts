@@ -32,10 +32,11 @@ describe.concurrent("Replace", () => {
             fail?: boolean;
             child?: boolean;
             replaceOnCreate?: boolean;
+            force?: boolean;
           },
         ) {
           if (props.replaceOnCreate && this.phase === "create") {
-            this.replace();
+            await this.replace(props.force);
           }
           if (this.phase === "delete") {
             if (props.fail) {
@@ -49,7 +50,7 @@ describe.concurrent("Replace", () => {
           }
           if (this.phase === "update") {
             if (props.name !== this.output.name) {
-              this.replace();
+              await this.replace(props.force);
             }
           }
           if (props.child) {
@@ -411,6 +412,32 @@ describe.concurrent("Replace", () => {
           } finally {
             await destroy(scope);
             expect(deleted).toContain("bar-7");
+          }
+        },
+      );
+
+      test(
+        "replace should be able to force a deletion immediately",
+        options,
+        async (scope) => {
+          try {
+            let resource = await Replacable("replaceable", {
+              name: "foo-8",
+            });
+            expect(deleted).not.toContain("foo-8");
+            expect(resource.name).toBe("foo-8");
+            resource = await Replacable("replaceable", {
+              name: "bar-8",
+              force: true,
+            });
+            // the output should have changed
+            expect(resource.name).toBe("bar-8");
+            // but the resource should not have been deleted
+            expect(deleted).toContain("foo-8");
+            expect(deleted).not.toContain("bar-8");
+          } finally {
+            await destroy(scope);
+            expect(deleted).toContain("bar-8");
           }
         },
       );

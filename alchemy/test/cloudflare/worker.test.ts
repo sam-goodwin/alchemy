@@ -24,6 +24,7 @@ import {
 import { assertWorkerDoesNotExist } from "./test-helpers.ts";
 
 import { Container } from "../../src/cloudflare/container.ts";
+import { DispatchNamespace } from "../../src/cloudflare/index.ts";
 import "../../src/test/vitest.ts";
 
 const test = alchemy.test(import.meta, {
@@ -1878,5 +1879,113 @@ describe("Worker Resource", () => {
       await destroy(scope);
       await assertWorkerDoesNotExist(api, workerName);
     }
+  });
+
+  test("rename worker", async (scope) => {
+    const originalWorkerName = `${BRANCH_PREFIX}-test-worker-rename-1`;
+    const newWorkerName = `${BRANCH_PREFIX}-test-worker-rename-2`;
+
+    await Worker("rename-worker", {
+      name: originalWorkerName,
+      script: `
+				export default {
+					async fetch(request, env, ctx) {
+						return new Response('Hello ESM world!', { status: 200 });
+					}
+				};
+			`,
+    });
+
+    await scope.finalize();
+
+    // Verify the worker exists via API
+    const originalWorkerExists = await api.get(
+      `/accounts/${api.accountId}/workers/scripts/${originalWorkerName}`,
+    );
+    expect(originalWorkerExists.status).toEqual(200);
+
+    await Worker("rename-worker", {
+      name: newWorkerName,
+      script: `
+				export default {
+					async fetch(request, env, ctx) {
+						return new Response('Hello ESM world!', { status: 200 });
+					}
+				};
+			`,
+    });
+
+    await scope.finalize();
+
+    // Verify the worker exists via API
+    const newWorkerExists = await api.get(
+      `/accounts/${api.accountId}/workers/scripts/${newWorkerName}`,
+    );
+    expect(newWorkerExists.status).toEqual(200);
+
+    // Verify the worker exists via API
+    const oldWorker = await api.get(
+      `/accounts/${api.accountId}/workers/scripts/${originalWorkerName}`,
+    );
+    expect(oldWorker.status).toEqual(404);
+  });
+
+  test("rename wfp worker", async (scope) => {
+    const originalWorkerName = `${BRANCH_PREFIX}-test-wfp-worker-rename-1`;
+    const newWorkerName = `${BRANCH_PREFIX}-test-wfp-worker-rename-2`;
+    const namespaceName = `${BRANCH_PREFIX}-rename-wfp-worker`;
+
+    const dispatchNamespace = await DispatchNamespace(
+      "test-dispatch-namespace",
+      {
+        namespace: namespaceName,
+        adopt: true,
+      },
+    );
+
+    await Worker("rename-worker", {
+      name: originalWorkerName,
+      script: `
+				export default {
+					async fetch(request, env, ctx) {
+						return new Response('Hello ESM world!', { status: 200 });
+					}
+				};
+			`,
+      namespace: dispatchNamespace,
+    });
+
+    await scope.finalize();
+
+    // Verify the worker exists via API
+    const originalWorkerExists = await api.get(
+      `/accounts/${api.accountId}/workers/dispatch/namespaces/${namespaceName}/scripts/${originalWorkerName}`,
+    );
+    expect(originalWorkerExists.status).toEqual(200);
+
+    await Worker("rename-worker", {
+      name: newWorkerName,
+      script: `
+				export default {
+					async fetch(request, env, ctx) {
+						return new Response('Hello ESM world!', { status: 200 });
+					}
+				};
+			`,
+    });
+
+    await scope.finalize();
+
+    // Verify the worker exists via API
+    const newWorkerExists = await api.get(
+      `/accounts/${api.accountId}/workers/dispatch/namespaces/${namespaceName}/scripts/${newWorkerName}`,
+    );
+    expect(newWorkerExists.status).toEqual(200);
+
+    // Verify the worker exists via API
+    const oldWorker = await api.get(
+      `/accounts/${api.accountId}/workers/dispatch/namespaces/${namespaceName}/scripts/${originalWorkerName}`,
+    );
+    expect(oldWorker.status).toEqual(404);
   });
 });
