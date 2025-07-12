@@ -35,7 +35,6 @@ export namespace Telemetry {
 
   export interface BaseEvent {
     event: string;
-    context: Context;
     timestamp: number;
   }
 
@@ -73,10 +72,27 @@ export namespace Telemetry {
     replaced?: boolean;
   }
 
-  export type Event = AppEvent | ResourceEvent;
+  export interface StateStoreEvent extends BaseEvent {
+    event:
+      | "stateStore.init"
+      | "stateStore.deinit"
+      | "stateStore.list"
+      | "stateStore.count"
+      | "stateStore.get"
+      | "stateStore.getBatch"
+      | "stateStore.all"
+      | "stateStore.set"
+      | "stateStore.delete";
+    stateStoreClass: string;
+    elapsed?: number;
+    error?: SerializedError;
+  }
+
+  export type Event = AppEvent | ResourceEvent | StateStoreEvent;
   export type EventInput = (
     | Omit<AppEvent, "context" | "timestamp" | "error">
     | Omit<ResourceEvent, "context" | "timestamp" | "error">
+    | Omit<StateStoreEvent, "context" | "timestamp" | "error">
   ) & {
     error?: ErrorInput;
   };

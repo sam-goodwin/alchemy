@@ -16,6 +16,7 @@ import {
   type ResourceProps,
 } from "./resource.ts";
 import type { State, StateStore, StateStoreType } from "./state.ts";
+import { StateStoreWrapper } from "./state/state-store-wrapper.ts";
 import {
   createDummyLogger,
   createLoggerInstance,
@@ -173,12 +174,15 @@ export class Scope {
 
     this.stateStore =
       options.stateStore ?? this.parent?.stateStore ?? defaultStateStore;
-    this.state = this.stateStore(this);
+    this.telemetryClient =
+      options.telemetryClient ?? this.parent?.telemetryClient!;
+    this.state = new StateStoreWrapper(
+      this.stateStore(this),
+      this.telemetryClient,
+    );
     if (!options.telemetryClient && !this.parent?.telemetryClient) {
       throw new Error("Telemetry client is required");
     }
-    this.telemetryClient =
-      options.telemetryClient ?? this.parent?.telemetryClient!;
     this.dataMutex = new AsyncMutex();
   }
 
