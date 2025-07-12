@@ -8,7 +8,7 @@ import { createCloudflareApi, type CloudflareApiOptions } from "./api.ts";
 import type { Bound } from "./bound.ts";
 
 /**
- * Origin configuration for a PostgreSQL database connection
+ * Origin configuration for a PostgreSQL or MySQL database connection
  */
 export interface HyperdriveOrigin {
   /**
@@ -29,7 +29,7 @@ export interface HyperdriveOrigin {
 
   /**
    * Database port
-   * @default 5432
+   * @default 5432 for postgres, 3306 for mysql
    */
   port?: number;
 
@@ -37,7 +37,7 @@ export interface HyperdriveOrigin {
    * Connection scheme
    * @default "postgres"
    */
-  scheme?: "postgres";
+  scheme?: "postgres" | "mysql";
 
   /**
    * Database user
@@ -72,7 +72,7 @@ export interface HyperdriveOriginWithAccess {
 
   /**
    * Database port
-   * @default 5432
+   * @default 5432 for postgres, 3306 for mysql
    */
   port?: number;
 
@@ -80,7 +80,7 @@ export interface HyperdriveOriginWithAccess {
    * Connection scheme
    * @default "postgres"
    */
-  scheme?: "postgres";
+  scheme?: "postgres" | "mysql";
 
   /**
    * Database user
@@ -196,6 +196,20 @@ export type Hyperdrive = HyperdriveResource & Bound<HyperdriveResource>;
  *     password: alchemy.secret("your-password"),
  *     port: 5432,
  *     user: "postgres"
+ *   }
+ * });
+ *
+ * @example
+ * // Create a basic Hyperdrive connection to a MySQL database
+ * const mysqlHyperdrive = await Hyperdrive("my-mysql-db", {
+ *   name: "my-mysql-db",
+ *   origin: {
+ *     database: "mydb",
+ *     host: "mysql.example.com",
+ *     password: alchemy.secret("your-password"),
+ *     port: 3306,
+ *     scheme: "mysql",
+ *     user: "mysql_user"
  *   }
  * });
  *
