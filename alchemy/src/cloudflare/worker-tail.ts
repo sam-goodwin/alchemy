@@ -1,8 +1,8 @@
 import kleur from "kleur";
 import { WebSocket } from "ws";
-import { logger } from "../../util/logger.ts";
-import type { CloudflareApi } from "../api.ts";
-import type { CloudflareApiResponse } from "../types.ts";
+import { logger } from "../util/logger.ts";
+import type { CloudflareApiResponse } from "./api-response.ts";
+import type { CloudflareApi } from "./api.ts";
 
 export const createTail = async (
   api: CloudflareApi,

@@ -7,24 +7,27 @@ import {
 } from "miniflare";
 import path from "node:path";
 import { findOpenPort } from "../../util/find-open-port.ts";
+import { HTTPServer } from "../../util/http-server.ts";
 import { logger } from "../../util/logger.ts";
 import {
   promiseWithResolvers,
   type PromiseWithResolvers,
 } from "../../util/promise-with-resolvers.ts";
-import { HTTPServer } from "./http-server.ts";
 import {
   buildMiniflareWorkerOptions,
   buildRemoteBindings,
   type MiniflareWorkerOptions,
 } from "./miniflare-worker-options.ts";
-import { createMixedModeProxy, type MixedModeProxy } from "./mixed-mode.ts";
+import {
+  createRemoteProxyWorker,
+  type RemoteBindingProxy,
+} from "./remote-binding-proxy.ts";
 
 class MiniflareServer {
   miniflare?: Miniflare;
   workers = new Map<string, WorkerOptions>();
   servers = new Map<string, HTTPServer>();
-  mixedModeProxies = new Map<string, MixedModeProxy>();
+  remoteBindingProxies = new Map<string, RemoteBindingProxy>();
 
   stream = new WritableStream<{
     worker: MiniflareWorkerOptions;
@@ -104,7 +107,7 @@ class MiniflareServer {
     await Promise.all([
       this.miniflare?.dispose(),
       ...Array.from(this.servers.values()).map((server) => server.stop()),
-      ...Array.from(this.mixedModeProxies.values()).map((proxy) =>
+      ...Array.from(this.remoteBindingProxies.values()).map((proxy) =>
         proxy.server.stop(),
       ),
     ]);
@@ -120,7 +123,7 @@ class MiniflareServer {
     if (bindings.length === 0) {
       return undefined;
     }
-    const existing = this.mixedModeProxies.get(worker.name);
+    const existing = this.remoteBindingProxies.get(worker.name);
     if (
       existing?.bindings.every((b) =>
         bindings.find((b2) => b2.name === b.name && b2.type === b.type),
@@ -128,11 +131,11 @@ class MiniflareServer {
     ) {
       return existing.connectionString;
     }
-    const proxy = await createMixedModeProxy({
+    const proxy = await createRemoteProxyWorker({
       name: `mixed-mode-proxy-${crypto.randomUUID()}`,
       bindings,
     });
-    this.mixedModeProxies.set(worker.name, proxy);
+    this.remoteBindingProxies.set(worker.name, proxy);
     return proxy.connectionString;
   }
 

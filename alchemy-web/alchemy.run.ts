@@ -1,6 +1,7 @@
 import alchemy from "alchemy";
-import { DOStateStore, Website, Worker } from "alchemy/cloudflare";
+import { Website, Worker } from "alchemy/cloudflare";
 import { GitHubComment } from "alchemy/github";
+import { DOStateStore } from "alchemy/state";
 
 const POSTHOG_DESTINATION_HOST =
   process.env.POSTHOG_DESTINATION_HOST ?? "us.i.posthog.com";

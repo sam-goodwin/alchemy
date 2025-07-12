@@ -47,6 +47,11 @@ export interface CloudflareApiError {
    * Error message
    */
   message: string;
+
+  /**
+   * Error documentation URL
+   */
+  documentation_url?: string;
 }
 
 /**
@@ -66,5 +71,31 @@ export async function extractCloudflareError(
     return `HTTP ${response.status}: ${response.statusText}`;
   } catch {
     return `HTTP ${response.status}: ${response.statusText}`;
+  }
+}
+
+export async function extractCloudflareResult<T>(
+  label: string,
+  promise: Promise<Response>,
+): Promise<T> {
+  const response = await promise.catch(() => {
+    throw new Error(`Failed to ${label}: Failed to fetch`);
+  });
+  const json = (await response.json().catch(() => {
+    throw new Error(
+      `Failed to ${label} (${response.status}): The API returned an invalid response`,
+    );
+  })) as CloudflareApiResponse<T>;
+  if (json.success) {
+    return json.result;
+  } else {
+    const error = new Error(
+      `Failed to ${label} (${response.status} ${response.statusText}):\n${json.errors.map((e) => `- [${e.code}] ${e.message}${e.documentation_url ? ` (${e.documentation_url})` : ""}`).join("\n")}`,
+    );
+    Error.captureStackTrace(error, extractCloudflareResult);
+    Object.assign(error, {
+      status: response.status,
+    });
+    throw error;
   }
 }

@@ -12,6 +12,7 @@
       "./**/biome.json",
       "./alchemy/bin/**/*.ts",
       "./alchemy/src/**/*.ts",
+      "./alchemy/workers/**/*.ts",
       "./alchemy/src/**/*.tsx",
       "./alchemy/src/**/*.js",
       "./alchemy/test/**/*.ts",

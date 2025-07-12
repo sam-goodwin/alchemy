@@ -34,6 +34,10 @@ DOStateStore provides a [State Store](/concepts/state) using a Cloudflare Worker
    Store this token securely and don't commit it to version control.
    :::
 
+   :::warning
+   This token must be the same for all deployments on your Cloudflare account.
+   :::
+
 3. **Configure DOStateStore**
 
    Update your `alchemy.run.ts` to use cloud state storage:
@@ -101,9 +105,7 @@ Change the worker name to avoid conflicts or organize by environment:
 ```typescript
 const app = await alchemy("my-app", {
   stateStore: (scope) => new DOStateStore(scope, {
-    worker: {
-      name: "my-app-state-prod"
-    }
+    scriptName: "my-app-state-prod"
   })
 });
 ```
@@ -115,25 +117,7 @@ Override the environment variable token:
 ```typescript
 const app = await alchemy("my-app", {
   stateStore: (scope) => new DOStateStore(scope, {
-    worker: {
-      name: "my-app-state",
-      token: alchemy.secret(process.env.CUSTOM_STATE_TOKEN)
-    }
-  })
-});
-```
-
-### Use Existing Worker
-
-Connect to a pre-deployed state store worker:
-
-```typescript
-const app = await alchemy("my-app", {
-  stateStore: (scope) => new DOStateStore(scope, {
-    worker: {
-      url: "https://my-state-store.my-subdomain.workers.dev",
-      token: alchemy.secret(process.env.STATE_TOKEN)
-    }
+    stateToken: alchemy.secret(process.env.CUSTOM_STATE_TOKEN)
   })
 });
 ```
@@ -145,10 +129,7 @@ Force the worker to be recreated even if it exists:
 ```typescript
 const app = await alchemy("my-app", {
   stateStore: (scope) => new DOStateStore(scope, {
-    worker: {
-      name: "my-app-state",
-      force: true
-    }
+    forceUpdate: true
   })
 });
 ```
@@ -177,9 +158,7 @@ const stage = process.env.STAGE ?? "dev";
 const app = await alchemy("my-app", {
   stage,
   stateStore: (scope) => new DOStateStore(scope, {
-    worker: {
-      name: `my-app-state-${stage}`
-    }
+    scriptName: `my-app-state-${stage}`
   })
 });
 ```

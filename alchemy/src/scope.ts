@@ -1,10 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import util from "node:util";
 import type { Phase } from "./alchemy.ts";
-import { D1StateStore } from "./cloudflare/d1-state-store.ts";
-import { DOStateStore } from "./cloudflare/do-state-store/index.ts";
 import { destroy, destroyAll } from "./destroy.ts";
-import { FileSystemStateStore } from "./fs/file-system-state-store.ts";
 import {
   ResourceFQN,
   ResourceID,
@@ -16,6 +13,8 @@ import {
   type ResourceProps,
 } from "./resource.ts";
 import type { State, StateStore, StateStoreType } from "./state.ts";
+import { D1StateStore } from "./state/d1-state-store.ts";
+import { FileSystemStateStore } from "./state/file-system-state-store.ts";
 import {
   createDummyLogger,
   createLoggerInstance,
@@ -499,10 +498,8 @@ export class Scope {
 
 const defaultStateStore: StateStoreType = (scope: Scope) => {
   switch (process.env.ALCHEMY_STATE_STORE) {
-    case "cloudflare-d1":
+    case "d1":
       return new D1StateStore(scope);
-    case "cloudflare":
-      return new DOStateStore(scope);
     default:
       return new FileSystemStateStore(scope);
   }

@@ -1,12 +1,12 @@
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
+import { memoize } from "../util/memoize.ts";
+import { extractCloudflareResult } from "./api-response.ts";
 import {
   createCloudflareApi,
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.ts";
-import type { CloudflareApiResponse } from "./types.ts";
-import { getAccountSubdomain } from "./worker/shared.ts";
 
 interface WorkerSubdomainProps extends CloudflareApiOptions {
   /**
@@ -49,16 +49,7 @@ export const WorkerSubdomain = Resource(
       }
       return this.destroy();
     }
-    await wrapFetch<SubdomainResponse>(
-      `enable subdomain for "${props.scriptName}"`,
-      api.post(
-        `/accounts/${api.accountId}/workers/scripts/${props.scriptName}/subdomain`,
-        { enabled: true, previews_enabled: true },
-        {
-          headers: { "Content-Type": "application/json" },
-        },
-      ),
-    );
+    await enableWorkerSubdomain(api, props.scriptName);
     const subdomain = await getAccountSubdomain(api);
     const base = `${subdomain}.workers.dev`;
     let url: string;
@@ -77,7 +68,7 @@ export async function disableWorkerSubdomain(
   api: CloudflareApi,
   scriptName: string,
 ) {
-  await wrapFetch<SubdomainResponse>(
+  await extractCloudflareResult<SubdomainResponse>(
     `disable subdomain for "${scriptName}"`,
     api.post(
       `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
@@ -91,33 +82,48 @@ export async function disableWorkerSubdomain(
   });
 }
 
+export async function enableWorkerSubdomain(
+  api: CloudflareApi,
+  scriptName: string,
+) {
+  await extractCloudflareResult<SubdomainResponse>(
+    `enable subdomain for "${scriptName}"`,
+    api.post(
+      `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
+      { enabled: true, previews_enabled: true },
+    ),
+  );
+}
+
+export async function getWorkerSubdomain(
+  api: CloudflareApi,
+  scriptName: string,
+) {
+  return await extractCloudflareResult<SubdomainResponse>(
+    `get subdomain for "${scriptName}"`,
+    api.get(
+      `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
+    ),
+  ).catch((error): SubdomainResponse => {
+    if (error.status === 404) {
+      return { enabled: false, previews_enabled: false };
+    }
+    throw error;
+  });
+}
+
 interface SubdomainResponse {
   enabled: boolean;
   previews_enabled: boolean;
 }
 
-async function wrapFetch<T>(
-  label: string,
-  promise: Promise<Response>,
-): Promise<T> {
-  const response = await promise.catch(() => {
-    throw new Error(`Failed to ${label}: Failed to fetch`);
-  });
-  const json = (await response.json().catch(() => {
-    throw new Error(
-      `Failed to ${label} (${response.status}): The API returned an invalid response`,
+export const getAccountSubdomain = memoize(
+  async (api: CloudflareApi) => {
+    const result = await extractCloudflareResult<{ subdomain: string }>(
+      `get subdomain for account ${api.accountId}`,
+      api.get(`/accounts/${api.accountId}/workers/subdomain`),
     );
-  })) as CloudflareApiResponse<T>;
-  if (json.success) {
-    return json.result;
-  } else {
-    const error = new Error(
-      `Failed to ${label} (${response.status}): ${json.errors.map((e) => `${e.code}: ${e.message}`).join(", ")}`,
-    );
-    Error.captureStackTrace(error, wrapFetch);
-    Object.assign(error, {
-      status: response.status,
-    });
-    throw error;
-  }
-}
+    return result.subdomain;
+  },
+  (api) => api.accountId,
+);

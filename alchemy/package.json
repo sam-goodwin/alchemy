@@ -13,7 +13,7 @@
     "build:cli": "bun ./scripts/bundle-cli.ts",
     "build:workers": "bun ./scripts/build-workers.ts",
     "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b && bun run build:cli && bun run build:workers",
-    "db:generate": "drizzle-kit generate",
+    "drizzle:generate": "bun run scripts/drizzle-generate.ts",
     "docs:gen": "rm -rf ./docs && typedoc",
     "postbuild": "cpx 'src/**/*/types.d.ts' lib && cpx 'src/**/*.txt' lib",
     "publish:npm": "cp ../README.md . && bun run build && bun run build:cli && npm publish && rm README.md"
@@ -25,7 +25,7 @@
   "homepage": "https://alchemy.run",
   "files": [
     "bin",
-    "drizzle",
+    "drizzle/default",
     "lib",
     "src",
     "templates",
@@ -112,9 +112,9 @@
       "bun": "./src/web/shadcn.ts",
       "import": "./lib/web/shadcn.js"
     },
-    "./sqlite": {
-      "bun": "./src/sqlite/index.ts",
-      "import": "./lib/sqlite/index.js"
+    "./state": {
+      "bun": "./src/state/index.ts",
+      "import": "./lib/state/index.js"
     },
     "./web/astro": {
       "bun": "./src/web/astro.ts",

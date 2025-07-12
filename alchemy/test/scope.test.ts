@@ -16,7 +16,7 @@ const test = alchemy.test(import.meta, {
 });
 
 describe.concurrent("Scope", () => {
-  for (const storeType of ["fs", "dofs", "sqlite", "d1"]) {
+  for (const storeType of ["fs", "dofs", "sqlite", "d1", "do"]) {
     describe(storeType, () => {
       const options = createTestOptions(storeType, "scope");
 

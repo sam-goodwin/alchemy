@@ -12,7 +12,7 @@ const test = alchemy.test(import.meta, {
 });
 
 describe.concurrent("Replace", () => {
-  for (const storeType of ["fs", "dofs", "sqlite", "d1"]) {
+  for (const storeType of ["fs", "dofs", "sqlite", "d1", "do"]) {
     describe(storeType, () => {
       const options = createTestOptions(storeType, "replace");
       const deleted: string[] = [];

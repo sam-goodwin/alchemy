@@ -13,4 +13,7 @@ await esbuild.build({
    format: "esm",
    target: "es2022",
    external: ["cloudflare:*", "node:crypto"],
- });
+   loader: {
+    ".sql": "text",
+   }
+});

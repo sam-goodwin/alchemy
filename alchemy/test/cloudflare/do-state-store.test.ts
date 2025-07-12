@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { createCloudflareApi } from "../../src/cloudflare/api.ts";
-import { DOStateStore } from "../../src/cloudflare/do-state-store/index.ts";
+import { DOFSStateStore } from "../../src/cloudflare/dofs-state-store/index.ts";
 import {
-  DOStateStoreClient,
-  getAccountSubdomain,
+  DOFSStateStoreClient,
   upsertStateStoreWorker,
-} from "../../src/cloudflare/do-state-store/internal.ts";
+} from "../../src/cloudflare/dofs-state-store/internal.ts";
+import { getAccountSubdomain } from "../../src/cloudflare/worker-subdomain.ts";
 import { deleteWorker } from "../../src/cloudflare/worker.ts";
 import { File } from "../../src/fs/file.ts";
 import "../../src/test/vitest.ts";
@@ -21,7 +21,7 @@ const subdomain = await getAccountSubdomain(api);
 
 const test = alchemy.test(import.meta, {
   stateStore: (scope) =>
-    new DOStateStore(scope, {
+    new DOFSStateStore(scope, {
       worker: {
         name: workerName,
       },
@@ -33,7 +33,7 @@ afterAll(async () => {
   await assertWorkerDoesNotExist(api, workerName);
 });
 
-describe("DOStateStore", () => {
+describe("DOFSStateStore", () => {
   test("should initialize with lazy worker creation", async (scope) => {
     try {
       await File("file", {
@@ -48,7 +48,7 @@ describe("DOStateStore", () => {
   describe("Internal", () => {
     const name = `${workerName}-internal`;
 
-    const client = new DOStateStoreClient({
+    const client = new DOFSStateStoreClient({
       app: "alchemy",
       stage: "internal",
       url: `https://${name}.${subdomain}.workers.dev`,

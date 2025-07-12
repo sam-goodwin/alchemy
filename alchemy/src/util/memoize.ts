@@ -25,11 +25,5 @@ export function memoize<F extends (...args: any[]) => Promise<any>>(
 }
 
 const defaultKeyFn = (...args: any[]) => {
-  const hash = createHash("sha256");
-  args.forEach((arg) => {
-    if (arg) {
-      hash.update(JSON.stringify(arg));
-    }
-  });
-  return hash.digest("hex");
+  return createHash("sha256").update(JSON.stringify(args)).digest("hex");
 };

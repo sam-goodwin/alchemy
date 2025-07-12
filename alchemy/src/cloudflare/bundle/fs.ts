@@ -45,6 +45,11 @@ export class FSBundleProvider implements WorkerBundleProvider {
         }
       }),
     );
+    if (fileNames.size === 0) {
+      throw new Error(
+        `No files found matching ${this.globs.join(", ")} in ${this.root}`,
+      );
+    }
     const { files, hash } = await parseFiles(
       this.root,
       Array.from(fileNames),

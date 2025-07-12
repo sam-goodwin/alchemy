@@ -3,10 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Scope } from "../scope.ts";
 import { memoize } from "../util/memoize.ts";
-import {
-  BaseSQLiteStateStore,
-  resolveMigrationsPath,
-} from "./base-sqlite-state-store.ts";
+import { MIGRATIONS_DIRECTORY } from "./migrations.ts";
+import { SQLiteStateStoreOperations } from "./operations.ts";
+import { StateStoreProxy } from "./proxy.ts";
 import * as schema from "./schema.ts";
 
 interface BunSQLiteStateStoreOptions {
@@ -73,11 +72,20 @@ type SQLiteStateStoreOptions =
   | LibSQLStateStoreOptions
   | AutoSQLiteStateStoreOptions;
 
-export class SQLiteStateStore extends BaseSQLiteStateStore {
-  constructor(scope: Scope, options?: SQLiteStateStoreOptions) {
-    super(scope, {
-      create: async () => createDatabase(options),
+export class SQLiteStateStore extends StateStoreProxy {
+  constructor(
+    scope: Scope,
+    private options?: SQLiteStateStoreOptions,
+  ) {
+    super(scope);
+  }
+
+  async provision(): Promise<StateStoreProxy.Dispatch> {
+    const db = await createDatabase(this.options);
+    const operations = new SQLiteStateStoreOperations(db, {
+      chain: this.scope.chain,
     });
+    return operations.dispatch.bind(operations);
   }
 }
 
@@ -132,7 +140,7 @@ async function createBunSQLiteDatabase(
   const db = drizzle(client, {
     schema,
   });
-  migrate(db, { migrationsFolder: resolveMigrationsPath() });
+  migrate(db, { migrationsFolder: MIGRATIONS_DIRECTORY });
   return db;
 }
 
@@ -162,7 +170,7 @@ async function createLibSQLDatabase(
   const db = drizzle(client, {
     schema,
   });
-  await migrate(db, { migrationsFolder: resolveMigrationsPath() });
+  await migrate(db, { migrationsFolder: MIGRATIONS_DIRECTORY });
   return db;
 }
 
