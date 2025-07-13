@@ -26,11 +26,22 @@ const nodes = await run(contract, {
       options.path?.startsWith("#/components/schemas/") ||
       options.path?.endsWith("/post/requestBody/application~1json") ||
       options.path?.endsWith("/post/requestBody/application~1octet-stream") ||
+      options.path?.endsWith("/post/requestBody/text~1plain") ||
       options.path?.endsWith("/responses/200/content/application~1json") ||
       options.path?.endsWith("/responses/200/content/text~1plain")
     ) {
-      console.log(options.path);
-      transformSchema(schemaObject);
+      if (
+        options.path.startsWith(
+          "#/paths/~1networks~1create/post/requestBody/application~1json",
+        )
+      ) {
+        console.log("transforming", options.path);
+        console.log(
+          "transforming",
+          inspect(schemaObject, { depth: null, colors: true }),
+        );
+        transformSchema(schemaObject);
+      }
     } else {
       console.log(options.path, "missed");
       console.log(inspect(schemaObject, { depth: null, colors: true }));

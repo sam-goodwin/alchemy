@@ -37,8 +37,14 @@ export function createDockerApi() {
   const client = createClient<paths>({
     baseUrl: "http://localhost:10000",
     fetch(input) {
-      // @ts-ignore: dispatcher may not be typed but we know it's there
-      input.dispatcher = agent;
+      if (typeof Bun !== "undefined") {
+        // @ts-ignore: Bun specific
+        input.unix = "/var/run/docker.sock";
+      } else {
+        // @ts-ignore: dispatcher may not be typed but we know it's there
+        input.dispatcher = agent;
+      }
+
       return fetch(input.url, input);
     },
   });
@@ -124,13 +130,7 @@ export function createDockerApi() {
         }),
       create: (params: NetworkCreateParams) =>
         POST("/networks/create", {
-          body: {
-            name: params.name,
-            driver: params.driver,
-            labels: params.labels,
-            enableIPv4: params.enableIPv4,
-            enableIPv6: params.enableIPv6,
-          },
+          body: params,
         }),
       // TODO(manuel): Implement filters query param
       prune: () => POST("/networks/prune"),
@@ -250,7 +250,6 @@ interface ListImagesParams
    *     process on the images list.
    *
    *     Available filters:
-   *
    *     - `before`=(`<image-name>[:<tag>]`,  `<image id>` or `<image@digest>`)
    *     - `dangling=true`
    *     - `label=key` or `label="key=value"` of an image label

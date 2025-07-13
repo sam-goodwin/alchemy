@@ -1,21 +1,26 @@
-import { inspect } from "node:util";
-import { Agent } from "undici";
+import { createDockerApi } from "../../../src/docker/api/index.ts";
 
-const socket = "/var/run/docker.sock";
-const url = "http://localhost:2375/networks";
-console.log(
-  inspect(
-    await fetch(url, {
-      method: "GET",
-      // unix: socket,
-      // socketPath: socket,
-      dispatcher: new Agent({
-        socketPath: socket,
-      }),
-    }),
-    { depth: 10, colors: true },
-  ),
-);
+const docker = createDockerApi();
+console.log(await docker.networks.list());
+
+// import { inspect } from "node:util";
+// import { Agent } from "undici";
+
+// const socket = "/var/run/docker.sock";
+// const url = "http://localhost:2375/networks";
+// console.log(
+//   inspect(
+//     await fetch(url, {
+//       method: "GET",
+//       // unix: socket,
+//       // socketPath: socket,
+//       dispatcher: new Agent({
+//         socketPath: socket,
+//       }),
+//     }),
+//     { depth: 10, colors: true },
+//   ),
+// );
 
 // import alchemy from "alchemy";
 // const app = await alchemy("sandbox");
