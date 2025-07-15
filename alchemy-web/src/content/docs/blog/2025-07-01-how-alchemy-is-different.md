@@ -1,7 +1,7 @@
 ---
 title: What is Alchemy
-description: Alchemy is an embeddable, zero-dependency Infrastructure-as-Code library written in pure TypeScript that runs anywhere JavaScript runs. Learn how it differs from traditional IaC tools.
-slug: what-is-alchemy
+excerpt: Alchemy is an embeddable, zero-dependency Infrastructure-as-Code library written in pure TypeScript that runs anywhere JavaScript runs. Learn how it differs from traditional IaC tools.
+date: 2025-07-01
 ---
 
 Alchemy is an embeddable, zero-dependency, Infrastructure-as-Code (IaC) library written in pure TypeScript that runs anywhere that JavaScript runs - including the browser, serverless functions or even durable workflows.
