@@ -33,4 +33,7 @@
   --sl-color-accent-high: #F3E8FF;                                        /* High contrast accent elements, focused states */
   --sl-color-accent-low: color-mix(in srgb, #F3E8FF 40%, transparent);    /* Subtle hover states, borders */
   --sl-color-accent-light: color-mix(in srgb, #F3E8FF 60%, transparent);  /* Light accent backgrounds */
+}/* Move blog link next to search input */
+.nova-header-nav {
+  flex-direction: row-reverse;
 }
