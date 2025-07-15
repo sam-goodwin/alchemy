@@ -109,7 +109,17 @@ export default defineConfig({
           "github-dark-dimmed",
         ],
       },
-      plugins: [theme(), starlightBlog()],
+      plugins: [
+        theme({
+          nav: [
+            {
+              label: "Blog",
+              href: "/blog",
+            },
+          ],
+        }),
+        starlightBlog(),
+      ],
     }),
   ],
   trailingSlash: "ignore",
