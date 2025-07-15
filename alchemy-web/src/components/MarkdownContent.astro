@@ -3,10 +3,15 @@ import BlogMarkdownContent from 'starlight-blog/components/MarkdownContent.astro
 import NovaMarkdownContent from 'starlight-theme-nova/components/MarkdownContent.astro';
 
 const props = Astro.props;
+const isBlogRoute = Astro.url.pathname.startsWith('/blog');
 ---
 
-<BlogMarkdownContent {...props}>
+{isBlogRoute ? (
+  <BlogMarkdownContent {...props}>
+    <slot />
+  </BlogMarkdownContent>
+) : (
   <NovaMarkdownContent {...props}>
     <slot />
   </NovaMarkdownContent>
-</BlogMarkdownContent>
+)}
