@@ -1,0 +1,20 @@
+{
+  "name": "discord-bot-example",
+  "version": "1.0.0",
+  "description": "Discord bot example using Alchemy and Cloudflare Workers",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch ./alchemy.run.ts",
+    "deploy": "tsx ./alchemy.run.ts",
+    "destroy": "tsx ./alchemy.run.ts --destroy"
+  },
+  "dependencies": {
+    "alchemy": "workspace:*",
+    "discord-interactions": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
