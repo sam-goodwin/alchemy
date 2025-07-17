@@ -1,0 +1,110 @@
+---
+import Default from "@astrojs/starlight/components/PageTitle.astro";
+import { getEntry } from "astro:content";
+
+// Get current path and create breadcrumb segments
+const pathname = Astro.url.pathname;
+const segments = pathname
+  .split("/")
+  .filter((segment) => segment !== "") // Remove empty segments
+  .slice(0, -1); // Remove current page (last segment)
+
+// Format segment names for display
+const formatSegment = (segment: string) => {
+  return segment
+    .replace(/-/g, " ") // Replace hyphens with spaces
+    .toLowerCase(); // Make lowercase
+};
+
+// Create breadcrumb data with path checking using getEntry
+const breadcrumbData = await Promise.all(
+  segments.map(async (segment, index) => {
+    const cumulativePath = "/" + segments.slice(0, index + 1).join("/") + "/";
+    const displayName = formatSegment(segment);
+
+    // Convert path to collection entry slug (remove leading slash and trailing slash)
+    const entrySlug = segments.slice(0, index + 1).join("/");
+
+    // Check if entry exists in docs collection
+    let isValidPath = false;
+    try {
+      const entry = await getEntry("docs", entrySlug);
+      isValidPath = !!entry;
+    } catch {
+      // Entry doesn't exist
+      isValidPath = false;
+    }
+
+    return {
+      displayName,
+      path: cumulativePath,
+      isValidPath,
+    };
+  })
+);
+
+// We don't want to show the blog breadcrumb on the blog page
+const isBlog = (crumbs: typeof breadcrumbData) => {
+  return crumbs[0].displayName === "blog";
+};
+---
+
+<div class="page-title-wrapper">
+  {
+    breadcrumbData.length > 0 && !isBlog(breadcrumbData) && (
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <span class="breadcrumb-path">
+          {breadcrumbData.map((crumb, index) => (
+            <span>
+              {crumb.isValidPath ? (
+                <a href={crumb.path} class="breadcrumb-link">
+                  {crumb.displayName}
+                </a>
+              ) : (
+                crumb.displayName
+              )}
+              {index < breadcrumbData.length - 1 && (
+                <span class="breadcrumb-separator"> / </span>
+              )}
+            </span>
+          ))}
+        </span>
+      </nav>
+    )
+  }
+  <Default {...Astro.props} />
+</div>
+
+<style>
+  .page-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .breadcrumbs {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  .breadcrumb-path {
+    font-weight: 400;
+  }
+
+  .breadcrumb-separator {
+    font-weight: 700;
+    color: var(--sl-color-gray-4);
+    margin: 0 0.25rem;
+  }
+
+  .breadcrumb-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb-link:hover {
+    color: var(--sl-color-text-accent);
+    text-decoration: underline;
+  }
+</style>
