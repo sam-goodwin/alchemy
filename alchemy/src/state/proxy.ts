@@ -17,12 +17,23 @@ export abstract class StateStoreProxy implements StateStore {
     method: TMethod,
     params: StateStoreProxy.API[TMethod]["params"],
   ): Promise<StateStoreProxy.API[TMethod]["result"]> {
+    const start = performance.now();
+    let error: unknown;
     this.dispatch ??= this.provision();
     return this.dispatch.then(async (dispatch) => {
       const result = await withExponentialBackoff(
         () => dispatch(method, params),
         () => true,
-      );
+      )
+        .catch((err) => (error = err))
+        .finally(() => {
+          this.scope.telemetryClient.record({
+            event: `stateStore.${method}`,
+            stateStoreClass: this.constructor.name,
+            elapsed: performance.now() - start,
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
+        });
       return result;
     });
   }
