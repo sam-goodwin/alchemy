@@ -4,8 +4,8 @@ import { DurableObject } from "cloudflare:workers";
 import { drizzle } from "drizzle-orm/durable-sqlite";
 import { migrate } from "drizzle-orm/durable-sqlite/migrator";
 import migrations from "../drizzle/durable-object/migrations.js";
+import type { CloudflareStateStore } from "../src/state/cloudflare-state-store.ts";
 import { SQLiteStateStoreOperations } from "../src/state/operations.ts";
-import type { StateStoreProxy } from "../src/state/proxy.ts";
 import * as schema from "../src/state/schema.ts";
 
 interface Env {
@@ -40,7 +40,7 @@ export default {
           success: false,
           status: 401,
           error: "Unauthorized",
-        } as StateStoreProxy.ErrorResponse,
+        } as CloudflareStateStore.ErrorResponse,
         { status: 401 },
       );
     }
@@ -55,15 +55,15 @@ export default {
           success: false,
           status: 405,
           error: "Method not allowed",
-        } as StateStoreProxy.ErrorResponse,
+        } as CloudflareStateStore.ErrorResponse,
         { status: 405 },
       );
     }
 
     try {
       const store = env.STORE.get(env.STORE.idFromName("default"));
-      const body = (await request.json()) as StateStoreProxy.Request<
-        StateStoreProxy.Method,
+      const body = (await request.json()) as CloudflareStateStore.Request<
+        CloudflareStateStore.Method,
         Context
       >;
       const result = await store.rpc(body);
@@ -72,7 +72,7 @@ export default {
           success: true,
           status: 200,
           result,
-        } as StateStoreProxy.SuccessResponse<StateStoreProxy.Method>,
+        } as CloudflareStateStore.SuccessResponse<CloudflareStateStore.Method>,
         { status: 200 },
       );
     } catch (e) {
@@ -82,7 +82,7 @@ export default {
           success: false,
           status: 500,
           error: String(e),
-        } as StateStoreProxy.ErrorResponse,
+        } as CloudflareStateStore.ErrorResponse,
         { status: 500 },
       );
     }
@@ -99,7 +99,9 @@ export class Store extends DurableObject<Env> {
     });
   }
 
-  async rpc(request: StateStoreProxy.Request<StateStoreProxy.Method, Context>) {
+  async rpc(
+    request: CloudflareStateStore.Request<CloudflareStateStore.Method, Context>,
+  ) {
     const operations = new SQLiteStateStoreOperations(this.db, {
       chain: request.context.chain,
     });
