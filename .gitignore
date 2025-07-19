@@ -22,3 +22,4 @@ smoke
 .svelte-kit
 .claude/*.local.json
 .astro
+.wrangler

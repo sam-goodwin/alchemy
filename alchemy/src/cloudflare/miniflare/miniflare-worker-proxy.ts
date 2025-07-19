@@ -1,97 +1,168 @@
-import type http from "node:http";
+import * as miniflare from "miniflare";
+import { once } from "node:events";
+import http from "node:http";
+import type Stream from "node:stream";
+import { Readable } from "node:stream";
 import { WebSocket, WebSocketServer } from "ws";
-import { HTTPServer } from "../../util/http.ts";
+import { logger } from "../../util/logger.ts";
 
-export interface MiniflareWorkerProxyOptions {
-  /**
-   * Used to proxy websocket connections to the worker.
-   * (This is a hack; used because trying to interact with `response.webSocket` doesn't work on Bun.)
-   */
-  getDirectURL: () => Promise<URL>;
-  /** Used to proxy HTTP requests to the worker. */
-  fetch: (request: Request) => Promise<Response>;
+interface MiniflareWorkerProxyOptions {
+  name: string;
+  port: number;
+  miniflare: miniflare.Miniflare;
 }
 
-export class MiniflareWorkerProxy extends HTTPServer {
-  wsServer: WebSocketServer;
-  wsReconnectAttempts = new Map<string, number>();
+export class MiniflareWorkerProxy {
+  private server = http.createServer();
+  private wss = new WebSocketServer({ noServer: true });
 
   constructor(private readonly options: MiniflareWorkerProxyOptions) {
-    super({
-      fetch: options.fetch,
+    this.server.on("upgrade", async (req, socket, head) => {
+      await this.handleUpgrade(req, socket, head);
     });
-    this.wsServer = new WebSocketServer({ noServer: true });
-    this.httpServer.on("upgrade", async (req, socket, head) => {
-      this.wsServer.handleUpgrade(req, socket, head, async (client) => {
-        const id = crypto.randomUUID();
-        await this.handleUpgrade(id, client, req);
-      });
+    this.server.on("request", async (req, res) => {
+      await this.handleRequest(req, res);
     });
+    this.server.listen(this.options.port);
   }
 
-  private async handleUpgrade(
-    id: string,
-    client: WebSocket,
-    request: http.IncomingMessage,
-  ) {
-    const attempt = this.wsReconnectAttempts.get(id) ?? 0;
-    this.wsReconnectAttempts.set(id, attempt + 1);
-    if (attempt > 3) {
-      client.close(1006, "Too many reconnect attempts");
-      return;
+  get ready() {
+    if (!this.server.listening) {
+      return once(this.server, "listening");
     }
-    if (attempt > 0) {
-      const delay = attempt * 1000;
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
+    return Promise.resolve();
+  }
 
-    const target = await this.options.getDirectURL();
-    const url = new URL(request.url ?? "/", target);
-    const headers = { ...request.headers };
-    // All of these headers are set by the WebSocket constructor,
-    // so if we don't delete them, the request will fail.
-    delete headers.host;
-    delete headers.connection;
-    delete headers.upgrade;
-    delete headers["sec-websocket-version"];
-    delete headers["sec-websocket-key"];
-    delete headers["sec-websocket-protocol"];
-    delete headers["sec-websocket-extensions"];
-    delete headers["sec-websocket-accept"];
-    const server = new WebSocket(url.toString(), {
-      protocol: request.headers["sec-websocket-protocol"],
-      key: request.headers["sec-websocket-key"],
-      headers,
-    });
-    server.on("open", () => {
-      // Reset the reconnect attempts when the connection is established successfully.
-      this.wsReconnectAttempts.set(id, 0);
-    });
-    server.on("message", (data, binary) => {
-      client.send(data, { binary });
-    });
-    server.on("close", async (code, reason) => {
-      if (code === 1006) {
-        // When the worker hot reloads, the websocket connection is closed with this code.
-        // Reconnecting allows the client to maintain the same connection.
-        await this.handleUpgrade(id, client, request);
-        return;
-      }
-      client.close(code, reason);
-    });
-    client.on("message", (data, binary) => {
-      server.send(data, { binary });
-    });
-    client.on("close", (code, reason) => {
-      this.wsReconnectAttempts.delete(id);
-      if (server.readyState === WebSocket.OPEN) {
-        server.close(code, reason);
-      }
-    });
+  get url() {
+    return `http://localhost:${this.options.port}`;
   }
 
   async close() {
-    this.wsServer.close();
-    await super.close();
+    await Promise.all([
+      new Promise((resolve) => this.wss.close(resolve)),
+      new Promise((resolve) => this.server.close(resolve)),
+    ]);
+  }
+
+  private async handleUpgrade(
+    req: http.IncomingMessage,
+    socket: Stream.Duplex,
+    head: Buffer,
+  ) {
+    const server = await this.createServerWebSocket(req);
+    if (!server) {
+      socket.destroy();
+      return;
+    }
+    this.wss.handleUpgrade(req, socket, head, (client) => {
+      client.on("message", (event, binary) => {
+        server.send(event, { binary });
+      });
+      client.on("close", (code, reason) => {
+        server.close(code, reason);
+      });
+      server.on("message", (event, binary) => {
+        client.send(event, { binary });
+      });
+      server.on("close", (code, reason) => {
+        client.close(code, reason);
+      });
+      this.wss.emit("connection", client, req);
+    });
+  }
+
+  private async createServerWebSocket(req: http.IncomingMessage) {
+    const target = await this.options.miniflare.unsafeGetDirectURL(
+      this.options.name,
+    );
+    if (!target) {
+      logger.error(
+        `[Alchemy] Websocket connection failed: The worker "${this.options.name}" is not running.`,
+      );
+      return null;
+    }
+    const url = new URL(req.url ?? "/", target);
+    url.protocol = url.protocol.replace("http", "ws");
+    const protocols = req.headers["sec-websocket-protocol"]
+      ?.split(",")
+      .map((p) => p.trim());
+    const server = new WebSocket(url, protocols);
+    const controller = new AbortController();
+    return await Promise.race([
+      once(server, "open", { signal: controller.signal }).then(() => server),
+      once(server, "close", { signal: controller.signal }).then((args) => {
+        const [code, reason] = args as [number, string];
+        logger.error(
+          `[Alchemy] Websocket connection failed for worker "${this.options.name}": ${code} ${reason}`,
+        );
+        return null;
+      }),
+    ]).finally(() => controller.abort());
+  }
+
+  private async handleRequest(
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+  ) {
+    const worker = await this.options.miniflare.getWorker(this.options.name);
+    if (!worker) {
+      res.statusCode = 503;
+      res.end(`[Alchemy] The worker "${this.options.name}" is not running.`);
+      return;
+    }
+    try {
+      const response = await worker.fetch(toMiniflareRequest(req));
+      writeMiniflareResponseToNode(response, res);
+    } catch (rawError) {
+      const message =
+        rawError instanceof Error
+          ? (rawError.stack ?? rawError.message)
+          : String(rawError);
+      res.statusCode = 500;
+      res.end(
+        `[Alchemy] The worker "${this.options.name}" threw an error:\n\n${message}`,
+      );
+    }
   }
 }
+
+const toMiniflareRequest = (req: http.IncomingMessage) => {
+  const method = req.method ?? "GET";
+  const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
+  const headers = new miniflare.Headers();
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        headers.append(key, v);
+      }
+    } else if (value) {
+      headers.set(key, value);
+    }
+  }
+  const body =
+    ["GET", "HEAD", "OPTIONS"].includes(method) || !req.readable
+      ? undefined
+      : Readable.toWeb(req);
+  return new miniflare.Request(url, {
+    method,
+    headers,
+    body,
+    redirect: "manual",
+    duplex: body ? "half" : undefined,
+  });
+};
+
+const writeMiniflareResponseToNode = (
+  res: miniflare.Response,
+  out: http.ServerResponse,
+) => {
+  out.statusCode = res.status;
+  res.headers.forEach((value, key) => {
+    out.setHeader(key, value);
+  });
+  if (res.body) {
+    Readable.fromWeb(res.body).pipe(out, { end: true });
+  } else {
+    out.end();
+  }
+};

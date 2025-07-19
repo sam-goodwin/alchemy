@@ -234,8 +234,8 @@ export async function buildMiniflareWorkerOptions({
     ),
     compatibilityDate,
     compatibilityFlags,
-    // This was true for compatibility with the dev registry, but that doesn't work anyway,
-    // and if we don't set it to false, websocket connections fail. I'm confused.
+    // TODO: Setting `proxy: true` here causes the following error when connecting via a websocket:
+    // workerd/io/worker.c++:2164: info: uncaught exception; source = Uncaught (in promise); stack = TypeError: Invalid URL string.
     unsafeDirectSockets: [{ proxy: false }],
     containerEngine: {
       localDocker: {
