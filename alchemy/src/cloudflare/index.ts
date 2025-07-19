@@ -28,6 +28,8 @@ export * from "./email-routing.ts";
 export * from "./email-rule.ts";
 export * from "./hyperdrive.ts";
 export * from "./images.ts";
+export * from "./images-signing-key.ts";
+export * from "./images-variant.ts";
 export * from "./kv-namespace.ts";
 export * from "./local-dev-cloudflare-shim.ts";
 export * from "./nuxt.ts";
