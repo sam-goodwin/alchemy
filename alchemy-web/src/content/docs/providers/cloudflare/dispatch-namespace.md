@@ -1,5 +1,5 @@
 ---
-title: Dispatch Namespace
+title: DispatchNamespace
 description: Learn how to create and manage Cloudflare Workers for Platforms dispatch namespaces for multi-tenant architectures.
 ---
 

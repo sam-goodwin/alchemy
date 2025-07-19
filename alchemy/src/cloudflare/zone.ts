@@ -610,3 +610,55 @@ export interface CloudflareZone {
   modified_on: string;
   activated_on: string | null;
 }
+
+export /**
+ * Helper function to find zone ID from a hostname
+ * Searches for the zone that matches the hostname or its parent domains
+ *
+ * @param api CloudflareApi instance
+ * @param hostname The hostname to find the zone for
+ * @returns Promise resolving to the zone ID and zone name
+ */
+async function findZoneForHostname(
+  api: CloudflareApi,
+  hostname: string,
+): Promise<{ zoneId: string; zoneName: string }> {
+  // Remove wildcard prefix if present
+  const cleanHostname = hostname.replace(/^\*\./, "");
+
+  // Get all zones and find the best match
+  const response = await api.get("/zones");
+
+  if (!response.ok) {
+    throw new Error(`Failed to list zones: ${response.statusText}`);
+  }
+
+  const zonesData = (await response.json()) as {
+    result: Array<{ id: string; name: string }>;
+  };
+
+  // Find the zone that best matches the hostname
+  // We look for the longest matching zone name (most specific)
+  let bestMatch: { zoneId: string; zoneName: string } | null = null;
+  let longestMatch = 0;
+
+  for (const zone of zonesData.result) {
+    if (
+      cleanHostname === zone.name ||
+      cleanHostname.endsWith(`.${zone.name}`)
+    ) {
+      if (zone.name.length > longestMatch) {
+        longestMatch = zone.name.length;
+        bestMatch = { zoneId: zone.id, zoneName: zone.name };
+      }
+    }
+  }
+
+  if (!bestMatch) {
+    throw new Error(
+      `Could not find zone for hostname '${hostname}'. Available zones: ${zonesData.result.map((z) => z.name).join(", ")}`,
+    );
+  }
+
+  return bestMatch;
+}

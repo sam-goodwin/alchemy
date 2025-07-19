@@ -26,7 +26,8 @@
     "test:smoke": "bun ./alchemy/test/smoke.ts",
     "test:create": "vitest run ./alchemy/test/create.test.ts",
     "bump": "bun ./scripts/bump.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "claude:yolo": "claude --dangerously-skip-permissions"
   },
   "workspaces": [
     "alchemy-web",

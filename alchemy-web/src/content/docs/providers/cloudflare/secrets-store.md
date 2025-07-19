@@ -1,5 +1,5 @@
 ---
-title: Secrets Store
+title: SecretsStore
 description: Learn how to add individual secrets to Cloudflare Secrets Store for fine-grained secret management.
 ---
 
