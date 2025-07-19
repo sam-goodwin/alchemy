@@ -15,6 +15,7 @@ export * from "./certificate-pack.ts";
 export * from "./compatibility-date.gen.ts";
 export * from "./container.ts";
 export * from "./custom-domain.ts";
+export * from "./custom-hostname.ts";
 export * from "./d1-clone.ts";
 export * from "./d1-database.ts";
 export * from "./d1-export.ts";
