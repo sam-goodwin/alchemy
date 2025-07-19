@@ -1,3 +1,4 @@
+import type { WorkflowEntrypoint } from "cloudflare:workers";
 import { handleApiError } from "./api-error.ts";
 import type { CloudflareApi } from "./api.ts";
 import type { Binding } from "./bindings.ts";
@@ -34,17 +35,32 @@ export interface WorkflowProps {
   };
 }
 
-export type Workflow<PARAMS = unknown> = {
+export type Workflow<
+  T extends WorkflowEntrypoint<any> = WorkflowEntrypoint<any>,
+> = {
   type: "workflow";
   /**
-   * Phantom property to preserve workflow params at the type level.
-   * No value exists.
+   * The unique identifier for the workflow binding.
    */
-  _PARAMS: PARAMS;
   id: string;
+  /**
+   * The name of the workflow. This is used to identify the workflow within the system.
+   */
   workflowName: string;
+  /**
+   * The name of the class that implements the workflow logic.
+   */
   className: string;
+  /**
+   * (Optional) The name of the script containing the workflow implementation.
+   */
   scriptName?: string;
+  /**
+   * Phantom property to preserve workflow entrypoint class at the type level.
+   * No value exists.
+   * @internal
+   */
+  __phantom__: T;
 };
 
 export function isWorkflow(binding: Binding): binding is Workflow {
@@ -63,16 +79,15 @@ export function isWorkflow(binding: Binding): binding is Workflow {
  * });
  * ```
  */
-export function Workflow<PARAMS = unknown>(
-  id: string,
-  props: WorkflowProps = {},
-): Workflow<PARAMS> {
+export function Workflow<
+  T extends WorkflowEntrypoint<any> = WorkflowEntrypoint<any>,
+>(id: string, props: WorkflowProps = {}): Workflow<T> {
   const workflowName = props.workflowName ?? props.className ?? id;
   const className = props.className ?? workflowName;
 
   return {
     type: "workflow",
-    _PARAMS: undefined!,
+    __phantom__: undefined!,
     id,
     workflowName,
     className,

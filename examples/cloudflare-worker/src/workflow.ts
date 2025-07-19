@@ -8,9 +8,11 @@ import {
 import { NonRetryableError } from "cloudflare:workflows";
 
 // Create your own class that implements a Workflow
-export class OFACWorkflow extends WorkflowEntrypoint<any, Params> {
+export class OFACWorkflow extends WorkflowEntrypoint<any, [name: string]> {
+  // declare env: typeof worker.Env;
+
   // Define a run() method
-  async run(_event: WorkflowEvent<Params>, step: WorkflowStep) {
+  async run(_event: WorkflowEvent<[name: string]>, step: WorkflowStep) {
     // Define one or more steps that optionally return state.
     await step.do("my first step", async () => {
       console.log("OFAC WORKFLOW STEP 1");

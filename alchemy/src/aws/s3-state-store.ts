@@ -9,7 +9,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { ResourceScope } from "../resource.ts";
 import type { Scope } from "../scope.ts";
-import { serialize, deserialize } from "../serde.ts";
+import { deserialize, serialize } from "../serde.ts";
 import type { State, StateStore } from "../state.ts";
 import { ignore } from "../util/ignore.ts";
 import { retry } from "./retry.ts";
@@ -55,7 +55,7 @@ export class S3StateStore implements StateStore {
    */
   constructor(
     public readonly scope: Scope,
-    private readonly options: S3StateStoreOptions = {},
+    options: S3StateStoreOptions = {},
   ) {
     // Use the scope's chain to build the prefix, similar to how FileSystemStateStore builds its directory
     const scopePath = scope.chain.join("/");
