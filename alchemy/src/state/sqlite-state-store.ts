@@ -2,10 +2,11 @@ import type { Config as LibSQLConfig } from "@libsql/client";
 import fs from "node:fs";
 import path from "node:path";
 import type { Scope } from "../scope.ts";
+import { StateStore, type State } from "../state.ts";
 import { memoize } from "../util/memoize.ts";
+
 import { MIGRATIONS_DIRECTORY } from "./migrations.ts";
 import { SQLiteStateStoreOperations } from "./operations.ts";
-import { StateStoreProxy } from "./proxy.ts";
 import * as schema from "./schema.ts";
 
 interface BunSQLiteStateStoreOptions {
@@ -72,7 +73,9 @@ type SQLiteStateStoreOptions =
   | LibSQLStateStoreOptions
   | AutoSQLiteStateStoreOptions;
 
-export class SQLiteStateStore extends StateStoreProxy {
+export class SQLiteStateStore extends StateStore {
+  private operations?: Promise<SQLiteStateStoreOperations>;
+
   constructor(
     scope: Scope,
     private options?: SQLiteStateStoreOptions,
@@ -80,12 +83,63 @@ export class SQLiteStateStore extends StateStoreProxy {
     super(scope);
   }
 
-  async provision(): Promise<StateStoreProxy.Dispatch> {
+  private async getOperations(): Promise<SQLiteStateStoreOperations> {
+    if (!this.operations) {
+      this.operations = this.provision();
+    }
+    return this.operations;
+  }
+
+  private async provision(): Promise<SQLiteStateStoreOperations> {
     const db = await createDatabase(this.options);
-    const operations = new SQLiteStateStoreOperations(db, {
+    return new SQLiteStateStoreOperations(db, {
       chain: this.scope.chain,
     });
-    return operations.dispatch.bind(operations);
+  }
+
+  async init(): Promise<void> {
+    const operations = await this.getOperations();
+    return operations.dispatch("init", []);
+  }
+
+  async deinit(): Promise<void> {
+    const operations = await this.getOperations();
+    return operations.dispatch("deinit", []);
+  }
+
+  async listRaw(): Promise<string[]> {
+    const operations = await this.getOperations();
+    return operations.dispatch("list", []);
+  }
+
+  async countRaw(): Promise<number> {
+    const operations = await this.getOperations();
+    return operations.dispatch("count", []);
+  }
+
+  async getRaw(key: string): Promise<State | undefined> {
+    const operations = await this.getOperations();
+    return operations.dispatch("get", [key]);
+  }
+
+  async getBatchRaw(ids: string[]): Promise<Record<string, State>> {
+    const operations = await this.getOperations();
+    return operations.dispatch("getBatch", [ids]);
+  }
+
+  async allRaw(): Promise<Record<string, State>> {
+    const operations = await this.getOperations();
+    return operations.dispatch("all", []);
+  }
+
+  async setRaw(key: string, value: State): Promise<void> {
+    const operations = await this.getOperations();
+    return operations.dispatch("set", [key, value]);
+  }
+
+  async deleteRaw(key: string): Promise<void> {
+    const operations = await this.getOperations();
+    return operations.dispatch("delete", [key]);
   }
 }
 

@@ -1,14 +1,12 @@
 import { CloudflareApiError, handleApiError } from "../cloudflare/api-error.ts";
 import {
+  createCloudflareApi,
   type CloudflareApi,
   type CloudflareApiOptions,
-  createCloudflareApi,
 } from "../cloudflare/api.ts";
 import { ResourceScope } from "../resource.ts";
 import type { Scope } from "../scope.ts";
-import { deserialize, serialize } from "../serde.ts";
-import type { State, StateStore } from "../state.ts";
-import { withExponentialBackoff } from "../util/retry.ts";
+import { StateStore, type State } from "../state.ts";
 
 /**
  * Options for CloudflareR2StateStore
@@ -33,7 +31,7 @@ export interface CloudflareR2StateStoreOptions extends CloudflareApiOptions {
  *
  * @deprecated Use `CloudflareStateStore` from `alchemy/state` instead.
  */
-export class R2RestStateStore implements StateStore {
+export class R2RestStateStore extends StateStore {
   private api: CloudflareApi;
   private prefix: string;
   private bucketName: string;
@@ -46,9 +44,15 @@ export class R2RestStateStore implements StateStore {
    * @param options Options for the state store
    */
   constructor(
-    public readonly scope: Scope,
+    scope: Scope,
     private readonly options: CloudflareR2StateStoreOptions = {},
   ) {
+    super(scope, {
+      enableRetry: true,
+      maxAttempts: 5,
+      initialDelayMs: 1000,
+      isRetryable: isRetryableError,
+    });
     // Use the scope's chain to build the prefix, similar to how FileSystemStateStore builds its directory
     const scopePath = scope.chain.join("/");
     this.prefix = options.prefix
@@ -74,22 +78,12 @@ export class R2RestStateStore implements StateStore {
 
     // Check if the alchemy state bucket exists
     try {
-      await withExponentialBackoff(
-        () => getBucket(this.api, this.bucketName),
-        isRetryableError,
-        5,
-        1000,
-      );
+      await getBucket(this.api, this.bucketName);
     } catch (error) {
       // If not, create the alchemy state bucket
       if (error instanceof CloudflareApiError && error.status === 404) {
         try {
-          await withExponentialBackoff(
-            () => createBucket(this.api, this.bucketName),
-            isRetryableError,
-            5,
-            1000,
-          );
+          await createBucket(this.api, this.bucketName);
         } catch (error) {
           // this can happen when the bucket is being created in parallel
           if (error instanceof CloudflareApiError && error.status === 409) {
@@ -114,7 +108,7 @@ export class R2RestStateStore implements StateStore {
   /**
    * List all resources in the state store
    */
-  async list(): Promise<string[]> {
+  async listRaw(): Promise<string[]> {
     await this.ensureInitialized();
 
     // Using pagination to get all objects
@@ -134,21 +128,11 @@ export class R2RestStateStore implements StateStore {
 
       const listPath = `/accounts/${this.api.accountId}/r2/buckets/${this.bucketName}/objects?${params.toString()}`;
 
-      const response = await withExponentialBackoff(
-        async () => {
-          const response = await this.api.get(listPath);
+      const response = await this.api.get(listPath);
 
-          if (!response.ok) {
-            await handleApiError(response, "list", "bucket", this.bucketName);
-          }
-
-          return response;
-        },
-        // Retry on transient errors
-        isRetryableError,
-        5, // 5 retry attempts
-        1000, // Start with 1 second delay
-      );
+      if (!response.ok) {
+        await handleApiError(response, "list", "bucket", this.bucketName);
+      }
 
       const data = (await response.json()) as any;
 
@@ -177,8 +161,8 @@ export class R2RestStateStore implements StateStore {
   /**
    * Count the number of items in the state store
    */
-  async count(): Promise<number> {
-    const keys = await this.list();
+  async countRaw(): Promise<number> {
+    const keys = await this.listRaw();
     return keys.length;
   }
 
@@ -188,37 +172,24 @@ export class R2RestStateStore implements StateStore {
    * @param key The key to look up
    * @returns The state or undefined if not found
    */
-  async get(key: string): Promise<State | undefined> {
+  async getRaw(key: string): Promise<State | undefined> {
     await this.ensureInitialized();
 
     try {
-      const response = await withExponentialBackoff(
-        async () => {
-          const response = await this.api.get(
-            `/accounts/${this.api.accountId}/r2/buckets/${this.bucketName}/objects/${this.getObjectKey(key)}`,
-          );
-
-          if (!response.ok && response.status !== 404) {
-            await handleApiError(response, "get", "object", key);
-          }
-
-          return response;
-        },
-        // Retry on transient errors
-        isRetryableError,
-        5, // 5 retry attempts
-        1000, // Start with 1 second delay
+      const response = await this.api.get(
+        `/accounts/${this.api.accountId}/r2/buckets/${this.bucketName}/objects/${this.getObjectKey(key)}`,
       );
+
+      if (!response.ok && response.status !== 404) {
+        await handleApiError(response, "get", "object", key);
+      }
 
       if (response.status === 404) {
         return undefined;
       }
 
-      // Parse and deserialize the state data
-      const state = (await deserialize(
-        this.scope,
-        JSON.parse(await response.text()),
-      )) as State;
+      // Parse the state data
+      const state = JSON.parse(await response.text()) as State;
 
       // Create a new state object with proper output
       return {
@@ -242,12 +213,12 @@ export class R2RestStateStore implements StateStore {
    * @param ids Array of keys to fetch
    * @returns Record mapping keys to their states
    */
-  async getBatch(ids: string[]): Promise<Record<string, State>> {
+  async getBatchRaw(ids: string[]): Promise<Record<string, State>> {
     const result: Record<string, State> = {};
 
     // R2 REST API doesn't have a batch get operation, so we need to make multiple requests
     const promises = ids.map(async (id) => {
-      const state = await this.get(id);
+      const state = await this.getRaw(id);
       if (state) {
         result[id] = state;
       }
@@ -262,9 +233,9 @@ export class R2RestStateStore implements StateStore {
    *
    * @returns Record mapping all keys to their states
    */
-  async all(): Promise<Record<string, State>> {
-    const keys = await this.list();
-    return this.getBatch(keys);
+  async allRaw(): Promise<Record<string, State>> {
+    const keys = await this.listRaw();
+    return this.getBatchRaw(keys);
   }
 
   /**
@@ -273,37 +244,24 @@ export class R2RestStateStore implements StateStore {
    * @param key The key to set
    * @param value The state to store
    */
-  async set(key: string, value: State): Promise<void> {
+  async setRaw(key: string, value: State): Promise<void> {
     await this.ensureInitialized();
 
     const objectKey = this.getObjectKey(key);
 
-    // Serialize the state to handle cyclic structures
-    const serializedData = await serialize(this.scope, value);
-
-    // Using withExponentialBackoff for reliability
-    await withExponentialBackoff(
-      async () => {
-        const response = await this.api.put(
-          `/accounts/${this.api.accountId}/r2/buckets/${this.bucketName}/objects/${objectKey}`,
-          serializedData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        if (!response.ok) {
-          await handleApiError(response, "put", "object", objectKey);
-        }
-        return response;
+    const response = await this.api.put(
+      `/accounts/${this.api.accountId}/r2/buckets/${this.bucketName}/objects/${objectKey}`,
+      value,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-      // Retry on transient errors
-      isRetryableError,
-      5, // 5 retry attempts
-      1000, // Start with 1 second delay
     );
+
+    if (!response.ok) {
+      await handleApiError(response, "put", "object", objectKey);
+    }
   }
 
   /**
@@ -311,25 +269,16 @@ export class R2RestStateStore implements StateStore {
    *
    * @param key The key to delete
    */
-  async delete(key: string): Promise<void> {
+  async deleteRaw(key: string): Promise<void> {
     await this.ensureInitialized();
 
-    await withExponentialBackoff(
-      async () => {
-        const response = await this.api.delete(
-          `/accounts/${this.api.accountId}/r2/buckets/${this.bucketName}/objects/${this.getObjectKey(key)}`,
-        );
-
-        if (!response.ok && response.status !== 404) {
-          await handleApiError(response, "delete", "object", key);
-        }
-
-        return response;
-      },
-      isRetryableError,
-      5, // 5 retry attempts
-      1000, // Start with 1 second delay
+    const response = await this.api.delete(
+      `/accounts/${this.api.accountId}/r2/buckets/${this.bucketName}/objects/${this.getObjectKey(key)}`,
     );
+
+    if (!response.ok && response.status !== 404) {
+      await handleApiError(response, "delete", "object", key);
+    }
   }
 
   /**

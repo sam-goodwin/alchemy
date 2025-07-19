@@ -13,9 +13,9 @@ import {
 import { putWorker } from "../cloudflare/worker.ts";
 import type { Scope } from "../scope.ts";
 import type { Secret } from "../secret.ts";
+import { StateStore, type State } from "../state.ts";
 import { logger } from "../util/logger.ts";
 import { memoize } from "../util/memoize.ts";
-import { StateStoreProxy } from "./proxy.ts";
 
 export interface CloudflareStateStoreOptions extends CloudflareApiOptions {
   /**
@@ -42,48 +42,103 @@ export interface CloudflareStateStoreOptions extends CloudflareApiOptions {
  *
  * @see {@link https://alchemy.run/guides/do-state-store DOStateStore}
  */
-export class CloudflareStateStore extends StateStoreProxy {
+export class CloudflareStateStore extends StateStore {
+  private url?: string;
+  private token?: string;
+
   constructor(
     scope: Scope,
     private readonly options: CloudflareStateStoreOptions = {},
   ) {
-    super(scope);
+    super(scope, {
+      enableRetry: true,
+      maxAttempts: 5,
+      initialDelayMs: 100,
+      isRetryable: () => true,
+    });
   }
 
-  async provision(): Promise<StateStoreProxy.Dispatch> {
+  private async ensureProvisioned(): Promise<void> {
+    if (this.url && this.token) return;
+
     const { url, token } = await provision(this.options);
-    return async (method, params) => {
-      const request: StateStoreProxy.Request<
-        typeof method,
-        { chain: string[] }
-      > = {
+    this.url = url;
+    this.token = token;
+  }
+
+  private async request<TMethod extends CloudflareStateStore.Method>(
+    method: TMethod,
+    params: CloudflareStateStore.API[TMethod]["params"],
+  ): Promise<CloudflareStateStore.API[TMethod]["result"]> {
+    await this.ensureProvisioned();
+
+    const request: CloudflareStateStore.Request<TMethod, { chain: string[] }> =
+      {
         method,
         params,
         context: { chain: this.scope.chain },
       };
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(request),
-      });
-      if (!response.headers.get("Content-Type")?.includes("application/json")) {
-        throw new Error(
-          `[CloudflareStateStore] "${method}" request failed with status ${response.status}: Expected JSON response, but got ${response.headers.get("Content-Type")}`,
-        );
-      }
-      const json = (await response.json()) as StateStoreProxy.Response<
-        typeof method
-      >;
-      if (!json.success) {
-        throw new Error(
-          `[CloudflareStateStore] "${method}" request failed with status ${response.status}: ${json.error}`,
-        );
-      }
-      return json.result;
-    };
+
+    const response = await fetch(this.url!, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.headers.get("Content-Type")?.includes("application/json")) {
+      throw new Error(
+        `[CloudflareStateStore] "${method}" request failed with status ${response.status}: Expected JSON response, but got ${response.headers.get("Content-Type")}`,
+      );
+    }
+
+    const json =
+      (await response.json()) as CloudflareStateStore.Response<TMethod>;
+    if (!json.success) {
+      throw new Error(
+        `[CloudflareStateStore] "${method}" request failed with status ${response.status}: ${json.error}`,
+      );
+    }
+
+    return json.result;
+  }
+
+  async init(): Promise<void> {
+    return this.request("init", []);
+  }
+
+  async deinit(): Promise<void> {
+    return this.request("deinit", []);
+  }
+
+  async listRaw(): Promise<string[]> {
+    return this.request("list", []);
+  }
+
+  async countRaw(): Promise<number> {
+    return this.request("count", []);
+  }
+
+  async getRaw(key: string): Promise<State | undefined> {
+    return this.request("get", [key]);
+  }
+
+  async getBatchRaw(ids: string[]): Promise<Record<string, State>> {
+    return this.request("getBatch", [ids]);
+  }
+
+  async allRaw(): Promise<Record<string, State>> {
+    return this.request("all", []);
+  }
+
+  async setRaw(key: string, value: State): Promise<void> {
+    return this.request("set", [key, value]);
+  }
+
+  async deleteRaw(key: string): Promise<void> {
+    return this.request("delete", [key]);
   }
 }
 
@@ -167,4 +222,50 @@ async function pollUntilReady(fn: () => Promise<Response>) {
   throw new Error(
     `[CloudflareStateStore] Failed to reach state store: ${last?.status} ${last?.statusText}`,
   );
+}
+
+export declare namespace CloudflareStateStore {
+  export type API = {
+    [K in
+      | "init"
+      | "deinit"
+      | "list"
+      | "count"
+      | "get"
+      | "getBatch"
+      | "all"
+      | "set"
+      | "delete"]: NonNullable<StateStore[K]> extends (
+      ...args: infer Args
+    ) => Promise<infer Return>
+      ? {
+          method: K;
+          params: Args;
+          result: Return;
+        }
+      : never;
+  };
+  export type Method = keyof API;
+
+  export type Request<TMethod extends Method, TContext = unknown> = {
+    method: TMethod;
+    params: API[TMethod]["params"];
+    context: TContext;
+  };
+
+  export type SuccessResponse<TMethod extends Method> = {
+    success: true;
+    status: number;
+    result: API[TMethod]["result"];
+  };
+
+  export type ErrorResponse = {
+    success: false;
+    status: number;
+    error: string;
+  };
+
+  export type Response<TMethod extends Method> =
+    | SuccessResponse<TMethod>
+    | ErrorResponse;
 }

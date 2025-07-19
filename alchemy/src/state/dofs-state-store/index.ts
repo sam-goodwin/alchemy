@@ -6,8 +6,7 @@ import {
 import { getAccountSubdomain } from "../../cloudflare/worker-subdomain.ts";
 import { ResourceScope } from "../../resource.ts";
 import type { Scope } from "../../scope.ts";
-import { deserialize, serialize } from "../../serde.ts";
-import type { State, StateStore } from "../../state.ts";
+import { StateStore, type State } from "../../state.ts";
 import { DOFSStateStoreClient, upsertStateStoreWorker } from "./store.ts";
 
 export interface DOFSStateStoreOptions extends CloudflareApiOptions {
@@ -52,14 +51,15 @@ export interface DOFSStateStoreOptions extends CloudflareApiOptions {
  *
  * @deprecated This state store is no longer recommended for production use. Please use {@link https://alchemy.run/guides/cloudflare-state-store/ CloudflareStateStore} from `alchemy/state` instead, which offers better reliability and performance.
  */
-export class DOFSStateStore implements StateStore {
+export class DOFSStateStore extends StateStore {
   private prefix: string;
   private client?: Promise<DOFSStateStoreClient>;
 
   constructor(
-    private readonly scope: Scope,
+    scope: Scope,
     private readonly options: DOFSStateStoreOptions = {},
   ) {
+    super(scope);
     this.prefix = [options.prefix ?? "alchemy", ...scope.chain, ""].join("/");
   }
 
@@ -124,19 +124,19 @@ export class DOFSStateStore implements StateStore {
     await this.getClient();
   }
 
-  async list(): Promise<string[]> {
+  async listRaw(): Promise<string[]> {
     const client = await this.getClient();
     const res = await client.rpc("list", { prefix: this.prefix });
     return res.map((key) => this.deserializeKey(key));
   }
 
-  async count(): Promise<number> {
+  async countRaw(): Promise<number> {
     const client = await this.getClient();
     const res = await client.rpc("count", { prefix: this.prefix });
     return res;
   }
 
-  async get(key: string): Promise<State | undefined> {
+  async getRaw(key: string): Promise<State | undefined> {
     const client = await this.getClient();
     const res = await client.rpc("get", { key: this.serializeKey(key) });
     if (res) {
@@ -145,7 +145,7 @@ export class DOFSStateStore implements StateStore {
     return undefined;
   }
 
-  async getBatch(ids: string[]): Promise<Record<string, State>> {
+  async getBatchRaw(ids: string[]): Promise<Record<string, State>> {
     const client = await this.getClient();
     const res = await client.rpc("getBatch", {
       keys: ids.map((id) => this.serializeKey(id)),
@@ -153,21 +153,21 @@ export class DOFSStateStore implements StateStore {
     return await this.deserializeStates(res);
   }
 
-  async all(): Promise<Record<string, State>> {
+  async allRaw(): Promise<Record<string, State>> {
     const client = await this.getClient();
     const res = await client.rpc("all", { prefix: this.prefix });
     return await this.deserializeStates(res);
   }
 
-  async set(key: string, value: State): Promise<void> {
+  async setRaw(key: string, value: State): Promise<void> {
     const client = await this.getClient();
     await client.rpc("set", {
       key: this.serializeKey(key),
-      value: await serialize(this.scope, value),
+      value: value,
     });
   }
 
-  async delete(key: string): Promise<void> {
+  async deleteRaw(key: string): Promise<void> {
     const client = await this.getClient();
     await client.rpc("delete", { key: this.serializeKey(key) });
   }
@@ -186,7 +186,7 @@ export class DOFSStateStore implements StateStore {
   }
 
   private async deserializeState(input: string): Promise<State> {
-    const state = (await deserialize(this.scope, JSON.parse(input))) as State;
+    const state = JSON.parse(input) as State;
     if (state.output === undefined) {
       state.output = {} as any;
     }

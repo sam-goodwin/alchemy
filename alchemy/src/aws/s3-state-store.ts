@@ -9,8 +9,8 @@ import {
 } from "@aws-sdk/client-s3";
 import { ResourceScope } from "../resource.ts";
 import type { Scope } from "../scope.ts";
-import { serialize, deserialize } from "../serde.ts";
-import type { State, StateStore } from "../state.ts";
+import { deserialize, serialize } from "../serde.ts";
+import { type State, StateStore } from "../state.ts";
 import { ignore } from "../util/ignore.ts";
 import { retry } from "./retry.ts";
 
@@ -41,7 +41,7 @@ export interface S3StateStoreOptions {
  * State store implementation using AWS S3
  * Provides reliable, scalable state storage with eventual consistency
  */
-export class S3StateStore implements StateStore {
+export class S3StateStore extends StateStore {
   private client: S3Client;
   private prefix: string;
   private bucketName: string;
@@ -57,6 +57,8 @@ export class S3StateStore implements StateStore {
     public readonly scope: Scope,
     private readonly options: S3StateStoreOptions = {},
   ) {
+    super(scope);
+
     // Use the scope's chain to build the prefix, similar to how FileSystemStateStore builds its directory
     const scopePath = scope.chain.join("/");
     this.prefix = options.prefix
@@ -108,7 +110,7 @@ export class S3StateStore implements StateStore {
   /**
    * List all resources in the state store
    */
-  async list(): Promise<string[]> {
+  async listRaw(): Promise<string[]> {
     await this.ensureInitialized();
 
     const keys: string[] = [];
@@ -143,7 +145,7 @@ export class S3StateStore implements StateStore {
   /**
    * Count the number of items in the state store
    */
-  async count(): Promise<number> {
+  async countRaw(): Promise<number> {
     const keys = await this.list();
     return keys.length;
   }
@@ -154,7 +156,7 @@ export class S3StateStore implements StateStore {
    * @param key The key to look up
    * @returns The state or undefined if not found
    */
-  async get(key: string): Promise<State | undefined> {
+  async getRaw(key: string): Promise<State | undefined> {
     await this.ensureInitialized();
 
     try {
@@ -202,7 +204,7 @@ export class S3StateStore implements StateStore {
    * @param ids Array of keys to fetch
    * @returns Record mapping keys to their states
    */
-  async getBatch(ids: string[]): Promise<Record<string, State>> {
+  async getBatchRaw(ids: string[]): Promise<Record<string, State>> {
     const result: Record<string, State> = {};
 
     // S3 doesn't have a batch get operation, so we need to make multiple requests
@@ -222,7 +224,7 @@ export class S3StateStore implements StateStore {
    *
    * @returns Record mapping all keys to their states
    */
-  async all(): Promise<Record<string, State>> {
+  async allRaw(): Promise<Record<string, State>> {
     const keys = await this.list();
     return this.getBatch(keys);
   }
@@ -233,7 +235,7 @@ export class S3StateStore implements StateStore {
    * @param key The key to set
    * @param value The state to store
    */
-  async set(key: string, value: State): Promise<void> {
+  async setRaw(key: string, value: State): Promise<void> {
     await this.ensureInitialized();
 
     const objectKey = this.getObjectKey(key);
@@ -262,7 +264,7 @@ export class S3StateStore implements StateStore {
    *
    * @param key The key to delete
    */
-  async delete(key: string): Promise<void> {
+  async deleteRaw(key: string): Promise<void> {
     await this.ensureInitialized();
 
     await ignore(NoSuchKey.name, () =>

@@ -194,12 +194,12 @@ export class Scope {
 
     this.stateStore =
       options.stateStore ?? this.parent?.stateStore ?? defaultStateStore;
+    this.telemetryClient =
+      options.telemetryClient ?? this.parent?.telemetryClient!;
     this.state = this.stateStore(this);
     if (!options.telemetryClient && !this.parent?.telemetryClient) {
       throw new Error("Telemetry client is required");
     }
-    this.telemetryClient =
-      options.telemetryClient ?? this.parent?.telemetryClient!;
     this.dataMutex = new AsyncMutex();
   }
 
