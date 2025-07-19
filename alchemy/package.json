@@ -12,10 +12,11 @@
   "type": "module",
   "module": "./lib/index.js",
   "bin": {
-    "alchemy": "bin/alchemy.mjs"
+    "alchemy": "bin/alchemy.js"
   },
   "scripts": {
-    "build:cli": "bun ./scripts/build-cli.ts",
+    "build:cli": "tsdown",
+    "dev:cli": "tsdown --watch",
     "build:workers": "bun ./scripts/build-workers.ts",
     "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b && bun run build:cli && bun run build:workers",
     "drizzle:generate": "bun run scripts/drizzle-generate.ts",
@@ -219,9 +220,11 @@
     "picocolors": "^1.1.1",
     "prettier": "^3.5.3",
     "trpc-cli": "^0.10.0",
+    "ts-morph": "^26.0.0",
+    "tsdown": "^0.12.9",
     "turndown": "^7.2.0",
-    "typedoc-plugin-markdown": "^4.6.0",
     "typedoc": "^0.28.1",
+    "typedoc-plugin-markdown": "^4.6.0",
     "typescript": "^5.8.3",
     "vite": "^6.0.7",
     "vitepress": "^1.6.3",
