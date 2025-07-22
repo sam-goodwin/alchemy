@@ -20,6 +20,14 @@ export default {
 
     await env.RPC.hello("John Doe");
 
+    await env.WORKFLOW.create({
+      params: ["John Doe"],
+    });
+    await env.WORKFLOW.create({
+      // @ts-expect-error - type check params
+      params: [],
+    });
+
     return new Response("Ok");
   },
   async queue(batch: typeof queue.Batch, _env: typeof worker.Env) {

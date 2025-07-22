@@ -9,6 +9,7 @@ import {
 } from "alchemy/cloudflare";
 import type { HelloWorldDO } from "./src/do.ts";
 import type MyRPC from "./src/rpc.ts";
+import type { OFACWorkflow } from "./src/workflow.ts";
 
 const app = await alchemy("cloudflare-worker");
 
@@ -35,7 +36,7 @@ export const worker = await Worker("worker", {
       adopt: true,
     }),
     QUEUE: queue,
-    WORKFLOW: Workflow("OFACWorkflow", {
+    WORKFLOW: Workflow<OFACWorkflow>("OFACWorkflow", {
       className: "OFACWorkflow",
       workflowName: "ofac-workflow",
     }),
