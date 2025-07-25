@@ -144,12 +144,17 @@ function handleUnenvAliasedPackages(
 
   build.onResolve({ filter: UNENV_ALIAS_RE }, (args) => {
     const unresolvedAlias = alias[args.path];
+
     // Convert `require()` calls for NPM packages to a virtual ES Module that can be imported avoiding the require calls.
     // Note: Does not apply to Node.js packages that are handled in `handleRequireCallsToNodeJSBuiltins`
     if (
       args.kind === "require-call" &&
       (unresolvedAlias.startsWith("unenv/npm/") ||
-        unresolvedAlias.startsWith("unenv/mock/"))
+        unresolvedAlias.startsWith("unenv/mock/") ||
+        // this does not exist in the original wrangler code but does seem to resolve the problem
+        // TODO(sam): is this the right solution? Why does the same code work in wrangler?
+        unresolvedAlias.startsWith("@cloudflare/unenv-preset/npm/") ||
+        unresolvedAlias.startsWith("@cloudflare/unenv-preset/mock/"))
     ) {
       return {
         path: args.path,

@@ -13,6 +13,7 @@ const test = alchemy.test(import.meta, {
 
 const entrypoint = path.resolve(__dirname, "bundle-handler.ts");
 const entrypoint_als = path.resolve(__dirname, "bundle-handler-als.ts");
+const entrypoint_grammy = path.resolve(__dirname, "bundle-handler-grammy.ts");
 
 describe("Bundle Worker Test", () => {
   test("create, test, and delete worker from bundle", async (scope) => {
@@ -106,4 +107,31 @@ describe("Bundle Worker Test", () => {
       await destroy(scope);
     }
   });
+
+  test("should bundle grammy", async (scope) => {
+    try {
+      // Create a worker using the entrypoint file
+      const worker = await Worker(`${BRANCH_PREFIX}-test-bundle-worker`, {
+        entrypoint: entrypoint_grammy,
+        format: "esm", // Assuming bundle-handler.ts is ESM
+        url: true, // Enable workers.dev URL to test the worker
+        compatibilityFlags: ["nodejs_compat"],
+        adopt: true,
+        compatibilityDate: "2025-07-20",
+        bundle: {
+          outdir: ".out",
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const response = await fetchAndExpectOK(worker.url!);
+      const text = await response.text();
+      // Check against the expected response from bundle-handler.ts
+      expect(text).toEqual("Hello World!");
+    } finally {
+      // Clean up the worker
+      // await destroy(scope);
+    }
+  }, 120000); // Increased timeout for bundling and deployment
 });
