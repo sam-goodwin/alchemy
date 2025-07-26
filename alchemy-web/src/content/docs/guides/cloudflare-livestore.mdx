@@ -1,0 +1,182 @@
+---
+title: LiveStore (Cloudflare)
+description: Deploy a LiveStore sync backend on Cloudflare Workers and connect it to a React client with Alchemy.
+sidebar:
+  order: 20
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+
+LiveStore lets you build real-time, collaborative apps by combining an **event-sourced SQLite state** with automatic syncing.  
+This guide shows the **minimum viable setup** for running LiveStore on Cloudflare using Alchemy.
+
+:::note
+For deeper details see the official [LiveStore Cloudflare guide](https://docs.livestore.dev/reference/syncing/sync-provider/cloudflare/).
+:::
+
+<Steps>
+
+1. **Install dependencies**
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun add alchemy @livestore/livestore @livestore/adapter-web @livestore/react @livestore/sync-cf react react-dom vite
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npm install alchemy @livestore/livestore @livestore/adapter-web @livestore/react @livestore/sync-cf react react-dom vite
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm add alchemy @livestore/livestore @livestore/adapter-web @livestore/react @livestore/sync-cf react react-dom vite
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn add alchemy @livestore/livestore @livestore/adapter-web @livestore/react @livestore/sync-cf react react-dom vite
+       ```
+     </TabItem>
+   </Tabs>
+
+2. **Create the LiveStore schema**
+
+   `src/livestore/schema.ts`:
+
+   ```ts
+   import { Events, State, Schema, makeSchema, SessionIdSymbol } from "@livestore/livestore";
+
+   // Define SQLite tables
+   const tables = {
+     todos: State.SQLite.table({
+       name: "todos",
+       columns: {
+         id: State.SQLite.text({ primaryKey: true }),
+         text: State.SQLite.text({ default: "" }),
+         completed: State.SQLite.boolean({ default: false }),
+       },
+     }),
+     uiState: State.SQLite.clientDocument({
+       name: "uiState",
+       schema: Schema.Struct({ newTodoText: Schema.String }),
+       default: { id: SessionIdSymbol, value: { newTodoText: "" } },
+     }),
+   };
+
+   // Describe events
+   const events = {
+     todoCreated: Events.synced({
+       name: "v1.TodoCreated",
+       schema: Schema.Struct({ id: Schema.String, text: Schema.String }),
+     }),
+     uiStateSet: tables.uiState.set,
+   };
+
+   // Map events → state
+   const materializers = State.SQLite.materializers(events, {
+     "v1.TodoCreated": ({ id, text }) => tables.todos.insert({ id, text }),
+   });
+
+   const state = State.SQLite.makeState({ tables, materializers });
+   export const schema = makeSchema({ events, state });
+   ```
+
+   :::info
+   Learn more about **data modelling** in the [LiveStore docs](https://docs.livestore.dev/reference/state/sqlite-schema)
+   :::
+
+3. **Client-side worker** – `src/livestore/client.ts`
+
+   ```ts
+   import { makeWorker } from "@livestore/adapter-web/worker";
+   import { makeCfSync } from "@livestore/sync-cf";
+
+   import { schema } from "./livestore/schema.js";
+
+   makeWorker({
+     schema,
+     sync: {
+       backend: makeCfSync({ url: import.meta.env.VITE_LIVESTORE_SYNC_URL }),
+       initialSyncOptions: { _tag: "Blocking", timeout: 5000 },
+     },
+   });
+   ```
+
+4. **Cloudflare sync backend** – `src/livestore/server.ts`
+
+   ```ts
+   import { makeDurableObject, makeWorker } from "@livestore/sync-cf/cf-worker";
+
+   export class WebSocketServer extends makeDurableObject({}) {}
+
+   export default makeWorker({
+     validatePayload: (payload: any) => {
+       if (payload?.authToken !== "insecure-token-change-me") {
+         throw new Error("Invalid auth token");
+       }
+     },
+     enableCORS: true,
+   });
+   ```
+
+5. **Describe infrastructure** – `alchemy.run.ts`
+
+   ```ts
+   import alchemy from "alchemy";
+   import { D1Database, DurableObjectNamespace, Vite, Worker } from "alchemy/cloudflare";
+
+   const app = await alchemy("cloudflare-livestore");
+
+   // Cloudflare Worker hosting the sync backend
+   const server = await Worker("server", {
+     entrypoint: "src/livestore.server.ts",
+     compatibility: "node",
+     bindings: {
+       DB: await D1Database("db", { 
+         name: `${app.name}-${app.stage}-livestore`, 
+         adopt: true 
+       }),
+       WEBSOCKET_SERVER: DurableObjectNamespace("websocket-server", { 
+         className: "WebSocketServer" 
+       }),
+     },
+   });
+
+   // Vite site serving your React app
+   await Vite("client", {
+     assets: "dist",
+     env: {
+       VITE_LIVESTORE_SYNC_URL: server.url!,
+     },
+   });
+
+   await app.finalize();
+   ```
+
+6. **Run locally**
+
+   ```sh
+   bun alchemy dev
+   # open http://localhost:8787 to see LiveStore in action
+   ```
+
+7. **Deploy to production**
+
+   ```sh
+   bun alchemy deploy
+   ```
+
+   Alchemy will provision:
+
+   * a Cloudflare Worker (with Durable Object + D1) for syncing
+   * your Vite site, with `VITE_LIVESTORE_SYNC_URL` automatically wired up
+
+</Steps>
+
+## Next steps
+
+- Explore advanced **syncing options** in the [LiveStore docs](https://docs.livestore.dev/reference/syncing)
+- Enable **Dev-Tools** (`@livestore/devtools-vite`) for local debugging
+- Extend the schema and events as your app grows 

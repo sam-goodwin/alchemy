@@ -11,11 +11,11 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/cloudflare": "^12.5.4",
-    "@astrojs/starlight": "^0.34.3",
+    "@astrojs/cloudflare": "12.6.0",
+    "@astrojs/starlight": "0.35.1",
     "@cloudflare/workers-types": "^4.20250613.0",
     "alchemy": "workspace:*",
-    "astro": "^5.6.1",
+    "astro": "5.12.3",
     "starlight-nextjs-theme": "^0.2.0",
     "typescript": "^5.8.3"
   },
