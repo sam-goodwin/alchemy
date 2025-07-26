@@ -7,5 +7,6 @@ export * from "./queue.ts";
 export * from "./role.ts";
 export * from "./s3-state-store.ts";
 export * from "./ses.ts";
+export * from "./ses-verification.ts";
 export * from "./ssm-parameter.ts";
 export * from "./table.ts";

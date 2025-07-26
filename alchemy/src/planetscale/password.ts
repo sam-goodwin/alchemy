@@ -306,7 +306,7 @@ export const Password = Resource(
             this.output.cidrs.length === props.cidrs.length &&
             this.output.cidrs.every((cidr, i) => cidr === props.cidrs![i])))
       ) {
-        return this.replace();
+        return await this.replace();
       }
       const updateResponse = await api.patch(
         `/organizations/${props.organizationId}/databases/${databaseName}/branches/${branchName}/passwords/${this.output.id}`,
