@@ -1,0 +1,79 @@
+name: "Alchemy CodeQL Configuration"
+
+# Disable default paths to specify custom ones
+disable-default-path-filters: false
+
+# Define what paths to include in the analysis
+paths:
+  - "alchemy/src"
+  - "alchemy-web/src"
+  - "alchemy-web/docs"
+  - "examples/*/src"
+  - "examples/*/app"
+  - "examples/*/pages"
+  - "examples/*/components"
+  - "stacks"
+  - "scripts"
+
+# Define what paths to exclude from analysis
+paths-ignore:
+  # Test files
+  - "**/*.test.ts"
+  - "**/*.test.js"
+  - "**/*.spec.ts"
+  - "**/*.spec.js"
+  - "**/test/**"
+  - "**/tests/**"
+  - "alchemy/test/**"
+  
+  # Generated/Build artifacts
+  - "**/node_modules/**"
+  - "**/lib/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/.next/**"
+  - "**/.nuxt/**"
+  - "**/.output/**"
+  - "**/out/**"
+  - "**/*.d.ts"
+  - "**/types/generated/**"
+  
+  # Configuration files that don't need security analysis
+  - "**/*.config.js"
+  - "**/*.config.ts"
+  - "**/*.config.mjs"
+  - "**/vite.config.*"
+  - "**/vitest.config.*"
+  - "**/tailwind.config.*"
+  - "**/biome.json"
+  - "**/tsconfig*.json"
+  - "**/.cursorrules"
+  
+  # Documentation and misc files
+  - "**/*.md"
+  - "**/*.mdx"
+  - "**/CHANGELOG.md"
+  - "**/README.md"
+  - "**/LICENSE"
+  - "**/.github/**"
+  - "**/public/**"
+  - "**/static/**"
+
+# Query pack configuration
+packs:
+  # Include the JavaScript queries pack
+  - codeql/javascript-queries
+
+# Query suite configuration
+queries:
+  # Use comprehensive security and quality query suites
+  - uses: security-extended
+  - uses: security-and-quality
+
+# Custom query suites for more specific analysis
+query-filters:
+  # Exclude certain query results that may be noisy for this type of project
+  - exclude:
+      id: js/incomplete-sanitization
+  - exclude:
+      id: js/incomplete-multi-character-sanitization 
