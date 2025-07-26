@@ -3,7 +3,9 @@ import { dedent } from "../util/dedent.ts";
 /**
  * TanStackStart server functions and middleware run in Node.js intead of Miniflare when using `vite dev`.
  *
- * This plugin polyfills the cloudflare:workers module during the dev server phase.
+ * This plugin polyfills the cloudflare:workers module & includes `process.env` during the dev server phase.
+ *
+ * @see https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack/#using-cloudflare-bindings
  */
 export function cloudflareWorkersDevEnvironmentShim() {
   return {
@@ -14,12 +16,16 @@ export function cloudflareWorkersDevEnvironmentShim() {
       if (id === "cloudflare:workers") return id; // tell Vite we handled it
     },
     load(id: string) {
-      if (id === "cloudflare:workers")
+      if (id === "cloudflare:workers") {
+        const processEnv = JSON.stringify(process.env);
+
+        // @see https://developers.cloudflare.com/workers/wrangler/api/#getplatformproxy
         return dedent`
           import { getPlatformProxy } from "wrangler";
-          // TODO: should we export default cloudflare; ??
-          const cloudflare = await getPlatformProxy();
-          export const env = cloudflare.env;`;
+          const cloudflare = await getPlatformProxy({ experimental: { remoteBindings: true } });
+          export const env = Object.assign(${processEnv}, cloudflare.env);
+        `.trim();
+      }
     },
   } as const;
 }
