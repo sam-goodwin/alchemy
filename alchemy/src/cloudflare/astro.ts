@@ -77,6 +77,10 @@ export async function Astro<B extends Bindings>(
 
   return Website(id, {
     ...props,
+    command: props.command ?? "astro build",
+    dev: props.dev ?? {
+      command: "astro dev",
+    },
     noBundle: props.noBundle ?? true,
     main,
     assets: {
@@ -85,8 +89,5 @@ export async function Astro<B extends Bindings>(
       run_worker_first: false,
     },
     wrangler,
-    dev: props.dev ?? {
-      command: "astro dev",
-    },
   });
 }

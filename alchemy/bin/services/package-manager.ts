@@ -61,7 +61,7 @@ export async function installDependencies(
     devDependencies?: string[];
     cwd?: string;
   } = {},
-): Promise<void> {
+) {
   const targetCwd = cwd || context.path;
   const pm = context.packageManager;
   const commands = PackageManager[pm];

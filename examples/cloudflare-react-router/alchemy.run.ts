@@ -7,8 +7,6 @@ const app = await alchemy("cloudflare-react-router");
 
 export const website = await ReactRouter("website", {
   name: `${app.name}-${app.stage}-website`,
-  main: "./workers/app.ts",
-  command: "bun run build",
 });
 
 console.log({

@@ -1403,8 +1403,10 @@ async function createDevCommand(props: {
     }
   }
   const command = props.command.split(" ");
-  const proc = spawn(command[0], command.slice(1), {
+  const [cmd, ...args] = command;
+  const proc = spawn(cmd, args, {
     cwd: props.cwd,
+    shell: true,
     env: {
       ...process.env,
       ...props.env,

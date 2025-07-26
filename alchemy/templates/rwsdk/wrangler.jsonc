@@ -6,8 +6,11 @@
   "assets": { "binding": "ASSETS", "directory": "dist/client" },
   "durable_objects": {
     "bindings": [
-      { "name": "SESSION_DURABLE_OBJECT", "class_name": "SessionDurableObject" }
-    ]
+      {
+        "name": "SESSION_DURABLE_OBJECT",
+        "class_name": "SessionDurableObject",
+      },
+    ],
   },
   "d1_databases": [
     {
@@ -15,14 +18,14 @@
       "database_id": "33c4fe7d-fbfe-4cef-959c-bb54292af712",
       "database_name": "my-alchemy-app-db",
       "migrations_dir": "migrations",
-      "preview_database_id": "33c4fe7d-fbfe-4cef-959c-bb54292af712"
-    }
+      "preview_database_id": "33c4fe7d-fbfe-4cef-959c-bb54292af712",
+    },
   ],
   "migrations": [
     {
       "tag": "v1",
       "new_sqlite_classes": [],
-      "new_classes": ["SessionDurableObject"]
-    }
-  ]
+      "new_classes": ["SessionDurableObject"],
+    },
+  ],
 }
