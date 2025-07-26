@@ -2,7 +2,7 @@
   // https://nuxt.com/docs/guide/concepts/typescript
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
-    "types": ["@cloudflare/workers-types", "@types/node"],
+    "types": ["@cloudflare/workers-types", "@types/node", "./env.d.ts"],
     "jsx": "react-jsx",
     "noEmit": true
   },

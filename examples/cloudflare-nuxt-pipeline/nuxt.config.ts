@@ -9,4 +9,5 @@ export default defineNuxtConfig({
       autoSubfolderIndex: false,
     },
   },
+  modules: ["nitro-cloudflare-dev"],
 });

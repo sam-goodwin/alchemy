@@ -1,14 +1,15 @@
 /// <reference types="@cloudflare/workers-types" />
-import type { worker } from "./alchemy.run.js";
 
-export type WorkerEnv = typeof worker.Env;
+import type { website } from "./alchemy.run.ts";
 
-declare global {
-  export type Env = WorkerEnv;
-}
-
-declare module "cloudflare:workers" {
-  namespace Cloudflare {
-    export interface Env extends WorkerEnv {}
+declare module "h3" {
+  interface H3EventContext {
+    cf: CfProperties;
+    cloudflare: {
+      request: Request;
+      env: typeof website.Env;
+      context: ExecutionContext;
+    };
   }
 }
+

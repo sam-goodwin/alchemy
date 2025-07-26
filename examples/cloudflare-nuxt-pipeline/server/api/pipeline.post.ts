@@ -1,10 +1,7 @@
-import { env } from "cloudflare:workers";
-
 export default defineEventHandler(async (event) => {
   try {
+    const pipeline = event.context.cloudflare.env.PIPELINE;
     const body = await readBody(event);
-    // @ts-ignore
-    const pipeline = env.PIPELINE;
     const data = body.data;
 
     if (!data) {
