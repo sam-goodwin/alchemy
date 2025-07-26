@@ -1,12 +1,12 @@
 /* Central Color System for Alchemy Website */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap");
 :root {
   /* Typography - Sans-serif for docs */
-  --sl-font: 'IBM Plex Sans', sans-serif;
-  --sl-font-mono: 'IBM Plex Mono', monospace;
-  --sl-font-headings: 'IBM Plex Sans', serif;
+  --sl-font: "IBM Plex Sans", sans-serif;
+  --sl-font-mono: "IBM Plex Mono", monospace;
+  --sl-font-headings: "IBM Plex Sans", serif;
 }
 
 [data-theme="light"] {
@@ -16,21 +16,57 @@
   --sl-color-text-accent: black;
   /* --sl-color-text-accent: rgb(88, 28, 135); */
   --sl-color-accent: rgb(243, 232, 255);
-  --sl-color-accent-high: #F3E8FF;
-  --sl-color-accent-low: color-mix(in srgb, #F3E8FF 40%, transparent);
-  --sl-color-accent-light: color-mix(in srgb, #F3E8FF 60%, white);
+  --sl-color-accent-high: #f3e8ff;
+  --sl-color-accent-low: color-mix(in srgb, #f3e8ff 40%, transparent);
+  --sl-color-accent-light: color-mix(in srgb, #f3e8ff 60%, white);
 
-  #starlight__sidebar > .sidebar-content > sl-sidebar-state-persist > ul li > a[aria-current="page"] {
+  #starlight__sidebar
+    > .sidebar-content
+    > sl-sidebar-state-persist
+    > ul
+    li
+    > a[aria-current="page"] {
     background-color: #374151;
   }
 }
 
 [data-theme="dark"] {
   /* Dark Theme */
-  --sl-color-text-invert: black;                                          /* Text color that contrasts with accent backgrounds */
-  --sl-color-text-accent: white;                                          /* Sidebar links, TOC active items, current page indicators - white for readability */
-  --sl-color-accent: #F3E8FF;                                             /* Sidebar highlights, TOC backgrounds, active states */
-  --sl-color-accent-high: #F3E8FF;                                        /* High contrast accent elements, focused states */
-  --sl-color-accent-low: color-mix(in srgb, #F3E8FF 40%, transparent);    /* Subtle hover states, borders */
-  --sl-color-accent-light: color-mix(in srgb, #F3E8FF 60%, transparent);  /* Light accent backgrounds */
+  --sl-color-text-invert: black; /* Text color that contrasts with accent backgrounds */
+  --sl-color-text-accent: white; /* Sidebar links, TOC active items, current page indicators - white for readability */
+  --sl-color-accent: #f3e8ff; /* Sidebar highlights, TOC backgrounds, active states */
+  --sl-color-accent-high: #f3e8ff; /* High contrast accent elements, focused states */
+  --sl-color-accent-low: color-mix(
+    in srgb,
+    #f3e8ff 40%,
+    transparent
+  ); /* Subtle hover states, borders */
+  --sl-color-accent-light: color-mix(
+    in srgb,
+    #f3e8ff 60%,
+    transparent
+  ); /* Light accent backgrounds */
+} /* Move blog link next to search input */
+.nova-header-nav {
+  flex-direction: row-reverse;
+}
+
+/* Override the spacing of the posts on the all posts page (/blog) */
+.sl-markdown-content > .posts {
+  gap: 1rem;
+}
+
+/* A series of rules to tighten up the spacing of the post previews on /blog */
+.posts .preview {
+  .metadata {
+    margin-top: 0.1rem;
+  }
+
+  h2 {
+    margin-bottom: 0;
+  }
+
+  .sl-markdown-content {
+    margin-top: 0;
+  }
 }

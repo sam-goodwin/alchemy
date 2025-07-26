@@ -1,0 +1,19 @@
+---
+import BlogMarkdownContent from 'starlight-blog/components/MarkdownContent.astro';
+import NovaMarkdownContent from 'starlight-theme-nova/components/MarkdownContent.astro';
+
+const props = Astro.props;
+// Check if it's a blog post (not just /blog/ landing page)
+const pathname = Astro.url.pathname;
+const isBlogPost = pathname.startsWith('/blog/') && pathname !== '/blog/';
+---
+
+{isBlogPost ? (
+  <BlogMarkdownContent {...props}>
+    <slot />
+  </BlogMarkdownContent>
+) : (
+  <NovaMarkdownContent {...props}>
+    <slot />
+  </NovaMarkdownContent>
+)}
