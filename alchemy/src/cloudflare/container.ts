@@ -368,6 +368,15 @@ export interface ContainerApplicationProps extends CloudflareApiOptions {
    * @default false
    */
   adopt?: boolean;
+
+  /**
+   * If true, the container application will not be created, but will be retained if it already exists.
+   * This is used for local development.
+   *
+   * @default false
+   * @internal
+   */
+  noop?: boolean;
 }
 
 /**
@@ -502,6 +511,13 @@ export const ContainerApplication = Resource(
         await deleteContainerApplication(api, this.output.id);
       }
       return this.destroy();
+    }
+
+    if (props.noop) {
+      return this({
+        id: this.output?.id ?? "noop-container-app",
+        name: props.name,
+      });
     }
     // Prefer the immutable repo digest if present. Falls back to the tag reference.
     const imageReference = props.image.repoDigest ?? props.image.imageRef;

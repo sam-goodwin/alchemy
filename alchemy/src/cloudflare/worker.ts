@@ -746,83 +746,13 @@ const _Worker = Resource(
       compatibilityDate,
       compatibilityFlags,
       outdir:
-        props.bundle?.outdir ??
-        path.join(cwd, ".alchemy", ...this.scope.chain, id),
+        props.bundle?.outdir ?? path.join(cwd, ".alchemy", "out", workerName),
       sourceMap: "sourceMap" in props ? props.sourceMap : undefined,
     });
 
     // run locally if
     const local = this.scope.local && !props.dev?.remote;
     const watch = this.scope.watch;
-
-    if (local) {
-      let url: string | undefined;
-      if (bundleSourceResult.isErr()) {
-        throw bundleSourceResult.error;
-      }
-
-      if (props.dev?.command) {
-        const { url: commandUrl } = await createDevCommand({
-          id,
-          command: props.dev.command,
-          cwd: props.dev.cwd || props.cwd || process.cwd(),
-          env: {
-            ...(process.env ?? {}),
-            ...props.env,
-            ...Object.fromEntries(
-              Object.entries(props.bindings ?? {}).flatMap(([key, value]) =>
-                typeof value === "string"
-                  ? [[key, value]]
-                  : isSecret(value)
-                    ? [[key, value.unencrypted]]
-                    : [],
-              ),
-            ),
-          },
-        });
-        url = commandUrl;
-      } else {
-        url = await createMiniflare({
-          id,
-          workerName,
-          compatibilityDate,
-          compatibilityFlags,
-          bindings: props.bindings,
-          bundle: bundleSourceResult.value,
-          port: props.dev?.port,
-          assets: props.assets,
-        });
-      }
-
-      return this({
-        type: "service",
-        id,
-        entrypoint: props.entrypoint,
-        name: workerName,
-        cwd: relativeCwd,
-        compatibilityDate,
-        compatibilityFlags,
-        format: props.format || "esm", // Include format in the output
-        bindings: normalizeExportBindings(workerName, props.bindings),
-        env: props.env,
-        observability: props.observability,
-        createdAt: this.output?.createdAt ?? Date.now(),
-        updatedAt: Date.now(),
-        eventSources: props.eventSources,
-        url,
-        dev: props.dev,
-        // Include assets configuration in the output
-        assets: props.assets,
-        // Include cron triggers in the output
-        crons: props.crons,
-        // Include placement configuration in the output
-        placement: props.placement,
-        // Include limits configuration in the output
-        limits: props.limits,
-        // phantom property
-        Env: undefined!,
-      } as unknown as Worker<B>);
-    }
 
     const api = await createCloudflareApi(props);
 
@@ -844,7 +774,7 @@ const _Worker = Resource(
 
     const bundleSource = bundleSourceResult.value;
 
-    if (this.phase === "update") {
+    if (this.phase === "update" && !local) {
       const oldName = this.output.name ?? this.output.id;
       const newName = workerName;
 
@@ -906,7 +836,7 @@ const _Worker = Resource(
       });
     };
 
-    if (this.phase === "create") {
+    if (this.phase === "create" && !local) {
       if (props.version) {
         // When version is specified, we adopt existing workers or create them if they don't exist
         if (!(await workerExists(api, workerName))) {
@@ -923,8 +853,42 @@ const _Worker = Resource(
       }
     }
 
-    let putWorkerResult: PutWorkerResult;
-    if (watch) {
+    let putWorkerResult: PutWorkerResult | undefined;
+    let localUrl: string | undefined;
+    if (local) {
+      if (props.dev?.command) {
+        const { url: commandUrl } = await createDevCommand({
+          id,
+          command: props.dev.command,
+          cwd: props.dev.cwd || props.cwd || process.cwd(),
+          env: {
+            ...(process.env ?? {}),
+            ...props.env,
+            ...Object.fromEntries(
+              Object.entries(props.bindings ?? {}).flatMap(([key, value]) =>
+                typeof value === "string"
+                  ? [[key, value]]
+                  : isSecret(value)
+                    ? [[key, value.unencrypted]]
+                    : [],
+              ),
+            ),
+          },
+        });
+        localUrl = commandUrl;
+      } else {
+        localUrl = await createMiniflare({
+          id,
+          workerName,
+          compatibilityDate,
+          compatibilityFlags,
+          bindings: props.bindings,
+          bundle: bundleSourceResult.value,
+          port: props.dev?.port,
+          assets: props.assets,
+        });
+      }
+    } else if (watch) {
       const controller = new AbortController();
       cleanups.push(() => controller.abort());
       const promise = new DeferredPromise<PutWorkerResult>();
@@ -988,35 +952,45 @@ const _Worker = Resource(
 
     const tasks: Promise<unknown>[] = [];
 
-    for (const workflow of workflowsBindings) {
-      if (
-        workflow.scriptName === undefined ||
-        workflow.scriptName === workerName
-      ) {
-        tasks.push(
-          upsertWorkflow(api, {
-            workflowName: workflow.workflowName,
-            className: workflow.className,
-            scriptName: workflow.scriptName ?? workerName,
-          }),
-        );
+    if (!local) {
+      for (const workflow of workflowsBindings) {
+        if (
+          workflow.scriptName === undefined ||
+          workflow.scriptName === workerName
+        ) {
+          tasks.push(
+            upsertWorkflow(api, {
+              workflowName: workflow.workflowName,
+              className: workflow.className,
+              scriptName: workflow.scriptName ?? workerName,
+            }),
+          );
+        }
       }
     }
 
     if (containersBindings.length > 0) {
       tasks.push(
-        getVersionMetadata(api, workerName, putWorkerResult.deployment_id).then(
-          (versionMetadata) =>
-            provisionContainers(api, {
-              scriptName: workerName,
-              containers: containersBindings,
-              bindings: versionMetadata.resources.bindings,
-            }),
+        getVersionMetadata(
+          api,
+          workerName,
+          // TODO: where does the deployment id come from if we're running locally? don't want to tear it down
+          putWorkerResult?.deployment_id,
+        ).then((versionMetadata) =>
+          provisionContainers(api, {
+            scriptName: workerName,
+            containers: containersBindings,
+            bindings: versionMetadata.resources.bindings,
+            noop: local,
+          }),
         ),
       );
     }
 
-    if (!isDeepStrictEqual(props.crons, this.output?.crons)) {
+    // TODO: this shouldn't be updated if we're running locally, but it should be updated in subsequent runs.
+    // As is, this.output.crons would be updated to props.crons even if it's not updated.
+    // Should we not do that?
+    if (!isDeepStrictEqual(props.crons, this.output?.crons) && !local) {
       tasks.push(
         api.put(
           `/accounts/${api.accountId}/workers/scripts/${workerName}/schedules`,
@@ -1030,31 +1004,34 @@ const _Worker = Resource(
         scriptName: workerName,
         eventSources: props.eventSources,
         adopt: props.adopt,
+        noop: local,
       }),
     );
 
     const [domains, routes, subdomain] = await Promise.all([
-      // TODO: can you provision domains and routes in parallel, or is there a dependency?
       provisionDomains(api, {
         scriptName: workerName,
         adopt: props.adopt,
         domains: props.domains,
+        noop: local,
       }),
       provisionRoutes(api, {
         scriptName: workerName,
         adopt: props.adopt,
         routes: props.routes,
+        noop: local,
       }),
       provisionSubdomain(api, {
         scriptName: workerName,
         enable: props.url ?? dispatchNamespace === undefined,
         previewVersionId:
-          props.version && putWorkerResult.metadata.has_preview
+          props.version && putWorkerResult?.metadata.has_preview
             ? putWorkerResult.id
             : undefined,
         retain: !!props.version,
         forceDelete:
           this.phase === "create" && !!props.adopt && props.url === false,
+        noop: local,
       }),
       ...tasks,
     ]);
@@ -1078,7 +1055,7 @@ const _Worker = Resource(
       createdAt: this.output?.createdAt ?? now,
       updatedAt: now,
       eventSources: props.eventSources,
-      url: subdomain?.url,
+      url: local ? localUrl : subdomain?.url,
       dev: props.dev,
       // Include assets configuration in the output
       assets: props.assets,
@@ -1166,11 +1143,15 @@ async function provisionContainers(
   api: CloudflareApi,
   props: {
     scriptName: string;
-    containers?: Container[];
+    containers: Container[] | undefined;
     bindings: WorkerBindingSpec[];
+    noop: boolean | undefined;
   },
 ): Promise<ContainerApplication[] | undefined> {
   if (!props.containers?.length) {
+    return;
+  }
+  if (props.noop) {
     return;
   }
   return await Promise.all(
@@ -1193,6 +1174,7 @@ async function provisionContainers(
         },
         schedulingPolicy: container.schedulingPolicy,
         adopt: container.adopt,
+        noop: props.noop,
         ...normalizeApiOptions(api),
       });
     }),
@@ -1205,9 +1187,13 @@ async function provisionEventSources(
     scriptName: string;
     eventSources?: EventSource[];
     adopt?: boolean;
+    noop?: boolean;
   },
 ): Promise<QueueConsumer[] | undefined> {
   if (!props.eventSources?.length) {
+    return;
+  }
+  if (props.noop) {
     return;
   }
   return await Promise.all(
@@ -1220,6 +1206,7 @@ async function provisionEventSources(
             ? { deadLetterQueue: eventSource.dlq }
             : undefined,
           adopt: props.adopt,
+          noop: props.noop,
           ...normalizeApiOptions(api),
         });
       }
@@ -1229,6 +1216,7 @@ async function provisionEventSources(
           scriptName: props.scriptName,
           settings: eventSource.settings,
           adopt: props.adopt,
+          noop: props.noop,
           ...normalizeApiOptions(api),
         });
       }
@@ -1241,8 +1229,9 @@ async function provisionDomains(
   api: CloudflareApi,
   props: {
     scriptName: string;
-    adopt?: boolean;
-    domains?: WorkerProps["domains"];
+    adopt: boolean | undefined;
+    domains: WorkerProps["domains"] | undefined;
+    noop: boolean | undefined;
   },
 ): Promise<CustomDomain[] | undefined> {
   if (!props.domains?.length) {
@@ -1270,6 +1259,7 @@ async function provisionDomains(
         name: domain.name,
         zoneId: domain.zoneId,
         adopt: domain.adopt,
+        noop: props.noop,
         ...normalizeApiOptions(api),
       });
     }),
@@ -1280,8 +1270,9 @@ async function provisionRoutes(
   api: CloudflareApi,
   props: {
     scriptName: string;
-    adopt?: boolean;
-    routes?: WorkerProps["routes"];
+    adopt: boolean | undefined;
+    routes: WorkerProps["routes"] | undefined;
+    noop: boolean | undefined;
   },
 ): Promise<Route[] | undefined> {
   if (!props.routes?.length) {
@@ -1308,6 +1299,7 @@ async function provisionRoutes(
         script: props.scriptName,
         zoneId: route.zoneId,
         adopt: route.adopt,
+        noop: props.noop,
         ...normalizeApiOptions(api),
       });
     }),
@@ -1322,6 +1314,7 @@ async function provisionSubdomain(
     previewVersionId: string | undefined;
     retain: boolean;
     forceDelete: boolean;
+    noop: boolean | undefined;
   },
 ): Promise<WorkerSubdomain | undefined> {
   if (props.enable) {
@@ -1329,6 +1322,7 @@ async function provisionSubdomain(
       scriptName: props.scriptName,
       previewVersionId: props.previewVersionId,
       retain: props.retain,
+      noop: props.noop,
       ...normalizeApiOptions(api),
     });
   }

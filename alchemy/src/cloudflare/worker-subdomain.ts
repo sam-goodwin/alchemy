@@ -25,6 +25,14 @@ interface WorkerSubdomainProps extends CloudflareApiOptions {
    * @default false
    */
   retain?: boolean;
+  /**
+   * If true, the subdomain will not be created, but will be retained if it already exists.
+   * This is used for local development.
+   *
+   * @default false
+   * @internal
+   */
+  noop?: boolean;
 }
 
 export interface WorkerSubdomain
@@ -48,6 +56,11 @@ export const WorkerSubdomain = Resource(
         await disableWorkerSubdomain(api, props.scriptName);
       }
       return this.destroy();
+    }
+    if (props.noop) {
+      return this({
+        url: this.output?.url ?? "https://unavailable.alchemy.run",
+      });
     }
     await enableWorkerSubdomain(api, props.scriptName);
     const subdomain = await getAccountSubdomain(api);
