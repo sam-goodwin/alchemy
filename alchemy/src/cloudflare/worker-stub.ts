@@ -2,6 +2,7 @@ import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
 import type { type } from "../type.ts";
 import { handleApiError } from "./api-error.ts";
+import { extractCloudflareResult } from "./api-response.ts";
 import {
   createCloudflareApi,
   type CloudflareApi,
@@ -185,20 +186,16 @@ async function createEmptyWorker(
   );
 
   // Upload worker script
-  const uploadResponse = await api.put(
-    `/accounts/${api.accountId}/workers/scripts/${workerName}`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
+  await extractCloudflareResult(
+    `create empty worker "${workerName}"`,
+    api.put(
+      `/accounts/${api.accountId}/workers/scripts/${workerName}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       },
-    },
+    ),
   );
-
-  // Check if the upload was successful
-  if (!uploadResponse.ok) {
-    throw new Error(
-      `Failed to create empty worker: ${uploadResponse.status} ${uploadResponse.statusText}`,
-    );
-  }
 }
