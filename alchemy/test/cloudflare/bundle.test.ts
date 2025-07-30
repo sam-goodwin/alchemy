@@ -134,4 +134,22 @@ describe("Bundle Worker Test", () => {
       await destroy(scope);
     }
   }, 120000); // Increased timeout for bundling and deployment
+
+  test("should bundle sentry", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-sentry`;
+
+    try {
+      const worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        entrypoint: path.join(import.meta.dirname, "test-handlers/sentry.ts"),
+        compatibilityFlags: ["nodejs_als"],
+        bindings: {
+          SENTRY_DSN: await alchemy.env.SENTRY_DSN,
+        },
+      });
+    } finally {
+      await destroy(scope);
+    }
+  });
 });

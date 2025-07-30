@@ -74,7 +74,7 @@ export function normalizeWorkerBundle(props: {
             nodeCompat,
             cwd: props.cwd,
             outdir: props.outdir,
-            sourcemap: props.sourceMap !== false ? "linked" : undefined,
+            sourcemap: props.sourceMap !== false ? true : undefined,
             ...props.bundle,
           }),
     );
@@ -266,7 +266,7 @@ export namespace WorkerBundleSource {
       const wasmPlugin = createWasmPlugin();
       const options = this.buildOptions([wasmPlugin.plugin]);
       const result = await esbuild.build(options);
-      const { entrypoint, root, modules } = this.resolveBuildOutput(
+      const { entrypoint, root, modules } = await this.formatBuildOutput(
         result.metafile,
       );
       return {
@@ -300,7 +300,7 @@ export namespace WorkerBundleSource {
 
       for await (const result of hotReload.iterator) {
         count++;
-        const { entrypoint, root, modules } = this.resolveBuildOutput(
+        const { entrypoint, root, modules } = await this.formatBuildOutput(
           result.metafile!,
         );
         yield {
@@ -330,20 +330,27 @@ export namespace WorkerBundleSource {
       return {
         entryPoints: [entrypoint],
         absWorkingDir: cwd,
+        target: "es2022",
+        loader: {
+          ".js": "jsx",
+          ".mjs": "jsx",
+          ".cjs": "jsx",
+        },
         format,
-        target: "esnext",
+        sourceRoot: this.props.outdir,
+        jsxFactory: "React.createElement",
+        jsxFragment: "React.Fragment",
+        keepNames: true,
         ...props,
         metafile: true,
         write: true,
         bundle: true,
-        conditions: props.conditions ?? ["workerd", "worker", "browser"],
-        mainFields: props.mainFields,
-        loader: {
-          ".sql": "text",
-          ".json": "json",
-          ".wasm": "binary",
-          ...props.loader,
+        define: {
+          "navigator.userAgent": '"Cloudflare-Workers"',
+          "process.env.NODE_ENV": '"undefined"',
+          ...props.define,
         },
+        conditions: props.conditions ?? ["workerd", "worker", "browser"],
         plugins: [
           esbuildPluginAlias(props.alias ?? {}, this.props.cwd),
           nodeCompat === "v2"
@@ -359,8 +366,14 @@ export namespace WorkerBundleSource {
       } satisfies esbuild.BuildOptions;
     }
 
-    private resolveBuildOutput(metafile: esbuild.Metafile): WorkerBundle {
+    private async formatBuildOutput(
+      metafile: esbuild.Metafile,
+    ): Promise<WorkerBundle> {
       const outdir = path.resolve(this.props.cwd, this.props.outdir);
+      await fs.writeFile(
+        path.join(outdir, "metafile.json"),
+        JSON.stringify(metafile, null, 2),
+      );
       const paths: string[] = [];
       let entrypoint: string | undefined;
       for (const [key, value] of Object.entries(metafile.outputs)) {

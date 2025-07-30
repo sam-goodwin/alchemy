@@ -740,8 +740,7 @@ const _Worker = Resource(
       compatibilityDate,
       compatibilityFlags,
       outdir:
-        props.bundle?.outdir ??
-        path.join(cwd, ".alchemy", ...this.scope.chain, id),
+        props.bundle?.outdir ?? path.join(cwd, ".alchemy", "out", workerName),
       sourceMap: "sourceMap" in props ? props.sourceMap : undefined,
     });
 
