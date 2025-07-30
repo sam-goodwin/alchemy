@@ -7,6 +7,7 @@ export const logger = new Proxy({} as LoggerApi, {
       Scope.getScope()?.logger ??
       ({
         log: console.log,
+        info: console.log,
         error: console.error,
         warn: console.warn,
         warnOnce: console.warn,
