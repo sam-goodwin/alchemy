@@ -6,7 +6,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import open from "open";
-import xdgAppPaths from "xdg-app-paths";
+import envPaths from "env-paths";
 import { HTTPServer } from "../util/http.ts";
 import { memoize } from "../util/memoize.ts";
 import {
@@ -70,7 +70,7 @@ export const getRefreshedWranglerConfig = singleFlight(() =>
 );
 
 const getWranglerConfigPath = memoize(async () => {
-  const xdgConfigDir = xdgAppPaths(".wrangler").config();
+  const xdgConfigDir = envPaths("wrangler", { suffix: "" }).config;
   const legacyConfigDir = path.join(os.homedir(), ".wrangler");
   const configDir = (await fs
     .stat(legacyConfigDir)

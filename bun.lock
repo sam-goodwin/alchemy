@@ -38,6 +38,7 @@
         "@swc/core": "^1.11.24",
         "aws4fetch": "^1.0.20",
         "diff": "^8.0.2",
+        "env-paths": "^3.0.0",
         "esbuild": "^0.25.1",
         "execa": "^9.6.0",
         "fast-json-patch": "^3.1.1",
@@ -55,7 +56,6 @@
         "turndown": "^7.0.0",
         "unenv": "2.0.0-rc.15",
         "ws": "^8.18.3",
-        "xdg-app-paths": "^8.3.0",
         "yaml": "^2.0.0",
       },
       "devDependencies": {
