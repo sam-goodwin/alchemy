@@ -1,0 +1,264 @@
+---
+title: PlanetScale
+description: Deploy a PlanetScale database with Drizzle migrations using Alchemy.
+sidebar:
+  order: 17
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+This guide shows how to create and manage [PlanetScale](https://planetscale.com/) databases with automated Drizzle migrations using Alchemy.
+
+## Install
+
+Add the required dependencies to your project:
+
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bun add @planetscale/database drizzle-orm
+    bun add -D drizzle-kit
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npm install @planetscale/database drizzle-orm
+    npm install -D drizzle-kit
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm add @planetscale/database drizzle-orm
+    pnpm add -D drizzle-kit
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn add @planetscale/database drizzle-orm
+    yarn add -D drizzle-kit
+    ```
+  </TabItem>
+</Tabs>
+
+## Credentials
+
+Create a PlanetScale account and get your API credentials. Add them to your `.env` file:
+
+```env
+PLANETSCALE_ORG_ID=your_organization_id
+PLANETSCALE_API_TOKEN=your_api_token
+```
+
+:::tip
+You can find your organization ID and create API tokens in your [PlanetScale dashboard](https://app.planetscale.com/).
+:::
+
+## Create a PlanetScale application
+
+Set up your database schema and configuration files:
+
+### `src/schema.ts`
+
+```ts
+import { mysqlTable, serial, varchar } from "drizzle-orm/mysql-core";
+
+export const sampleTable = mysqlTable("sample_table", {
+  id: serial("id").primaryKey(),
+  value: varchar("value", { length: 255 }).notNull(),
+});
+```
+
+### `drizzle.config.ts`
+
+```ts
+import { defineConfig } from "drizzle-kit";
+
+export default defineConfig({
+  out: "./drizzle",
+  schema: "./src/schema.ts",
+  dialect: "mysql",
+  dbCredentials: {
+    url: `mysql://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?ssl={"rejectUnauthorized":true}`,
+  },
+});
+```
+
+### `package.json`
+
+Add these scripts to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  }
+}
+```
+
+## Create `alchemy.run.ts`
+
+```ts
+/// <reference types="@types/node" />
+
+import alchemy from "alchemy";
+import { Database, Branch, Password } from "alchemy/planetscale";
+import { Exec } from "alchemy/os";
+
+const app = await alchemy("my-planetscale-app");
+
+// Create the database
+const database = await Database("Database", {
+  adopt: true,
+  name: "sample-database",
+  organizationId: process.env.PLANETSCALE_ORG_ID!,
+  region: {
+    slug: "us-east",
+  },
+  clusterSize: "PS_10",
+  allowDataBranching: true,
+  automaticMigrations: true,
+  requireApprovalForDeploy: false,
+  defaultBranch: "main",
+  migrationFramework: "other",
+  migrationTableName: "__drizzle_migrations",
+});
+
+// Create a branch for this environment
+const branch = await Branch("Branch", {
+  adopt: true,
+  name: `${app.name}-${app.stage}-branch`,
+  organizationId: process.env.PLANETSCALE_ORG_ID!,
+  databaseName: database.name,
+  parentBranch: database.defaultBranch,
+  isProduction: false,
+  safeMigrations: !app.local,
+});
+
+// Create credentials for the branch
+const password = await Password("Password", {
+  name: `${app.name}-${app.stage}-password`,
+  organizationId: process.env.PLANETSCALE_ORG_ID!,
+  database: database,
+  branch: branch,
+  role: "admin",
+});
+
+// Generate and run migrations
+await Exec("DrizzleGenerate", {
+  command: "bun run db:generate",
+  env: {
+    DATABASE_NAME: database.name,
+    DATABASE_HOST: password.host,
+    DATABASE_USERNAME: password.username,
+    DATABASE_PASSWORD: password.password,
+  },
+});
+
+await Exec("DrizzleMigrate", {
+  command:
+    process.platform === "win32"
+      ? `cmd /C "bun run db:migrate || if %ERRORLEVEL%==9 exit 0 else exit %ERRORLEVEL%"`
+      : `sh -c 'bun run db:migrate || ( [ $? -eq 9 ] && exit 0 ); exit $?'`,
+  env: {
+    DATABASE_NAME: database.name,
+    DATABASE_HOST: password.host,
+    DATABASE_USERNAME: password.username,
+    DATABASE_PASSWORD: password.password,
+  },
+});
+
+// Start Drizzle Studio in local development
+if (app.local) {
+  Exec("DrizzleStudio", {
+    command: "bun run db:studio",
+    env: {
+      DATABASE_NAME: database.name,
+      DATABASE_HOST: password.host,
+      DATABASE_USERNAME: password.username,
+      DATABASE_PASSWORD: password.password,
+    },
+  });
+}
+
+console.log({
+  database: database.name,
+  branch: branch.name,
+  host: password.host,
+});
+
+await app.finalize();
+```
+
+## Deploy
+
+Run `alchemy.run.ts` script to deploy:
+
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bun ./alchemy.run.ts
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npx tsx ./alchemy.run.ts
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm tsx ./alchemy.run.ts
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn tsx ./alchemy.run.ts
+    ```
+  </TabItem>
+</Tabs>
+
+It should log out your database connection details:
+
+```sh
+{
+  database: "sample-database",
+  branch: "my-planetscale-app-dev-branch", 
+  host: "aws.connect.psdb.cloud"
+}
+```
+
+## Tear Down
+
+Clean up all PlanetScale resources created by this stack:
+
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bun ./alchemy.run.ts --destroy
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npx tsx ./alchemy.run.ts --destroy
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm tsx ./alchemy.run.ts --destroy
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn tsx ./alchemy.run.ts --destroy
+    ```
+  </TabItem>
+</Tabs>
+
+:::tip
+PlanetScale requires payment for database creation. If payments aren't set up on your PlanetScale account, you can create a database through the PlanetScale web UI then adopt it in Alchemy using `adopt: true`.
+:::
+
+:::note
+The PlanetScale branch password needs admin permissions to perform Drizzle migrations. For production use, consider creating separate passwords: a temporary `admin` password for migrations and a long-lived `readwriter` password for application use.
+:::

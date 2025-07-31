@@ -1,0 +1,25 @@
+{
+  "name": "planetscale-drizzle",
+  "version": "0.0.0",
+  "description": "Alchemy Typescript Project",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "deploy": "alchemy deploy --env-file ../../.env",
+    "destroy": "alchemy destroy --env-file ../../.env",
+    "dev": "alchemy dev --env-file ../../.env",
+    "db:generate": "drizzle-kit generate --config ./datbase/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config ./datbase/drizzle.config.ts",
+    "db:studio": "drizzle-kit studio --config ./datbase/drizzle.config.ts"
+  },
+  "dependencies": {
+    "@planetscale/database": "^1.19.0",
+    "drizzle-orm": "^0.44.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.1",
+    "alchemy": "workspace:*",
+    "drizzle-kit": "^0.31.1",
+    "typescript": "^5.8.3"
+  }
+}
