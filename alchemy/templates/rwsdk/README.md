@@ -1,5 +1,7 @@
 # Standard RedwoodSDK Starter
 
+[![Deployed with Alchemy](https://alchemy.run/alchemy-badge.svg)](https://alchemy.run)
+
 This "standard starter" is the recommended implementation for RedwoodSDK. You get a Typescript project with:
 
 - Vite

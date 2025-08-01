@@ -1,5 +1,7 @@
 # Astro Starter Kit: Basics
 
+[![Deployed with Alchemy](https://alchemy.run/alchemy-badge.svg)](https://alchemy.run)
+
 ```sh
 bun create astro@latest -- --template basics
 ```

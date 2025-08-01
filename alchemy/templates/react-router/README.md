@@ -1,5 +1,7 @@
 # Welcome to React Router!
 
+[![Deployed with Alchemy](https://alchemy.run/alchemy-badge.svg)](https://alchemy.run)
+
 A modern, production-ready template for building full-stack React applications using React Router.
 
 ## Features
