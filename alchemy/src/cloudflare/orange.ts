@@ -1,9 +1,9 @@
 import type { Assets } from "./assets.js";
 import type { Bindings } from "./bindings.js";
-import { Website, type WebsiteProps } from "./website.js";
-import type { Worker } from "./worker.js";
+import { Vite, type ViteProps } from "./vite/vite.ts";
+import type { Worker } from "./worker.ts";
 
-export interface OrangeProps<B extends Bindings> extends WebsiteProps<B> {}
+export interface OrangeProps<B extends Bindings> extends ViteProps<B> {}
 
 // don't allow the ASSETS to be overriden
 export type Orange<B extends Bindings> = B extends { ASSETS: any }
@@ -36,29 +36,19 @@ export type Orange<B extends Bindings> = B extends { ASSETS: any }
  */
 export async function Orange<B extends Bindings>(
   id: string,
-  props?: Partial<OrangeProps<B>>,
+  props: Partial<OrangeProps<B>> = {},
 ): Promise<Orange<B>> {
-  return Website(id, {
+  return await Vite(id, {
     ...props,
-    command: props?.command ?? "vite build",
-    dev: props?.dev ?? {
-      command: "vite dev",
-    },
-    // The entrypoint and the Wrangler main must differ for the Cloudflare vite plugin
-    // to bundle the application correctly, and alchemy must run our bundler on the Vite
-    // output since we don't resolve vite imports.
-    wrangler: props?.wrangler ?? {
-      main: "app/entry.server.ts",
-    },
-    // Since we've already bundled the application with the build command, we can just
-    // upload the modules in the `dist/srr` directory. With `noBundle: true`, any files
-    // that match `**/*.js`, `**/*.mjs`, and `**/*.wasm` under the entrypoint's directory
-    // (which is `dist/ssr`) will be uploaded to the worker so we don't need any explicit
-    // module rules.
-    noBundle: true,
-    // `main` is used as the entrypoint in the Worker resource.
-    main: props?.main ?? "dist/ssr/entry.server.js",
-    assets: props?.assets ?? "dist/client",
+    noBundle: props.noBundle ?? true,
+    entrypoint: props.entrypoint ?? "dist/ssr/entry.server.js",
+    assets: props.assets ?? "dist/client",
     compatibilityFlags: ["nodejs_compat", ...(props?.compatibilityFlags ?? [])],
+    wrangler: {
+      path: "wrangler.jsonc",
+      main: "app/entry.server.ts",
+      secrets: false,
+      ...props.wrangler,
+    },
   });
 }

@@ -41,9 +41,7 @@ Bind a Nuxt app to a Cloudflare Worker.
 ```ts
 import { Worker, Nuxt } from "alchemy/cloudflare";
 
-const nuxtApp = await Nuxt("my-nuxt-app", {
-  command: "npm run build",
-});
+const nuxtApp = await Nuxt("my-nuxt-app");
 
 await Worker("my-worker", {
   name: "my-worker",
@@ -60,8 +58,8 @@ The transform hook allows you to customize the wrangler.json configuration. For 
 
 ```ts
 await Nuxt("my-app", {
-  transform: {
-    wrangler: (spec) => ({
+  wrangler: {
+    transform: (spec) => ({
       ...spec,
       vars: {
         ...spec.vars,

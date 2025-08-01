@@ -47,7 +47,7 @@ describe("Website Resource", () => {
 
       // Create website with url: false (disable workers.dev subdomain)
       const website = await Website(name, {
-        main: entrypoint,
+        entrypoint,
         assets: distDir,
         url: false, // Explicitly disable workers.dev URL
         adopt: true,
@@ -121,9 +121,8 @@ describe("Website Resource", () => {
       // Create website with cwd pointing to subdirectory
       const website = await Website(name, {
         cwd: subDir,
-        main: entrypoint,
+        entrypoint,
         assets: distDir, // Use absolute path for assets
-        wrangler: true,
         adopt: true,
       });
 
@@ -131,8 +130,13 @@ describe("Website Resource", () => {
       expect(website.name).toBe(name);
       expect(website.url).toBeDefined();
 
-      // Verify wrangler.jsonc was created in the correct location (subDir)
-      const wranglerPath = path.join(subDir, "wrangler.jsonc");
+      // Verify wrangler.jsonc was created in the correct location (subDir/.alchemy/local/wrangler.jsonc)
+      const wranglerPath = path.join(
+        subDir,
+        ".alchemy",
+        "local",
+        "wrangler.jsonc",
+      );
       await expect(fs.access(wranglerPath)).resolves.toBeUndefined();
 
       // Verify wrangler.jsonc was NOT created in the root tempDir
@@ -143,11 +147,11 @@ describe("Website Resource", () => {
       const wranglerContent = await fs.readFile(wranglerPath, "utf-8");
       const wranglerJson = JSON.parse(wranglerContent);
 
-      expect(wranglerJson.main).toBe("worker.ts");
+      expect(wranglerJson.main).toBe("../../worker.ts");
       expect(wranglerJson.name).toBe(name);
       expect(wranglerJson.assets).toMatchObject({
         binding: "ASSETS",
-        directory: expect.stringContaining("dist"),
+        directory: "../../dist",
       });
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
@@ -187,9 +191,11 @@ describe("Website Resource", () => {
       // Create website with cwd and custom wrangler filename
       const website = await Website(name, {
         cwd: subDir,
-        main: entrypoint,
+        entrypoint,
         assets: path.resolve(distDir), // Use absolute path for assets
-        wrangler: "custom-wrangler.json",
+        wrangler: {
+          path: "custom-wrangler.json",
+        },
         adopt: true,
       });
 
@@ -209,7 +215,7 @@ describe("Website Resource", () => {
     }
   });
 
-  test("places wrangler.jsonc in project root when no cwd specified", async (scope) => {
+  test("places wrangler.jsonc in .alchemy/local when no cwd specified", async (scope) => {
     const name = `${BRANCH_PREFIX}-test-website-default-cwd`;
     const tempDir = path.join(".out", "alchemy-website-default-test");
     const distDir = path.join(tempDir, "dist");
@@ -238,9 +244,8 @@ describe("Website Resource", () => {
 
       // Create website without specifying cwd (should use process.cwd())
       const website = await Website(name, {
-        main: entrypoint,
+        entrypoint,
         assets: path.join(tempDir, "dist"), // Use absolute path since no cwd specified
-        wrangler: true,
         adopt: true,
       });
 
@@ -249,7 +254,12 @@ describe("Website Resource", () => {
 
       // Verify wrangler.jsonc was created in the current working directory (project root)
       // Since we didn't specify cwd, it should be placed relative to process.cwd()
-      const wranglerPath = path.join(process.cwd(), "wrangler.jsonc");
+      const wranglerPath = path.join(
+        process.cwd(),
+        ".alchemy",
+        "local",
+        "wrangler.jsonc",
+      );
       const wranglerExists = await fs
         .access(wranglerPath)
         .then(() => true)
@@ -267,7 +277,7 @@ describe("Website Resource", () => {
     }
   });
 
-  test("transform.wrangler hook modifies wrangler.json before writing", async (scope) => {
+  test("wrangler.transform hook modifies wrangler.json before writing", async (scope) => {
     const name = `${BRANCH_PREFIX}-test-website-transform-hook`;
     const tempDir = path.resolve(".out", "alchemy-website-transform-hook-test");
     const distDir = path.resolve(tempDir, "dist");
@@ -297,12 +307,11 @@ describe("Website Resource", () => {
       // Create website with transform.wrangler hook
       const website = await Website(name, {
         cwd: tempDir,
-        main: entrypoint,
+        entrypoint,
         assets: distDir,
-        wrangler: true,
         adopt: true,
-        transform: {
-          wrangler: (spec) => {
+        wrangler: {
+          transform: (spec) => {
             // Modify the spec to add custom fields
             return {
               ...spec,
@@ -322,7 +331,12 @@ describe("Website Resource", () => {
       expect(website.url).toBeDefined();
 
       // Verify wrangler.jsonc was created with the hook modifications
-      const wranglerPath = path.join(tempDir, "wrangler.jsonc");
+      const wranglerPath = path.join(
+        tempDir,
+        ".alchemy",
+        "local",
+        "wrangler.jsonc",
+      );
       await expect(fs.access(wranglerPath)).resolves.toBeUndefined();
 
       // Verify the contents of wrangler.jsonc include the hook modifications
@@ -330,10 +344,10 @@ describe("Website Resource", () => {
       const wranglerJson = JSON.parse(wranglerContent);
 
       expect(wranglerJson.name).toBe(name);
-      expect(wranglerJson.main).toBe("worker.ts");
+      expect(wranglerJson.main).toBe("../../worker.ts");
       expect(wranglerJson.assets).toMatchObject({
         binding: "ASSETS",
-        directory: expect.stringContaining("dist"),
+        directory: "../../dist",
       });
 
       // Verify the hook modifications were applied

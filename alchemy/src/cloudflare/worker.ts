@@ -1,14 +1,10 @@
-import { spawn } from "node:child_process";
-import fs from "node:fs/promises";
 import { isDeepStrictEqual } from "node:util";
 import path from "pathe";
 import type { Context } from "../context.ts";
 import type { BundleProps } from "../esbuild/bundle.ts";
 import { Resource, ResourceKind } from "../resource.ts";
-import { isSecret } from "../secret.ts";
 import type { type } from "../type.ts";
 import { DeferredPromise } from "../util/deferred-promise.ts";
-import { exists } from "../util/exists.ts";
 import { logger } from "../util/logger.ts";
 import { withExponentialBackoff } from "../util/retry.ts";
 import { CloudflareApiError, handleApiError } from "./api-error.ts";
@@ -331,15 +327,10 @@ export interface BaseWorkerProps<
          * @default false
          */
         remote?: boolean;
-        /** @internal */
-        command?: undefined;
+        url?: undefined;
       }
     | {
-        command: string;
-        cwd?: string;
-        /** @internal */
-        port?: undefined;
-        /** @internal */
+        url: string;
         remote?: undefined;
       };
 
@@ -755,30 +746,11 @@ const _Worker = Resource(
         throw bundleSourceResult.error;
       }
 
-      if (props.dev?.command) {
-        const result = await createDevCommand({
-          id,
-          command: props.dev.command,
-          cwd: props.dev.cwd || props.cwd || process.cwd(),
-          env: {
-            ...(process.env ?? {}),
-            ...props.env,
-            ...Object.fromEntries(
-              Object.entries(props.bindings ?? {}).flatMap(([key, value]) =>
-                typeof value === "string"
-                  ? [[key, value]]
-                  : isSecret(value)
-                    ? [[key, value.unencrypted]]
-                    : [],
-              ),
-            ),
-          },
-        });
-        url = result.url;
-        this.onCleanup(() => result.cleanup());
+      if (props.dev && "url" in props.dev) {
+        url = props.dev.url;
       } else {
         const { MiniflareController } = await import(
-          "./miniflare/miniflare-controller.ts"
+          "./miniflare/miniflare-controller.js"
         );
         const controller = MiniflareController.singleton;
         url = await controller.add({
@@ -790,7 +762,7 @@ const _Worker = Resource(
           eventSources: props.eventSources,
           assets: props.assets,
           bundle: bundleSourceResult.value,
-          port: props.dev?.port,
+          port: props.dev?.port ?? undefined,
         });
         this.onCleanup(() => controller.dispose());
       }
@@ -849,7 +821,7 @@ const _Worker = Resource(
       const oldName = this.output.name ?? this.output.id;
       const newName = workerName;
 
-      if (oldName !== newName) {
+      if (oldName && oldName !== newName) {
         if (dispatchNamespace) {
           this.replace(true);
         } else {
@@ -1317,124 +1289,6 @@ async function provisionSubdomain(
   if (props.forceDelete) {
     await disableWorkerSubdomain(api, props.scriptName);
   }
-}
-
-async function createDevCommand(props: {
-  id: string;
-  command: string;
-  cwd: string;
-  env: Record<string, string | undefined>;
-}) {
-  const persistFile = path.join(process.cwd(), ".alchemy", `${props.id}.pid`);
-  if (await exists(persistFile)) {
-    const pid = Number.parseInt(await fs.readFile(persistFile, "utf8"));
-    try {
-      // Actually kill the process if it's alive
-      process.kill(pid, "SIGTERM");
-    } catch {
-      // ignore
-    }
-    try {
-      await fs.unlink(persistFile);
-    } catch {
-      // ignore
-    }
-  }
-  const command = props.command.split(" ");
-  const [cmd, ...args] = command;
-
-  const promise = new DeferredPromise<string>();
-  const childProcess = spawn(cmd, args, {
-    cwd: props.cwd,
-    shell: true,
-    env: {
-      ...process.env,
-      ...props.env,
-      ALCHEMY_CLOUDFLARE_PERSIST_PATH: path.join(
-        process.cwd(),
-        ".alchemy",
-        "miniflare",
-      ),
-      // Force colors in the child process since we're piping output
-      // FORCE_COLOR: "1",
-    },
-    stdio: ["inherit", "pipe", "pipe"],
-  });
-
-  // Clean up the pid file when the process exits
-  childProcess.once("exit", async () => {
-    try {
-      await fs.unlink(persistFile);
-    } catch {
-      // ignore
-    }
-  });
-
-  let urlFound = false;
-  let stdout = "";
-  let stderr = "";
-  const urlRegex =
-    /http:\/\/(?:(?:localhost|0\.0\.0\.0|127\.0\.0\.1)|(?:\d{1,3}\.){3}\d{1,3}):\d+(?:\/)?/;
-
-  const parseOutput = (data: string) => {
-    if (!urlFound) {
-      const match = data.match(urlRegex);
-      if (match) {
-        urlFound = true;
-        promise.resolve(match[0]);
-      }
-    }
-  };
-
-  // Handle stdout - parse for URL and write through with colors preserved
-  childProcess.stdout?.on("data", (data) => {
-    parseOutput(
-      (stdout += data.toString().replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "")),
-    );
-    process.stdout.write(data);
-  });
-
-  childProcess.stderr?.on("data", (data) => {
-    parseOutput(
-      (stderr += data.toString().replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "")),
-    );
-    process.stderr.write(data);
-  });
-
-  childProcess.on("error", (error) => {
-    promise.reject(error);
-  });
-  if (childProcess.pid) {
-    await fs.mkdir(path.dirname(persistFile), { recursive: true });
-    await fs.writeFile(persistFile, childProcess.pid.toString());
-  }
-  return {
-    url: await promise.value,
-    cleanup: async () => {
-      try {
-        await fs.unlink(persistFile);
-      } catch {
-        // ignore
-      }
-      if (!childProcess.killed) {
-        childProcess.kill("SIGTERM");
-        // Give it time to exit gracefully
-        await new Promise<void>((resolve) => {
-          const timeout = setTimeout(() => {
-            if (!childProcess.killed) {
-              childProcess.kill("SIGKILL");
-            }
-            resolve();
-          }, 5000);
-
-          childProcess.once("exit", () => {
-            clearTimeout(timeout);
-            resolve();
-          });
-        });
-      }
-    },
-  };
 }
 
 type PutWorkerOptions = Omit<WorkerProps, "entrypoint"> & {

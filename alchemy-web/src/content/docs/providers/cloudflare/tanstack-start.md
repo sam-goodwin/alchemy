@@ -77,8 +77,8 @@ The transform hook allows you to customize the wrangler.json configuration. For 
 
 ```ts
 await TanStackStart("my-app", {
-  transform: {
-    wrangler: (spec) => ({
+  wrangler: {
+    transform: (spec) => ({
       ...spec,
       vars: {
         ...spec.vars,

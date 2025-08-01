@@ -76,7 +76,7 @@ export class MiniflareController {
     return await this.mutex.lock(async () => {
       const options: miniflare.MiniflareOptions = {
         workers: Array.from(this.options.values()),
-        defaultPersistRoot: path.join(process.cwd(), ".alchemy/miniflare"),
+        defaultPersistRoot: path.join(process.cwd(), ".alchemy/miniflare/v3"), // vite plugin forces /v3 suffix
         unsafeDevRegistryPath: miniflare.getDefaultDevRegistryPath(),
         analyticsEngineDatasetsPersist: true,
         cachePersist: true,

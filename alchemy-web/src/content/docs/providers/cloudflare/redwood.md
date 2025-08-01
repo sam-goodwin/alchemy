@@ -39,7 +39,7 @@ Deploy with custom build command and environment variables:
 import { Redwood } from "alchemy/cloudflare";
 
 const redwoodApp = await Redwood("custom-redwood", {
-  command: "bun run test && RWSDK_DEPLOY=1 bun run build:production",
+  build: "bun run test && RWSDK_DEPLOY=1 bun run build:production",
   bindings: {
     API_KEY: alchemy.secret("api-key-secret"),
   },
@@ -59,7 +59,7 @@ import { Worker, Redwood } from "alchemy/cloudflare";
 
 const redwoodApp = await Redwood("my-redwood-app", {
   name: "redwood-worker",
-  command: "bun run build",
+  build: "bun run build",
 });
 
 await Worker("my-worker", {
@@ -77,8 +77,8 @@ The transform hook allows you to customize the wrangler.json configuration. For 
 
 ```ts
 await Redwood("my-app", {
-  transform: {
-    wrangler: (spec) => ({
+  wrangler: {
+    transform: (spec) => ({
       ...spec,
       vars: {
         ...spec.vars,

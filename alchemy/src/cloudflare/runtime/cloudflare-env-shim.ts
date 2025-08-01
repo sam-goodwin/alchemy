@@ -1,4 +1,4 @@
-import { dedent } from "../util/dedent.ts";
+import { dedent } from "../../util/dedent.ts";
 
 /**
  * TanStackStart server functions and middleware run in Node.js intead of Miniflare when using `vite dev`.
@@ -17,14 +17,10 @@ export function cloudflareWorkersDevEnvironmentShim() {
     },
     load(id: string) {
       if (id === "cloudflare:workers") {
-        const processEnv = JSON.stringify(process.env);
-
-        // @see https://developers.cloudflare.com/workers/wrangler/api/#getplatformproxy
         return dedent`
-          import { getPlatformProxy } from "wrangler";
-          const cloudflare = await getPlatformProxy({ experimental: { remoteBindings: true } });
-          export const env = Object.assign(${processEnv}, cloudflare.env);
-        `.trim();
+          import { getCloudflareEnvProxy } from "alchemy/cloudflare/runtime";
+          export const env = await getCloudflareEnvProxy();
+        `;
       }
     },
   } as const;

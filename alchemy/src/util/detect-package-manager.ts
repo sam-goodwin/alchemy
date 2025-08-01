@@ -34,3 +34,14 @@ export async function detectPackageManager(
 
   return "npm";
 }
+
+export async function getPackageManagerRunner(): Promise<string> {
+  const packageManager = await detectPackageManager();
+  return {
+    bun: "bun run",
+    pnpm: "pnpm",
+    yarn: "yarn",
+    npm: "npx",
+    deno: "deno run",
+  }[packageManager];
+}

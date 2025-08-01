@@ -1,5 +1,5 @@
 import alchemy from "alchemy";
-import { Website, Worker, Zone } from "alchemy/cloudflare";
+import { Astro, Worker, Zone } from "alchemy/cloudflare";
 import { GitHubComment } from "alchemy/github";
 import { CloudflareStateStore } from "alchemy/state";
 
@@ -44,12 +44,10 @@ if (stage === "prod") {
   });
 }
 
-const website = await Website("website", {
+const website = await Astro("website", {
   name: "alchemy-website",
-  command: "bun run build",
-  assets: "./dist",
   adopt: true,
-  wrangler: false,
+  output: "static",
   version: stage === "prod" ? undefined : stage,
   domains: domain ? [domain] : undefined,
   env: {

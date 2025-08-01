@@ -17,11 +17,9 @@ export const server = await Worker("server", {
 
 export const client = await Vite("client", {
   name: `${app.name}-${app.stage}-client`,
-  assets: "dist",
   env: {
     VITE_WEBSOCKET_URL: server.url!,
   },
-  wrangler: false,
 });
 
 console.log("Client:", client.url);

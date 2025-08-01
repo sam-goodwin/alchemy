@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Context } from "../context.ts";
 import { formatJson } from "../fs/static-json-file.ts";
 import { Resource } from "../resource.ts";
+import { isSecret } from "../secret.ts";
 import { assertNever } from "../util/assert-never.ts";
 import {
   Self,
@@ -55,6 +56,13 @@ export interface WranglerJsonProps {
     binding: string;
     directory: string;
   };
+
+  /**
+   * Whether to include secrets in the wrangler.json file
+   *
+   * @default true
+   */
+  secrets?: boolean;
 
   /**
    * Transform hooks to modify generated configuration files
@@ -169,6 +177,7 @@ export const WranglerJson = Resource(
         worker.eventSources,
         worker.name,
         cwd,
+        props.secrets ?? false,
       );
     }
 
@@ -473,6 +482,7 @@ function processBindings(
   eventSources: EventSource[] | undefined,
   workerName: string,
   workerCwd: string,
+  writeSecrets: boolean,
 ): void {
   // Arrays to collect different binding types
   const kvNamespaces: {
@@ -578,10 +588,11 @@ function processBindings(
     }
     if (typeof binding === "string") {
       // Plain text binding - add to vars
-      if (!spec.vars) {
-        spec.vars = {};
-      }
+      spec.vars ??= {};
       spec.vars[bindingName] = binding;
+    } else if (writeSecrets && isSecret(binding)) {
+      spec.vars ??= {};
+      spec.vars[bindingName] = binding as any;
     } else if (binding === Self) {
       // Self(service) binding
       services.push({

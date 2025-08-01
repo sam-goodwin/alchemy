@@ -1,15 +1,17 @@
-import path from "node:path";
-import type { Assets } from "./assets.ts";
-import type { Bindings } from "./bindings.ts";
-import type { WebsiteProps } from "./website.ts";
-import { Website } from "./website.ts";
-import type { Worker } from "./worker.ts";
+import { getPackageManagerRunner } from "../../util/detect-package-manager.ts";
+import type { Assets } from "../assets.ts";
+import type { Bindings } from "../bindings.ts";
+import { Website, type WebsiteProps } from "../website.ts";
+import type { Worker } from "../worker.ts";
 
 /**
  * Properties for creating an Astro resource.
  * Extends WebsiteProps, allowing customization of the underlying Website.
  */
-export interface AstroProps<B extends Bindings> extends WebsiteProps<B> {}
+export interface AstroProps<B extends Bindings>
+  extends Omit<WebsiteProps<B>, "spa"> {
+  output: "server" | "static";
+}
 
 /**
  * Represents the output of an Astro resource deployment.
@@ -63,31 +65,17 @@ export type Astro<B extends Bindings> = B extends { ASSETS: any }
  */
 export async function Astro<B extends Bindings>(
   id: string,
-  props: AstroProps<B> = {},
+  props: AstroProps<B>,
 ): Promise<Astro<B>> {
-  if (props?.bindings?.ASSETS) {
-    throw new Error("ASSETS binding is reserved for internal use");
-  }
-  const wrangler = props?.wrangler ?? true;
-  const main = props?.main ?? path.join("dist", "_worker.js/index.js");
-  const assetsDir =
-    typeof props?.assets === "string"
-      ? props?.assets
-      : (props?.assets?.dist ?? "dist");
-
-  return Website(id, {
+  const runner = await getPackageManagerRunner();
+  return await Website(id, {
     ...props,
-    command: props.command ?? "astro build",
-    dev: props.dev ?? {
-      command: "astro dev",
-    },
     noBundle: props.noBundle ?? true,
-    main,
-    assets: {
-      dist: assetsDir,
-      not_found_handling: "none",
-      run_worker_first: false,
-    },
-    wrangler,
+    build: props.build ?? `${runner} astro build`,
+    dev: props.dev ?? `${runner} astro dev`,
+    entrypoint:
+      props.entrypoint ??
+      (props.output === "server" ? "dist/_worker.js/index.js" : undefined),
+    assets: props.assets ?? "dist",
   });
 }

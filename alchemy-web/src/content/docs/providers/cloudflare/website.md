@@ -14,7 +14,8 @@ import { Website } from "alchemy/cloudflare";
 
 const site = await Website("my-site", {
   name: "my-site",
-  command: "npm run build",
+  build: "npm run build",
+  dev: "npm run dev",
   assets: "./dist",
 });
 ```
@@ -26,7 +27,7 @@ Add server-side functionality with a Worker:
 ```ts
 const site = await Website("my-site", {
   name: "my-site",
-  command: "npm run build",
+  build: "npm run build",
   assets: "./dist",
   main: "./src/worker.ts",
   bindings: {
@@ -43,9 +44,9 @@ Configure caching, routing and other options:
 ```ts
 const site = await Website("my-site", {
   name: "my-site",
-  command: "npm run build",
+  build: "npm run build",
   assets: {
-    dist: "./dist",
+    directory: "./dist",
     html_handling: "force-trailing-slash",
     not_found_handling: "single-page-application",
     _headers: "/*\n  Cache-Control: public, max-age=3600",
@@ -64,7 +65,7 @@ Use the Website's assets in another Worker:
 import { Worker, Website } from "alchemy/cloudflare";
 
 const site = await Website("my-site", {
-  command: "npm run build",
+  build: "npm run build",
   assets: "./dist",
 });
 
@@ -83,8 +84,8 @@ The transform hook allows you to customize the wrangler.json configuration. For 
 
 ```ts
 await Website("my-app", {
-  transform: {
-    wrangler: (spec) => ({
+  wrangler: {
+    transform: (spec) => ({
       ...spec,
       vars: {
         ...spec.vars,

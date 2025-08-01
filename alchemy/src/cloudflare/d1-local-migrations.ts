@@ -13,7 +13,7 @@ export const applyLocalD1Migrations = async (
   const miniflare = new mf.Miniflare({
     script: "",
     modules: true,
-    defaultPersistRoot: path.join(process.cwd(), ".alchemy/miniflare"),
+    defaultPersistRoot: path.join(process.cwd(), ".alchemy/miniflare/v3"), // vite plugin forces /v3 suffix
     d1Persist: true,
     d1Databases: { DB: options.databaseId },
     log: process.env.DEBUG ? new mf.Log(mf.LogLevel.DEBUG) : undefined,

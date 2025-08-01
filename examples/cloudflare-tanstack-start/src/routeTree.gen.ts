@@ -27,6 +27,8 @@ import { Route as PathlessLayoutNestedLayoutRouteBRouteImport } from './routes/_
 import { Route as PathlessLayoutNestedLayoutRouteARouteImport } from './routes/_pathlessLayout/_nested-layout/route-a'
 import { ServerRoute as ApiUsersServerRouteImport } from './routes/api/users'
 import { ServerRoute as ApiUsersIdServerRouteImport } from './routes/api/users.$id'
+import { ServerRoute as ApiTestEnvServerRouteImport } from './routes/api/test.env'
+import { ServerRoute as ApiTestKvIdServerRouteImport } from './routes/api/test.kv.$id'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -110,6 +112,16 @@ const ApiUsersIdServerRoute = ApiUsersIdServerRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => ApiUsersServerRoute,
+} as any)
+const ApiTestEnvServerRoute = ApiTestEnvServerRouteImport.update({
+  id: '/api/test/env',
+  path: '/api/test/env',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiTestKvIdServerRoute = ApiTestKvIdServerRouteImport.update({
+  id: '/api/test/kv/$id',
+  path: '/api/test/kv/$id',
+  getParentRoute: () => rootServerRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -211,27 +223,44 @@ export interface RootRouteChildren {
 }
 export interface FileServerRoutesByFullPath {
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/test/env': typeof ApiTestEnvServerRoute
   '/api/users/$id': typeof ApiUsersIdServerRoute
+  '/api/test/kv/$id': typeof ApiTestKvIdServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/test/env': typeof ApiTestEnvServerRoute
   '/api/users/$id': typeof ApiUsersIdServerRoute
+  '/api/test/kv/$id': typeof ApiTestKvIdServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/users': typeof ApiUsersServerRouteWithChildren
+  '/api/test/env': typeof ApiTestEnvServerRoute
   '/api/users/$id': typeof ApiUsersIdServerRoute
+  '/api/test/kv/$id': typeof ApiTestKvIdServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/api/users' | '/api/users/$id'
+  fullPaths:
+    | '/api/users'
+    | '/api/test/env'
+    | '/api/users/$id'
+    | '/api/test/kv/$id'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/users' | '/api/users/$id'
-  id: '__root__' | '/api/users' | '/api/users/$id'
+  to: '/api/users' | '/api/test/env' | '/api/users/$id' | '/api/test/kv/$id'
+  id:
+    | '__root__'
+    | '/api/users'
+    | '/api/test/env'
+    | '/api/users/$id'
+    | '/api/test/kv/$id'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   ApiUsersServerRoute: typeof ApiUsersServerRouteWithChildren
+  ApiTestEnvServerRoute: typeof ApiTestEnvServerRoute
+  ApiTestKvIdServerRoute: typeof ApiTestKvIdServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -352,6 +381,20 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiUsersIdServerRouteImport
       parentRoute: typeof ApiUsersServerRoute
     }
+    '/api/test/env': {
+      id: '/api/test/env'
+      path: '/api/test/env'
+      fullPath: '/api/test/env'
+      preLoaderRoute: typeof ApiTestEnvServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/test/kv/$id': {
+      id: '/api/test/kv/$id'
+      path: '/api/test/kv/$id'
+      fullPath: '/api/test/kv/$id'
+      preLoaderRoute: typeof ApiTestKvIdServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
   }
 }
 
@@ -439,6 +482,8 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
   ApiUsersServerRoute: ApiUsersServerRouteWithChildren,
+  ApiTestEnvServerRoute: ApiTestEnvServerRoute,
+  ApiTestKvIdServerRoute: ApiTestKvIdServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

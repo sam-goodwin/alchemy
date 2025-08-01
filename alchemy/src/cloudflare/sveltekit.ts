@@ -1,10 +1,10 @@
 import { join } from "node:path";
 import type { Assets } from "./assets.ts";
 import type { Bindings } from "./bindings.ts";
-import { Website, type WebsiteProps } from "./website.ts";
+import { Vite, type ViteProps } from "./vite/vite.ts";
 import type { Worker } from "./worker.ts";
 
-export interface SvelteKitProps<B extends Bindings> extends WebsiteProps<B> {}
+export interface SvelteKitProps<B extends Bindings> extends ViteProps<B> {}
 
 // don't allow the ASSETS to be overriden
 export type SvelteKit<B extends Bindings> = B extends { ASSETS: any }
@@ -61,10 +61,10 @@ export async function SvelteKit<B extends Bindings>(
     }
   }
 
-  return Website(id, {
+  return await Vite(id, {
     ...props,
-    command: props?.command ?? "bun run build",
-    main: props?.main ?? join(".svelte-kit", "cloudflare", "_worker.js"),
+    entrypoint:
+      props?.entrypoint ?? join(".svelte-kit", "cloudflare", "_worker.js"),
     assets: props?.assets ?? join(".svelte-kit", "cloudflare"),
     compatibilityFlags: ["nodejs_compat", ...(props?.compatibilityFlags ?? [])],
     compatibilityDate: props?.compatibilityDate,

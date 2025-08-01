@@ -1,14 +1,32 @@
 import { Hono } from "hono";
+import type { CloudflareEnv } from "./env.ts";
 
-// TODO: looks like openauth imports node:fs ...
-// import { issuer } from "./auth/issuer";
+export const api = new Hono<{ Bindings: CloudflareEnv }>();
 
-export const api = new Hono();
+api.get("/api/test/env", (c) =>
+  c.json({ ALCHEMY_TEST_VALUE: c.env.ALCHEMY_TEST_VALUE }),
+);
 
-api.get("/hello", (c) => c.text("Hello World"));
+api.get("/api/test/kv/:key", async (c) => {
+  const key = c.req.param("key");
+  const value = await c.env.KV.get(key);
+  if (!value) {
+    return c.json({ error: "Not found" }, 404);
+  }
+  return c.text(value);
+});
 
-export default {
-  async fetch(request: Request): Promise<Response> {
-    return api.fetch(request);
-  },
-};
+api.put("/api/test/kv/:key", async (c) => {
+  const key = c.req.param("key");
+  const value = await c.req.text();
+  await c.env.KV.put(key, value);
+  return c.json({ success: true }, 201);
+});
+
+api.delete("/api/test/kv/:key", async (c) => {
+  const key = c.req.param("key");
+  await c.env.KV.delete(key);
+  return c.newResponse(null, 204);
+});
+
+export default api;

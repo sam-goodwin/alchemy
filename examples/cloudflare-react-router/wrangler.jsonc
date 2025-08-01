@@ -1,6 +1,0 @@
-{
-  "name": "cloudflare-react-router-samgoodwin-website",
-  "main": "workers/app.ts",
-  "compatibility_date": "2025-07-26",
-  "assets": { "directory": "build/client", "binding": "ASSETS" }
-}

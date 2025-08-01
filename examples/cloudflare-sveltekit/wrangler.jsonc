@@ -1,7 +1,0 @@
-{
-  "name": "cloudflare-sveltekit-samgoodwin-website",
-  "main": ".svelte-kit/cloudflare/_worker.js",
-  "compatibility_date": "2025-07-26",
-  "compatibility_flags": ["nodejs_compat"],
-  "assets": { "directory": ".svelte-kit/cloudflare", "binding": "ASSETS" },
-}

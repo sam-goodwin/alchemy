@@ -6,7 +6,7 @@ import { Astro } from "alchemy/cloudflare";
 const app = await alchemy("my-alchemy-app");
 
 export const worker = await Astro("website", {
-  command: "bun run build",
+  output: "server",
 });
 
 console.log({

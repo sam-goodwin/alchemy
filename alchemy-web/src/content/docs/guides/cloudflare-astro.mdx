@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-This guide shows how to initialize and deploy an Astro server-side–rendered site to Cloudflare using Alchemy.
+This guide shows how to initialize and deploy an Astro server-side rendered site to Cloudflare using Alchemy.
 
 ## Init
 
@@ -47,22 +47,22 @@ Authenticate once with your Cloudflare account:
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```sh
-    bun wrangler login
+    bun alchemy login
     ```
   </TabItem>
   <TabItem label="npm">
     ```sh
-    npx wrangler login
+    npx alchemy login
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```sh
-    pnpm wrangler login
+    pnpm alchemy login
     ```
   </TabItem>
   <TabItem label="yarn">
     ```sh
-    yarn wrangler login
+    yarn alchemy login
     ```
   </TabItem>
 </Tabs>
@@ -185,7 +185,7 @@ import { Astro } from "alchemy/cloudflare";
 const app = await alchemy("my-astro-app");
 
 export const worker = await Astro("website", {
-  command: "bun run build",
+  output: "server",
 });
 
 console.log({
@@ -194,6 +194,10 @@ console.log({
 
 await app.finalize();
 ```
+
+:::note
+If you are not using server-side rendering with Astro, set `output: "static"` in the `Astro` resource. This option should match the `output` option in your `astro.config.mjs` file.
+:::
 
 ### `types/env.d.ts`
 
@@ -241,12 +245,23 @@ The `alchemy.run.ts` script will be run by `node` but still needs to infer the [
 Use the `@astrojs/cloudflare` plugin to build for Cloudflare Workers:
 
 ```ts
-import { defineConfig } from "astro/config";
-import cloudflare from "@astrojs/cloudflare";
+import cloudflare from '@astrojs/cloudflare';
+import { getPlatformProxyOptions } from 'alchemy/cloudflare/runtime';
+import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-  output: "server",
-  adapter: cloudflare(),
+  output: 'server',
+  adapter: cloudflare({
+    platformProxy: getPlatformProxyOptions(),
+  }),
 });
 ``` 
+
+:::tip
+The `getPlatformProxyOptions()` function from `alchemy/cloudflare/runtime` is used to configure Alchemy bindings for local development.
+:::
+
+:::warning
+If you run `astro dev` without first running Alchemy, you will get an error from `getPlatformProxyOptions()`. This is because Alchemy needs to be run first to create the local environment. We recommend running `alchemy dev`, which runs `astro dev` automatically.
+:::

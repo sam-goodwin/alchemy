@@ -42,27 +42,27 @@ Start by creating a new React Router project using Alchemy:
 
 ## Login
 
-Before you can deploy, you need to authenticate by running `wrangler login`.
+Before you can deploy, you need to authenticate by running `alchemy login`.
 
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```sh
-    bun wrangler login
+    bun alchemy login
     ```
   </TabItem>
   <TabItem label="npm">
     ```sh
-    npx wrangler login
+    npx alchemy login
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```sh
-    pnpm wrangler login
+    pnpm alchemy login
     ```
   </TabItem>
   <TabItem label="yarn">
     ```sh
-    yarn wrangler login
+    yarn alchemy login
     ```
   </TabItem>
 </Tabs>
@@ -183,10 +183,7 @@ import { ReactRouter } from "alchemy/cloudflare";
 
 const app = await alchemy("my-react-router-app");
 
-export const worker = await ReactRouter("website", {
-  main: "./workers/app.ts",
-  command: "bun run build",
-});
+export const worker = await ReactRouter("website");
 
 console.log({
   url: worker.url,

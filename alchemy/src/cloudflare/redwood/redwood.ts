@@ -1,10 +1,10 @@
 import path from "node:path";
-import type { Assets } from "./assets.ts";
-import type { Bindings } from "./bindings.ts";
-import { Website, type WebsiteProps } from "./website.ts";
-import type { Worker } from "./worker.ts";
+import type { Assets } from "../assets.ts";
+import type { Bindings } from "../bindings.ts";
+import { Vite, type ViteProps } from "../vite/vite.ts";
+import type { Worker } from "../worker.ts";
 
-export interface RedwoodProps<B extends Bindings> extends WebsiteProps<B> {}
+export interface RedwoodProps<B extends Bindings> extends ViteProps<B> {}
 
 // don't allow the ASSETS to be overridden
 export type Redwood<B extends Bindings> = B extends { ASSETS: any }
@@ -41,24 +41,21 @@ export async function Redwood<B extends Bindings>(
   id: string,
   props?: Partial<RedwoodProps<B>>,
 ): Promise<Redwood<B>> {
-  return Website(id, {
+  return await Vite(id, {
     ...props,
-    command:
-      props?.command ??
-      "rm -rf ./node_modules/.vite && RWSDK_DEPLOY=1 vite build",
-    dev: props?.dev ?? {
-      command: "vite dev",
+    build: props?.build ?? {
+      command: "rm -rf ./node_modules/.vite && vite build",
+      env: {
+        RWSDK_DEPLOY: "1",
+      },
     },
     noBundle: props?.noBundle ?? true,
-    wrangler:
-      props?.wrangler === false
-        ? false
-        : {
-            main: props?.main ?? path.join("src", "worker.tsx"),
-          },
-    main: props?.main ?? path.join("dist", "worker", "worker.js"),
-    assets: props?.assets ?? path.join("dist", "client"),
+    entrypoint: props?.entrypoint ?? path.join("dist", "worker", "worker.js"),
     compatibilityFlags: ["nodejs_compat", ...(props?.compatibilityFlags ?? [])],
     compatibilityDate: props?.compatibilityDate ?? "2025-04-02",
+    wrangler: {
+      main: props?.wrangler?.main ?? "src/worker.tsx",
+      transform: props?.wrangler?.transform,
+    },
   });
 }

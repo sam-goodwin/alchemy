@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc -b",
+    "build": "tsc -b && vite build",
     "deploy": "alchemy deploy --env-file ../../.env",
     "destroy": "alchemy destroy --env-file ../../.env",
     "dev": "alchemy dev --env-file ../../.env",
@@ -12,10 +12,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@openauthjs/openauth": "^0.4.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "valibot": "^1.0.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.0.4",

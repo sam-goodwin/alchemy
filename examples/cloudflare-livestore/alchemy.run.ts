@@ -13,8 +13,7 @@ const db = await D1Database("db", {
 export const server = await Vite("server", {
   name: `${app.name}-${app.stage}-livestore-server`,
   assets: "dist",
-  main: "src/livestore/server.ts",
-  wrangler: false,
+  entrypoint: "src/livestore/server.ts",
   compatibility: "node",
   bindings: {
     DB: db,

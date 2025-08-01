@@ -47,22 +47,22 @@ Authenticate once with your Cloudflare account:
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```sh
-    bun wrangler login
+    bun alchemy login
     ```
   </TabItem>
   <TabItem label="npm">
     ```sh
-    npx wrangler login
+    npx alchemy login
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```sh
-    pnpm wrangler login
+    pnpm alchemy login
     ```
   </TabItem>
   <TabItem label="yarn">
     ```sh
-    yarn wrangler login
+    yarn alchemy login
     ```
   </TabItem>
 </Tabs>
@@ -185,8 +185,7 @@ import { Vite } from "alchemy/cloudflare";
 const app = await alchemy("my-react-app");
 
 export const worker = await Vite("website", {
-  main: "./worker/index.ts",
-  command: "bun run build",
+  entrypoint: "./worker/index.ts",
 });
 
 console.log({

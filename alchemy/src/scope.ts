@@ -100,8 +100,6 @@ export class Scope {
     new AsyncLocalStorage<Scope>());
   public static globals: Scope[] = (globalThis.__ALCHEMY_GLOBALS__ ??= []);
 
-  private static exitHandlerInstalled = false;
-
   public static getScope(): Scope | undefined {
     const scope = Scope.storage.getStore();
     if (!scope) {
@@ -547,7 +545,7 @@ export class Scope {
    * This should only be called on the root scope.
    */
   public async cleanup() {
-    if (this.parent) return;
+    if (this.parent || this.cleanups.length === 0) return;
     this.logger.log(kleur.gray("Exiting..."));
     await Promise.allSettled(this.cleanups.map((cleanup) => cleanup()));
   }

@@ -1,34 +1,33 @@
 /// <reference types="node" />
 
 import alchemy from "alchemy";
-import { KVNamespace, R2Bucket, Vite } from "alchemy/cloudflare";
+import { KVNamespace, Vite } from "alchemy/cloudflare";
 
 const app = await alchemy("cloudflare-vite");
 
-export const [authStore, storage] = await Promise.all([
-  KVNamespace("auth-store", {
-    title: `${app.name}-${app.stage}-auth-store`,
-    adopt: true,
-  }),
-  R2Bucket("storage", {
-    name: `${app.name}-${app.stage}-storage`,
-    allowPublicAccess: false,
-    // so that CI is idempotent
-    adopt: true,
-  }),
-]);
+export const kv = await KVNamespace("kv", {
+  title: `${app.name}-${app.stage}-kv`,
+});
 
 export const website = await Vite("website", {
-  name: `${app.name}-${app.stage}-website`,
-  main: "./src/index.ts",
+  entrypoint: "src/index.ts",
+  noBundle: false,
   bindings: {
-    STORAGE: storage,
-    AUTH_STORE: authStore,
+    KV: kv,
+    ALCHEMY_TEST_VALUE: alchemy.secret("Hello from Alchemy!"),
   },
 });
 
 console.log({
   url: website.url,
 });
+
+if (process.env.ALCHEMY_E2E) {
+  const { test } = await import("./test/e2e.js");
+  await test({
+    url: website.url,
+    env: { ALCHEMY_TEST_VALUE: "Hello from Alchemy!" },
+  });
+}
 
 await app.finalize();

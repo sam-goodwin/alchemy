@@ -1,5 +1,5 @@
-import type { Route } from "./+types/home";
 import { Welcome } from "../welcome/welcome";
+import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,7 +9,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export function loader({ context }: Route.LoaderArgs) {
-  return { message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE };
+  return { message: context.cloudflare.env.ALCHEMY_TEST_VALUE };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {

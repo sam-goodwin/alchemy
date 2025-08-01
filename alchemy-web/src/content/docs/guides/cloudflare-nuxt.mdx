@@ -47,22 +47,22 @@ Authenticate once with your Cloudflare account:
 <Tabs syncKey="pkgManager">
   <TabItem label="bun">
     ```sh
-    bun wrangler login
+    bun alchemy login
     ```
   </TabItem>
   <TabItem label="npm">
     ```sh
-    npx wrangler login
+    npx alchemy login
     ```
   </TabItem>
   <TabItem label="pnpm">
     ```sh
-    pnpm wrangler login
+    pnpm alchemy login
     ```
   </TabItem>
   <TabItem label="yarn">
     ```sh
-    yarn wrangler login
+    yarn alchemy login
     ```
   </TabItem>
 </Tabs>
@@ -184,9 +184,7 @@ import { Nuxt } from "alchemy/cloudflare";
 
 const app = await alchemy("my-nuxt-app");
 
-export const worker = await Nuxt("website", {
-  command: "bun run build",
-});
+export const worker = await Nuxt("website");
 
 console.log({
   url: worker.url,
@@ -233,16 +231,31 @@ The CLI updated the `tsconfig.json` to include `alchemy.run.ts` and register `@c
 
 ### `nuxt.config.ts`
 
-Use `@nuxthq/studio` and `@nuxtjs/cloudflare` to build for Cloudflare Workers:
+Use the `cloudflare-module` preset and `nitro-cloudflare-dev` module to build for Cloudflare in production and development:
 
 ```typescript
+import { nitroCloudflareDev } from "alchemy/cloudflare/runtime";
+import { defineNuxtConfig } from "nuxt/config";
+
 export default defineNuxtConfig({
-  modules: ["@nuxthq/studio", "@nuxtjs/cloudflare"],
+  compatibilityDate: "2025-04-21",
   devtools: { enabled: true },
   nitro: {
-    experimental: {
-      wasm: true,
+    preset: "cloudflare-module",
+    cloudflareDev: nitroCloudflareDev(),
+    prerender: {
+      routes: ["/"],
+      autoSubfolderIndex: false,
     },
   },
+  modules: ["nitro-cloudflare-dev"],
 });
 ``` 
+
+:::tip
+The `nitroCloudflareDev()` function from `alchemy/cloudflare/runtime` is used to configure bindings for local development.
+:::
+
+:::warning
+If you run `nuxt dev` without first running Alchemy, you will get an error from `nitroCloudflareDev()`. This is because Alchemy needs to be run first to create the local environment. We recommend running `alchemy dev`, which runs `nuxt dev` automatically.
+:::

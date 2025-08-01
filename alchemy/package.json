@@ -61,6 +61,30 @@
       "bun": "./src/cloudflare/index.ts",
       "import": "./lib/cloudflare/index.js"
     },
+    "./cloudflare/astro": {
+      "bun": "./src/cloudflare/astro/plugin.ts",
+      "import": "./lib/cloudflare/astro/plugin.js"
+    },
+    "./cloudflare/nuxt": {
+      "bun": "./src/cloudflare/nuxt/plugin.ts",
+      "import": "./lib/cloudflare/nuxt/plugin.js"
+    },
+    "./cloudflare/redwood": {
+      "bun": "./src/cloudflare/redwood/plugin.ts",
+      "import": "./lib/cloudflare/redwood/plugin.js"
+    },
+    "./cloudflare/react-router": {
+      "bun": "./src/cloudflare/react-router/plugin.ts",
+      "import": "./lib/cloudflare/react-router/plugin.js"
+    },
+    "./cloudflare/tanstack-start": {
+      "bun": "./src/cloudflare/tanstack-start/plugin.ts",
+      "import": "./lib/cloudflare/tanstack-start/plugin.js"
+    },
+    "./cloudflare/vite": {
+      "bun": "./src/cloudflare/vite/plugin.ts",
+      "import": "./lib/cloudflare/vite/plugin.js"
+    },
     "./dns": {
       "bun": "./src/dns/index.ts",
       "import": "./lib/dns/index.js"
@@ -177,13 +201,13 @@
     "@aws-sdk/client-sqs": "^3.0.0",
     "@aws-sdk/client-ssm": "^3.0.0",
     "@aws-sdk/client-sts": "^3.0.0",
+    "@cloudflare/vite-plugin": "^1.10.1",
     "@libsql/client": "^0.15.9",
     "@octokit/rest": "^21.1.1",
     "ai": "^4.0.0",
     "arktype": "^2.0.0",
     "cloudflare": "^4.0.0",
     "drizzle-orm": "^0.44.2",
-
     "hono": "^4.0.0",
     "prettier": "^3.0.0",
     "stripe": "^17.0.0"
@@ -200,6 +224,8 @@
     "@cloudflare/workers-types": "^4.20250620.0",
     "@iarna/toml": "^2.2.5",
     "@octokit/rest": "^21.1.1",
+    "@react-router/dev": "^7.7.1",
+    "@tanstack/react-start": "^1.130.11",
     "@types/bun": "latest",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^11.0.4",
@@ -222,9 +248,11 @@
     "libsodium-wrappers": "^0.7.15",
     "listr2": "^8.0.0",
     "nitro-cloudflare-dev": "^0.2.2",
+    "nitropack": "^2.12.4",
     "openpgp": "^6.1.0",
     "picocolors": "^1.1.1",
     "prettier": "^3.5.3",
+    "rwsdk": "^0.1.28",
     "trpc-cli": "^0.10.0",
     "ts-morph": "^26.0.0",
     "tsdown": "^0.13.0",
@@ -234,7 +262,7 @@
     "typescript": "^5.8.3",
     "vite": "^6.0.7",
     "vitepress": "^1.6.3",
-    "wrangler": "^3.114.0",
+    "wrangler": "^4.27.0",
     "yaml": "^2.7.1",
     "zod": "^4.0.10"
   }

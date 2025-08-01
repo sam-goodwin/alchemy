@@ -14,7 +14,6 @@ import { Vite } from "alchemy/cloudflare";
 
 const app = await Vite("my-vite-app", {
   name: "my-vite-app",
-  command: "bun run build",
 });
 ```
 
@@ -48,7 +47,7 @@ import { Vite } from "alchemy/cloudflare";
 const app = await Vite("my-vite-app", {
   name: "my-vite-app",
   command: "bun run test && bun run build:production",
-  main: "./dist/worker.js",
+  entrypoint: "./dist/worker.js",
   assets: "./dist/client",
 });
 ```
@@ -59,8 +58,8 @@ The transform hook allows you to customize the wrangler.json configuration. For 
 
 ```ts
 await Vite("my-app", {
-  transform: {
-    wrangler: (spec) => ({
+  wrangler: {
+    transform: (spec) => ({
       ...spec,
       vars: {
         ...spec.vars,

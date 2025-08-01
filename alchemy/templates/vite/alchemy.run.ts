@@ -6,7 +6,7 @@ import { Vite } from "alchemy/cloudflare";
 const app = await alchemy("my-alchemy-app");
 
 export const worker = await Vite("website", {
-  main: "worker/index.ts",
+  entrypoint: "worker/index.ts",
 });
 
 console.log({
