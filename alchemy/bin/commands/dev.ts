@@ -5,9 +5,9 @@ import {
   execArgs,
   force,
 } from "../services/execute-alchemy.ts";
-import { t } from "../trpc.ts";
+import { loggedProcedure } from "../trpc.ts";
 
-export const dev = t.procedure
+export const dev = loggedProcedure
   .meta({
     description:
       "Run an Alchemy program in dev-mode (local simulation & hot reloading)",

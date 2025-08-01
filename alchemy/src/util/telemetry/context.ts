@@ -132,7 +132,7 @@ function environment(): Telemetry.Context["environment"] {
 
 export async function context(input: {
   sessionId: string;
-  phase: Phase;
+  phase?: Phase;
 }): Promise<Telemetry.Context> {
   const env = environment();
   const [uid, pid] = await Promise.all([

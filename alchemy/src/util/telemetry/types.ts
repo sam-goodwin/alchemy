@@ -29,7 +29,7 @@ export namespace Telemetry {
 
     alchemy: {
       version: string;
-      phase: Phase;
+      phase?: Phase;
     };
   }
 
@@ -72,6 +72,11 @@ export namespace Telemetry {
     replaced?: boolean;
   }
 
+  export interface CliEvent extends BaseEvent {
+    event: "cli.start" | "cli.success" | "cli.error";
+    command: string;
+  }
+
   export interface StateStoreEvent extends BaseEvent {
     event:
       | "stateStore.init"
@@ -88,11 +93,12 @@ export namespace Telemetry {
     error?: SerializedError;
   }
 
-  export type Event = AppEvent | ResourceEvent | StateStoreEvent;
+  export type Event = AppEvent | ResourceEvent | StateStoreEvent | CliEvent;
   export type EventInput = (
     | Omit<AppEvent, "timestamp" | "error">
     | Omit<ResourceEvent, "timestamp" | "error">
     | Omit<StateStoreEvent, "timestamp" | "error">
+    | Omit<CliEvent, "timestamp" | "error">
   ) & {
     error?: ErrorInput;
   };

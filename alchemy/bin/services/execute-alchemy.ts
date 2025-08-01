@@ -6,6 +6,7 @@ import z from "zod";
 import { detectRuntime } from "../../src/util/detect-node-runtime.ts";
 import { detectPackageManager } from "../../src/util/detect-package-manager.ts";
 import { exists } from "../../src/util/exists.ts";
+import { ExitSignal } from "../trpc.ts";
 
 export const entrypoint = z
   .string()
@@ -103,7 +104,7 @@ export async function execAlchemy(
       ),
     );
     log.info("Create an alchemy.run.ts file to define your infrastructure.");
-    process.exit(1);
+    throw new ExitSignal(1);
   }
 
   // Detect package manager
@@ -160,7 +161,6 @@ export async function execAlchemy(
         FORCE_COLOR: "1",
       },
     });
-    process.exit(0);
   } catch (error: any) {
     log.error(pc.red(`Deploy failed: ${error.message}`));
     if (error.stdout) {
@@ -169,6 +169,6 @@ export async function execAlchemy(
     if (error.stderr) {
       console.error(error.stderr);
     }
-    process.exit(1);
+    throw error;
   }
 }

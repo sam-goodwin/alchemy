@@ -10,7 +10,7 @@ import type { Telemetry } from "./types.ts";
 
 export interface TelemetryClientOptions {
   sessionId: string;
-  phase: Phase;
+  phase?: Phase;
   enabled: boolean;
   quiet: boolean;
 }
@@ -85,7 +85,28 @@ export class TelemetryClient implements ITelemetryClient {
     if (events.length === 0) {
       return;
     }
-    const { userId, ...context } = await this.context;
+    const { userId, projectId, ...context } = await this.context;
+    const safeProjectId = projectId ?? `temp_${userId}`;
+    const groupResponse = await fetch(`${POSTHOG_CLIENT_API_HOST}/i/v0/e/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        api_key: POSTHOG_PROJECT_ID,
+        event: "$groupidentify",
+        distinct_id: "project-identify",
+        properties: {
+          $group_type: "project",
+          $group_key: safeProjectId,
+        },
+      }),
+    });
+    if (!groupResponse.ok) {
+      throw new Error(
+        `Failed to send group identify: ${groupResponse.status} ${groupResponse.statusText} - ${await groupResponse.text()}`,
+      );
+    }
     const response = await fetch(`${POSTHOG_CLIENT_API_HOST}/batch`, {
       method: "POST",
       headers: {
@@ -100,6 +121,8 @@ export class TelemetryClient implements ITelemetryClient {
             distinct_id: userId,
             ...context,
             ...properties,
+            projectId: safeProjectId,
+            $groups: { project: safeProjectId },
           },
           timestamp: new Date(timestamp).toISOString(),
         })),

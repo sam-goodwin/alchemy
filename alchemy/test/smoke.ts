@@ -260,7 +260,7 @@ const tasks = new Listr(
           await runCommand(phase.command, {
             cwd: example.path,
             exampleName: noCaptureFlag ? undefined : example.name,
-            env: phase.env,
+            env: { DO_NOT_TRACK: "1", ...phase.env },
           });
           await verifyNoLocalStateInCI(example.path);
         }

@@ -5,9 +5,9 @@ import {
   execArgs,
   watch,
 } from "../services/execute-alchemy.ts";
-import { t } from "../trpc.ts";
+import { loggedProcedure } from "../trpc.ts";
 
-export const run = t.procedure
+export const run = loggedProcedure
   .meta({
     description:
       "Run an Alchemy program with read-only access to your infrastructure (no changes will be applied)",

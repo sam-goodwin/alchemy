@@ -18,14 +18,14 @@ import { detectPackageManager } from "../../src/util/detect-package-manager.ts";
 import type { DependencyVersionMap } from "../constants.ts";
 import { throwWithContext } from "../errors.ts";
 import { addPackageDependencies } from "../services/dependencies.ts";
-import { t } from "../trpc.ts";
+import { loggedProcedure, ExitSignal } from "../trpc.ts";
 import {
   TemplateSchema,
   type InitContext,
   type TemplateType,
 } from "../types.ts";
 
-export const init = t.procedure
+export const init = loggedProcedure
   .meta({
     description: "Initialize Alchemy in an existing project",
   })
@@ -49,7 +49,7 @@ export const init = t.procedure
         log.warn(
           "No package.json found. Please run in a project with package.json.",
         );
-        process.exit(1);
+        throw new ExitSignal(1);
       }
 
       await checkExistingAlchemyFiles(context);
@@ -63,7 +63,7 @@ export const init = t.procedure
       displaySuccessMessage(context);
     } catch (_error) {
       console.error("Failed to initialize Alchemy:", _error);
-      process.exit(1);
+      throw new ExitSignal(1);
     }
   });
 
@@ -184,7 +184,7 @@ async function detectFramework(
 
   if (isCancel(frameworkResult)) {
     cancel(pc.red("Operation cancelled."));
-    process.exit(0);
+    throw new ExitSignal(0);
   }
 
   return frameworkResult as TemplateType;
@@ -227,7 +227,7 @@ async function checkExistingAlchemyFiles(context: InitContext): Promise<void> {
 
     if (isCancel(overwriteResult) || !overwriteResult) {
       cancel(pc.red("Operation cancelled."));
-      process.exit(0);
+      throw new ExitSignal(0);
     }
   }
 }
