@@ -1,0 +1,17 @@
+---
+import AuthLayout from '../../../components/AuthLayout.astro';
+---
+
+<AuthLayout
+  title="Logged Out"
+  message="You have been logged out successfully.<br>You may close this window or continue browsing."
+  variant="success"
+  primaryAction={{
+    text: 'Close',
+    onClick: 'window.close()'
+  }}
+  secondaryAction={{
+    text: 'Home',
+    href: '/'
+  }}
+/>

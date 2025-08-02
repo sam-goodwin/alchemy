@@ -1,0 +1,17 @@
+---
+import AuthLayout from '../../../components/AuthLayout.astro';
+---
+
+<AuthLayout
+  title="Authentication Complete"
+  message="Your authentication was successful.<br>You can close this window and return to Alchemy."
+  variant="success"
+  primaryAction={{
+    text: 'Close',
+    onClick: 'window.close()'
+  }}
+  secondaryAction={{
+    text: 'Learn More',
+    href: '/getting-started/'
+  }}
+/>
