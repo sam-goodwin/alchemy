@@ -4,14 +4,14 @@ import util from "node:util";
 import type { Phase } from "./alchemy.ts";
 import { destroy, destroyAll, DestroyStrategy } from "./destroy.ts";
 import {
+  type PendingResource,
+  type Resource,
   ResourceFQN,
   ResourceID,
   ResourceKind,
+  type ResourceProps,
   ResourceScope,
   ResourceSeq,
-  type PendingResource,
-  type Resource,
-  type ResourceProps,
 } from "./resource.ts";
 import type { State, StateStore, StateStoreType } from "./state.ts";
 import { D1StateStore } from "./state/d1-state-store.ts";

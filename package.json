@@ -1,63 +1,63 @@
 {
-  "name": "alchemy-mono",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "module": "./lib/index.js",
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/sam-goodwin/alchemy"
-  },
-  "scripts": {
-    "build": "cd ./alchemy && bunx tsc -b && bunx tsc -p tsconfig.test.json && bun run --filter alchemy build",
-    "build:cli": "bun run --filter alchemy build:cli",
-    "check": "bun run build && bun tsc -b && biome check",
-    "fix": "biome check --write",
-    "deploy:repo": "bun ./stacks/src/repo.run.ts",
-    "deploy:website": "bun run --filter alchemy-web deploy",
-    "destroy:website": "bun run --filter alchemy-web destroy",
-    "deploy:telemetry": "bun ./stacks/src/telemetry.run.ts",
-    "generate:aws-control": "bun ./scripts/generate-aws-control.ts",
-    "publish:npm": "bun run --filter alchemy publish:npm",
-    "test": "vitest run",
-    "test:all": "ALL_TESTS=1 vitest run",
-    "test:fast": "vitest run --exclude ./alchemy/test/create.test.ts --exclude ./alchemy/test/smoke.test.ts --exclude ./alchemy/test/init.test.ts",
-    "test:smoke": "bun ./alchemy/test/smoke.ts",
-    "test:create": "vitest run ./alchemy/test/create.test.ts",
-    "test:init": "vitest run ./alchemy/test/init.test.ts",
-    "bump": "bun ./scripts/bump.ts",
-    "claude:yolo": "claude --dangerously-skip-permissions"
-  },
-  "workspaces": {
-    "catalog": {
-      "@cloudflare/workers-types": "^4.20250805.0"
-    },
-    "packages": [
-      "alchemy-web",
-      "alchemy",
-      "alchemy/templates/*",
-      "examples/*",
-      "stacks"
-    ]
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.1.3",
-    "@cloudflare/workers-types": "^4.20250805.0",
-    "@redwoodjs/sdk": "^0.0.80",
-    "@types/bun": "latest",
-    "@types/node": "latest",
-    "@vitest/ui": "^3.1.4",
-    "alchemy": "workspace:*",
-    "aws4fetch": "^1.0.20",
-    "braintrust": "*",
-    "changelogithub": "^13.15.0",
-    "glob": "^11.0.3",
-    "jsonc-parser": "^3.3.1",
-    "openai": "^4.103.0",
-    "typescript": "latest",
-    "vite": "^6.3.5",
-    "vitest": "^3.1.4",
-    "yaml": "^2.7.1"
-  }
+	"name": "alchemy-mono",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"module": "./lib/index.js",
+	"license": "Apache-2.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/sam-goodwin/alchemy"
+	},
+	"scripts": {
+		"build": "cd ./alchemy && bunx tsc -b && bunx tsc -p tsconfig.test.json && bun run --filter alchemy build",
+		"build:cli": "bun run --filter alchemy build:cli",
+		"check": "bun run build && bun tsc -b && biome check",
+		"fix": "biome check --write",
+		"deploy:repo": "bun ./stacks/src/repo.run.ts",
+		"deploy:website": "bun run --filter alchemy-web deploy",
+		"destroy:website": "bun run --filter alchemy-web destroy",
+		"deploy:telemetry": "bun ./stacks/src/telemetry.run.ts",
+		"generate:aws-control": "bun ./scripts/generate-aws-control.ts",
+		"publish:npm": "bun run --filter alchemy publish:npm",
+		"test": "vitest run",
+		"test:all": "ALL_TESTS=1 vitest run",
+		"test:fast": "vitest run --exclude ./alchemy/test/create.test.ts --exclude ./alchemy/test/smoke.test.ts --exclude ./alchemy/test/init.test.ts",
+		"test:smoke": "bun ./alchemy/test/smoke.ts",
+		"test:create": "vitest run ./alchemy/test/create.test.ts",
+		"test:init": "vitest run ./alchemy/test/init.test.ts",
+		"bump": "bun ./scripts/bump.ts",
+		"claude:yolo": "claude --dangerously-skip-permissions"
+	},
+	"workspaces": {
+		"catalog": {
+			"@cloudflare/workers-types": "^4.20250805.0"
+		},
+		"packages": [
+			"alchemy-web",
+			"alchemy",
+			"alchemy/templates/*",
+			"examples/*",
+			"stacks"
+		]
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.0.6",
+		"@cloudflare/workers-types": "^4.20250805.0",
+		"@redwoodjs/sdk": "^0.0.80",
+		"@types/bun": "latest",
+		"@types/node": "latest",
+		"@vitest/ui": "^3.1.4",
+		"alchemy": "workspace:*",
+		"aws4fetch": "^1.0.20",
+		"braintrust": "*",
+		"changelogithub": "^13.15.0",
+		"glob": "^11.0.3",
+		"jsonc-parser": "^3.3.1",
+		"openai": "^4.103.0",
+		"typescript": "latest",
+		"vite": "^6.3.5",
+		"vitest": "^3.1.4",
+		"yaml": "^2.7.1"
+	}
 }

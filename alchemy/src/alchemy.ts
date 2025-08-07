@@ -3,20 +3,21 @@ import path from "node:path";
 
 import { onExit } from "signal-exit";
 import { ReplacedSignal } from "./apply.ts";
-import { DestroyStrategy, DestroyedSignal, destroy } from "./destroy.ts";
+import { destroy, DestroyedSignal, DestroyStrategy } from "./destroy.ts";
 import { env } from "./env.ts";
 import {
+  type PendingResource,
   ResourceFQN,
   ResourceID,
   ResourceKind,
   ResourceScope,
   ResourceSeq,
-  type PendingResource,
 } from "./resource.ts";
 import { isRuntime } from "./runtime/global.ts";
 import { DEFAULT_STAGE, Scope } from "./scope.ts";
 import { secret } from "./secret.ts";
 import type { StateStoreType } from "./state.ts";
+import { CoreCDPServer } from "./tooling/cdp-server-remote.ts";
 import type { LoggerApi } from "./util/cli.ts";
 import { logger } from "./util/logger.ts";
 import { TelemetryClient } from "./util/telemetry/client.ts";
@@ -143,6 +144,8 @@ async function _alchemy(
       watch: cliArgs.includes("--watch"),
       quiet: cliArgs.includes("--quiet"),
       force: cliArgs.includes("--force"),
+      waitForRootCDPServer: cliArgs.includes("--wait-for-root-cdp"),
+      waitForDebugger: cliArgs.includes("--wait-for-debugger"),
       // Parse stage argument (--stage my-stage) functionally and inline as a property declaration
       stage: (function parseStage() {
         const i = cliArgs.indexOf("--stage");
@@ -189,6 +192,20 @@ async function _alchemy(
     try {
       Scope.storage.enterWith(root);
       Scope.storage.enterWith(stage);
+
+      // Add delay using stage.run() to preserve context
+      await stage.run(async () => {
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
+        const cdpServer = new CoreCDPServer();
+        console.log("WAITING FOR DEBUGGER");
+        if (mergedOptions?.waitForRootCDPServer) {
+          await cdpServer.waitForRootCDP();
+        }
+        if (mergedOptions?.waitForDebugger) {
+          await cdpServer.waitForDebugger();
+        }
+        console.log("FINISHED WAITING FOR DEBUGGER");
+      });
     } catch {
       // we are in Cloudflare Workers, we will emulate the enterWith behavior
       // see Scope.finalize for where we pop the global scope
@@ -395,6 +412,18 @@ export interface AlchemyOptions {
    * If not provided, the default fallback logger will be used.
    */
   logger?: LoggerApi;
+  /**
+   * Determines if alchemy should wait for a root CDP server to connect before deploying resources
+   *
+   * @default false
+   */
+  waitForRootCDPServer?: boolean;
+  /**
+   * Determines if alchemy should wait for a debugger to be connected before deploying resources
+   *
+   * @default false
+   */
+  waitForDebugger?: boolean;
 }
 
 export interface ScopeOptions extends AlchemyOptions {
