@@ -1,0 +1,31 @@
+{
+  "name": "cloudflare-nextjs",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "deploy": "opennextjs-cloudflare build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
+  },
+  "dependencies": {
+    "@opennextjs/cloudflare": "^1.3.0",
+    "next": "15.3.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^24.2.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "alchemy": "workspace:*",
+    "sharp": "^0.34.3",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "wrangler": "^4.28.0"
+  }
+}
