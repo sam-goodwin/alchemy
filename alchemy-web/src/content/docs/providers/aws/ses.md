@@ -49,3 +49,25 @@ const emailConfig = await SES("tracking-config", {
   },
 });
 ```
+
+## Complete Example with Domain Verification
+
+For a complete setup including domain verification with DNS automation:
+
+```ts
+import { SES } from "alchemy/aws";
+
+const configSet = await SES("production-config", {
+  configurationSetName: "production-emails",
+  sendingOptions: {
+    SendingEnabled: true,
+  },
+  trackingOptions: {
+    CustomRedirectDomain: "click.example.com",
+  },
+  domain: "example.com",
+  enableDkim: true,
+  enableReceiving: true,
+  apiToken: alchemy.secret(process.env.CLOUDFLARE_API_TOKEN),
+});
+```
