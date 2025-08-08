@@ -18,7 +18,7 @@ import { detectPackageManager } from "../../src/util/detect-package-manager.ts";
 import type { DependencyVersionMap } from "../constants.ts";
 import { throwWithContext } from "../errors.ts";
 import { addPackageDependencies } from "../services/dependencies.ts";
-import { loggedProcedure, ExitSignal } from "../trpc.ts";
+import { ExitSignal, loggedProcedure } from "../trpc.ts";
 import {
   TemplateSchema,
   type InitContext,
@@ -50,6 +50,25 @@ export const init = loggedProcedure
           "No package.json found. Please run in a project with package.json.",
         );
         throw new ExitSignal(1);
+      }
+
+      const gitignorePath = resolve(context.cwd, ".gitignore");
+      let gitignoreContent = "";
+      if (await fs.pathExists(gitignorePath)) {
+        gitignoreContent = await fs.readFile(gitignorePath, "utf-8");
+      }
+      if (
+        !gitignoreContent
+          .split(/\r?\n/)
+          .some(
+            (line) => line.trim() === ".alchemy" || line.trim() === ".alchemy/",
+          )
+      ) {
+        if (gitignoreContent && !gitignoreContent.endsWith("\n")) {
+          gitignoreContent += "\n";
+        }
+        gitignoreContent += ".alchemy/\n";
+        await fs.writeFile(gitignorePath, gitignoreContent, "utf-8");
       }
 
       await checkExistingAlchemyFiles(context);
@@ -170,7 +189,7 @@ async function detectFramework(
   const frameworkResult = await select({
     message: "Which framework are you using?",
     options: [
-      { label: "TypeScript Worker", value: "typescript" },
+      { label: "Worker", value: "typescript" },
       { label: "Vite", value: "vite" },
       { label: "Astro", value: "astro" },
       { label: "React Router", value: "react-router" },
@@ -445,7 +464,7 @@ const FRAMEWORK_DEPENDENCIES: Record<TemplateType, DependencyVersionMap[]> = {
   sveltekit: ["alchemy", "@sveltejs/adapter-cloudflare"],
   typescript: ["alchemy"],
   vite: ["alchemy"],
-  astro: ["alchemy"],
+  astro: ["alchemy", "@astrojs/cloudflare"],
   "react-router": ["alchemy", "@cloudflare/vite-plugin"],
   "tanstack-start": ["alchemy"],
   rwsdk: ["alchemy"],
@@ -550,57 +569,125 @@ async function updateTypescriptProject(context: InitContext): Promise<void> {
 }
 
 async function updateViteProject(context: InitContext): Promise<void> {
-  // const tsConfigPath = resolve(context.cwd, "tsconfig.json");
-  // const tsConfigNodePath = resolve(context.cwd, "tsconfig.node.json");
-  // if (await fs.pathExists(tsConfigPath)) {
-  //   await updateTsConfig(tsConfigPath, {
-  //     exclude: ["alchemy.run.ts", "./types/env.d.ts"],
-  //   });
-  // }
-  // if ((await fs.pathExists(tsConfigNodePath)) || context.framework === "vite") {
-  //   await updateTsConfig(tsConfigNodePath, {
-  //     include: ["alchemy.run.ts"],
-  //   });
-  // }
+  await updateViteConfig(context);
+
+  const tsConfigPath = resolve(context.cwd, "tsconfig.json");
+  if (await fs.pathExists(tsConfigPath)) {
+    await updateTsConfig(tsConfigPath, {
+      include: ["alchemy.run.ts"],
+    });
+  }
 }
 
 async function updateSvelteKitProject(context: InitContext): Promise<void> {
   await updateSvelteConfig(context);
-
-  // const tsConfigPath = resolve(context.cwd, "tsconfig.json");
-  // await updateTsConfig(tsConfigPath, {
-  //   include: ["alchemy.run.ts"],
-  // });
+  const tsConfigPath = resolve(context.cwd, "tsconfig.json");
+  if (await fs.pathExists(tsConfigPath)) {
+    await updateTsConfig(tsConfigPath, {
+      include: ["alchemy.run.ts"],
+    });
+  }
 }
 
 async function updateRwsdkProject(context: InitContext): Promise<void> {
   await updateEnvFile(context);
-
-  // const tsConfigPath = resolve(context.cwd, "tsconfig.json");
-  // await updateTsConfig(tsConfigPath, {
-  //   include: ["alchemy.run.ts"],
-  // });
+  const tsConfigPath = resolve(context.cwd, "tsconfig.json");
+  if (await fs.pathExists(tsConfigPath)) {
+    await updateTsConfig(tsConfigPath, {
+      include: ["alchemy.run.ts"],
+    });
+  }
 }
 
 async function updateNuxtProject(context: InitContext): Promise<void> {
   await updateNuxtConfig(context);
-
-  // const tsConfigPath = resolve(context.cwd, "tsconfig.json");
-  // await updateTsConfig(tsConfigPath, {
-  //   include: ["alchemy.run.ts"],
-  // });
+  const tsConfigPath = resolve(context.cwd, "tsconfig.json");
+  if (await fs.pathExists(tsConfigPath)) {
+    await updateTsConfig(tsConfigPath, {
+      include: ["alchemy.run.ts"],
+    });
+  }
 }
 
 async function updateAstroProject(context: InitContext): Promise<void> {
   await updateAstroConfig(context);
+  const tsConfigPath = resolve(context.cwd, "tsconfig.json");
+  if (await fs.pathExists(tsConfigPath)) {
+    await updateTsConfig(tsConfigPath, {
+      include: ["alchemy.run.ts"],
+    });
+  }
+}
 
-  // const tsConfigPath = resolve(context.cwd, "tsconfig.json");
-  // await updateTsConfig(tsConfigPath, {
-  //   include: ["alchemy.run.ts", "types/**/*.ts"],
-  //   compilerOptions: {
-  //     types: ["@cloudflare/workers-types", "./types/env.d.ts"],
-  //   },
-  // });
+async function updateReactRouterViteConfig(
+  context: InitContext,
+): Promise<void> {
+  const viteConfigPath = resolve(context.cwd, "vite.config.ts");
+  if (!(await fs.pathExists(viteConfigPath))) return;
+
+  try {
+    const project = new Project({
+      manipulationSettings: {
+        indentationText: IndentationText.TwoSpaces,
+        quoteKind: QuoteKind.Double,
+      },
+    });
+
+    project.addSourceFileAtPath(viteConfigPath);
+    const sourceFile = project.getSourceFileOrThrow(viteConfigPath);
+
+    const alchemyImport = sourceFile.getImportDeclaration(
+      "alchemy/cloudflare/react-router",
+    );
+    if (!alchemyImport) {
+      sourceFile.addImportDeclaration({
+        moduleSpecifier: "alchemy/cloudflare/react-router",
+        defaultImport: "alchemy",
+      });
+    }
+
+    const exportAssignment = sourceFile.getExportAssignment(
+      (d) => !d.isExportEquals(),
+    );
+    if (!exportAssignment) return;
+
+    const defineConfigCall = exportAssignment.getExpression();
+    if (
+      !Node.isCallExpression(defineConfigCall) ||
+      defineConfigCall.getExpression().getText() !== "defineConfig"
+    )
+      return;
+
+    let configObject = defineConfigCall.getArguments()[0];
+    if (!configObject) {
+      configObject = defineConfigCall.addArgument("{}");
+    }
+
+    if (Node.isObjectLiteralExpression(configObject)) {
+      const pluginsProperty = configObject.getProperty("plugins");
+      if (pluginsProperty && Node.isPropertyAssignment(pluginsProperty)) {
+        const initializer = pluginsProperty.getInitializer();
+        if (Node.isArrayLiteralExpression(initializer)) {
+          const hasAlchemyPlugin = initializer
+            .getElements()
+            .some((el) => el.getText().includes("alchemy("));
+
+          if (!hasAlchemyPlugin) {
+            initializer.addElement("alchemy()");
+          }
+        }
+      } else if (!pluginsProperty) {
+        configObject.addPropertyAssignment({
+          name: "plugins",
+          initializer: "[alchemy()]",
+        });
+      }
+    }
+
+    await project.save();
+  } catch (error) {
+    console.warn("Failed to update vite.config.ts:", error);
+  }
 }
 
 async function updateReactRouterProject(context: InitContext): Promise<{
@@ -680,7 +767,7 @@ declare module "cloudflare:workers" {
     },
   });
 
-  await updateViteConfig(context);
+  await updateReactRouterViteConfig(context);
   await updateReactRouterConfigTS(context);
 
   return {
@@ -703,19 +790,16 @@ async function updateViteConfig(context: InitContext): Promise<void> {
     project.addSourceFileAtPath(viteConfigPath);
     const sourceFile = project.getSourceFileOrThrow(viteConfigPath);
 
-    // Check if cloudflare import already exists
-    const cloudflareImport = sourceFile.getImportDeclaration(
-      "@cloudflare/vite-plugin",
+    const alchemyImport = sourceFile.getImportDeclaration(
+      "alchemy/cloudflare/vite",
     );
-    if (!cloudflareImport) {
-      // Add cloudflare import
+    if (!alchemyImport) {
       sourceFile.addImportDeclaration({
-        moduleSpecifier: "@cloudflare/vite-plugin",
-        namedImports: ["cloudflare"],
+        moduleSpecifier: "alchemy/cloudflare/vite",
+        defaultImport: "alchemy",
       });
     }
 
-    // Find the defineConfig call
     const exportAssignment = sourceFile.getExportAssignment(
       (d) => !d.isExportEquals(),
     );
@@ -738,23 +822,18 @@ async function updateViteConfig(context: InitContext): Promise<void> {
       if (pluginsProperty && Node.isPropertyAssignment(pluginsProperty)) {
         const initializer = pluginsProperty.getInitializer();
         if (Node.isArrayLiteralExpression(initializer)) {
-          // Check if cloudflare plugin is already configured
-          const hasCloudflarePlugin = initializer
+          const hasAlchemyPlugin = initializer
             .getElements()
-            .some((el) => el.getText().includes("cloudflare("));
+            .some((el) => el.getText().includes("alchemy("));
 
-          if (!hasCloudflarePlugin) {
-            // Add cloudflare plugin
-            initializer.addElement(
-              'cloudflare({ viteEnvironment: { name: "ssr" } })',
-            );
+          if (!hasAlchemyPlugin) {
+            initializer.addElement("alchemy()");
           }
         }
       } else if (!pluginsProperty) {
-        // If no plugins property exists, create one with cloudflare plugin
         configObject.addPropertyAssignment({
           name: "plugins",
-          initializer: '[cloudflare({ viteEnvironment: { name: "ssr" } })]',
+          initializer: "[alchemy()]",
         });
       }
     }
@@ -780,7 +859,6 @@ async function updateReactRouterConfigTS(context: InitContext): Promise<void> {
     project.addSourceFileAtPath(configPath);
     const sourceFile = project.getSourceFileOrThrow(configPath);
 
-    // Find the default export
     const exportAssignment = sourceFile.getExportAssignment(
       (d) => !d.isExportEquals(),
     );
@@ -789,7 +867,6 @@ async function updateReactRouterConfigTS(context: InitContext): Promise<void> {
     const configExpression = exportAssignment.getExpression();
     let configObject: Node | undefined;
 
-    // Handle both direct object literal and satisfies expression
     if (Node.isObjectLiteralExpression(configExpression)) {
       configObject = configExpression;
     } else if (Node.isSatisfiesExpression(configExpression)) {
@@ -801,11 +878,9 @@ async function updateReactRouterConfigTS(context: InitContext): Promise<void> {
 
     if (!configObject || !Node.isObjectLiteralExpression(configObject)) return;
 
-    // Check if future property exists
     let futureProperty = configObject.getProperty("future");
 
     if (!futureProperty) {
-      // Add future property with unstable_viteEnvironmentApi
       configObject.addPropertyAssignment({
         name: "future",
         initializer: `{
@@ -813,7 +888,6 @@ async function updateReactRouterConfigTS(context: InitContext): Promise<void> {
   }`,
       });
     } else if (Node.isPropertyAssignment(futureProperty)) {
-      // Future property exists, check if it has unstable_viteEnvironmentApi
       const futureInitializer = futureProperty.getInitializer();
 
       if (Node.isObjectLiteralExpression(futureInitializer)) {
@@ -822,13 +896,11 @@ async function updateReactRouterConfigTS(context: InitContext): Promise<void> {
         );
 
         if (!viteEnvApiProp) {
-          // Add unstable_viteEnvironmentApi
           futureInitializer.addPropertyAssignment({
             name: "unstable_viteEnvironmentApi",
             initializer: "true",
           });
         } else if (Node.isPropertyAssignment(viteEnvApiProp)) {
-          // Check if it's false and update to true
           const value = viteEnvApiProp.getInitializer()?.getText();
           if (value === "false") {
             viteEnvApiProp.setInitializer("true");
@@ -869,12 +941,43 @@ async function updateSvelteConfig(context: InitContext): Promise<void> {
     );
 
     if (adapterImport) {
-      adapterImport.setModuleSpecifier("@sveltejs/adapter-cloudflare");
+      adapterImport.setModuleSpecifier("alchemy/cloudflare/sveltekit");
+      adapterImport.setDefaultImport("alchemy");
     } else {
       sourceFile.insertImportDeclaration(0, {
-        moduleSpecifier: "@sveltejs/adapter-cloudflare",
-        defaultImport: "adapter",
+        moduleSpecifier: "alchemy/cloudflare/sveltekit",
+        defaultImport: "alchemy",
       });
+    }
+
+    const configVariable = sourceFile.getVariableDeclaration("config");
+    let configObject;
+
+    if (configVariable) {
+      configObject = configVariable.getInitializer();
+    } else {
+      const exportAssignment = sourceFile.getExportAssignment(
+        (d) => !d.isExportEquals(),
+      );
+      if (exportAssignment) {
+        configObject = exportAssignment.getExpression();
+      }
+    }
+
+    if (configObject && Node.isObjectLiteralExpression(configObject)) {
+      const kitProperty = configObject.getProperty("kit");
+      if (kitProperty && Node.isPropertyAssignment(kitProperty)) {
+        const kitInitializer = kitProperty.getInitializer();
+        if (Node.isObjectLiteralExpression(kitInitializer)) {
+          const adapterProperty = kitInitializer.getProperty("adapter");
+          if (adapterProperty && Node.isPropertyAssignment(adapterProperty)) {
+            const adapterCall = adapterProperty.getInitializer();
+            if (Node.isCallExpression(adapterCall)) {
+              adapterProperty.setInitializer("alchemy()");
+            }
+          }
+        }
+      }
     }
 
     await project.save();
@@ -937,6 +1040,16 @@ async function updateNuxtConfig(context: InitContext): Promise<void> {
     project.addSourceFileAtPath(nuxtConfigPath);
     const sourceFile = project.getSourceFileOrThrow(nuxtConfigPath);
 
+    const alchemyImport = sourceFile.getImportDeclaration(
+      "alchemy/cloudflare/nuxt",
+    );
+    if (!alchemyImport) {
+      sourceFile.addImportDeclaration({
+        moduleSpecifier: "alchemy/cloudflare/nuxt",
+        defaultImport: "alchemy",
+      });
+    }
+
     const exportAssignment = sourceFile.getExportAssignment(
       (d) => !d.isExportEquals(),
     );
@@ -959,13 +1072,30 @@ async function updateNuxtConfig(context: InitContext): Promise<void> {
         configObject.addPropertyAssignment({
           name: "nitro",
           initializer: `{
-    preset: "cloudflare_module",
-    cloudflare: {
-      deployConfig: true,
-      nodeCompat: true
-    }
+    preset: "cloudflare-module",
+    cloudflare: alchemy()
   }`,
         });
+      } else {
+        const nitroProperty = configObject.getProperty("nitro");
+        if (Node.isPropertyAssignment(nitroProperty)) {
+          const nitroInitializer = nitroProperty.getInitializer();
+          if (Node.isObjectLiteralExpression(nitroInitializer)) {
+            const cloudflareProperty =
+              nitroInitializer.getProperty("cloudflare");
+            if (
+              cloudflareProperty &&
+              Node.isPropertyAssignment(cloudflareProperty)
+            ) {
+              cloudflareProperty.setInitializer("alchemy()");
+            } else if (!cloudflareProperty) {
+              nitroInitializer.addPropertyAssignment({
+                name: "cloudflare",
+                initializer: "alchemy()",
+              });
+            }
+          }
+        }
       }
 
       const modulesProperty = configObject.getProperty("modules");
@@ -1013,8 +1143,8 @@ async function updateAstroConfig(context: InitContext): Promise<void> {
     const sourceFile = project.getSourceFileOrThrow(astroConfigPath);
 
     sourceFile.addImportDeclaration({
-      moduleSpecifier: "@astrojs/cloudflare",
-      defaultImport: "cloudflare",
+      moduleSpecifier: "alchemy/cloudflare/astro",
+      defaultImport: "alchemy",
     });
 
     const exportAssignment = sourceFile.getExportAssignment(
@@ -1044,7 +1174,7 @@ async function updateAstroConfig(context: InitContext): Promise<void> {
       if (!configObject.getProperty("adapter")) {
         configObject.addPropertyAssignment({
           name: "adapter",
-          initializer: "cloudflare()",
+          initializer: "alchemy()",
         });
       }
     }
@@ -1070,19 +1200,14 @@ async function updateTanStackViteConfig(context: InitContext): Promise<void> {
     project.addSourceFileAtPath(viteConfigPath);
     const sourceFile = project.getSourceFileOrThrow(viteConfigPath);
 
-    const alchemyImport = sourceFile.getImportDeclaration("alchemy/cloudflare");
+    const alchemyImport = sourceFile.getImportDeclaration(
+      "alchemy/cloudflare/tanstack-start",
+    );
     if (!alchemyImport) {
       sourceFile.addImportDeclaration({
-        moduleSpecifier: "alchemy/cloudflare",
-        namedImports: ["cloudflareWorkersDevEnvironmentShim"],
+        moduleSpecifier: "alchemy/cloudflare/tanstack-start",
+        defaultImport: "alchemy",
       });
-    } else {
-      const hasShim = alchemyImport
-        .getNamedImports()
-        .some((ni) => ni.getName() === "cloudflareWorkersDevEnvironmentShim");
-      if (!hasShim) {
-        alchemyImport.addNamedImport("cloudflareWorkersDevEnvironmentShim");
-      }
     }
 
     const exportAssignment = sourceFile.getExportAssignment(
@@ -1103,7 +1228,6 @@ async function updateTanStackViteConfig(context: InitContext): Promise<void> {
     }
 
     if (Node.isObjectLiteralExpression(configObject)) {
-      // Add build configuration
       if (!configObject.getProperty("build")) {
         configObject.addPropertyAssignment({
           name: "build",
@@ -1120,13 +1244,12 @@ async function updateTanStackViteConfig(context: InitContext): Promise<void> {
       if (pluginsProperty && Node.isPropertyAssignment(pluginsProperty)) {
         const initializer = pluginsProperty.getInitializer();
         if (Node.isArrayLiteralExpression(initializer)) {
-          const hasShim = initializer
+          const hasAlchemyPlugin = initializer
             .getElements()
-            .some((el) =>
-              el.getText().includes("cloudflareWorkersDevEnvironmentShim"),
-            );
-          if (!hasShim) {
-            initializer.addElement("cloudflareWorkersDevEnvironmentShim()");
+            .some((el) => el.getText().includes("alchemy()"));
+
+          if (!hasAlchemyPlugin) {
+            initializer.addElement("alchemy()");
           }
 
           const tanstackElements = initializer
