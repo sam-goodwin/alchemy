@@ -1,5 +1,5 @@
 export interface Env {
-  [key: string]: string;
+  [key: string]: any;
   <T = string>(name: string, value?: T | undefined, error?: string): T;
 }
 

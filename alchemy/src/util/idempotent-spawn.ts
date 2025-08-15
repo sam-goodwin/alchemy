@@ -4,6 +4,23 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import { AsyncMutex } from "./mutex.ts";
 
+export interface IdempotentSpawnOptions {
+  cmd: string;
+  cwd?: string;
+  env?: Record<string, string>;
+  log: string;
+  stateFile?: string;
+  overlapBytes?: number;
+  resume?: boolean;
+  isSameProcess?: (pid: number) => Promise<boolean>;
+  processName?: string;
+  extract?: (line: string) => string | undefined;
+  /**
+   * If true, the child's stdout and stderr will not be mirrored to this process's console.
+   */
+  quiet?: boolean;
+}
+
 /**
  * Idempotently ensure a long-lived child is running with stdout/stderr -> files,
  * and mirror those logs to THIS process's console with persisted offsets.
@@ -22,22 +39,7 @@ export async function idempotentSpawn({
   extract,
   isSameProcess,
   quiet = false,
-}: {
-  cmd: string;
-  cwd?: string;
-  env?: Record<string, string>;
-  log: string;
-  stateFile?: string;
-  overlapBytes?: number;
-  resume?: boolean;
-  isSameProcess?: (pid: number) => Promise<boolean>;
-  processName?: string;
-  extract?: (line: string) => string | undefined;
-  /**
-   * If true, the child's stdout and stderr will not be mirrored to this process's console.
-   */
-  quiet?: boolean;
-}): Promise<string | undefined> {
+}: IdempotentSpawnOptions): Promise<string | undefined> {
   if (!processName && !isSameProcess) {
     processName = cmd.split(" ")[0];
   }
@@ -52,13 +54,22 @@ export async function idempotentSpawn({
     Promise.withResolvers<string | undefined>();
 
   if (!extract) {
-    console.warn(
-      "No extract function provided, will not return a value. This is probably a bug.",
-    );
     resolveExtracted(undefined);
   }
 
-  // ------------------------ helpers ------------------------
+  await ensureChildRunning();
+
+  const write = quiet
+    ? () => false
+    : (buf: Buffer) => process.stdout.write(buf);
+
+  // Start followers (stdout/stderr) and mirror to this process
+  await followFilePersisted(outPath, {
+    stateKey: `${path.resolve(outPath)}::stdout`,
+    write,
+  });
+
+  return extracted;
 
   function isPidAlive(pid: number) {
     if (!pid || Number.isNaN(pid)) return false;
@@ -143,9 +154,9 @@ export async function idempotentSpawn({
   async function followFilePersisted(
     logPath: string,
     {
-      write = (buf: Buffer) => process.stdout.write(buf),
+      write,
       chunkSize = 64 * 1024,
-      tickMs = 100,
+      // tickMs = 100,
     }: {
       stateKey: string;
       write: (buf: Buffer) => boolean;
@@ -173,63 +184,21 @@ export async function idempotentSpawn({
     let closed = false;
     const drainMutex = new AsyncMutex();
 
-    async function persist() {
-      try {
-        const cur = await fh.stat();
-        state = {
-          ...state,
-          offset,
-          ino: Number(cur.ino ?? ino),
-          dev: Number(cur.dev ?? dev),
-          size: cur.size,
-          mtimeMs: cur.mtimeMs,
-        };
-        await writeJsonAtomic(stateFile, state);
-      } catch {
-        // If the file vanished mid-rotation, we'll catch up on the next event.
-      }
-    }
+    // we read the log file and stream in chunks, not lines
+    // so we need to keep track of the remainder of the last line
+    let remainder: string | undefined;
 
-    async function drain() {
-      while (true) {
-        const cur = await fh.stat().catch(() => null);
-        if (!cur) break;
-
-        if (cur.size < offset) offset = 0; // truncated
-
-        if (offset > 0 && extract) {
-          // read from start to offset
-          const fullBuffer = Buffer.allocUnsafe(offset);
-          await fh.read({
-            position: 0,
-            buffer: fullBuffer,
-            length: offset,
-          });
-          const content = fullBuffer.toString("utf8");
-          const lines = content.split("\n");
-          for (const line of lines) {
-            const extracted = extract(line);
-            if (extracted) {
-              resolveExtracted(extracted);
-              break;
-            }
-          }
-        }
-
-        const toRead = Math.min(chunkSize, cur.size - offset);
-        if (toRead <= 0) break;
-
-        const { bytesRead, buffer } = await fh.read({
-          position: offset,
-          buffer: Buffer.allocUnsafe(toRead),
-          length: toRead,
-        });
-        if (!bytesRead) break;
-
-        offset += bytesRead;
-        write(buffer.subarray(0, bytesRead));
-      }
-      await persist();
+    // if we are resuming, then re-parse the log lines to extract the value
+    if (offset > 0) {
+      // read from start to offset
+      const fullBuffer = Buffer.allocUnsafe(offset);
+      await fh.read({
+        position: 0,
+        buffer: fullBuffer,
+        length: offset,
+      });
+      const content = fullBuffer.toString("utf8");
+      parse(content);
     }
 
     await drain();
@@ -252,7 +221,7 @@ export async function idempotentSpawn({
       } catch {
         // File might briefly disappear during rotation
       }
-      await drainMutex.lock(() => drain());
+      await drain();
     });
 
     // TODO(sam): do we need this?
@@ -267,24 +236,68 @@ export async function idempotentSpawn({
       await fh.close().catch(() => {});
       await persist();
     };
+
+    async function persist() {
+      try {
+        const cur = await fh.stat();
+        state = {
+          ...state,
+          offset,
+          ino: Number(cur.ino ?? ino),
+          dev: Number(cur.dev ?? dev),
+          size: cur.size,
+          mtimeMs: cur.mtimeMs,
+        };
+        await writeJsonAtomic(stateFile, state);
+      } catch {
+        // If the file vanished mid-rotation, we'll catch up on the next event.
+      }
+    }
+
+    function parse(content: string) {
+      const lines = content.split("\n");
+      if (extract) {
+        if (lines.length > 0) {
+          remainder = lines[lines.length - 1];
+        }
+        // parse all lines except the last one (which may be a partial line)
+        for (const line of lines.slice(0, -1)) {
+          const extracted = extract(line);
+          if (extracted) {
+            resolveExtracted(extracted);
+            break;
+          }
+        }
+      }
+    }
+
+    function drain() {
+      return drainMutex.lock(async () => {
+        while (true) {
+          const cur = await fh.stat().catch(() => null);
+          if (!cur) break;
+
+          if (cur.size < offset) offset = 0; // truncated
+          const toRead = Math.min(chunkSize, cur.size - offset);
+          if (toRead <= 0) break;
+
+          const { bytesRead, buffer } = await fh.read({
+            position: offset,
+            buffer: Buffer.allocUnsafe(toRead),
+            length: toRead,
+          });
+          if (!bytesRead) break;
+
+          const chunk = buffer.subarray(0, bytesRead);
+
+          // write the newly read content to the stream
+          write(chunk);
+          // parse the previous remainder and the new chunk
+          parse(`${remainder || ""}${chunk.toString("utf8")}`);
+          offset += bytesRead;
+        }
+        await persist();
+      });
+    }
   }
-
-  // ------------------------ main flow ------------------------
-
-  await ensureChildRunning();
-
-  if (!quiet) {
-    const write = quiet
-      ? () => false
-      : (buf: Buffer) => process.stdout.write(buf);
-
-    // Start followers (stdout/stderr) and mirror to this process
-    await followFilePersisted(outPath, {
-      stateKey: `${path.resolve(outPath)}::stdout`,
-      write,
-    });
-  }
-
-  // Return a stopper for this instance's mirroring (child keeps running)
-  return extracted;
 }

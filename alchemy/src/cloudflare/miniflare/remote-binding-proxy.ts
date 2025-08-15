@@ -41,6 +41,7 @@ export async function createRemoteProxyWorker(input: {
       name: input.name,
       metadata: {
         main_module: script.bundle.entrypoint,
+        // TODO(sam/john): should this be set to latest? Or match the user's worker that we are proxying?
         compatibility_date: "2025-06-16",
         bindings: input.bindings,
         observability: { enabled: false },

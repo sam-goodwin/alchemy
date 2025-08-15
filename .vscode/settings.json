@@ -1,4 +1,10 @@
 {
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "alchemy/bin/alchemy.js": true,
+    "alchemy/workers/*.js": true
+  },
   "editor.codeLens": false,
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
@@ -30,10 +36,7 @@
     "editor.formatOnSave": false
   },
   "editor.inlayHints.enabled": "offUnlessPressed",
-  "files.exclude": {
-    "**/__pycache__": true,
-    "**/*.pyc": true
-  },
+  
   "vitest.disableWorkspaceWarning": true,
   "[typescript]": {
     "editor.indentSize": 2,
@@ -50,5 +53,5 @@
   "[jsx]": {
     "editor.indentSize": 2,
     "editor.defaultFormatter": "biomejs.biome"
-  }
+  },
 }

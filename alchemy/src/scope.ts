@@ -23,7 +23,10 @@ import {
   createLoggerInstance,
   type LoggerApi,
 } from "./util/cli.ts";
-import { idempotentSpawn } from "./util/idempotent-spawn.ts";
+import {
+  idempotentSpawn,
+  type IdempotentSpawnOptions,
+} from "./util/idempotent-spawn.ts";
 import { logger } from "./util/logger.ts";
 import { AsyncMutex } from "./util/mutex.ts";
 import type { ITelemetryClient } from "./util/telemetry/client.ts";
@@ -242,38 +245,7 @@ export class Scope {
   >(
     // TODO(sam): validate uniqueness? Ensure a flat .logs/${id}.log dir? Or nest in scope dirs?
     id: string,
-    options: {
-      /**
-       * The working directory to run the command in.
-       *
-       * @default process.cwd()
-       */
-      cwd?: string;
-      /**
-       * The environment variables to set for the command.
-       */
-      env?: Record<string, string>;
-      /**
-       * The command to run (e.g. `cloudflared tunnel --url http://localhost:8080`).
-       */
-      cmd: string;
-      /**
-       * Function executed on each line of the process's output (stdout and stderr) to extract a value.
-       */
-      extract?: E;
-      /**
-       * Name of the process - used to check if a PID is a cloudflared process when the parent exits, for resumability
-       */
-      processName?: string;
-      /**
-       * Function to check if a PID is the same process as the one that was spawned.
-       *
-       * Used to check if a PID is a cloudflared process when the parent exits, for resumability.
-       *
-       * One of {@link extract} or {@link processName} must be provided.
-       */
-      isSameProcess?: (pid: number) => Promise<boolean>;
-    },
+    options: Omit<IdempotentSpawnOptions, "log" | "stateFile">,
   ) {
     const dotAlchemy = path.join(process.cwd(), ".alchemy");
     const logsDir = path.join(dotAlchemy, "logs");

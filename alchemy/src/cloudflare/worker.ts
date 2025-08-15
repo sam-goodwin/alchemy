@@ -58,6 +58,7 @@ import { Workflow, isWorkflow, upsertWorkflow } from "./workflow.ts";
 // Previous versions of `Worker` used the `Bundle` resource.
 // This import is here to avoid errors when destroying the `Bundle` resource.
 import "../esbuild/bundle.ts";
+import { parseDomain } from "../util/parse-domain.ts";
 
 /**
  * Configuration options for static assets
@@ -466,11 +467,19 @@ export type Worker<
 
     /**
      * The worker's URL if enabled
-     * Format: {name}.{subdomain}.workers.dev
+     * Format: https://{name}.{subdomain}.workers.dev
      *
      * @default true
      */
-    url?: string;
+    url: string | undefined;
+
+    /**
+     * The worker's domain if enabled
+     * Format: {name}.{subdomain}.workers.dev
+     *
+     * @default undefined
+     */
+    domain: string | undefined;
 
     /**
      * The bindings that were created
@@ -845,6 +854,7 @@ const _Worker = Resource(
         createdAt: this.output?.createdAt ?? Date.now(),
         updatedAt: Date.now(),
         url,
+        domain: parseDomain(url),
         routes: [],
         domains: [],
         dev: {
@@ -991,6 +1001,7 @@ const _Worker = Resource(
       updatedAt: now,
       eventSources: props.eventSources,
       url: subdomain?.url,
+      domain: parseDomain(subdomain?.url),
       assets: props.assets,
       crons: props.crons,
       routes,

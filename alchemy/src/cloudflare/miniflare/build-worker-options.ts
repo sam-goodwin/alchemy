@@ -318,6 +318,7 @@ export const buildWorkerOptions = async (
   for (const eventSource of input.eventSources ?? []) {
     const queue = "queue" in eventSource ? eventSource.queue : eventSource;
     if (queue.dev?.remote) {
+      // TODO(sam): add suport for remote queues
       throw new Error(
         `Locally emulated workers cannot consume remote queues. Worker "${input.name}" is locally emulated but is consuming remote queue "${queue.name}".`,
       );

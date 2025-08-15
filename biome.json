@@ -76,7 +76,8 @@
         "noEmptyInterface": "off",
         "noRedeclare": "off",
         "noControlCharactersInRegex": "off",
-        "noConfusingVoidType": "off"
+        "noConfusingVoidType": "off",
+        "useAdjacentOverloadSignatures": "off"
       },
       "style": {
         "useLiteralEnumMembers": "error",

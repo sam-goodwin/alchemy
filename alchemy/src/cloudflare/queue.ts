@@ -97,10 +97,14 @@ export function isQueue(eventSource: any): eventSource is Queue {
   );
 }
 
+export type Queue<Body = unknown> = _Queue<Body> & {
+  send(...messages: [Body, ...Body[]]): Promise<void>;
+};
+
 /**
  * Output returned after Cloudflare Queue creation/update
  */
-export interface Queue<Body = unknown>
+interface _Queue<Body = unknown>
   extends Resource<"cloudflare::Queue">,
     Omit<QueueProps, "dev"> {
   /**
@@ -235,19 +239,44 @@ export async function Queue<T = unknown>(
   id: string,
   props: QueueProps = {},
 ): Promise<Queue<T>> {
-  return await _Queue(id, {
+  const queue = await _Queue(id, {
     ...props,
     dev: {
       ...(props.dev ?? {}),
       force: Scope.current.local,
     },
   });
+  return {
+    ...queue,
+    async send(...messages: [T, ...T[]]) {
+      const api = await createCloudflareApi(props);
+      const toMessage = (message: T) => ({
+        body: message,
+        content_type: "json",
+        delay_seconds: undefined,
+      });
+      const response = await api.post(
+        `/accounts/${api.accountId}/queues/${queue.id}/messages${messages.length > 1 ? "/batch" : ""}`,
+        messages.length > 1
+          ? {
+              messages: messages.map(toMessage),
+            }
+          : {
+              body: toMessage(messages[0]),
+            },
+      );
+      if (!response.ok) {
+        await handleApiError(response, "sending", "Message", queue.id);
+      }
+      // TODO(sam): handle partial failures (re-drive messages)
+    },
+  } as Queue<T>;
 }
 
 const _Queue = Resource("cloudflare::Queue", async function <
   T = unknown,
->(this: Context<Queue<T>>, id: string, props: QueueProps = {}): Promise<
-  Queue<T>
+>(this: Context<_Queue<T>, QueueProps>, id: string, props: QueueProps = {}): Promise<
+  _Queue<T>
 > {
   const queueName = props.name ?? id;
   const dev = {
