@@ -107,16 +107,44 @@ type IsClass = {
   new (_: never): never;
 };
 
+type ResourceActions<ResourceContext extends Context<any, any>> = Record<
+  string,
+  // FIXME: Just noticed when calling an action `this` is the resulting resource
+  // not the context but we actually would like the context here
+  (this: ResourceContext) => any
+>;
+
 type ResourceLifecycleHandler = (
   this: Context<any, any>,
   id: string,
-  props: any,
+  props?: any,
 ) => Promise<Resource<string>>;
+
+// Extract the Context type from a function's this parameter
+type ExtractResourceContext<F> = F extends (
+  this: infer Ctx,
+  ...args: any[]
+) => any
+  ? Ctx extends Context<any, any>
+    ? Ctx
+    : Context<any, any>
+  : Context<any, any>;
 
 // see: https://x.com/samgoodwin89/status/1904640134097887653
 type Handler<F extends (...args: any[]) => any> =
   | F
   | (((this: any, id: string, props?: {}) => never) & IsClass);
+
+type HandlerWithActions<
+  F extends (this: any, ...args: any[]) => any,
+  Actions extends ResourceActions<ExtractResourceContext<F>>,
+> =
+  | ((
+      this: any,
+      ...args: Parameters<F>
+    ) => Promise<Awaited<ReturnType<F>> & Actions>)
+  | (((this: ExtractResourceContext<F>, id: string, props?: {}) => never) &
+      IsClass);
 
 export function Resource<
   const Type extends string,
@@ -126,18 +154,75 @@ export function Resource<
 export function Resource<
   const Type extends string,
   F extends ResourceLifecycleHandler,
+  Actions extends ResourceActions<ExtractResourceContext<F>>,
+>(type: Type, fn: F, actions: Actions): HandlerWithActions<F, Actions>;
+
+export function Resource<
+  const Type extends string,
+  F extends ResourceLifecycleHandler,
 >(type: Type, options: Partial<ProviderOptions>, fn: F): Handler<F>;
+
+export function Resource<
+  const Type extends string,
+  F extends ResourceLifecycleHandler,
+  Actions extends ResourceActions<ExtractResourceContext<F>>,
+>(
+  type: Type,
+  options: Partial<ProviderOptions>,
+  fn: F,
+  actions: Actions,
+): HandlerWithActions<F, Actions>;
 
 export function Resource<
   const Type extends ResourceKind,
   F extends ResourceLifecycleHandler,
->(type: Type, ...args: [Partial<ProviderOptions>, F] | [F]): Handler<F> {
+  Actions extends ResourceActions<ExtractResourceContext<F>>,
+>(
+  type: Type,
+  ...args:
+    | [Partial<ProviderOptions>, F]
+    | [Partial<ProviderOptions>, F, Actions]
+    | [F]
+    | [F, Actions]
+): Handler<F> | HandlerWithActions<F, Actions> {
   if (PROVIDERS.has(type)) {
     throw new Error(`Resource ${type} already exists`);
   }
-  const [options, handler] = args.length === 2 ? args : [undefined, args[0]];
+
+  // Parse arguments based on the overload patterns
+  let options: Partial<ProviderOptions> | undefined;
+  let handler: F;
+  let actions: Actions | undefined; // TODO: actions not yet implemented in provider
+
+  if (args.length === 1) {
+    // [F] overload
+    type Overload = [F];
+    [handler] = args as Overload;
+  } else if (args.length === 2) {
+    if (typeof args[0] === "function") {
+      type Overload = [F, Actions];
+      [handler, actions] = args as Overload;
+    } else {
+      type Overload = [Partial<ProviderOptions>, F];
+      [options, handler] = args as Overload;
+    }
+  } else if (args.length === 3) {
+    type Overload = [Partial<ProviderOptions>, F, Actions];
+    [options, handler, actions] = args as Overload;
+  } else {
+    throw new Error(
+      `Invalid number of arguments for Resource ${type}: ${(args as any[]).length}`,
+    );
+  }
 
   type Out = Awaited<ReturnType<F>>;
+
+  // const bindActions = (resource: Resource<string>) => {
+  //   for (const [key, value] of Object.entries(actions ?? {})) {
+  //     resource[key as any] = value.bind(resource);
+  //   }
+  //   return resource;
+  // };
 
   const provider = (async (
     resourceID: string,
@@ -186,13 +271,14 @@ export function Resource<
       ...options,
       resolveInnerScope,
     });
-    const resource = Object.assign(promise, meta);
+    const resource = Object.assign(promise, meta, actions);
     scope.resources.set(resourceID, resource);
     return resource;
   }) as Provider<Type, F>;
   provider.type = type;
   provider.handler = handler;
   provider.options = options;
+  // provider.actions = actions;
   PROVIDERS.set(type, provider);
   return provider;
 }

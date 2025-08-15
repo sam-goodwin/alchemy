@@ -1,4 +1,5 @@
 import { alchemy } from "../alchemy.ts";
+import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import type { Secret } from "../secret.ts";
 
@@ -93,6 +94,7 @@ export interface RandomString extends Resource<"random::String"> {
 export const RandomString = Resource(
   "random::String",
   async function (
+    this: Context<RandomString>,
     _id: string,
     props: RandomStringProps = {},
   ): Promise<RandomString> {
@@ -123,4 +125,20 @@ export const RandomString = Resource(
       ),
     });
   },
+  {
+    getLength() {
+      console.log("getting length");
+      return this.output?.length || 0;
+    },
+  },
 );
+
+if (import.meta.main) {
+  const randomString = await RandomString("test", { length: 10 });
+  // FIXME: `getLength` is properly typed with `this` being the context, but
+  // typescript errors as `randomString` is a `RandomString` not a `Context<RandomString>`
+  // See ../../resource.ts:112 for type declaration
+  //
+  // The actual calling is still not implemented
+  console.log(randomString.getLength());
+}
