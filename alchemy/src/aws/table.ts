@@ -1,14 +1,8 @@
-import {
-  CreateTableCommand,
-  DeleteTableCommand,
-  DescribeTableCommand,
-  DynamoDBClient,
-  type KeySchemaElement,
-  ResourceNotFoundException,
-} from "@aws-sdk/client-dynamodb";
+import type { KeySchemaElement } from "@aws-sdk/client-dynamodb";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { ignore } from "../util/ignore.ts";
+import { importPeer } from "../util/peer.ts";
 import { retry } from "./retry.ts";
 
 /**
@@ -143,6 +137,17 @@ export const Table = Resource(
     _id: string,
     props: TableProps,
   ): Promise<Table> {
+    const {
+      CreateTableCommand,
+      DeleteTableCommand,
+      DescribeTableCommand,
+      DynamoDBClient,
+      ResourceNotFoundException,
+    } = await importPeer(
+      "@aws-sdk/client-dynamodb",
+      import("@aws-sdk/client-dynamodb"),
+      "dynamo::Table",
+    );
     const client = new DynamoDBClient({});
 
     if (this.phase === "delete") {

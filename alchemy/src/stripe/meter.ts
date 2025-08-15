@@ -155,7 +155,7 @@ export const Meter = Resource(
     _logicalId: string,
     props: MeterProps,
   ): Promise<Meter> {
-    const stripe = createStripeClient({ apiKey: props.apiKey });
+    const stripe = await createStripeClient({ apiKey: props.apiKey });
 
     const currentOutputId = this.output?.id;
 

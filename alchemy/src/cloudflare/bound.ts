@@ -21,7 +21,7 @@ import type {
 } from "@cloudflare/workers-types";
 import type { Pipeline } from "cloudflare:pipelines";
 import type { Secret } from "../secret.ts";
-import type { AiGatewayResource as _AiGateway } from "./ai-gateway.ts";
+import type { AiGateway as _AiGateway } from "./ai-gateway.ts";
 import type { Ai as _Ai } from "./ai.ts";
 import type { AnalyticsEngineDataset as _AnalyticsEngineDataset } from "./analytics-engine.ts";
 import type { Assets } from "./assets.ts";

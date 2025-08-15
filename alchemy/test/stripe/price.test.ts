@@ -20,7 +20,7 @@ if (!stripeApiKey) {
 }
 
 // Initialize a Stripe client for verification
-const stripe = createStripeClient({ apiKey: stripeApiKey });
+const stripe = await createStripeClient({ apiKey: stripeApiKey });
 
 describe("Price Resource", () => {
   const testPriceId = `${BRANCH_PREFIX}-price`;

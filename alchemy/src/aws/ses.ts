@@ -1,27 +1,14 @@
-import {
-  CreateConfigurationSetCommand,
-  CreateEmailIdentityCommand,
-  DeleteConfigurationSetCommand,
-  DeleteEmailIdentityCommand,
-  type DeliveryOptions,
-  GetConfigurationSetCommand,
-  GetEmailIdentityCommand,
-  NotFoundException,
-  PutConfigurationSetDeliveryOptionsCommand,
-  PutConfigurationSetReputationOptionsCommand,
-  PutConfigurationSetSendingOptionsCommand,
-  PutConfigurationSetSuppressionOptionsCommand,
-  PutConfigurationSetTrackingOptionsCommand,
-  PutEmailIdentityDkimAttributesCommand,
-  type ReputationOptions,
-  SESv2Client,
-  type SendingOptions,
-  type SuppressionOptions,
-  type TrackingOptions,
+import type {
+  DeliveryOptions,
+  ReputationOptions,
+  SendingOptions,
+  SuppressionOptions,
+  TrackingOptions,
 } from "@aws-sdk/client-sesv2";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { ignore } from "../util/ignore.ts";
+import { importPeer } from "../util/peer.ts";
 import { retry } from "./retry.ts";
 
 /**
@@ -165,6 +152,27 @@ export const SES = Resource(
     props: SESProps,
   ): Promise<SES> {
     // Create SES client
+    const {
+      CreateConfigurationSetCommand,
+      CreateEmailIdentityCommand,
+      DeleteConfigurationSetCommand,
+      DeleteEmailIdentityCommand,
+      GetConfigurationSetCommand,
+      GetEmailIdentityCommand,
+      NotFoundException,
+      PutConfigurationSetDeliveryOptionsCommand,
+      PutConfigurationSetReputationOptionsCommand,
+      PutConfigurationSetSendingOptionsCommand,
+      PutConfigurationSetSuppressionOptionsCommand,
+      PutConfigurationSetTrackingOptionsCommand,
+      PutEmailIdentityDkimAttributesCommand,
+      SESv2Client,
+    } = await importPeer(
+      "@aws-sdk/client-sesv2",
+      import("@aws-sdk/client-sesv2"),
+      "ses::SES",
+    );
+
     const client = new SESv2Client({});
 
     // Resource ID is either based on the configuration set name or email identity

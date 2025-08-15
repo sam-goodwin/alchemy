@@ -18,7 +18,7 @@ if (!stripeApiKey) {
 }
 
 // Initialize a Stripe client for verification
-const stripe = createStripeClient({ apiKey: stripeApiKey });
+const stripe = await createStripeClient({ apiKey: stripeApiKey });
 
 describe("Product Resource", () => {
   const testProductId = `${BRANCH_PREFIX}-product`;

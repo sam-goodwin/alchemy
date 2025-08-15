@@ -1,13 +1,21 @@
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import type { Secret } from "../secret.ts";
-import { withExponentialBackoff } from "../util/retry.ts";
 import { logger } from "../util/logger.ts";
+import { importPeer } from "../util/peer.ts";
+import { withExponentialBackoff } from "../util/retry.ts";
 
 export interface StripeClientOptions {
   apiKey?: Secret | string;
 }
 
-export function createStripeClient(options: StripeClientOptions = {}): Stripe {
+export async function createStripeClient(
+  options: StripeClientOptions = {},
+): Promise<Stripe> {
+  const { default: Stripe } = await importPeer(
+    "stripe",
+    import("stripe"),
+    "Stripe resources",
+  );
   let apiKey: string;
 
   if (options.apiKey) {

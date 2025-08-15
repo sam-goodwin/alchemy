@@ -1,7 +1,8 @@
-import { Octokit } from "@octokit/rest";
+import type { Octokit } from "@octokit/rest";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { logger } from "../util/logger.ts";
+import { importPeer } from "../util/peer.ts";
 
 // Convert exec to promise-based
 const execAsync = promisify(exec);
@@ -52,7 +53,11 @@ export async function createGitHubClient(
   options: { token?: string } = {},
 ): Promise<Octokit> {
   const token = await getGitHubToken(options.token);
-
+  const { Octokit } = await importPeer(
+    "@octokit/rest",
+    import("@octokit/rest"),
+    "GitHub resources",
+  );
   return new Octokit({
     auth: token,
   });

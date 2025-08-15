@@ -25,14 +25,14 @@ describe("Stripe Meter Resource", () => {
   const generateMeterDisplayName = (suffix: string | number) =>
     `Alchemy Test Meter ${suffix}`;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     const apiKey = process.env.STRIPE_API_KEY;
     if (!apiKey) {
       throw new Error(
         "STRIPE_API_KEY environment variable is required for Stripe integration tests.",
       );
     }
-    stripeClient = createStripeClient({ apiKey });
+    stripeClient = await createStripeClient({ apiKey });
   });
 
   test("create, update status, and delete meter", async (scope) => {

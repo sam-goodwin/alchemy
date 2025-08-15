@@ -1,6 +1,3 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-
 import { execArgv } from "node:process";
 import { onExit } from "signal-exit";
 import { ReplacedSignal } from "./apply.ts";
@@ -14,12 +11,10 @@ import {
   ResourceSeq,
   type PendingResource,
 } from "./resource.ts";
-import { isRuntime } from "./runtime/global.ts";
 import { DEFAULT_STAGE, Scope } from "./scope.ts";
 import { secret } from "./secret.ts";
 import type { StateStoreType } from "./state.ts";
 import type { LoggerApi } from "./util/cli.ts";
-import { logger } from "./util/logger.ts";
 import { TelemetryClient } from "./util/telemetry/client.ts";
 
 /**
@@ -71,10 +66,6 @@ export interface Alchemy {
    * or locally in the current scope.
    */
   secret: typeof secret;
-  /**
-   * Whether the current runtime is the Cloudflare Workers runtime.
-   */
-  isRuntime: boolean;
 
   /**
    * Creates a new application scope with the given name and options.
@@ -95,74 +86,50 @@ export interface Alchemy {
    * });
    */
   (appName: string, options?: Omit<AlchemyOptions, "appName">): Promise<Scope>;
-  /**
-   * Template literal tag that supports file interpolation for documentation.
-   * Automatically formats the content and appends file contents as code blocks.
-   *
-   * @example
-   * // Generate documentation using file contents
-   * await Document("api-docs", {
-   *   prompt: await alchemy`
-   *     Generate docs using the contents of:
-   *     ${alchemy.file("README.md")}
-   *     ${alchemy.file("./.cursorrules")}
-   *
-   *     And here are the source files:
-   *     ${alchemy.files(files)}
-   *   `
-   * });
-   */
-  (template: TemplateStringsArray, ...values: any[]): Promise<string>;
 }
 
 _alchemy.destroy = destroy;
 _alchemy.run = run;
 _alchemy.secret = secret;
 _alchemy.env = env;
-_alchemy.isRuntime = isRuntime;
 
 /**
- * Implementation of the alchemy function that handles both application scoping
- * and template string interpolation.
+ * Implementation of the alchemy function.
  */
 async function _alchemy(
-  ...args:
-    | [template: TemplateStringsArray, ...values: any[]]
-    | [appName: string, options?: Omit<AlchemyOptions, "appName">]
-): Promise<Scope | string | never> {
-  if (typeof args[0] === "string") {
-    const [appName, options] = args as [string, AlchemyOptions?];
-
-    const cliArgs = process.argv.slice(2);
-    const cliOptions = {
-      phase: cliArgs.includes("--destroy")
-        ? "destroy"
-        : cliArgs.includes("--read")
-          ? "read"
-          : "up",
-      local: cliArgs.includes("--local") || cliArgs.includes("--dev"),
-      watch: cliArgs.includes("--watch") || execArgv.includes("--watch"),
-      quiet: cliArgs.includes("--quiet"),
-      force: cliArgs.includes("--force"),
-      // Parse stage argument (--stage my-stage) functionally and inline as a property declaration
-      stage: (function parseStage() {
-        const i = cliArgs.indexOf("--stage");
-        return i !== -1 && i + 1 < cliArgs.length
-          ? cliArgs[i + 1]
-          : process.env.STAGE;
-      })(),
-      password: process.env.ALCHEMY_PASSWORD,
-    } satisfies Partial<AlchemyOptions>;
-    const mergedOptions = {
-      ...cliOptions,
-      ...options,
-    };
-    if (
-      mergedOptions.stateStore === undefined &&
-      process.env.CI &&
-      process.env.ALCHEMY_CI_STATE_STORE_CHECK !== "false"
-    ) {
-      throw new Error(`You are running Alchemy in a CI environment with the default local state store. 
+  appName: string,
+  options?: Omit<AlchemyOptions, "appName">,
+): Promise<Scope> {
+  const cliArgs = process.argv.slice(2);
+  const cliOptions = {
+    phase: cliArgs.includes("--destroy")
+      ? "destroy"
+      : cliArgs.includes("--read")
+        ? "read"
+        : "up",
+    local: cliArgs.includes("--local") || cliArgs.includes("--dev"),
+    watch: cliArgs.includes("--watch") || execArgv.includes("--watch"),
+    quiet: cliArgs.includes("--quiet"),
+    force: cliArgs.includes("--force"),
+    // Parse stage argument (--stage my-stage) functionally and inline as a property declaration
+    stage: (function parseStage() {
+      const i = cliArgs.indexOf("--stage");
+      return i !== -1 && i + 1 < cliArgs.length
+        ? cliArgs[i + 1]
+        : process.env.STAGE;
+    })(),
+    password: process.env.ALCHEMY_PASSWORD,
+  } satisfies Partial<AlchemyOptions>;
+  const mergedOptions = {
+    ...cliOptions,
+    ...options,
+  };
+  if (
+    mergedOptions.stateStore === undefined &&
+    process.env.CI &&
+    process.env.ALCHEMY_CI_STATE_STORE_CHECK !== "false"
+  ) {
+    throw new Error(`You are running Alchemy in a CI environment with the default local state store. 
 This can lead to orphaned infrastructure and is rarely what you want to do.
 
 Instead, you should choose a persistent state store:
@@ -173,165 +140,52 @@ You can read more about State and State Stores here: https://alchemy.run/concept
 
 If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE_STORE_CHECK=false.
 `);
-    }
-
-    const phase = isRuntime ? "read" : (mergedOptions?.phase ?? "up");
-    const telemetryClient =
-      mergedOptions?.parent?.telemetryClient ??
-      TelemetryClient.create({
-        phase,
-        enabled: mergedOptions?.telemetry ?? true,
-        quiet: mergedOptions?.quiet ?? false,
-      });
-    const root = new Scope({
-      ...mergedOptions,
-      parent: undefined,
-      scopeName: appName,
-      phase,
-      password: mergedOptions?.password ?? process.env.ALCHEMY_PASSWORD,
-      telemetryClient,
-    });
-    onExit((code) => {
-      root.cleanup().then(() => {
-        code = code === 130 ? 0 : (code ?? 0);
-        process.exit(code);
-      });
-      return true;
-    });
-    const stageName = mergedOptions?.stage ?? DEFAULT_STAGE;
-    const stage = new Scope({
-      ...mergedOptions,
-      parent: root,
-      scopeName: stageName,
-      stage: stageName,
-    });
-    try {
-      Scope.storage.enterWith(root);
-      Scope.storage.enterWith(stage);
-    } catch {
-      // we are in Cloudflare Workers, we will emulate the enterWith behavior
-      // see Scope.finalize for where we pop the global scope
-      Scope.globals.push(root);
-      Scope.globals.push(stage);
-    }
-    if (mergedOptions?.phase === "destroy") {
-      await destroy(stage);
-      return process.exit(0);
-    }
-    return root;
   }
-  const [template, ...values] = args;
-  const [, secondLine] = template[0].split("\n");
-  const leadingSpaces = secondLine
-    ? secondLine.match(/^(\s*)/)?.[1]?.length || 0
-    : 0;
-  const indent = " ".repeat(leadingSpaces);
 
-  const [{ isFileRef }, { isFileCollection }] = await Promise.all([
-    import("./fs/file-ref.js"),
-    import("./fs/file-collection.js"),
-  ]);
-
-  const appendices: Record<string, string> = {};
-
-  const stringValues = await Promise.all(
-    values.map(async function resolve(value): Promise<string> {
-      if (typeof value === "string") {
-        return indent + value;
-      }
-      if (value === null) {
-        return "null";
-      }
-      if (value === undefined) {
-        return "undefined";
-      }
-      if (
-        typeof value === "number" ||
-        typeof value === "boolean" ||
-        typeof value === "bigint"
-      ) {
-        return value.toString();
-      }
-      if (value instanceof Promise) {
-        return resolve(await value);
-      }
-      if (isFileRef(value)) {
-        if (!(value.path in appendices)) {
-          appendices[value.path] = await fs.readFile(value.path, "utf-8");
-        }
-        return `[${path.basename(value.path)}](${value.path})`;
-      }
-      if (isFileCollection(value)) {
-        return Object.entries(value.files)
-          .map(([filePath, content]) => {
-            appendices[filePath] = content;
-            return `[${path.basename(filePath)}](${filePath})`;
-          })
-          .join("\n\n");
-      }
-      if (Array.isArray(value)) {
-        return (
-          await Promise.all(
-            value.map(async (value, i) => `${i}. ${await resolve(value)}`),
-          )
-        ).join("\n");
-      }
-      if (typeof value === "object" && typeof value.path === "string") {
-        if (typeof value.content === "string") {
-          appendices[value.path] = value.content;
-          return `[${path.basename(value.path)}](${value.path})`;
-        }
-        appendices[value.path] = await fs.readFile(value.path, "utf-8");
-        return `[${path.basename(value.path)}](${value.path})`;
-      }
-      if (typeof value === "object") {
-        return (
-          await Promise.all(
-            Object.entries(value).map(async ([key, value]) => {
-              return `* ${key}: ${await resolve(value)}`;
-            }),
-          )
-        ).join("\n");
-      }
-      // TODO: support other types
-      logger.log(value);
-      throw new Error(`Unsupported value type: ${value}`);
-    }),
-  );
-
-  // Construct the string template by joining template parts with interpolated values
-  const lines = template
-    .map((part) =>
-      part
-        .split("\n")
-        .map((line) =>
-          line.startsWith(indent) ? line.slice(indent.length) : line,
-        )
-        .join("\n"),
-    )
-    .flatMap((part, i) =>
-      i < stringValues.length ? [part, stringValues[i] ?? ""] : [part],
-    )
-    .join("")
-    .split("\n");
-
-  // Collect and sort appendices by file path
-  return [
-    // format the user prompt and trim the first line if it's empty
-    lines.length > 1 && lines[0].replaceAll(" ", "").length === 0
-      ? lines.slice(1).join("\n")
-      : lines.join("\n"),
-
-    // sort appendices by path and include at the end of the prompt
-    Object.entries(appendices)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([filePath, content]) => {
-        const extension = path.extname(filePath).slice(1);
-        const codeTag = extension ? extension : "";
-        return `// ${filePath}\n\`\`\`${codeTag}\n${content}\n\`\`\``;
-      })
-      .join("\n\n"),
-  ].join("\n");
+  const phase = mergedOptions?.phase ?? "up";
+  const telemetryClient =
+    mergedOptions?.parent?.telemetryClient ??
+    TelemetryClient.create({
+      phase,
+      enabled: mergedOptions?.telemetry ?? true,
+      quiet: mergedOptions?.quiet ?? false,
+    });
+  const root = new Scope({
+    ...mergedOptions,
+    parent: undefined,
+    scopeName: appName,
+    phase,
+    password: mergedOptions?.password ?? process.env.ALCHEMY_PASSWORD,
+    telemetryClient,
+  });
+  onExit((code) => {
+    root.cleanup().then(() => {
+      code = code === 130 ? 0 : (code ?? 0);
+      process.exit(code);
+    });
+    return true;
+  });
+  const stageName = mergedOptions?.stage ?? DEFAULT_STAGE;
+  const stage = new Scope({
+    ...mergedOptions,
+    parent: root,
+    scopeName: stageName,
+    stage: stageName,
+  });
+  try {
+    Scope.storage.enterWith(root);
+    Scope.storage.enterWith(stage);
+  } catch {
+    // we are in Cloudflare Workers, we will emulate the enterWith behavior
+    // see Scope.finalize for where we pop the global scope
+    Scope.globals.push(root);
+    Scope.globals.push(stage);
+  }
+  if (mergedOptions?.phase === "destroy") {
+    await destroy(stage);
+    return process.exit(0);
+  }
+  return root;
 }
 
 export type Phase = "up" | "destroy" | "read";
@@ -463,7 +317,7 @@ async function run<T>(
   const telemetryClient =
     options?.parent?.telemetryClient ??
     TelemetryClient.create({
-      phase: isRuntime ? "read" : (options?.phase ?? "up"),
+      phase: options?.phase ?? "up",
       enabled: options?.telemetry ?? true,
       quiet: options?.quiet ?? false,
     });

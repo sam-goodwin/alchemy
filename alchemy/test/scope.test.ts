@@ -8,7 +8,6 @@ import { Scope } from "../src/scope.js";
 import { BRANCH_PREFIX, createTestOptions, STATE_STORE_TYPES } from "./util.js";
 
 import { Resource, ResourceScope } from "../src/resource.js";
-import { serializeScope } from "../src/serde.js";
 import "../src/test/vitest.js";
 
 const test = alchemy.test(import.meta, {
@@ -68,83 +67,6 @@ describe.concurrent("Scope", () => {
             expect(observedPhase).toBe("read");
           } finally {
             await destroy(scope);
-          }
-        },
-      );
-
-      test(
-        `${storeType} serialized scope should be equal to the original scope`,
-        options,
-        async (scope) => {
-          const fileName = `test-${storeType}-serialized-scope-should-be-equal-to-the-original-scope`;
-          const fileName2 = `test-${storeType}-serialized-scope-should-be-equal-to-the-original-scope-2`;
-          const fileName3 = `test-${storeType}-serialized-scope-should-be-equal-to-the-original-scope-3`;
-          try {
-            await File("foo", {
-              path: fileName,
-              content: "Hello World",
-            });
-            await alchemy.run("bar", async () => {
-              await File("baz", {
-                path: fileName2,
-                content: "Hello World",
-              });
-              await Nested("gaz", { fileName: fileName3 });
-            });
-
-            const serialized = await serializeScope(scope);
-
-            const fqn = scope.chain.join("/");
-
-            expect(serialized).toEqual({
-              [`${fqn}/foo`]: {
-                "Symbol(alchemy::ResourceKind)": "fs::File",
-                "Symbol(alchemy::ResourceID)": "foo",
-                "Symbol(alchemy::ResourceFQN)": `${fqn}/foo`,
-                "Symbol(alchemy::ResourceScope)": {
-                  "@scope": null,
-                },
-                "Symbol(alchemy::ResourceSeq)": 0,
-                path: fileName,
-                content: "Hello World",
-              },
-              [`${fqn}/bar/baz`]: {
-                "Symbol(alchemy::ResourceKind)": "fs::File",
-                "Symbol(alchemy::ResourceID)": "baz",
-                "Symbol(alchemy::ResourceFQN)": `${fqn}/bar/baz`,
-                "Symbol(alchemy::ResourceScope)": {
-                  "@scope": null,
-                },
-                "Symbol(alchemy::ResourceSeq)": 0,
-                path: fileName2,
-                content: "Hello World",
-              },
-              [`${fqn}/bar/gaz`]: {
-                "Symbol(alchemy::ResourceKind)": "Nested",
-                "Symbol(alchemy::ResourceID)": "gaz",
-                "Symbol(alchemy::ResourceFQN)": `${fqn}/bar/gaz`,
-                "Symbol(alchemy::ResourceScope)": {
-                  "@scope": null,
-                },
-                "Symbol(alchemy::ResourceSeq)": 1,
-              },
-              [`${fqn}/bar/gaz/file`]: {
-                "Symbol(alchemy::ResourceKind)": "fs::File",
-                "Symbol(alchemy::ResourceID)": "file",
-                "Symbol(alchemy::ResourceFQN)": `${fqn}/bar/gaz/file`,
-                "Symbol(alchemy::ResourceScope)": {
-                  "@scope": null,
-                },
-                "Symbol(alchemy::ResourceSeq)": 0,
-                path: fileName3,
-                content: "Hello World",
-              },
-            });
-          } finally {
-            await destroy(scope);
-            await assertFileDoesNotExist(fileName);
-            await assertFileDoesNotExist(fileName2);
-            await assertFileDoesNotExist(fileName3);
           }
         },
       );

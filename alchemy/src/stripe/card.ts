@@ -209,7 +209,7 @@ export const Card = Resource(
     _id: string,
     props: CardProps,
   ): Promise<Card> {
-    const stripe = createStripeClient({ apiKey: props.apiKey });
+    const stripe = await createStripeClient({ apiKey: props.apiKey });
 
     if (this.phase === "delete") {
       try {

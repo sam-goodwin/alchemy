@@ -1,12 +1,7 @@
-import {
-  AttachRolePolicyCommand,
-  DetachRolePolicyCommand,
-  IAMClient,
-  NoSuchEntityException,
-} from "@aws-sdk/client-iam";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { ignore } from "../util/ignore.ts";
+import { importPeer } from "../util/peer.ts";
 import { retry } from "./retry.ts";
 
 /**
@@ -69,6 +64,16 @@ export const PolicyAttachment = Resource(
     _id: string,
     props: PolicyAttachmentProps,
   ) {
+    const {
+      AttachRolePolicyCommand,
+      DetachRolePolicyCommand,
+      IAMClient,
+      NoSuchEntityException,
+    } = await importPeer(
+      "@aws-sdk/client-iam",
+      import("@aws-sdk/client-iam"),
+      "iam::PolicyAttachment",
+    );
     const client = new IAMClient({});
 
     if (this.phase === "delete") {

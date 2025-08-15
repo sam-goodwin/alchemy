@@ -16,12 +16,12 @@ const test = alchemy.test(import.meta, {
 });
 
 describe("Stripe PromotionCode Resource", () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     const apiKey = process.env.STRIPE_API_KEY;
     if (!apiKey) {
       throw new Error("STRIPE_API_KEY environment variable is required");
     }
-    stripeClient = createStripeClient({ apiKey });
+    stripeClient = await createStripeClient({ apiKey });
   });
 
   test("create, update, and deactivate promotion code", async (scope) => {

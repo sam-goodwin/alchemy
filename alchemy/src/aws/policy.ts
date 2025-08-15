@@ -1,16 +1,6 @@
-import {
-  CreatePolicyCommand,
-  CreatePolicyVersionCommand,
-  DeletePolicyCommand,
-  DeletePolicyVersionCommand,
-  GetPolicyCommand,
-  GetPolicyVersionCommand,
-  IAMClient,
-  ListPolicyVersionsCommand,
-  NoSuchEntityException,
-} from "@aws-sdk/client-iam";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
+import { importPeer } from "../util/peer.ts";
 import { retry } from "./retry.ts";
 
 /**
@@ -233,6 +223,21 @@ export const Policy = Resource(
     _id: string,
     props: PolicyProps,
   ): Promise<Policy> {
+    const {
+      CreatePolicyCommand,
+      CreatePolicyVersionCommand,
+      DeletePolicyCommand,
+      DeletePolicyVersionCommand,
+      GetPolicyCommand,
+      GetPolicyVersionCommand,
+      IAMClient,
+      ListPolicyVersionsCommand,
+      NoSuchEntityException,
+    } = await importPeer(
+      "@aws-sdk/client-iam",
+      import("@aws-sdk/client-iam"),
+      "iam::Policy",
+    );
     const client = new IAMClient({});
     const policyArn = `arn:aws:iam::${process.env.AWS_ACCOUNT_ID}:policy${props.path || "/"}${props.policyName}`;
 

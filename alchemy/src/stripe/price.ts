@@ -353,7 +353,7 @@ export const Price = Resource(
     _id: string,
     props: PriceProps,
   ): Promise<Price> {
-    const stripe = createStripeClient({ apiKey: props.apiKey });
+    const stripe = await createStripeClient({ apiKey: props.apiKey });
 
     if (this.phase === "delete") {
       try {

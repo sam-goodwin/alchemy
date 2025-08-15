@@ -1,10 +1,4 @@
 import { decryptWithKey, encrypt } from "./encrypt.ts";
-import {
-  InnerResourceScope,
-  ResourceFQN,
-  ResourceKind,
-  type Resource,
-} from "./resource.ts";
 import { isScope, type Scope } from "./scope.ts";
 import { isSecret, Secret } from "./secret.ts";
 
@@ -64,44 +58,6 @@ export type Serialized<T> = T extends
                           : K]: Serialized<T[K]>;
                       }
                     : T;
-
-export type SerializedScope = {
-  [fqn: ResourceFQN]: Serialized<Resource>;
-};
-
-export async function serializeScope(scope: Scope): Promise<SerializedScope> {
-  const map: SerializedScope = {};
-
-  return serializeScope(scope);
-
-  async function serializeScope(scope: Scope): Promise<SerializedScope> {
-    await Promise.all(
-      Array.from(scope.resources.values()).map(async (resource) => {
-        if (resource[ResourceKind] === "alchemy::Scope") {
-          return;
-        }
-        map[resource[ResourceFQN]] = await serialize(scope, await resource, {
-          transform: (value) => {
-            if (isSecret(value)) {
-              return {
-                "@secret-env": value.name,
-              };
-            }
-            return value;
-          },
-        });
-        const innerScope = await resource[InnerResourceScope];
-        if (innerScope) {
-          await serializeScope(innerScope);
-        }
-      }),
-    );
-    await Promise.all(
-      Array.from(scope.children.values()).map((scope) => serializeScope(scope)),
-    );
-    return map;
-  }
-}
 
 export async function serialize(
   scope: Scope,

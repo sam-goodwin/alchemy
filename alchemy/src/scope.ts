@@ -15,7 +15,6 @@ import {
   type ResourceProps,
 } from "./resource.ts";
 import type { State, StateStore, StateStoreType } from "./state.ts";
-import { D1StateStore } from "./state/d1-state-store.ts";
 import { FileSystemStateStore } from "./state/file-system-state-store.ts";
 import { InstrumentedStateStore } from "./state/instrumented-state-store.ts";
 import {
@@ -224,7 +223,9 @@ export class Scope {
     }
 
     this.stateStore =
-      options.stateStore ?? this.parent?.stateStore ?? defaultStateStore;
+      options.stateStore ??
+      this.parent?.stateStore ??
+      ((scope) => new FileSystemStateStore(scope));
     this.telemetryClient =
       options.telemetryClient ?? this.parent?.telemetryClient!;
     this.state = new InstrumentedStateStore(
@@ -645,15 +646,6 @@ export class Scope {
 )`;
   }
 }
-
-const defaultStateStore: StateStoreType = (scope: Scope) => {
-  switch (process.env.ALCHEMY_STATE_STORE) {
-    case "d1":
-      return new D1StateStore(scope);
-    default:
-      return new FileSystemStateStore(scope);
-  }
-};
 
 declare global {
   // for runtime

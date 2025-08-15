@@ -101,7 +101,7 @@ export const EntitlementsFeature = Resource(
     _id: string,
     props: EntitlementsFeatureProps,
   ): Promise<EntitlementsFeature> {
-    const stripe = createStripeClient({ apiKey: props.apiKey });
+    const stripe = await createStripeClient({ apiKey: props.apiKey });
 
     if (this.phase === "delete") {
       return this.destroy();

@@ -1,25 +1,14 @@
-import {
-  AddPermissionCommand,
+import type {
   Architecture,
-  CreateFunctionCommand,
-  CreateFunctionUrlConfigCommand,
-  DeleteFunctionCommand,
-  DeleteFunctionUrlConfigCommand,
-  GetFunctionCommand,
-  GetFunctionConfigurationCommand,
-  GetFunctionUrlConfigCommand,
   LambdaClient,
-  ResourceNotFoundException,
   Runtime,
-  UpdateFunctionCodeCommand,
-  UpdateFunctionConfigurationCommand,
-  UpdateFunctionUrlConfigCommand,
 } from "@aws-sdk/client-lambda";
 import type { Context } from "../context.ts";
 import type { Bundle } from "../esbuild/bundle.ts";
 import { Resource } from "../resource.ts";
 import { ignore } from "../util/ignore.ts";
 import { logger } from "../util/logger.ts";
+import { importPeer } from "../util/peer.ts";
 import { retry } from "./retry.ts";
 
 /**
@@ -310,6 +299,27 @@ export interface Function extends Resource<"lambda::Function">, FunctionProps {
 export const Function = Resource(
   "lambda::Function",
   async function (this: Context<Function>, _id: string, props: FunctionProps) {
+    const {
+      AddPermissionCommand,
+      Architecture,
+      CreateFunctionCommand,
+      CreateFunctionUrlConfigCommand,
+      DeleteFunctionCommand,
+      DeleteFunctionUrlConfigCommand,
+      GetFunctionCommand,
+      GetFunctionConfigurationCommand,
+      GetFunctionUrlConfigCommand,
+      LambdaClient,
+      ResourceNotFoundException,
+      Runtime,
+      UpdateFunctionCodeCommand,
+      UpdateFunctionConfigurationCommand,
+      UpdateFunctionUrlConfigCommand,
+    } = await importPeer(
+      "@aws-sdk/client-lambda",
+      import("@aws-sdk/client-lambda"),
+      "lambda::Function",
+    );
     const client = new LambdaClient({});
     const region = await resolveRegion(client);
 
@@ -755,6 +765,9 @@ async function waitForFunctionStabilization(
   client: LambdaClient,
   functionName: string,
 ) {
+  const { GetFunctionConfigurationCommand } = await import(
+    "@aws-sdk/client-lambda"
+  );
   while (true) {
     const config = await retry(() =>
       client.send(

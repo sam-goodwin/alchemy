@@ -19,14 +19,13 @@ const test = alchemy.test(import.meta, {
 });
 
 describe("Stripe ProductFeature Resource", () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     const apiKey = process.env.STRIPE_API_KEY;
     if (!apiKey) {
       throw new Error("STRIPE_API_KEY environment variable is required");
     }
-    stripeClient = createStripeClient({ apiKey });
+    stripeClient = await createStripeClient({ apiKey });
   });
-  ("");
 
   test("create and delete product feature", async (scope) => {
     const productId = `${BRANCH_PREFIX}-product-1`;

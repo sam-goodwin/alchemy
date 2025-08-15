@@ -1,18 +1,10 @@
-import {
-  AddTagsToResourceCommand,
-  DeleteParameterCommand,
-  GetParameterCommand,
-  ParameterAlreadyExists,
-  ParameterNotFound,
-  PutParameterCommand,
-  SSMClient,
-  type Tag,
-} from "@aws-sdk/client-ssm";
+import type { Tag } from "@aws-sdk/client-ssm";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { type Secret, isSecret } from "../secret.ts";
 import { ignore } from "../util/ignore.ts";
 import { logger } from "../util/logger.ts";
+import { importPeer } from "../util/peer.ts";
 
 /**
  * Base properties shared by all SSM Parameter types
@@ -179,6 +171,19 @@ export const SSMParameter = Resource(
     _id: string,
     props: SSMParameterProps,
   ): Promise<SSMParameter> {
+    const {
+      AddTagsToResourceCommand,
+      DeleteParameterCommand,
+      GetParameterCommand,
+      ParameterAlreadyExists,
+      ParameterNotFound,
+      PutParameterCommand,
+      SSMClient,
+    } = await importPeer(
+      "@aws-sdk/client-ssm",
+      import("@aws-sdk/client-ssm"),
+      "ssm::Parameter",
+    );
     const client = new SSMClient({});
 
     if (this.phase === "delete") {
