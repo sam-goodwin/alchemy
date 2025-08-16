@@ -25,6 +25,29 @@ export async function generateReleaseNotes(tag: string) {
   );
 }
 
+export async function cleanupDraftSection() {
+  console.log("Cleaning up draft section from changelog...");
+
+  try {
+    const changelogPath = join(process.cwd(), "CHANGELOG.md");
+    const changelogContent = await readFile(changelogPath, "utf-8");
+
+    // Remove any draft section
+    const draftSectionRegex = /## Unreleased Changes[\s\S]*?(?=\n## |$)/;
+    const cleanedChangelog = changelogContent.replace(draftSectionRegex, "");
+
+    // Remove any extra "---" separators at the top
+    const finalChangelog = cleanedChangelog.replace(/^---\n+/, "");
+
+    if (finalChangelog !== changelogContent) {
+      await writeFile(changelogPath, finalChangelog);
+      console.log("Draft section removed from changelog");
+    }
+  } catch (error) {
+    console.error("Failed to cleanup draft section:", error);
+  }
+}
+
 async function checkNpmVersion(
   packageName: string,
   version: string,
@@ -161,6 +184,9 @@ await $`git commit -m "chore(release): ${newVersion}"`;
 await $`git tag v${newVersion}`;
 
 await generateReleaseNotes(`v${newVersion}`);
+
+// Clean up any draft section from changelog
+await cleanupDraftSection();
 
 await $`git add CHANGELOG.md`;
 await $`git commit --amend --no-edit`;
