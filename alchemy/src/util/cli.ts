@@ -42,6 +42,7 @@ export interface Task {
 
 export interface LoggerApi {
   log: (...args: unknown[]) => void;
+  info: (...args: unknown[]) => void;
   warn: (...args: unknown[]) => void;
   warnOnce: (message: string) => void;
   error: (...args: unknown[]) => void;
@@ -70,6 +71,7 @@ export const createLoggerInstance = (
 export const createDummyLogger = (): LoggerApi => {
   return {
     log: () => {},
+    info: () => {},
     error: () => {},
     warn: () => {},
     warnOnce: () => {},
@@ -89,6 +91,7 @@ export const createFallbackLogger = (alchemyInfo: AlchemyInfo): LoggerApi => {
 
   return {
     log: console.log,
+    info: console.log,
     error: (...args: unknown[]) =>
       console.error(colorize("ERROR", "redBright"), ...args),
     warn: (...args: unknown[]) =>
