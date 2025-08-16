@@ -15,6 +15,8 @@ export const server = await Worker("server", {
   },
 });
 
+console.log("Server:", server.url);
+
 export const client = await Vite("client", {
   name: `${app.name}-${app.stage}-client`,
   env: {
@@ -23,5 +25,12 @@ export const client = await Vite("client", {
 });
 
 console.log("Client:", client.url);
+
+if (process.env.ALCHEMY_E2E) {
+  const { test } = await import("./test/e2e.ts");
+  await test({
+    url: server.url,
+  });
+}
 
 await app.finalize();

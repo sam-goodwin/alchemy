@@ -4,6 +4,9 @@ import type { server } from "../alchemy.run.ts";
 export default {
   fetch: (req: Request, env: typeof server.Env) => {
     const url = new URL(req.url);
+    if (url.pathname === "/status") {
+      return new Response("OK");
+    }
     if (url.pathname !== "/websocket") {
       return new Response("Not found", { status: 404 });
     }
@@ -35,7 +38,7 @@ export class WebSocketServer extends DurableObject {
     message: string | ArrayBuffer,
   ): void | Promise<void> {
     console.log("message", message);
-    ws.send(message);
+    ws.send(`Received message: ${message.toString()}`);
   }
 
   webSocketClose(

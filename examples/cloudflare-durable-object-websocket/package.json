@@ -12,8 +12,10 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250805.0",
     "@types/node": "^24.0.1",
+    "@types/ws": "^8.18.1",
     "alchemy": "workspace:*",
     "typescript": "^5.8.3",
-    "vite": "^7.0.4"
+    "vite": "^7.0.4",
+    "ws": "^8.18.3"
   }
 }
