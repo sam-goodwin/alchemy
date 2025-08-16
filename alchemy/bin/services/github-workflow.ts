@@ -47,9 +47,8 @@ jobs:
         run: bun install
 
       - name: Deploy Preview
-        run: bun run deploy
+        run: bun run deploy --stage pr-\${{ github.event.pull_request.number }}
         env:
-          BRANCH_PREFIX: pr-\${{ github.event.pull_request.number }}
           GITHUB_SHA: \${{ github.event.pull_request.head.sha }}
           GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY_OWNER: \${{ github.repository_owner }}
@@ -141,36 +140,6 @@ jobs:
       code = code.replace(alchemyImportRegex, `$1${githubImport}`);
     }
 
-    const lastImportRegex = /import[^;]+from[^;]+;(\s*\n)*/g;
-    let lastImportMatch;
-    let lastImportEnd = 0;
-
-    while ((lastImportMatch = lastImportRegex.exec(code)) !== null) {
-      lastImportEnd = lastImportMatch.index + lastImportMatch[0].length;
-    }
-
-    if (lastImportEnd > 0) {
-      const stageVariable = `
-const stage = process.env.STAGE || process.env.BRANCH_PREFIX || "dev";
-`;
-      code =
-        code.slice(0, lastImportEnd) +
-        stageVariable +
-        code.slice(lastImportEnd);
-    }
-
-    const appCallRegex = /const app = await alchemy\("([^"]+)"\);/;
-    const appMatch = code.match(appCallRegex);
-    if (appMatch) {
-      const appName = appMatch[1];
-      code = code.replace(
-        appCallRegex,
-        `const app = await alchemy("${appName}", {
-  stage,
-});`,
-      );
-    }
-
     const cloudflareResourceRegex =
       /(await (?:Worker|TanStackStart|Nuxt|Astro|Website|SvelteKit|Redwood|ReactRouter|Vite)\([^,]+,\s*{[^}]*)(}\);)/g;
     code = code.replace(
@@ -182,8 +151,8 @@ const stage = process.env.STAGE || process.env.BRANCH_PREFIX || "dev";
 
         const hasTrailingComma = beforeClosing.trim().endsWith(",");
         const versionProp = hasTrailingComma
-          ? `  version: stage === "prod" ? undefined : stage,\n`
-          : `,\n  version: stage === "prod" ? undefined : stage,\n`;
+          ? `  version: app.stage === "prod" ? undefined : app.stage,\n`
+          : `,\n  version: app.stage === "prod" ? undefined : app.stage,\n`;
 
         return beforeClosing + versionProp + closing;
       },
