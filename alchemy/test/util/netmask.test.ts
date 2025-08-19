@@ -1,19 +1,29 @@
-import { describe } from "vitest";
-import { alchemy } from "../../../src/alchemy.ts";
-import { createDockerApi } from "../../../src/docker/api/api.ts";
-import { BRANCH_PREFIX } from "../../util.ts";
+import { describe, expect } from "vitest";
+import { alchemy } from "../../src/alchemy.ts";
+import { BRANCH_PREFIX } from "../util.ts";
 // must import this or else alchemy.test won't exist
-import "../../../src/test/vitest.ts";
-
-const api = createDockerApi();
+import "../../src/test/vitest.ts";
+import { sortNetmasks } from "../../src/util/netmask.ts";
 
 const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
 });
 
-describe("Docker Network Resource", () => {
+describe("netmask", () => {
   const testId = `${BRANCH_PREFIX}-test-network`;
 
+  describe("sorting", () => {
+    test("should sort by prefix length", async () => {
+      const netmasks = ["192.168.1.0/25", "192.168.1.0/26", "192.168.1.0/24"];
+
+      const sorted = sortNetmasks(netmasks);
+      expect(sorted).toEqual([
+        "192.168.1.0/24",
+        "192.168.1.0/25",
+        "192.168.1.0/26",
+      ]);
+    });
+  });
   // TODO: Create network
   // TODO: Update network
   // TODO: Destroy network

@@ -1,14 +1,13 @@
 {
   "name": "alchemy-mono",
   "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "module": "./lib/index.js",
-  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/sam-goodwin/alchemy"
   },
+  "module": "./lib/index.js",
+  "license": "Apache-2.0",
+  "private": true,
   "scripts": {
     "build": "bun run --filter alchemy build",
     "build:cli": "bun run --filter alchemy build:cli",
@@ -32,6 +31,7 @@
     "gh": "./scripts/gh",
     "feat": "./scripts/feat"
   },
+  "type": "module",
   "workspaces": {
     "catalog": {
       "@cloudflare/workers-types": "^4.20250805.0",
@@ -53,16 +53,17 @@
     "@cloudflare/workers-types": "catalog:",
     "@redwoodjs/sdk": "^0.0.80",
     "@types/bun": "latest",
+    "@types/dockerode": "^3.3.42",
     "@types/node": "latest",
     "@vitest/ui": "^3.1.4",
     "alchemy": "workspace:*",
     "aws4fetch": "^1.0.20",
+    "braintrust": "*",
     "changelogithub": "^13.15.0",
-    "dotenv": "^17.2.1",
     "glob": "^11.0.3",
     "jsonc-parser": "^3.3.1",
     "openai": "^4.103.0",
-    "typescript": "catalog:",
+    "typescript": "latest",
     "vite": "^6.3.5",
     "vitest": "^3.1.4",
     "yaml": "^2.7.1"

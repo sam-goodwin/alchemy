@@ -38,10 +38,10 @@
 //     baseUrl: "http://localhost:10000",
 //     fetch(input) {
 //       if (typeof Bun !== "undefined") {
-//         // @ts-ignore: Bun specific
+//         // @ts-expect-error: Bun specific
 //         input.unix = "/var/run/docker.sock";
 //       } else {
-//         // @ts-ignore: dispatcher may not be typed but we know it's there
+//         // @ts-expect-error: dispatcher may not be typed but we know it's there
 //         input.dispatcher = agent;
 //       }
 
@@ -57,7 +57,7 @@
 //       path: T,
 //       ...init: InitParam<Init>
 //     ): Promise<MethodResponse<typeof client, M, T>> => {
-//       // @ts-ignore: dyncamically inferred on usage, each function is typed differently
+//       // @ts-expect-error: dyncamically inferred on usage, each function is typed differently
 //       const { data, error, response } = await client[method.toUpperCase()](
 //         path,
 //         ...init,
@@ -338,7 +338,7 @@
 // //         ? // @ts-expect-error: dyncamically inferred on usage
 // //           keyof NonNullable<paths[P][M]["parameters"]["path"]>
 // //         : keyof NonNullable<
-// //             // @ts-ignore: dyncamically inferred on usage
+// //             // @ts-expect-error: dyncamically inferred on usage
 // //             paths[P][M]["requestBody"]["content"]["application/json"]
 // //           >)[],
 // //   >(
@@ -355,12 +355,12 @@
 // //         ? // @ts-expect-error: dyncamically inferred on usage
 // //           NonNullable<paths[P][M]["parameters"]["path"]>
 // //         : NonNullable<
-// //             // @ts-ignore: dyncamically inferred on usage
+// //             // @ts-expect-error: dyncamically inferred on usage
 // //             paths[P][M]["requestBody"]["content"]["application/json"]
 // //           >,
-// //     // @ts-ignore: dyncamically inferred on usage
+// //     // @ts-expect-error: dyncamically inferred on usage
 // //   ): Pick<typeof params, K[number]> =>
-// //     // @ts-ignore: dyncamically inferred on usage
+// //     // @ts-expect-error: dyncamically inferred on usage
 // //     Object.fromEntries(
 // //       Object.entries(params).filter(([key]) => keys.includes(key as K[number])),
 // //     );
@@ -445,3 +445,13 @@
 // //     .fetch("/info")
 // //     .then((r) => r.json()),
 // // );
+
+import Dockerode from "dockerode";
+
+export function createDockerApi() {
+  const dockerode = new Dockerode();
+
+  return {
+    dockerode,
+  };
+}
