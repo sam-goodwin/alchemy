@@ -15,18 +15,17 @@
     "alchemy": "bin/alchemy.js"
   },
   "scripts": {
-    "build:cli": "tsdown",
+    "build:tsdown": "tsdown",
     "dev:cli": "tsdown --watch",
     "build:workers": "bun ./scripts/build-workers.ts",
-    "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b && bun run build:cli && bun run build:workers",
+    "build": "rm -rf ./*.tsbuildinfo && rm -rf dist && tsc -b && bun run build:tsdown && bun run build:workers",
     "drizzle:generate": "bun run scripts/drizzle-generate.ts",
-    "postbuild": "cpx 'src/**/*/types.d.ts' lib && cpx 'src/**/*.txt' lib",
-    "publish:npm": "cp ../README.md . && bun run build && bun run build:cli && bun publish && rm README.md"
+    "publish:npm": "cp ../README.md . && bun run build && bun publish && rm README.md"
   },
   "files": [
     "bin",
     "drizzle/default",
-    "lib",
+    "dist",
     "src",
     "templates",
     "workers"
@@ -34,115 +33,171 @@
   "exports": {
     ".": {
       "bun": "./src/index.ts",
-      "import": "./lib/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./llms": {
       "bun": "./src/llms.ts",
-      "import": "./lib/llms.js"
+      "types": "./dist/llms.d.ts",
+      "import": "./dist/llms.js",
+      "require": "./dist/llms.cjs"
     },
     "./aws": {
       "bun": "./src/aws/index.ts",
-      "import": "./lib/aws/index.js"
+      "types": "./dist/aws/index.d.ts",
+      "import": "./dist/aws/index.js",
+      "require": "./dist/aws/index.cjs"
     },
     "./aws/control": {
       "bun": "./src/aws/control/index.ts",
-      "import": "./lib/aws/control/index.js"
+      "types": "./dist/aws/control/index.d.ts",
+      "import": "./dist/aws/control/index.js",
+      "require": "./dist/aws/control/index.cjs"
     },
     "./aws/oidc": {
       "bun": "./src/aws/oidc/index.ts",
-      "import": "./lib/aws/oidc/index.js"
+      "types": "./dist/aws/oidc/index.d.ts",
+      "import": "./dist/aws/oidc/index.js",
+      "require": "./dist/aws/oidc/index.cjs"
     },
     "./cloudflare": {
       "bun": "./src/cloudflare/index.ts",
-      "import": "./lib/cloudflare/index.js"
+      "types": "./dist/cloudflare/index.d.ts",
+      "import": "./dist/cloudflare/index.js",
+      "require": "./dist/cloudflare/index.cjs"
     },
     "./cloudflare/astro": {
       "bun": "./src/cloudflare/astro/plugin.ts",
-      "import": "./lib/cloudflare/astro/plugin.js"
+      "types": "./dist/cloudflare/astro/plugin.d.ts",
+      "import": "./dist/cloudflare/astro/plugin.js",
+      "require": "./dist/cloudflare/astro/plugin.cjs"
     },
     "./cloudflare/nuxt": {
       "bun": "./src/cloudflare/nuxt/plugin.ts",
-      "import": "./lib/cloudflare/nuxt/plugin.js"
+      "types": "./dist/cloudflare/nuxt/plugin.d.ts",
+      "import": "./dist/cloudflare/nuxt/plugin.js",
+      "require": "./dist/cloudflare/nuxt/plugin.cjs"
     },
     "./cloudflare/redwood": {
       "bun": "./src/cloudflare/redwood/plugin.ts",
-      "import": "./lib/cloudflare/redwood/plugin.js"
+      "types": "./dist/cloudflare/redwood/plugin.d.ts",
+      "import": "./dist/cloudflare/redwood/plugin.js",
+      "require": "./dist/cloudflare/redwood/plugin.cjs"
     },
     "./cloudflare/react-router": {
       "bun": "./src/cloudflare/react-router/plugin.ts",
-      "import": "./lib/cloudflare/react-router/plugin.js"
+      "types": "./dist/cloudflare/react-router/plugin.d.ts",
+      "import": "./dist/cloudflare/react-router/plugin.js",
+      "require": "./dist/cloudflare/react-router/plugin.cjs"
     },
     "./cloudflare/sveltekit": {
       "bun": "./src/cloudflare/sveltekit/plugin.ts",
-      "import": "./lib/cloudflare/sveltekit/plugin.js"
+      "types": "./dist/cloudflare/sveltekit/plugin.d.ts",
+      "import": "./dist/cloudflare/sveltekit/plugin.js",
+      "require": "./dist/cloudflare/sveltekit/plugin.cjs"
     },
     "./cloudflare/tanstack-start": {
       "bun": "./src/cloudflare/tanstack-start/plugin.ts",
-      "import": "./lib/cloudflare/tanstack-start/plugin.js"
+      "types": "./dist/cloudflare/tanstack-start/plugin.d.ts",
+      "import": "./dist/cloudflare/tanstack-start/plugin.js",
+      "require": "./dist/cloudflare/tanstack-start/plugin.cjs"
     },
     "./cloudflare/vite": {
       "bun": "./src/cloudflare/vite/plugin.ts",
-      "import": "./lib/cloudflare/vite/plugin.js"
+      "types": "./dist/cloudflare/vite/plugin.d.ts",
+      "import": "./dist/cloudflare/vite/plugin.js",
+      "require": "./dist/cloudflare/vite/plugin.cjs"
     },
     "./dns": {
       "bun": "./src/dns/index.ts",
-      "import": "./lib/dns/index.js"
+      "types": "./dist/dns/index.d.ts",
+      "import": "./dist/dns/index.js",
+      "require": "./dist/dns/index.cjs"
     },
     "./docker": {
       "bun": "./src/docker/index.ts",
-      "import": "./lib/docker/index.js"
+      "types": "./dist/docker/index.d.ts",
+      "import": "./dist/docker/index.js",
+      "require": "./dist/docker/index.cjs"
     },
     "./esbuild": {
       "bun": "./src/esbuild/index.ts",
-      "import": "./lib/esbuild/index.js"
+      "types": "./dist/esbuild/index.d.ts",
+      "import": "./dist/esbuild/index.js",
+      "require": "./dist/esbuild/index.cjs"
     },
     "./fs": {
       "bun": "./src/fs/index.ts",
-      "import": "./lib/fs/index.js"
+      "types": "./dist/fs/index.d.ts",
+      "import": "./dist/fs/index.js",
+      "require": "./dist/fs/index.cjs"
     },
     "./github": {
       "bun": "./src/github/index.ts",
-      "import": "./lib/github/index.js"
+      "types": "./dist/github/index.d.ts",
+      "import": "./dist/github/index.js",
+      "require": "./dist/github/index.cjs"
     },
     "./neon": {
       "bun": "./src/neon/index.ts",
-      "import": "./lib/neon/index.js"
+      "types": "./dist/neon/index.d.ts",
+      "import": "./dist/neon/index.js",
+      "require": "./dist/neon/index.cjs"
     },
     "./os": {
       "bun": "./src/os/index.ts",
-      "import": "./lib/os/index.js"
+      "types": "./dist/os/index.d.ts",
+      "import": "./dist/os/index.js",
+      "require": "./dist/os/index.cjs"
     },
     "./planetscale": {
       "bun": "./src/planetscale/index.ts",
-      "import": "./lib/planetscale/index.js"
+      "types": "./dist/planetscale/index.d.ts",
+      "import": "./dist/planetscale/index.js",
+      "require": "./dist/planetscale/index.cjs"
     },
     "./random": {
       "bun": "./src/random/index.ts",
-      "import": "./lib/random/index.js"
+      "types": "./dist/random/index.d.ts",
+      "import": "./dist/random/index.js",
+      "require": "./dist/random/index.cjs"
     },
     "./sentry": {
       "bun": "./src/sentry/index.ts",
-      "import": "./lib/sentry/index.js"
+      "types": "./dist/sentry/index.d.ts",
+      "import": "./dist/sentry/index.js",
+      "require": "./dist/sentry/index.cjs"
     },
     "./state": {
       "bun": "./src/state/index.ts",
-      "import": "./lib/state/index.js"
+      "types": "./dist/state/index.d.ts",
+      "import": "./dist/state/index.js",
+      "require": "./dist/state/index.cjs"
     },
     "./stripe": {
       "bun": "./src/stripe/index.ts",
-      "import": "./lib/stripe/index.js"
+      "types": "./dist/stripe/index.d.ts",
+      "import": "./dist/stripe/index.js",
+      "require": "./dist/stripe/index.cjs"
     },
     "./upstash": {
       "bun": "./src/upstash/index.ts",
-      "import": "./lib/upstash/index.js"
+      "types": "./dist/upstash/index.d.ts",
+      "import": "./dist/upstash/index.js",
+      "require": "./dist/upstash/index.cjs"
     },
     "./util": {
       "bun": "./src/util/index.ts",
-      "import": "./lib/util/index.js"
+      "types": "./dist/util/index.d.ts",
+      "import": "./dist/util/index.js",
+      "require": "./dist/util/index.cjs"
     },
     "./vercel": {
       "bun": "./src/vercel/index.ts",
-      "import": "./lib/vercel/index.js"
+      "types": "./dist/vercel/index.d.ts",
+      "import": "./dist/vercel/index.js",
+      "require": "./dist/vercel/index.cjs"
     }
   },
   "dependencies": {

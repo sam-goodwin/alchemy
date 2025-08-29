@@ -22,14 +22,11 @@ function _env<T = string>(
   throw new Error(error ?? `Environment variable ${name} is not set`);
 }
 
-const environment = await (async (): Promise<Record<string, any>> => {
+// removed for cjs compatibility: top-level await, used for import("cloudflare:workers")
+const environment = ((): Record<string, any> => {
   if (typeof process !== "undefined") {
     return process.env;
   }
-  try {
-    const { env } = await import("cloudflare:workers");
-    return env;
-  } catch (_error) {}
   if (typeof import.meta !== "undefined") {
     return import.meta.env;
   }

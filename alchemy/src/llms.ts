@@ -1,4 +1,4 @@
-import fs from "node:fs/promises";
+import fs from "node:fs";
 import path from "node:path";
 
 export interface AlchemyRule {
@@ -14,7 +14,8 @@ const alchemy: AlchemyRule = {
   description: "Core Alchemy development guidelines and patterns",
   alwaysApply: true,
   globs: ["*.ts"],
-  rule: await fs.readFile(
+  // removed for cjs compatibility: top-level await fs.readFile()
+  rule: fs.readFileSync(
     path.join(import.meta.dirname, "llms.cloudflare.txt"),
     "utf-8",
   ),
