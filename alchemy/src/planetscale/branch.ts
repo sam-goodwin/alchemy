@@ -164,7 +164,6 @@ export const Branch = Resource(
       // TODO(sam): maybe we don't need to replace? just branch again? or rename?
       this.replace();
     }
-
     if (this.phase === "delete") {
       if (this.output?.name) {
         const response = await api.organizations.databases.branches.delete({
@@ -193,6 +192,7 @@ export const Branch = Resource(
       : typeof props.parentBranch === "string"
         ? props.parentBranch
         : props.parentBranch.name;
+
 
     if (typeof props.parentBranch !== "string" && props.parentBranch) {
       await waitForDatabaseReady(
@@ -228,8 +228,8 @@ export const Branch = Resource(
         );
       }
 
-      const data = getResponse.data;
-      const currentParentBranch = data.parent_branch || "main";
+const data = getResponse.data;
+const currentParentBranch = data.parent_branch || "main";
 
       // Check immutable properties
       if (props.parentBranch && parentBranchName !== currentParentBranch) {
@@ -261,6 +261,7 @@ export const Branch = Resource(
           },
         });
       }
+
 
       if (props.clusterSize && data.cluster_name !== props.clusterSize) {
         await api.organizations.databases.branches.cluster.patch({

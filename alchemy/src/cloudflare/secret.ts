@@ -1,5 +1,6 @@
 import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
+import type { Rune } from "../rune.ts";
 import {
   secret as alchemySecret,
   type Secret as AlchemySecret,
@@ -138,19 +139,15 @@ export type Secret = Resource<"cloudflare::Secret"> &
  *   delete: false
  * });
  */
-export async function Secret(
-  name: string,
-  props: SecretProps,
-): Promise<Secret> {
-  // Convert string value to AlchemySecret if needed to prevent plain text serialization
-  const secretValue =
-    typeof props.value === "string" ? alchemySecret(props.value) : props.value;
-
+export function Secret(name: string, props: SecretProps) {
   // Call the internal resource with secure props
   return _Secret(name, {
     ...props,
-    value: secretValue,
-  });
+    value:
+      typeof props.value === "string"
+        ? alchemySecret(props.value)
+        : props.value,
+  }) as Rune.of<Secret>;
 }
 
 const _Secret = Resource(

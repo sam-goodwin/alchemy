@@ -1,6 +1,10 @@
+import * as Effect from "effect/Effect";
+import type * as Schema from "effect/Schema";
+import type { YieldWrap } from "effect/Utils";
 import { apply } from "./apply.ts";
 import type { Context } from "./context.ts";
 import { DestroyStrategy } from "./destroy.ts";
+import { Rune } from "./rune.ts";
 import { Scope as _Scope, type Scope } from "./scope.ts";
 
 declare global {
@@ -118,15 +122,44 @@ type ResourceLifecycleHandler = (
   props: any,
 ) => Promise<Resource<string>>;
 
-// see: https://x.com/samgoodwin89/status/1904640134097887653
-type Handler<F extends (...args: any[]) => any> =
-  | F
-  | (((this: any, id: string, props?: {}) => never) & IsClass);
+type Handler<F extends (...args: any[]) => any> = (
+  id: string,
+  props: Resource.input<Parameters<F>[1]>,
+) => Rune.of<Awaited<ReturnType<F>>>;
 
 export function Resource<
-  const Type extends string,
-  F extends ResourceLifecycleHandler,
->(type: Type, fn: F): Handler<F>;
+  const Type extends ResourceKind,
+  Input extends Schema.Struct.Fields,
+  Output extends Schema.Struct.Fields,
+>(
+  type: Type,
+  props: {
+    input: Input;
+    output: Output;
+  },
+): <E, R>(
+  fn: (
+    this: Context<Schema.Struct.Type<Input>, Schema.Struct.Type<Output>>,
+    id: string,
+    props: Schema.Struct.Type<Input>,
+  ) => Generator<
+    YieldWrap<Effect.Effect<any, E, R>>,
+    Schema.Struct.Type<Output>,
+    any
+  >,
+) => {
+  input: Schema.Struct<Input>;
+  output: Schema.Struct.Type<Output>;
+  (
+    id: string,
+    props: Rune.of<Schema.Struct.Type<Input>>,
+  ): Rune<Schema.Struct.Type<Output>>;
+};
+
+export function Resource<F extends ResourceLifecycleHandler>(
+  type: string,
+  fn: F,
+): Handler<F>;
 
 export function Resource<
   const Type extends string,
@@ -134,9 +167,12 @@ export function Resource<
 >(type: Type, options: Partial<ProviderOptions>, fn: F): Handler<F>;
 
 export function Resource<
-  const Type extends ResourceKind,
+  const Type extends string,
   F extends ResourceLifecycleHandler,
->(type: Type, ...args: [Partial<ProviderOptions>, F] | [F]): Handler<F> {
+>(
+  type: Type,
+  ...args: [options: Partial<ProviderOptions>, handler: F] | [handler: F]
+): any {
   const [options, handler] = args.length === 2 ? args : [undefined, args[0]];
   if (PROVIDERS.has(type)) {
     // We want Alchemy to work in a PNPM monorepo environment unfortunately,
@@ -154,53 +190,75 @@ export function Resource<
 
   type Out = Awaited<ReturnType<F>>;
 
-  const provider = (async (
+  const provider = (
     resourceID: string,
     props: ResourceProps,
-  ): Promise<Resource<string>> => {
+  ): Rune.of<Resource<string>> => {
     const scope = _Scope.current;
-
     if (resourceID.includes(":")) {
       // we want to use : as an internal separator for resources
       throw new Error(`ID cannot include colons: ${resourceID}`);
     }
+    return Rune(
+      Effect.promise(() => {
+        if (scope.resources.has(resourceID)) {
+          // TODO(sam): do we want to throw?
+          // it's kind of awesome that you can re-create a resource and call apply
+          const otherResource = scope.resources.get(resourceID);
+          if (otherResource?.[ResourceKind] !== type) {
+            scope.fail();
+            const error = new Error(
+              `Resource ${resourceID} already exists in the stack and is of a different type: '${otherResource?.[ResourceKind]}' !== '${type}'`,
+            );
+            scope.telemetryClient.record({
+              event: "resource.error",
+              resource: type,
+              error,
+            });
+            throw error;
+          }
+        }
 
-    if (scope.resources.has(resourceID)) {
-      // TODO(sam): do we want to throw?
-      // it's kind of awesome that you can re-create a resource and call apply
-      const otherResource = scope.resources.get(resourceID);
-      if (otherResource?.[ResourceKind] !== type) {
-        scope.fail();
-        const error = new Error(
-          `Resource ${resourceID} already exists in the stack and is of a different type: '${otherResource?.[ResourceKind]}' !== '${type}'`,
-        );
-        scope.telemetryClient.record({
-          event: "resource.error",
-          resource: type,
-          error,
-        });
-        throw error;
-      }
-    }
-
-    // get a sequence number (unique within the scope) for the resource
-    const seq = scope.seq();
-    const meta = {
-      [ResourceKind]: type,
-      [ResourceID]: resourceID,
-      [ResourceFQN]: scope.fqn(resourceID),
-      [ResourceSeq]: seq,
-      [ResourceScope]: scope,
-      [DestroyStrategy]: options?.destroyStrategy ?? "sequential",
-    } as any as PendingResource<Out>;
-    const promise = apply(meta, props, options);
-    const resource = Object.assign(promise, meta);
-    scope.resources.set(resourceID, resource);
-    return resource;
-  }) as Provider<Type, F>;
+        // get a sequence number (unique within the scope) for the resource
+        const seq = scope.seq();
+        const meta = {
+          [ResourceKind]: type,
+          [ResourceID]: resourceID,
+          [ResourceFQN]: scope.fqn(resourceID),
+          [ResourceSeq]: seq,
+          [ResourceScope]: scope,
+          [DestroyStrategy]: options?.destroyStrategy ?? "sequential",
+        } as any as PendingResource<Out>;
+        const promise = apply(meta, props, options);
+        const resource = Object.assign(promise, meta);
+        scope.resources.set(resourceID, resource);
+        return resource;
+      }),
+    ) as Rune.of<Resource<string>>;
+  };
   provider.type = type;
   provider.handler = handler;
   provider.options = options;
   PROVIDERS.set(type, provider);
   return provider;
+}
+
+export declare namespace Resource {
+  export type input<T> =
+    | T
+    | Rune.of<T>
+    | (T extends any[]
+        ? array<T>
+        : {
+            [k in keyof T]: input<T[k]>;
+          });
+
+  type array<
+    T extends any[],
+    Accum extends any[] = [],
+  > = number extends T["length"]
+    ? input<T[number]>[]
+    : T extends [infer Head, ...infer Tail]
+      ? array<Tail, [...Accum, input<Head>]>
+      : Accum;
 }

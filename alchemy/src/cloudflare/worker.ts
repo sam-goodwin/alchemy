@@ -58,6 +58,7 @@ import { Workflow, isWorkflow, upsertWorkflow } from "./workflow.ts";
 // Previous versions of `Worker` used the `Bundle` resource.
 // This import is here to avoid errors when destroying the `Bundle` resource.
 import "../esbuild/bundle.ts";
+import type { Rune } from "../rune.ts";
 
 /**
  * Configuration options for static assets
@@ -677,27 +678,43 @@ export type Worker<
  *
  * @example
  * // Create a worker version for testing with a preview URL:
- * const previewWorker = await Worker("my-worker", {
+ * const previewWorker = Worker("my-worker", {
  *   name: "my-worker",
  *   entrypoint: "./src/worker.ts",
  *   version: "pr-123"
  * });
  *
  * // The worker will have a preview URL for testing:
- * console.log(`Preview URL: ${previewWorker.url}`);
+ * console.log(`Preview URL: ${await previewWorker.url}`);
  * // Output: Preview URL: https://pr-123-my-worker.subdomain.workers.dev
  */
-export function Worker<
-  const B extends Bindings,
-  RPC extends Rpc.WorkerEntrypointBranded,
->(id: string, props: WorkerProps<B, RPC>): Promise<Worker<B, RPC>>;
-
-export function Worker<const B extends Bindings>(
+export function Worker<const Props extends Resource.input<WorkerProps>>(
   id: string,
-  props: WorkerProps<B>,
-): Promise<Worker<B>> {
-  return _Worker(id, props as WorkerProps<B>);
+  props: Props,
+) {
+  return _Worker(id, props) as Rune.of<
+    Worker<awaitBindings<Props>, awaitRpc<Props>>
+  > & {
+    // TODO(sam): we have Env and _Env - consolidate
+    _Env: Worker.Env<Worker<awaitBindings<Props>, awaitRpc<Props>>>;
+  };
 }
+
+export declare namespace Worker {
+  export type Env<W extends { bindings: any }> = Bindings.Runtime<
+    Rune.await<W["bindings"]>
+  >;
+}
+
+type awaitRpc<Props extends Resource.input<WorkerProps>> =
+  Rune.await<Props>["rpc"] extends type<infer U>
+    ? U & Rpc.WorkerEntrypointBranded
+    : never;
+
+type awaitBindings<Props extends Resource.input<WorkerProps>> = Extract<
+  Rune.await<Props>["bindings"],
+  Bindings | undefined
+>;
 
 const _Worker = Resource(
   "cloudflare::Worker",
@@ -731,7 +748,6 @@ const _Worker = Resource(
         logger.warn("projectRoot is deprecated, use cwd instead");
         props.cwd = props.projectRoot;
       }
-
       const cwd = path.resolve(props.cwd ?? process.cwd());
       const compatibilityDate =
         props.compatibilityDate ?? DEFAULT_COMPATIBILITY_DATE;

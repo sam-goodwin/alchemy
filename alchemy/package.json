@@ -151,6 +151,7 @@
     "@iarna/toml": "^2.2.5",
     "@smithy/node-config-provider": "^4.0.0",
     "aws4fetch": "^1.0.20",
+    "effect": "^3.17.8",
     "env-paths": "^3.0.0",
     "esbuild": "^0.25.1",
     "execa": "^9.6.0",

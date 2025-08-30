@@ -497,7 +497,6 @@ export const Tunnel = Resource(
       props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
 
     if (this.phase === "update" && this.output.name !== name) {
-      console.log("replacing tunnel", this.output.name, name);
       this.replace(true);
     }
 

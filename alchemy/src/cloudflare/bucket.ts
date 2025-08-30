@@ -1,6 +1,7 @@
 import { isDeepStrictEqual } from "node:util";
 import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
+import type { Rune } from "../rune.ts";
 import { Scope } from "../scope.ts";
 import { withExponentialBackoff } from "../util/retry.ts";
 import { CloudflareApiError } from "./api-error.ts";
@@ -334,17 +335,14 @@ export function isBucket(resource: Resource): resource is R2Bucket {
  *
  * @see https://developers.cloudflare.com/r2/buckets/
  */
-export async function R2Bucket(
-  id: string,
-  props: BucketProps = {},
-): Promise<R2Bucket> {
-  return await _R2Bucket(id, {
+export function R2Bucket(id: string, props: BucketProps = {}) {
+  return _R2Bucket(id, {
     ...props,
     dev: {
       ...(props.dev ?? {}),
       force: Scope.current.local,
     },
-  });
+  }) as Rune.of<R2Bucket>;
 }
 
 const _R2Bucket = Resource(

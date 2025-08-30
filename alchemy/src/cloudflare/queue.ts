@@ -1,5 +1,6 @@
 import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
+import type { Rune } from "../rune.ts";
 import { Scope } from "../scope.ts";
 import { CloudflareApiError, handleApiError } from "./api-error.ts";
 import {
@@ -230,17 +231,14 @@ export type Queue<Body = unknown> = Resource<"cloudflare::Queue"> &
  *
  * @see https://developers.cloudflare.com/queues/
  */
-export async function Queue<T = unknown>(
-  id: string,
-  props: QueueProps = {},
-): Promise<Queue<T>> {
-  return await _Queue(id, {
+export function Queue<T = unknown>(id: string, props: QueueProps = {}) {
+  return _Queue(id, {
     ...props,
     dev: {
       ...(props.dev ?? {}),
       force: Scope.current.local,
     },
-  });
+  }) as Rune.of<Queue<T>>;
 }
 
 const _Queue = Resource("cloudflare::Queue", async function <

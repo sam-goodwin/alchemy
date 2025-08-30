@@ -11,10 +11,10 @@ import {
 import type { Scope } from "./scope.ts";
 import type { State } from "./state.ts";
 
-export type Context<
-  Out extends Resource,
-  Props extends ResourceProps = ResourceProps,
-> = CreateContext<Out> | UpdateContext<Out, Props> | DeleteContext<Out, Props>;
+export type Context<Out, Props = ResourceProps> =
+  | CreateContext<Out>
+  | UpdateContext<Out, Props>
+  | DeleteContext<Out, Props>;
 
 export interface CreateContext<Out extends Resource> extends BaseContext<Out> {
   phase: "create";

@@ -19,20 +19,6 @@ import { formatFQN } from "./util/cli.ts";
 import { logger } from "./util/logger.ts";
 import type { Telemetry } from "./util/telemetry/index.ts";
 
-export interface ApplyOptions {
-  quiet?: boolean;
-  alwaysUpdate?: boolean;
-  noop?: boolean;
-}
-
-export function apply<Out extends Resource>(
-  resource: PendingResource<Out>,
-  props: ResourceProps | undefined,
-  options?: ApplyOptions,
-): Promise<Awaited<Out>> {
-  return _apply(resource, props, options);
-}
-
 export function isReplacedSignal(error: any): error is ReplacedSignal {
   return error instanceof Error && (error as any).kind === "ReplacedSignal";
 }
@@ -47,7 +33,13 @@ export class ReplacedSignal extends Error {
   }
 }
 
-async function _apply<Out extends Resource>(
+export interface ApplyOptions {
+  quiet?: boolean;
+  alwaysUpdate?: boolean;
+  noop?: boolean;
+}
+
+export async function apply<Out extends Resource>(
   resource: PendingResource<Out>,
   props: ResourceProps | undefined,
   options?: ApplyOptions,

@@ -11,6 +11,7 @@ export default {
     });
 
     const obj = env.DO.get(env.DO.idFromName("foo"));
+
     await obj.increment();
     async function _foo() {
       // @ts-expect-error - foo doesn't exist on the HelloWorldDO class

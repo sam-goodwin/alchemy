@@ -27,6 +27,6 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
 
-    "noImplicitThis": true
+    "noImplicitThis": true,
   }
 }

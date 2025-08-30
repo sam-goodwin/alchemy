@@ -192,43 +192,42 @@ export interface HyperdriveProps extends CloudflareApiOptions {
  */
 export type Hyperdrive = Resource<"cloudflare::Hyperdrive"> &
   Omit<HyperdriveProps, "origin" | "dev"> & {
-    /**
-     * The ID of the resource
-     */
-    id: string;
+  /**
+   * The ID of the resource
+   */
+  id: string;
 
-    /**
-     * Name of the Hyperdrive configuration
-     */
-    name: string;
+  /**
+   * Name of the Hyperdrive configuration
+   */
+  name: string;
 
-    /**
-     * The Cloudflare-generated UUID of the hyperdrive
-     */
-    hyperdriveId: string;
+  /**
+   * The Cloudflare-generated UUID of the hyperdrive
+   */
+  hyperdriveId: string;
 
+  /**
+   * Database connection origin configuration
+   */
+  origin: HyperdrivePublicOrigin | HyperdriveOriginWithAccess;
+  /**
+   * Local development configuration
+   * @internal
+   */
+  dev: {
     /**
-     * Database connection origin configuration
+     * The connection string to use for local development
      */
-    origin: HyperdrivePublicOrigin | HyperdriveOriginWithAccess;
-
-    /**
-     * Local development configuration
-     * @internal
-     */
-    dev: {
-      /**
-       * The connection string to use for local development
-       */
-      origin: Secret;
-    };
-
-    /**
-     * Resource type identifier for binding.
-     * @internal
-     */
-    type: "hyperdrive";
+    origin: Secret;
   };
+
+  /**
+   * Resource type identifier for binding.
+   * @internal
+   */
+  type: "hyperdrive";
+}
 
 /**
  * Represents a Cloudflare Hyperdrive configuration.
@@ -352,6 +351,9 @@ const _Hyperdrive = Resource(
   ): Promise<Hyperdrive> {
     const hyperdriveId = props.hyperdriveId || this.output?.hyperdriveId;
     const adopt = props.adopt || this.scope.adopt;
+    const name =
+      props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
+
     const name =
       props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
 

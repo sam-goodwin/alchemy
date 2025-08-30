@@ -192,7 +192,6 @@ export const Database = Resource(
         body: { new_name: databaseName },
       });
     }
-
     if (this.phase === "delete") {
       if (this.output?.name) {
         const response = await api.organizations.databases.delete({
@@ -211,6 +210,7 @@ export const Database = Resource(
       }
       return this.destroy();
     }
+
 
     // Check if database exists
     const getResponse = await api.organizations.databases.get({

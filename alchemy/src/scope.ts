@@ -293,6 +293,8 @@ export class Scope {
     return state !== undefined && (type === undefined || state.kind === type);
   }
 
+  async fetch(request: Request) {}
+
   public createPhysicalName(id: string, delimiter = "-"): string {
     const app = this.appName;
     const stage = this.stage;
