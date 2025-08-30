@@ -24,6 +24,10 @@ export const dependencyVersionMap = {
   // nuxt
   "nitro-cloudflare-dev": "^0.2.2",
 
+  // nextjs
+  "@opennextjs/cloudflare": "^1.6.5",
+  sharp: "^0.34.3",
+
   // react-router
   "@cloudflare/vite-plugin": "^1.0.12",
 

@@ -146,6 +146,7 @@ async function createInitContext(options: {
 const FRAMEWORK_DETECTION_MAP: Record<string, TemplateType> = {
   rwsdk: "rwsdk",
   astro: "astro",
+  next: "nextjs",
   nuxt: "nuxt",
   "react-router": "react-router",
   "@sveltejs/kit": "sveltekit",
@@ -179,6 +180,7 @@ async function detectFramework(
       { label: "TanStack Start", value: "tanstack-start" },
       { label: "Redwood SDK", value: "rwsdk" },
       { label: "Nuxt.js", value: "nuxt" },
+      { label: "Next.js", value: "nextjs" },
     ] as const,
     initialValue: detectedFramework,
   });
@@ -234,7 +236,7 @@ async function checkExistingAlchemyFiles(context: InitContext): Promise<void> {
 }
 
 const ALCHEMY_RUN_TEMPLATES: Record<
-  TemplateType,
+  Exclude<TemplateType, "hono">,
   (context: InitContext) => string
 > = {
   typescript: (context) => `/// <reference types="@types/node" />
@@ -403,6 +405,24 @@ console.log({
 await app.finalize();
 `,
 
+  nextjs: (context) => `/// <reference types="@types/node" />
+
+import alchemy from "alchemy";
+import { Nextjs } from "alchemy/cloudflare";
+
+const app = await alchemy("${context.projectName}");
+
+export const website = await Nextjs("website", {
+  name: \`\${app.name}-\${app.stage}-website\`,
+});
+
+console.log({
+  url: website.url,
+});
+
+await app.finalize();
+`,
+
   nuxt: (context) => `/// <reference types="@types/node" />
 
 import alchemy from "alchemy";
@@ -441,6 +461,8 @@ async function createAlchemyRunFile(context: InitContext): Promise<void> {
 }
 
 const FRAMEWORK_DEPENDENCIES: Record<TemplateType, DependencyVersionMap[]> = {
+  nextjs: ["alchemy", "@opennextjs/cloudflare", "sharp"],
+  hono: ["alchemy"],
   nuxt: ["alchemy", "nitro-cloudflare-dev"],
   sveltekit: ["alchemy", "@sveltejs/adapter-cloudflare"],
   typescript: ["alchemy"],
@@ -461,7 +483,7 @@ async function updatePackageJson(context: InitContext): Promise<void> {
   try {
     const devDependencies = FRAMEWORK_DEPENDENCIES[context.framework];
     await addPackageDependencies({
-      devDependencies,
+      devDependencies: [...devDependencies, "@cloudflare/workers-types"],
       projectDir: context.cwd,
     });
 
@@ -494,16 +516,26 @@ async function updateGitignore(context: InitContext) {
     }
 
     const lines = gitignoreContent.split("\n").map((line) => line.trim());
-    const hasAlchemy = lines.some(
-      (line) => line === ".alchemy" || line === ".alchemy/",
-    );
+    const hasDirectory = (dir: string) =>
+      lines.some((line) => line === dir || line === `${dir}/`);
 
-    if (!hasAlchemy) {
-      if (gitignoreContent && !gitignoreContent.endsWith("\n")) {
-        gitignoreContent += "\n";
-      }
-      await fs.appendFile(gitignorePath, ".alchemy\n", "utf-8");
+    if (!hasDirectory(".alchemy")) {
+      lines.push("# alchemy", ".alchemy", "");
     }
+
+    if (context.framework === "nextjs") {
+      if (!hasDirectory(".next")) {
+        lines.push("# next", ".next", "");
+      }
+      if (!hasDirectory(".open-next")) {
+        lines.push("# open-next", ".open-next", "");
+      }
+      if (!lines.some((line) => line === "wrangler.jsonc")) {
+        lines.push("# wrangler", "wrangler.jsonc", "");
+      }
+    }
+
+    await fs.writeFile(gitignorePath, lines.join("\n"), "utf-8");
   } catch (error) {
     throwWithContext(error, "Failed to update .gitignore");
   }
@@ -564,6 +596,7 @@ async function updateProjectConfiguration(context: InitContext): Promise<{
     "tanstack-start": () => updateTanStackStartProject(context),
     rwsdk: () => updateRwsdkProject(context),
     nuxt: () => updateNuxtProject(context),
+    nextjs: () => updateNextjsProject(context),
   }[context.framework]();
 }
 
@@ -628,6 +661,94 @@ async function updateAstroProject(context: InitContext): Promise<void> {
   //     types: ["@cloudflare/workers-types", "./types/env.d.ts"],
   //   },
   // });
+}
+
+async function updateNextjsProject(context: InitContext): Promise<void> {
+  const resolveFile = async (name: string) => {
+    const candidates = ["ts", "js", "cjs", "mjs"].map((ext) =>
+      resolve(context.cwd, `${name}.${ext}`),
+    );
+    for (const candidate of candidates) {
+      if (await fs.pathExists(candidate)) {
+        return { path: candidate, exists: true };
+      }
+    }
+    return { path: candidates[0], exists: false };
+  };
+
+  const nextConfig = await resolveFile("next.config");
+  const openNextConfig = await resolveFile("open-next.config");
+
+  if (nextConfig.exists) {
+    const fileContent = await fs.readFile(nextConfig.path, "utf-8");
+    let updated = fileContent;
+    if (
+      !fileContent.includes(
+        "import { defineCloudflareConfig } from '@opennextjs/cloudflare'",
+      )
+    ) {
+      updated = `import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";\n${fileContent}`;
+    }
+    if (!fileContent.includes("initOpenNextCloudflareForDev()")) {
+      updated += "\ninitOpenNextCloudflareForDev();\n";
+    }
+    await fs.writeFile(nextConfig.path, updated);
+  } else {
+    await fs.writeFile(
+      nextConfig.path,
+      `import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+
+initOpenNextCloudflareForDev();
+`,
+    );
+  }
+
+  if (!openNextConfig.exists) {
+    await fs.writeFile(
+      openNextConfig.path,
+      `import { defineCloudflareConfig } from "@opennextjs/cloudflare";
+
+export default defineCloudflareConfig({
+  // Uncomment to enable R2 cache,
+  // It should be imported as:
+  // import r2IncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/r2-incremental-cache";
+  // See https://opennext.js.org/cloudflare/caching for more details
+  // incrementalCache: r2IncrementalCache,
+});
+`,
+    );
+  }
+  await fs.writeFile(
+    resolve(context.cwd, "env.d.ts"),
+    `// Auto-generated Cloudflare binding types.
+// @see https://alchemy.run/concepts/bindings/#type-safe-bindings
+
+import type { website } from "./alchemy.run.ts";
+
+declare global {
+	type CloudflareEnv = typeof website.Env;
+}
+
+declare module "cloudflare:workers" {
+	namespace Cloudflare {
+		export interface Env extends CloudflareEnv {}
+	}
+}`,
+  );
+
+  const tsConfigPath = resolve(context.cwd, "tsconfig.json");
+  await updateTsConfig(tsConfigPath, {
+    compilerOptions: {
+      types: ["@cloudflare/workers-types", "env.d.ts"],
+    },
+  });
 }
 
 async function updateReactRouterProject(context: InitContext): Promise<{

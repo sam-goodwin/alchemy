@@ -33,6 +33,7 @@ export * from "./email-rule.ts";
 export * from "./hyperdrive.ts";
 export * from "./images.ts";
 export * from "./kv-namespace.ts";
+export * from "./next.ts";
 export * from "./nuxt/nuxt.ts";
 export * from "./orange.ts";
 export * from "./permission-groups.ts";

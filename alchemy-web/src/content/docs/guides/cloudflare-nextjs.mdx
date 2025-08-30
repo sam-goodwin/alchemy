@@ -1,0 +1,397 @@
+---
+title: Next.js
+description: Step-by-step guide to deploying a Next.js application to Cloudflare Workers using Alchemy.
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+This guide demonstrates how to deploy a [Next.js](https://nextjs.org/) application to Cloudflare using Alchemy with full-stack capabilities including server actions and API routes.
+
+## Init
+
+Start by creating a new Next.js project using Alchemy:
+
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bunx alchemy create my-nextjs-app --template=nextjs
+    cd my-nextjs-app
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npx alchemy create my-nextjs-app --template=nextjs
+    cd my-nextjs-app
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm dlx alchemy create my-nextjs-app --template=nextjs
+    cd my-nextjs-app
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn dlx alchemy create my-nextjs-app --template=nextjs
+    cd my-nextjs-app
+    ```
+  </TabItem>
+</Tabs>
+
+## Login
+
+Before you can deploy, authenticate with your Cloudflare account:
+
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bun alchemy login
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npx alchemy login
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm alchemy login
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn alchemy login
+    ```
+  </TabItem>
+</Tabs>
+
+:::tip
+Alchemy automatically re-uses your Wrangler OAuth tokens. See the [Cloudflare](/guides/cloudflare) guide for other authentication options.
+:::
+
+## Deploy
+
+Run the deploy script to build and deploy your Next.js application:
+
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bun run deploy
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npm run deploy
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm run deploy
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn run deploy
+    ```
+  </TabItem>
+</Tabs>
+
+You'll get the live URL of your Next.js site:
+
+```sh
+{
+  url: "https://website.<your-account>.workers.dev"
+}
+```
+
+## Local Development
+
+Work locally using the dev script:
+
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bun run dev
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npm run dev
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm run dev
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn run dev
+    ```
+  </TabItem>
+</Tabs>
+
+## Destroy
+
+Clean up all Cloudflare resources created by this stack:
+
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bun run destroy
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npm run destroy
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm run destroy
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn run destroy
+    ```
+  </TabItem>
+</Tabs>
+
+## What files are created
+
+### `.env`
+
+Alchemy requires a locally set password to encrypt Secrets that are stored in state. Be sure to change this.
+
+:::note
+See the [Secret](/concepts/secret) documentation to learn more.
+:::
+
+```
+ALCHEMY_PASSWORD=change-me
+```
+
+### `alchemy.run.ts`
+
+The infrastructure setup with KV storage for demonstration:
+
+```typescript
+/// <reference types="@types/node" />
+
+import alchemy from "alchemy";
+import { KVNamespace, Nextjs } from "alchemy/cloudflare";
+
+const app = await alchemy("my-nextjs-app");
+
+export const kv = await KVNamespace("kv");
+
+export const website = await Nextjs("website", {
+  adopt: true,
+  bindings: { KV: kv },
+});
+
+console.log({
+  url: website.url,
+});
+
+await app.finalize();
+```
+
+### `types/env.d.ts`
+
+Type-safe access to Cloudflare bindings:
+
+```typescript
+// Auto-generated Cloudflare binding types.
+// @see https://alchemy.run/concepts/bindings/#type-safe-bindings
+
+import type { website } from "../alchemy.run.ts";
+
+export type CloudflareEnv = typeof website.Env;
+
+declare global {
+  type Env = CloudflareEnv;
+}
+
+declare module "cloudflare:workers" {
+  namespace Cloudflare {
+    export interface Env extends CloudflareEnv {}
+  }
+}
+```
+
+### `tsconfig.json`
+
+The CLI updated the `tsconfig.json` to include `alchemy.run.ts` and register `@cloudflare/workers-types` + `types/env.d.ts` globally:
+
+```json
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["@cloudflare/workers-types", "./types/env.d.ts"]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx", 
+    ".next/types/**/*.ts",
+    "alchemy.run.ts"
+  ],
+  "exclude": ["node_modules"]
+}
+```
+
+### `next.config.ts`
+
+Configure Next.js for Cloudflare Workers with OpenNext:
+
+```typescript
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+};
+
+export default nextConfig;
+
+initOpenNextCloudflareForDev();
+```
+
+:::tip
+The `initOpenNextCloudflareForDev()` function configures Next.js for local development with Cloudflare bindings.
+:::
+
+### `open-next.config.ts`
+
+Configure OpenNext for Cloudflare Workers deployment:
+
+```typescript
+import { defineCloudflareConfig } from "@opennextjs/cloudflare";
+
+export default defineCloudflareConfig({
+  // Uncomment to enable R2 cache,
+  // It should be imported as:
+  // `import r2IncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/r2-incremental-cache";`
+  // See https://opennext.js.org/cloudflare/caching for more details
+  // incrementalCache: r2IncrementalCache,
+});
+```
+
+## Using Cloudflare Bindings
+
+The template includes examples of accessing Cloudflare bindings in both API routes and Server Components.
+
+### In API Routes
+
+```typescript
+// app/api/kv/route.ts
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+
+export const GET = async () => {
+  const { env } = getCloudflareContext();
+  const values = await env.KV.list();
+  return Response.json(values);
+};
+```
+
+### In Server Components
+
+```tsx
+// app/page.tsx
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { revalidatePath } from "next/cache";
+
+export default async function Home() {
+  const { env } = await getCloudflareContext({ async: true });
+  const values = await env.KV.list();
+
+  return (
+    <div>
+      <h1>KV Values</h1>
+      <pre>{JSON.stringify(values, null, 2)}</pre>
+      <button onClick={putValue}>Put Value</button>
+      <button onClick={deleteValue}>Delete Value</button>
+    </div>
+  );
+}
+
+const putValue = async () => {
+  "use server";
+  
+  const { env } = await getCloudflareContext({ async: true });
+  await env.KV.put(crypto.randomUUID(), "test");
+  revalidatePath("/");
+};
+
+const deleteValue = async () => {
+  "use server";
+  
+  const { env } = await getCloudflareContext({ async: true });
+  const values = await env.KV.list();
+  await Promise.all(values.keys.map((key) => env.KV.delete(key.name)));
+  revalidatePath("/");
+};
+```
+
+:::note
+Server Actions work seamlessly with Cloudflare Workers, allowing you to perform server-side operations with full access to your bindings.
+:::
+
+## Advanced Features
+
+### Incremental Static Regeneration (ISR)
+
+Next.js ISR is supported through R2 caching. Uncomment the cache configuration in `open-next.config.ts` to enable:
+
+```typescript
+import r2IncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/r2-incremental-cache";
+
+export default defineCloudflareConfig({
+  incrementalCache: r2IncrementalCache,
+});
+```
+
+### Image Optimization
+
+Next.js Image optimization works automatically with Cloudflare's image transformation service.
+
+### Middleware
+
+Edge middleware is fully supported and runs on Cloudflare's edge network for optimal performance.
+
+## Deployment Notes
+
+- The build process uses [OpenNext](https://opennext.js.org/cloudflare) to transform your Next.js app for Cloudflare Workers
+- All Next.js features including App Router, Server Components, and Server Actions are supported
+- Static assets are automatically uploaded to Cloudflare R2 and served via CDN
+- The `wrangler.jsonc` file is auto-generated and should be added to `.gitignore`
+
+:::warning
+If you see warnings about `wrangler.jsonc` not being ignored, add it to your `.gitignore` file to prevent it from being committed to your repository.
+:::

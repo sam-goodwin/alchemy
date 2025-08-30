@@ -39,6 +39,7 @@ const variants = {
   "sveltekit-template": "--template=sveltekit",
   "rwsdk-template": "--template=rwsdk",
   "tanstack-start-template": "--template=tanstack-start",
+  "nextjs-template": "--template=nextjs",
   "nuxt-template": "--template=nuxt",
   "hono-template": "--template=hono",
 };

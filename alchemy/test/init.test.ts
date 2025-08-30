@@ -54,6 +54,9 @@ const initVariants = {
   "react-router-init": {
     scaffoldCommand: "bunx create-react-router@latest {projectName} --yes",
   },
+  "nextjs-init": {
+    scaffoldCommand: "bun create next-app@latest {projectName} --yes",
+  },
 };
 
 describe("Init CLI End-to-End Tests", { concurrent: false }, () => {

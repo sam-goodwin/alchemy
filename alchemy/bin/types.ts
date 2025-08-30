@@ -8,6 +8,7 @@ export const TEMPLATE_DEFINITIONS = [
   { name: "sveltekit", description: "SvelteKit" },
   { name: "tanstack-start", description: "TanStack Start" },
   { name: "rwsdk", description: "Redwood SDK" },
+  { name: "nextjs", description: "Next.js" },
   { name: "nuxt", description: "Nuxt.js" },
   { name: "typescript", description: "TypeScript Worker" },
 ] as const;

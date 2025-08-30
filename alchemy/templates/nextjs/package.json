@@ -1,0 +1,31 @@
+{
+  "type": "module",
+  "name": "@alchemy.run/nextjs-template",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy",
+    "dev": "alchemy dev",
+    "lint": "next lint",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@opennextjs/cloudflare": "^1.6.5",
+    "next": "15.4.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "alchemy": "workspace:*",
+    "@cloudflare/workers-types": "^4.20250805.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.6",
+    "sharp": "^0.34.3",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.30.0"
+  }
+}

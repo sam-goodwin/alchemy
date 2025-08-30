@@ -1,0 +1,31 @@
+{
+  "name": "cloudflare-nextjs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "alchemy dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy"
+  },
+  "dependencies": {
+    "@opennextjs/cloudflare": "^1.6.5",
+    "next": "15.4.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "alchemy": "workspace:*",
+    "sharp": "^0.34.3",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "wrangler": "^4.30.0"
+  }
+}

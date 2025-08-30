@@ -185,6 +185,7 @@
     "@cloudflare/workers-types": "catalog:",
     "@libsql/client": "^0.15.12",
     "@octokit/rest": "^21.1.1",
+    "@opennextjs/cloudflare": "^1.6.5",
     "astro": "^5.13.2",
     "drizzle-orm": "^0.44.2",
     "rwsdk": "^0.1.36",
@@ -222,6 +223,9 @@
       "optional": true
     },
     "@cloudflare/workers-types": {
+      "optional": true
+    },
+    "@opennextjs/cloudflare": {
       "optional": true
     },
     "@octokit/rest": {
