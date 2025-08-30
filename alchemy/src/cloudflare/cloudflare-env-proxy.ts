@@ -1,21 +1,24 @@
+import path from "node:path";
 import type { GetPlatformProxyOptions } from "wrangler";
+import type { Scope } from "../scope.ts";
 import {
   DEFAULT_CONFIG_PATH,
-  DEFAULT_PERSIST_PATH,
   validateConfigPath,
   validatePersistPath,
 } from "./miniflare/paths.ts";
 
 export const getCloudflareEnvProxy = async <E>(
+  scope: Scope,
   options: GetPlatformProxyOptions = {},
 ) => {
   const { getPlatformProxy } = await import("wrangler");
-  const config = getPlatformProxyOptions(options);
+  const config = getPlatformProxyOptions(scope, options);
   const proxy = await getPlatformProxy(config);
   return proxy.env as E;
 };
 
 export const getPlatformProxyOptions = (
+  scope: Scope,
   input: GetPlatformProxyOptions = {},
 ): GetPlatformProxyOptions => {
   const persist =
@@ -26,7 +29,7 @@ export const getPlatformProxyOptions = (
             typeof input.persist === "object" &&
               typeof input.persist.path === "string"
               ? input.persist.path
-              : DEFAULT_PERSIST_PATH,
+              : path.join(scope.dotAlchemy, "miniflare", "v3"),
           ),
         };
   if (!persist) {

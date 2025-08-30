@@ -1,0 +1,25 @@
+{
+  "name": "monorepo",
+  "private": true,
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "turbo run dev",
+    "deploy": "turbo run deploy"
+  },
+  "type": "module",
+  "packageManager": "bun@1.2.21",
+  "workspaces": {
+    "packages": [
+      "apps/*"
+    ],
+    "catalog": {
+      "@cloudflare/workers-types": "^4.20250805.0",
+      "@cloudflare/vite-plugin": "^1.11.6",
+      "vite": "^6.3.5",
+      "typescript": "^5.8.3"
+    }
+  },
+  "devDependencies": {
+    "turbo": "^2.5.6"
+  }
+}

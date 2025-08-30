@@ -280,6 +280,7 @@ const _D1Database = Resource(
     if (local) {
       if (props.migrationsFiles && props.migrationsFiles.length > 0) {
         await applyLocalD1Migrations({
+          scope: this.scope,
           databaseId: dev.id,
           migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
           migrations: props.migrationsFiles,

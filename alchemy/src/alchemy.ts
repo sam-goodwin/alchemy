@@ -1,3 +1,5 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import { execArgv } from "node:process";
 import { onExit } from "signal-exit";
 import { isReplacedSignal } from "./apply.ts";
@@ -120,6 +122,13 @@ async function _alchemy(
     })(),
     password: process.env.ALCHEMY_PASSWORD,
     adopt: cliArgs.includes("--adopt"),
+    select: cliArgs.includes("--select")
+      ? cliArgs.slice(cliArgs.indexOf("--select") + 1)
+      : undefined,
+    rootDir: cliArgs.includes("--root-dir")
+      ? path.resolve(cliArgs[cliArgs.indexOf("--root-dir") + 1])
+      : undefined,
+    lock: cliArgs.includes("--lock"),
   } satisfies Partial<AlchemyOptions>;
   const mergedOptions = {
     ...cliOptions,
@@ -159,6 +168,7 @@ If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE
     password: mergedOptions?.password ?? process.env.ALCHEMY_PASSWORD,
     telemetryClient,
   });
+
   onExit((code) => {
     root.cleanup().then(() => {
       code = code === 130 ? 0 : (code ?? 0);
@@ -178,6 +188,9 @@ If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE
   if (mergedOptions?.phase === "destroy") {
     await destroy(stage);
     return process.exit(0);
+  }
+  if (mergedOptions.lock) {
+    await fs.mkdir(root.lockDir, { recursive: true });
   }
   return root;
 }
@@ -272,6 +285,26 @@ export interface AlchemyOptions {
    * @default false
    */
   adopt?: boolean;
+  /**
+   * Whether to lock the scope.
+   *
+   * @default false
+   */
+  lock?: boolean;
+  /**
+   * The root directory of the project.
+   *
+   * @default process.cwd()
+   */
+  rootDir?: string;
+  /**
+   * A list of applications (aka. stacks) to select for modification.
+   *
+   * Any app executed as part of this application but not in this list will be executed in read mode, and destruction will be skipped.
+   *
+   * @default - all apps
+   */
+  select?: string[];
 }
 
 export interface ScopeOptions extends AlchemyOptions {

@@ -2,6 +2,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import path from "node:path";
 import util from "node:util";
 import pc from "picocolors";
+import lockfile from "proper-lockfile";
 import type { Phase } from "./alchemy.ts";
 import { destroy, destroyAll, DestroyStrategy } from "./destroy.ts";
 import {
@@ -17,6 +18,7 @@ import {
 import type { State, StateStore, StateStoreType } from "./state.ts";
 import { FileSystemStateStore } from "./state/file-system-state-store.ts";
 import { InstrumentedStateStore } from "./state/instrumented-state-store.ts";
+import { SQLiteStateStore } from "./state/sqlite-state-store.ts";
 import {
   createDummyLogger,
   createLoggerInstance,
@@ -28,6 +30,7 @@ import {
 } from "./util/idempotent-spawn.ts";
 import { logger } from "./util/logger.ts";
 import { AsyncMutex } from "./util/mutex.ts";
+import { promiseWithResolvers } from "./util/promise-with-resolvers.ts";
 import type { ITelemetryClient } from "./util/telemetry/client.ts";
 
 export class RootScopeStateAttemptError extends Error {
@@ -80,7 +83,7 @@ export interface ScopeOptions extends ProviderCredentials {
   /**
    * The path to the .alchemy directory.
    *
-   * @default "./.alchemy"
+   * @default "${rootDir}/.alchemy"
    */
   dotAlchemy?: string;
   /**
@@ -89,6 +92,18 @@ export interface ScopeOptions extends ProviderCredentials {
    * @default false
    */
   adopt?: boolean;
+  /**
+   * Whether to lock the scope.
+   *
+   * @default false
+   */
+  lock?: boolean;
+  /**
+   * The root directory of the project.
+   *
+   * @default process.cwd()
+   */
+  rootDir?: string;
 }
 
 /**
@@ -177,6 +192,9 @@ export class Scope {
   public readonly logger: LoggerApi;
   public readonly telemetryClient: ITelemetryClient;
   public readonly dataMutex: AsyncMutex;
+  public readonly lock: boolean;
+  public readonly lockDir: string;
+  public readonly rootDir: string;
   public readonly dotAlchemy: string;
 
   // Provider credentials for scope-level credential overrides
@@ -214,17 +232,22 @@ export class Scope {
       logger,
       adopt,
       dotAlchemy,
+      lock,
+      rootDir,
       ...providerCredentials
     } = options;
-
-    this.dotAlchemy =
-      dotAlchemy ??
-      this.parent?.dotAlchemy ??
-      path.join(process.cwd(), ".alchemy");
 
     this.scopeName = scopeName;
     this.name = this.scopeName;
     this.parent = parent ?? Scope.getScope();
+
+    this.lock = lock ?? this.parent?.lock ?? false;
+    this.rootDir = rootDir ?? this.parent?.rootDir ?? process.cwd();
+    this.dotAlchemy =
+      dotAlchemy ??
+      this.parent?.dotAlchemy ??
+      path.join(this.rootDir, ".alchemy");
+    this.lockDir = path.join(this.dotAlchemy, "locks");
 
     // Store provider credentials (TypeScript ensures no conflicts with core options)
     this.providerCredentials = providerCredentials as ProviderCredentials;
@@ -276,7 +299,10 @@ export class Scope {
     this.stateStore =
       stateStore ??
       this.parent?.stateStore ??
-      ((scope) => new FileSystemStateStore(scope));
+      ((scope) =>
+        scope.lock
+          ? new SQLiteStateStore(scope)
+          : new FileSystemStateStore(scope));
     this.telemetryClient = telemetryClient ?? this.parent?.telemetryClient!;
     this.state = new InstrumentedStateStore(
       this.stateStore(this),
@@ -392,6 +418,7 @@ export class Scope {
   public async deinit() {
     await this.parent?.state.delete(this.scopeName!);
     await this.state.deinit?.();
+    // do not remove lock files - we may not be the only process
   }
 
   public fqn(resourceID: ResourceID): string {
@@ -661,6 +688,38 @@ export class Scope {
       return;
     }
     this.cleanups.push(fn);
+  }
+
+  public async withLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    let release: (() => Promise<void>) | undefined;
+    const { promise, resolve, reject } = promiseWithResolvers<T>();
+    try {
+      try {
+        release = await lockfile.lock(this.lockDir, {
+          lockfilePath: path.join(
+            this.lockDir,
+            key.replaceAll(/[^a-z0-9_-]/gi, "-"),
+          ),
+          retries: 1000, // retry for a long time
+          // defaults:
+          // stale: 5000,
+          // update: 2500, // stale/2, minimum 1000
+        });
+      } catch (err) {
+        // lock could not be acquired
+        console.error(`Lock on ${key} could not be acquired`, err);
+        throw err;
+      }
+      fn().then(resolve, reject);
+      return promise;
+    } finally {
+      try {
+        await release?.();
+      } catch (error) {
+        // lock could not be released
+        reject(error);
+      }
+    }
   }
 
   /**

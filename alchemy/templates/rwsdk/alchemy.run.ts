@@ -5,10 +5,12 @@ import { D1Database, DurableObjectNamespace, Redwood } from "alchemy/cloudflare"
 const app = await alchemy("{projectName}");
     
 const database = await D1Database("database", {
+  name: `${app.name}-${app.stage}-database`,
   migrationsDir: "migrations",
 });
 
 export const worker = await Redwood("website", {
+  name: `${app.name}-${app.stage}-website`,
   bindings: {
     AUTH_SECRET_KEY: alchemy.secret(process.env.AUTH_SECRET_KEY),
     DB: database,

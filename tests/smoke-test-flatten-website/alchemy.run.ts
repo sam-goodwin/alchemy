@@ -10,13 +10,10 @@ import {
   Workflow,
   Zone,
 } from "alchemy/cloudflare";
-import { CloudflareStateStore } from "alchemy/state";
 import assert from "node:assert";
 import type { HelloWorldDO } from "./src/do.ts";
 
-const app = await alchemy("smoke-test-flatten-website", {
-  stateStore: (scope) => new CloudflareStateStore(scope),
-});
+const app = await alchemy("smoke-test-flatten-website");
 
 const zone = await Zone("zone", {
   name: `${app.name}-${app.stage}.us`,

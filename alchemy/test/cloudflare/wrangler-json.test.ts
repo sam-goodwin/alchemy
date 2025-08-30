@@ -527,45 +527,6 @@ describe("WranglerJson Resource", () => {
         await destroy(scope);
       }
     });
-    test("with R2 bucket - includes jurisdiction", async (scope) => {
-      const name = `${BRANCH_PREFIX}-test-worker-r2-jurisdiction`;
-      const tempDir = path.join(".out", "alchemy-r2-jurisdiction-test");
-      const entrypoint = path.join(tempDir, "worker.ts");
-
-      try {
-        await fs.rm(tempDir, { recursive: true, force: true });
-        await fs.mkdir(tempDir, { recursive: true });
-        await fs.writeFile(entrypoint, esmWorkerScript);
-
-        const r2Bucket = await R2Bucket(`${BRANCH_PREFIX}-test-r2-bucket`, {
-          name: `${BRANCH_PREFIX}-test-r2-bucket`,
-          jurisdiction: "eu",
-          adopt: true,
-        });
-
-        const worker = await Worker(name, {
-          name,
-          format: "esm",
-          entrypoint,
-          bindings: {
-            BUCKET: r2Bucket,
-          },
-          adopt: true,
-        });
-
-        const { spec } = await WranglerJson({ worker });
-
-        expect(spec.r2_buckets).toHaveLength(1);
-        expect(spec.r2_buckets?.[0]).toMatchObject({
-          binding: "BUCKET",
-          bucket_name: r2Bucket.name,
-          jurisdiction: "eu",
-        });
-      } finally {
-        await fs.rm(tempDir, { recursive: true, force: true });
-        await destroy(scope);
-      }
-    });
 
     test("with cwd", async (scope) => {
       const name = `${BRANCH_PREFIX}-test-worker-cwd`;

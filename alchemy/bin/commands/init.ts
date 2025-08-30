@@ -425,6 +425,19 @@ console.log({
 
 await app.finalize();
 `,
+  hono: (context) => `/// <reference types="@types/node" />
+
+import alchemy from "alchemy";
+import { Hono } from "alchemy/cloudflare";
+
+const app = await alchemy("${context.projectName}");
+
+export const worker = await Worker("worker", {
+  entrypoint: "src/worker.ts",
+});
+
+await app.finalize();
+`,
 };
 
 async function createAlchemyRunFile(context: InitContext): Promise<void> {
@@ -449,6 +462,7 @@ const FRAMEWORK_DEPENDENCIES: Record<TemplateType, DependencyVersionMap[]> = {
   "react-router": ["alchemy", "@cloudflare/vite-plugin"],
   "tanstack-start": ["alchemy"],
   rwsdk: ["alchemy"],
+  hono: ["alchemy"],
 };
 
 const DEFAULT_SCRIPTS = {

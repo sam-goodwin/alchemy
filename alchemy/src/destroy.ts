@@ -61,34 +61,45 @@ export async function destroy<Type extends string>(
       strategy: scope.destroyStrategy ?? "sequential",
       ...(args[1] ?? {}),
     } satisfies DestroyOptions;
-
-    await scope.run(async () => {
-      // destroy all active and pending resources
-      await scope.destroyPendingDeletions();
-      await destroyAll(Array.from(scope.resources.values()), options);
-
-      // then detect orphans and destroy them
-      const orphans = await scope.state.all();
-      await destroyAll(
-        Object.values(orphans).map((orphan) => ({
-          ...orphan.output,
-          Scope: scope,
-        })),
-        options,
+    return destroyScope(scope, options);
+  } else {
+    const [instance, options] = args;
+    if (!instance) {
+      return;
+    }
+    const scope = instance[ResourceScope];
+    if (scope.lock) {
+      return scope.withLock(instance[ResourceFQN], () =>
+        destroyResource(instance, options),
       );
-    });
-
-    // finally, destroy the scope container
-    await scope.deinit();
-    return;
+    } else {
+      return destroyResource(instance, options);
+    }
   }
+}
 
-  const [instance, options] = args;
+async function destroyScope(scope: Scope, options?: DestroyOptions) {
+  await scope.run(async () => {
+    // destroy all active and pending resources
+    await scope.destroyPendingDeletions();
+    await destroyAll(Array.from(scope.resources.values()), options);
 
-  if (!instance) {
-    return;
-  }
+    // then detect orphans and destroy them
+    const orphans = await scope.state.all();
+    await destroyAll(
+      Object.values(orphans).map((orphan) => ({
+        ...orphan.output,
+        Scope: scope,
+      })),
+      options,
+    );
+  });
 
+  // finally, destroy the scope container
+  await scope.deinit();
+}
+
+async function destroyResource(instance: Resource, options?: DestroyOptions) {
   if (instance[ResourceKind] === Scope.KIND) {
     const scope = new Scope({
       parent: instance[ResourceScope],

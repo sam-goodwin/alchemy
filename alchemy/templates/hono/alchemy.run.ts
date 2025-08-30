@@ -10,6 +10,7 @@ const kv = await KVNamespace("kv", {
 });
 
 export const worker = await Worker("worker", {
+  name: `${app.name}-${app.stage}`,
   entrypoint: "src/index.ts",
   bindings: {
     KV: kv,

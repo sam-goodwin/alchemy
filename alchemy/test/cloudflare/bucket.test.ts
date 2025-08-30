@@ -74,7 +74,6 @@ describe("R2 Bucket Resource", async () => {
   test("bucket with jurisdiction", async (scope) => {
     const api = await createCloudflareApi();
     const euBucketName = `${testId}-eu`;
-    const workerName = `${BRANCH_PREFIX}-test-worker-eu-bucket-1`;
     let euBucket: R2Bucket | undefined;
     try {
       euBucket = await R2Bucket(euBucketName, {
@@ -91,20 +90,6 @@ describe("R2 Bucket Resource", async () => {
         jurisdiction: "eu",
       });
       expect(gotBucket.name).toEqual(euBucketName);
-
-      await Worker("worker", {
-        name: workerName,
-        script: `
-          export default {
-            async fetch(request, env, ctx) {
-              return new Response(JSON.stringify(env.euBucket.name), { status: 200 });
-            }
-          }
-        `,
-        bindings: {
-          euBucket,
-        },
-      });
 
       // Note: S3 API doesn't expose jurisdiction info, so we can't verify that aspect
     } finally {

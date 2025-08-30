@@ -6,7 +6,6 @@ import { deserialize, serialize } from "../serde.ts";
 import type { State, StateStore } from "../state.ts";
 import { ignore } from "../util/ignore.ts";
 
-const stateRootDir = path.join(process.cwd(), ".alchemy");
 const ALCHEMY_SEPERATOR_CHAR = process.platform === "win32" ? "-" : ":";
 
 export class FileSystemStateStore implements StateStore {
@@ -18,7 +17,7 @@ export class FileSystemStateStore implements StateStore {
       rootDir?: string;
     },
   ) {
-    this.dir = path.join(options?.rootDir ?? stateRootDir, ...scope.chain);
+    this.dir = path.join(options?.rootDir ?? scope.dotAlchemy, ...scope.chain);
   }
 
   async init(): Promise<void> {

@@ -51,9 +51,9 @@ describe.sequential("NodeJS Import Warning Plugin", () => {
     // Verify warning was logged
     expect(warn).toHaveBeenCalledWith(
       [
-        'The package "node:crypto" wasn\'t found on the file system but is built into node.',
-        'Your Worker may throw errors at runtime unless you enable the "nodejs_compat" compatibility flag. Refer to https://developers.cloudflare.com/workers/runtime-apis/nodejs/ for more details. Imported from:',
-        " - alchemy/test/cloudflare/test-handlers/node-imports-handler.ts",
+        "Detected Node.js imports (node:crypto, node:fs) but nodejs_compat compatibility flag is not set. ",
+        "Add nodejs_compat to your compatibility flags and ensure compatibilityDate >= 2024-09-23. Imported from:",
+        "- alchemy/test/cloudflare/test-handlers/node-imports-handler.ts",
       ].join("\n"),
     );
   });
@@ -103,9 +103,9 @@ describe.sequential("NodeJS Import Warning Plugin", () => {
     // Verify specific async_hooks warning was logged
     expect(warn).toHaveBeenCalledWith(
       [
-        `The package "node:async_hooks" wasn't found on the file system but is built into node.`,
-        `Your Worker may throw errors at runtime unless you enable the "nodejs_compat" compatibility flag. Refer to https://developers.cloudflare.com/workers/runtime-apis/nodejs/ for more details. Imported from:`,
-        " - alchemy/test/cloudflare/test-handlers/async-hooks-handler.ts",
+        "Detected import of node:async_hooks but nodejs_als compatibility flag is not set. ",
+        "Add nodejs_als or nodejs_compat to your compatibility flags. Imported from:",
+        "- alchemy/test/cloudflare/test-handlers/async-hooks-handler.ts",
       ].join("\n"),
     );
   });

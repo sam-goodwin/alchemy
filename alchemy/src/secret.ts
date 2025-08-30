@@ -17,6 +17,8 @@ function nextName() {
   return `alchemy:anonymous-secret-${i++}`;
 }
 
+const SecretSymbol = Symbol.for("alchemy::Secret");
+
 /**
  * Internal wrapper for sensitive values like API keys and credentials.
  * When stored in alchemy state files, the value is automatically encrypted
@@ -53,6 +55,8 @@ function nextName() {
  * }
  */
 export class Secret<T = string> {
+  [SecretSymbol] = true;
+
   /**
    * @internal
    */
