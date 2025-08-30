@@ -5,13 +5,11 @@ import { PlanetScaleClient } from "./api/client.gen.ts";
 import {
   ensureProductionBranchClusterSize,
   type PlanetScaleClusterSize,
+  sanitizeClusterSize,
   waitForDatabaseReady,
 } from "./utils.ts";
 
-/**
- * Properties for creating or updating a PlanetScale Database
- */
-export interface DatabaseProps extends PlanetScaleProps {
+interface BaseDatabaseProps extends PlanetScaleProps {
   /**
    * The name of the database
    *
@@ -88,54 +86,79 @@ export interface DatabaseProps extends PlanetScaleProps {
    * The database cluster size (required)
    */
   clusterSize: PlanetScaleClusterSize;
+
+  /**
+   * The engine kind for the database
+   * @default "mysql"
+   */
+  kind?: "mysql" | "postgresql";
+
+  /**
+   * The CPU architecture for the database. Only available for PostgreSQL databases.
+   */
+  arch?: "x86" | "arm";
 }
+
+/**
+ * Properties for creating or updating a PlanetScale Database
+ */
+export type DatabaseProps = BaseDatabaseProps &
+  (
+    | {
+        kind?: "mysql";
+        arch?: undefined;
+      }
+    | {
+        kind: "postgresql";
+        arch?: "x86" | "arm";
+      }
+  );
 
 /**
  * Represents a PlanetScale Database
  */
-export interface Database
-  extends Resource<"planetscale::Database">,
-    DatabaseProps {
-  /**
-   * The unique identifier of the database
-   */
-  id: string;
+export type Database = Resource<"planetscale::Database"> &
+  DatabaseProps & {
+    /**
+     * The unique identifier of the database
+     */
+    id: string;
 
-  /**
-   * The name of the database
-   */
-  name: string;
+    /**
+     * The name of the database
+     */
+    name: string;
 
-  /**
-   * The current state of the database
-   */
-  state: string;
+    /**
+     * The current state of the database
+     */
+    state: string;
 
-  /**
-   * The default branch name
-   */
-  defaultBranch: string;
+    /**
+     * The default branch name
+     */
+    defaultBranch: string;
 
-  /**
-   * The plan type
-   */
-  plan: string;
+    /**
+     * The plan type
+     */
+    plan: string;
 
-  /**
-   * Time at which the database was created
-   */
-  createdAt: string;
+    /**
+     * Time at which the database was created
+     */
+    createdAt: string;
 
-  /**
-   * Time at which the database was last updated
-   */
-  updatedAt: string;
+    /**
+     * Time at which the database was last updated
+     */
+    updatedAt: string;
 
-  /**
-   * HTML URL to access the database
-   */
-  htmlUrl: string;
-}
+    /**
+     * HTML URL to access the database
+     */
+    htmlUrl: string;
+  };
 
 /**
  * Create, manage and delete PlanetScale databases
@@ -182,6 +205,12 @@ export const Database = Resource(
 
     const databaseName =
       props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
+    const clusterSize = sanitizeClusterSize({
+      size: props.clusterSize,
+      kind: props.kind,
+      arch: props.arch,
+      region: props.region?.slug,
+    });
 
     if (this.phase === "update" && this.output.name !== databaseName) {
       await api.organizations.databases.patch({
@@ -278,8 +307,8 @@ export const Database = Resource(
         props.organizationId,
         databaseName,
         props.defaultBranch || "main",
-        props.clusterSize,
-        updateResponse.ready,
+        updateResponse.kind,
+        clusterSize,
       );
 
       return this({
@@ -307,8 +336,8 @@ export const Database = Resource(
       body: {
         name: databaseName,
         region: props.region?.slug,
-        kind: "mysql",
-        cluster_size: props.clusterSize,
+        kind: props.kind,
+        cluster_size: clusterSize,
       },
     });
 
@@ -362,8 +391,8 @@ export const Database = Resource(
           props.organizationId,
           databaseName,
           props.defaultBranch || "main",
-          props.clusterSize,
-          false,
+          data.kind,
+          clusterSize,
         );
 
         // Update database to use new branch as default

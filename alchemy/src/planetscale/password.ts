@@ -102,7 +102,9 @@ export interface Password
 }
 
 /**
- * Create and manage database passwords for PlanetScale branches. Database passwords provide secure access to your database with specific roles and permissions.
+ * Create and manage database passwords for PlanetScale MySQL branches. Database passwords provide secure access to your database with specific roles and permissions.
+ *
+ * For Postgres, use [Roles](./role.ts) instead.
  *
  * @example
  * ## Basic Reader Password

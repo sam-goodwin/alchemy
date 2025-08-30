@@ -7,6 +7,10 @@ description: Learn how to create and manage database passwords for PlanetScale b
 
 The Password resource lets you create and manage [PlanetScale database passwords](https://planetscale.com/docs/concepts/password) for secure database access with specific roles and permissions.
 
+:::note
+Passwords are only available for MySQL databases. For PostgreSQL databases, use the [Role](/providers/planetscale/role) resource instead.
+:::
+
 ## Minimal Example
 
 Create a basic reader password for a database branch:

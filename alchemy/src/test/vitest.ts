@@ -57,9 +57,9 @@ type test = {
    */
   skipIf(condition: boolean): test;
 
-  beforeAll(fn: (scope: Scope) => Promise<void>): void;
+  beforeAll(fn: (scope: Scope) => Promise<void>, timeout?: number): void;
 
-  afterAll(fn: (scope: Scope) => Promise<void>): void;
+  afterAll(fn: (scope: Scope) => Promise<void>, timeout?: number): void;
 
   /**
    * Current test scope
@@ -134,12 +134,12 @@ export function test(
     password: process.env.ALCHEMY_PASSWORD,
   });
 
-  test.beforeAll = (fn: (scope: Scope) => Promise<void>) => {
-    return beforeAll(() => scope.run(() => fn(scope)));
+  test.beforeAll = (fn: (scope: Scope) => Promise<void>, timeout?: number) => {
+    return beforeAll(() => scope.run(() => fn(scope)), timeout);
   };
 
-  test.afterAll = (fn: (scope: Scope) => Promise<void>) => {
-    return afterAll(() => scope.run(() => fn(scope)));
+  test.afterAll = (fn: (scope: Scope) => Promise<void>, timeout?: number) => {
+    return afterAll(() => scope.run(() => fn(scope)), timeout);
   };
 
   return test as test;

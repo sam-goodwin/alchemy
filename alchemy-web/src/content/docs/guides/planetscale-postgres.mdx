@@ -1,0 +1,306 @@
+---
+title: PlanetScale Postgres
+description: Deploy a PlanetScale PostgreSQL database with Drizzle migrations and Cloudflare Workers using Alchemy.
+sidebar:
+  order: 18
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+
+This guide shows how to create and manage [PlanetScale PostgreSQL](https://planetscale.com/docs/postgres) databases with automated Drizzle migrations and deploy a Cloudflare Worker to interact with the database using Alchemy.
+
+<Steps>
+
+1. **Install dependencies**
+
+   Add the required dependencies to your project:
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun add drizzle-orm postgres
+       bun add -D drizzle-kit
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npm install drizzle-orm postgres
+       npm install -D drizzle-kit
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm add drizzle-orm postgres
+       pnpm add -D drizzle-kit
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn add drizzle-orm postgres
+       yarn add drizzle-kit
+       ```
+     </TabItem>
+   </Tabs>
+
+2. **Set credentials**
+
+   Create a PlanetScale account and get your API credentials. Add them to your `.env` file:
+
+   ```env
+   PLANETSCALE_ORG_ID=your_organization_id
+   PLANETSCALE_API_TOKEN=your_api_token
+   CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
+   CLOUDFLARE_API_TOKEN=your_cloudflare_api_token
+   ```
+
+   :::tip
+   You can find your organization ID and create API tokens in your [PlanetScale dashboard](https://app.planetscale.com/).
+   :::
+
+3. **Define schema**
+
+   Create your PostgreSQL database schema:
+
+   ```ts
+   // src/schema.ts
+   import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+
+   export const users = pgTable("users", {
+     id: uuid().primaryKey().defaultRandom(),
+     email: varchar({ length: 255 }).notNull(),
+     password: varchar({ length: 255 }).notNull(),
+     createdAt: timestamp().notNull().defaultNow(),
+     updatedAt: timestamp().notNull().defaultNow(),
+   });
+   ```
+
+4. **Configure Drizzle**
+
+   Add Drizzle configuration and scripts:
+
+   ```ts
+   // drizzle.config.ts
+   import { defineConfig } from "drizzle-kit";
+
+   export default defineConfig({
+     out: "./drizzle",
+     schema: "./src/schema.ts",
+     dialect: "postgresql",
+     dbCredentials: {
+       url: process.env.DATABASE_URL!,
+     },
+   });
+   ```
+
+   ```json
+   // package.json
+   {
+     "scripts": {
+       "db:generate": "drizzle-kit generate",
+       "db:migrate": "drizzle-kit migrate",
+       "db:studio": "drizzle-kit studio"
+     }
+   }
+   ```
+
+5. **Create Worker code**
+
+   Create the Cloudflare Worker that will interact with your database:
+
+   ```ts
+   // src/index.ts
+   import { drizzle } from "drizzle-orm/postgres-js";
+   import postgres from "postgres";
+   import { users } from "./schema";
+
+   interface Env {
+     HYPERDRIVE: Hyperdrive;
+   }
+
+   export default {
+     async fetch(request: Request, env: Env): Promise<Response> {
+       const sql = postgres(env.HYPERDRIVE.connectionString);
+       const db = drizzle(sql);
+
+       if (request.method === "GET") {
+         const allUsers = await db.select().from(users);
+         return Response.json(allUsers);
+       }
+
+       if (request.method === "POST") {
+         const { email, password } = await request.json();
+         const newUser = await db
+           .insert(users)
+           .values({ email, password })
+           .returning();
+         return Response.json(newUser[0]);
+       }
+
+       return new Response("Method not allowed", { status: 405 });
+     },
+   };
+   ```
+
+6. **Create your infrastructure**
+
+   Create `alchemy.run.ts` to provision PlanetScale PostgreSQL resources and deploy your Worker:
+
+   ```ts
+   /// <reference types="@types/node" />
+
+   import alchemy from "alchemy";
+   import { Hyperdrive, Worker } from "alchemy/cloudflare";
+   import { Exec } from "alchemy/os";
+   import { Database, Role } from "alchemy/planetscale";
+
+   const app = await alchemy("planetscale-postgres");
+
+   // Create the PostgreSQL database
+   const database = await Database("Database", {
+     name: "sample-database",
+     organizationId: alchemy.env.PLANETSCALE_ORG_ID,
+     clusterSize: "PS_10",
+     kind: "postgresql",
+   });
+
+   // Create a database role with postgres privileges
+   const role = await Role("Role", {
+     database,
+     branch: database.defaultBranch,
+     inheritedRoles: ["postgres"],
+   });
+
+   // Create Hyperdrive configuration for connection pooling
+   const hyperdrive = await Hyperdrive("Hyperdrive", {
+     origin: role.connectionUrl,
+     caching: { disabled: true },
+   });
+
+   // Generate Drizzle migrations
+   await Exec("DrizzleGenerate", {
+     command: "bun run db:generate",
+     env: {
+       DATABASE_URL: role.connectionUrl,
+     },
+     memoize: {
+       patterns: ["drizzle.config.ts", "src/schema.ts"],
+     },
+   });
+
+   // Apply migrations to the database
+   await Exec("DrizzleMigrate", {
+     command:
+       process.platform === "win32"
+         ? `cmd /C "bun run db:migrate || if %ERRORLEVEL%==9 exit 0 else exit %ERRORLEVEL%"`
+         : `sh -c 'bun run db:migrate || ( [ $? -eq 9 ] && exit 0 ); exit $?'`,
+     env: {
+       DATABASE_URL: role.connectionUrl,
+     },
+     memoize: {
+       patterns: ["drizzle.config.ts", "drizzle/*.sql"],
+     },
+   });
+
+   // Deploy the Cloudflare Worker
+   export const worker = await Worker("Worker", {
+     entrypoint: "src/index.ts",
+     compatibility: "node",
+     bindings: {
+       HYPERDRIVE: hyperdrive,
+     },
+   });
+
+   // Start Drizzle Studio in local development
+   if (app.local) {
+     Exec("DrizzleStudio", {
+       command: "bun run db:studio",
+       env: {
+         DATABASE_URL: role.connectionUrl,
+       },
+     });
+   }
+
+   console.log(worker.url);
+
+   await app.finalize();
+   ```
+
+7. **Deploy your stack**
+
+   Run `alchemy.run.ts` to deploy:
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun alchemy deploy
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npx alchemy deploy
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm alchemy deploy
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn alchemy deploy
+       ```
+     </TabItem>
+   </Tabs>
+
+   It should log your Worker URL:
+
+   ```sh
+   https://worker.your-subdomain.workers.dev
+   ```
+
+   :::tip
+   PlanetScale requires payment for database creation. If payments aren't set up on your PlanetScale account, you can create a PostgreSQL database through the PlanetScale web UI then adopt it in Alchemy using `adopt: true`.
+   :::
+
+8. **Test your API**
+
+   Test your deployed Worker:
+
+   ```sh
+   # Create a user
+   curl -X POST https://worker.your-subdomain.workers.dev \
+     -H "Content-Type: application/json" \
+     -d '{"email": "test@example.com", "password": "password123"}'
+
+   # Get all users
+   curl https://worker.your-subdomain.workers.dev
+   ```
+
+9. **(Optional) Tear down**
+
+   Clean up all resources created by this stack:
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun alchemy destroy
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npx alchemy destroy
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm alchemy destroy
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn alchemy destroy
+       ```
+     </TabItem>
+   </Tabs>
+
+</Steps>

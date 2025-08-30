@@ -53,9 +53,9 @@ type test = {
    */
   skipIf(condition: boolean): test;
 
-  beforeAll(fn: (scope: Scope) => Promise<void>): void;
+  beforeAll(fn: (scope: Scope) => Promise<void>, timeout?: number): void;
 
-  afterAll(fn: (scope: Scope) => Promise<void>): void;
+  afterAll(fn: (scope: Scope) => Promise<void>, timeout?: number): void;
 
   /**
    * Current test scope

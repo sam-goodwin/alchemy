@@ -1,24 +1,25 @@
 ---
 title: PlanetScale
-description: Learn how to manage PlanetScale databases and branches using Alchemy.
+description: Learn how to manage PlanetScale MySQL and PostgreSQL databases, branches, and roles using Alchemy.
 ---
 
-PlanetScale is a serverless database platform based on MySQL that provides horizontal scaling, branching workflows, and zero-downtime schema changes. Alchemy provides resources to manage PlanetScale databases and branches programmatically.
+PlanetScale is a serverless database platform that supports both MySQL and PostgreSQL, providing horizontal scaling, branching workflows, and zero-downtime schema changes. Alchemy provides resources to manage PlanetScale databases, branches, and access controls programmatically.
 
 [Official PlanetScale Documentation](https://planetscale.com/docs) | [PlanetScale API Reference](https://api-docs.planetscale.com/)
 
 ## Resources
 
-- [Database](/providers/planetscale/database) - Create and manage PlanetScale databases with configuration options
+- [Database](/providers/planetscale/database) - Create and manage PlanetScale MySQL and PostgreSQL databases with configuration options
 - [Branch](/providers/planetscale/branch) - Create and manage database branches for development workflows
-- [Password](/providers/planetscale/password) - Create and manage database passwords with specific roles and permissions
+- [Password](/providers/planetscale/password) - Create and manage database passwords with specific roles and permissions (MySQL only)
+- [Role](/providers/planetscale/role) - Create and manage database roles with inherited permissions (PostgreSQL only)
 
-## Example Usage
+## MySQL Example
 
 ```ts
 import { Database, Branch, Password } from "alchemy/planetscale";
 
-// Create a database
+// Create a MySQL database
 const database = await Database("my-app-db", {
   name: "my-app-db",
   organizationId: "my-org",
@@ -36,18 +37,7 @@ const devBranch = await Branch("feature-123", {
   isProduction: false,
 });
 
-// Create a production branch from a backup
-const prodBranch = await Branch("production", {
-  name: "production",
-  organizationId: "my-org",
-  databaseName: database.name,
-  parentBranch: "main",
-  isProduction: true,
-  clusterSize: "PS_20",
-  backupId: "backup-123",
-});
-
-// Create passwords for database access
+// Create passwords for database access (MySQL only)
 const readerPassword = await Password("app-reader", {
   name: "app-reader",
   organizationId: "my-org",
@@ -63,5 +53,44 @@ const writerPassword = await Password("app-writer", {
   branchName: devBranch.name,
   role: "writer",
   ttl: 86400 // 24 hours
+});
+```
+
+## PostgreSQL Example
+
+```ts
+import { Database, Branch, Role } from "alchemy/planetscale";
+
+// Create a PostgreSQL database
+const pgDatabase = await Database("my-pg-db", {
+  name: "my-pg-db",
+  organizationId: "my-org",
+  clusterSize: "PS_10",
+  kind: "postgresql",
+  allowDataBranching: true,
+  automaticMigrations: true,
+});
+
+// Create a development branch
+const devBranch = await Branch("dev-branch", {
+  name: "development",
+  organizationId: "my-org",
+  database: pgDatabase,
+  parentBranch: "main",
+  isProduction: false,
+});
+
+// Create roles for database access (PostgreSQL only)
+const readerRole = await Role("app-reader", {
+  database: pgDatabase,
+  branch: pgDatabase.defaultBranch,
+  inheritedRoles: ["pg_read_all_data", "pg_read_all_settings"],
+});
+
+const adminRole = await Role("app-admin", {
+  database: pgDatabase,
+  branch: devBranch,
+  inheritedRoles: ["postgres"],
+  ttl: 3600, // 1 hour
 });
 ```

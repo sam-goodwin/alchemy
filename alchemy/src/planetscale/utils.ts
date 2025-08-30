@@ -1,4 +1,5 @@
 import type { PlanetScaleClient } from "./api/client.gen.ts";
+import type { DatabaseBranch } from "./api/types.gen.ts";
 
 export type PlanetScaleClusterSize =
   | "PS_DEV"
@@ -22,27 +23,62 @@ export type PlanetScaleClusterSize =
   | (string & {});
 
 /**
- * Wait for a database to be ready with exponential backoff
+ * Ensures that the given cluster size is in the correct format.
+ */
+export function sanitizeClusterSize(input: {
+  size: PlanetScaleClusterSize;
+  kind?: "mysql" | "postgresql";
+  arch?: "x86" | "arm";
+  region?: string;
+}): string {
+  // NAS-backed Postgres cluster sizes are formatted as `PS_<size>_<provider>_<arch>`,
+  // where <provider> is either "AWS" or "GCP", and <arch> is either "ARM" or "X86".
+  // Postgres clusters backed by PlanetScale Metal are more complex (e.g. "M6_160_AWS_INTEL_D_METAL_118"),
+  // so to avoid messing with those, we just check for AWS or GCP in the size.
+  if (input.kind === "postgresql" && !input.size.match(/(AWS|GCP)/)) {
+    // Infer the provider from the region.
+    // Not all AWS regions start with "aws-", but all GCP regions start with "gcp-".
+    const provider = input.region?.startsWith("gcp") ? "GCP" : "AWS";
+    const arch = (input.arch ?? "x86").toUpperCase();
+    return `${input.size}_${provider}_${arch}`;
+  }
+  return input.size;
+}
+
+/**
+ * Polls a branch until it is ready.
+ */
+export async function waitForBranchReady(
+  api: PlanetScaleClient,
+  organization: string,
+  database: string,
+  branch: string,
+): Promise<DatabaseBranch> {
+  return await poll({
+    description: `branch "${branch}" ready`,
+    fn: () =>
+      api.organizations.databases.branches.get({
+        path: { organization, database, name: branch },
+      }),
+    predicate: (branch) => branch.ready,
+  });
+}
+
+/**
+ * Polls a database until it is ready.
  */
 export async function waitForDatabaseReady(
   api: PlanetScaleClient,
   organization: string,
   database: string,
-  branch?: string,
 ): Promise<void> {
   await poll({
-    description: `database "${database}" ${branch ? `branch "${branch}"` : ""} ready`,
-    fn: async () => {
-      if (branch) {
-        return await api.organizations.databases.branches.get({
-          path: { organization, database, name: branch },
-        });
-      }
-      return await api.organizations.databases.get({
+    description: `database "${database}" ready`,
+    fn: () =>
+      api.organizations.databases.get({
         path: { organization, name: database },
-      });
-    },
-    predicate: (item) => item.ready,
+      }),
+    predicate: (database) => database.ready,
   });
 }
 
@@ -79,34 +115,74 @@ export async function ensureProductionBranchClusterSize(
   organization: string,
   database: string,
   branch: string,
+  kind: "mysql" | "postgresql",
   expectedClusterSize: PlanetScaleClusterSize,
-  isDBReady: boolean,
 ): Promise<void> {
-  if (!isDBReady) {
-    await waitForDatabaseReady(api, organization, database);
+  switch (kind) {
+    case "mysql": {
+      // Vitess databases must be promoted before resizing
+      await ensureProductionBranch(api, organization, database, branch);
+      await ensureMySQLClusterSize(
+        api,
+        organization,
+        database,
+        branch,
+        expectedClusterSize,
+      );
+      break;
+    }
+    case "postgresql": {
+      // Postgres databases must be resized first before promoting, otherwise 500 error
+      await ensurePostgresClusterSize(
+        api,
+        organization,
+        database,
+        branch,
+        expectedClusterSize,
+      );
+      await ensureProductionBranch(api, organization, database, branch);
+      break;
+    }
   }
+}
 
-  // 1. Ensure branch is production
-  const branchData = await api.organizations.databases.branches.get({
+/**
+ * Checks if a branch is production and promotes it if it is not.
+ */
+async function ensureProductionBranch(
+  api: PlanetScaleClient,
+  organization: string,
+  database: string,
+  name: string,
+): Promise<void> {
+  const data = await api.organizations.databases.branches.get({
     path: {
       organization,
       database,
-      name: branch,
+      name,
     },
   });
-  if (!branchData.production) {
-    if (!branchData.ready) {
-      await waitForDatabaseReady(api, organization, database, branch);
+  if (!data.production) {
+    if (!data.ready) {
+      await waitForBranchReady(api, organization, database, name);
     }
     await api.organizations.databases.branches.promote.post({
-      path: {
-        organization,
-        database,
-        name: branch,
-      },
+      path: { organization, database, name },
     });
   }
-  // 2. Load default keyspace
+}
+
+/**
+ * Ensures that a MySQL branch has the correct cluster size.
+ */
+async function ensureMySQLClusterSize(
+  api: PlanetScaleClient,
+  organization: string,
+  database: string,
+  branch: string,
+  expectedClusterSize: PlanetScaleClusterSize,
+): Promise<void> {
+  // 1. Load default keyspace
   const keyspaces = await api.organizations.databases.branches.keyspaces.list({
     path: {
       organization,
@@ -119,7 +195,7 @@ export async function ensureProductionBranchClusterSize(
     throw new Error(`No default keyspace found for branch ${branch}`);
   }
 
-  // 3. Wait until any in-flight resize is done
+  // 2. Wait until any in-flight resize is done
   await waitForKeyspaceReady(
     api,
     organization,
@@ -128,7 +204,7 @@ export async function ensureProductionBranchClusterSize(
     defaultKeyspace.name,
   );
 
-  // 4. If size mismatch, trigger resize and wait again
+  // 3. If size mismatch, trigger resize and wait again
   // Ideally this would use the undocumented Keyspaces API, but there seems to be a missing oauth scope that we cannot add via the console yet
   if (defaultKeyspace.cluster_name !== expectedClusterSize) {
     await api.organizations.databases.branches.cluster.patch({
@@ -149,6 +225,72 @@ export async function ensureProductionBranchClusterSize(
       defaultKeyspace.name,
     );
   }
+}
+
+/**
+ * Ensures that a Postgres branch has the correct cluster size.
+ */
+async function ensurePostgresClusterSize(
+  api: PlanetScaleClient,
+  organization: string,
+  database: string,
+  branch: string,
+  expectedClusterSize: PlanetScaleClusterSize,
+): Promise<void> {
+  const data = await api.organizations.databases.branches.get({
+    path: {
+      organization,
+      database,
+      name: branch,
+    },
+  });
+  if (data.cluster_name === expectedClusterSize) {
+    return;
+  }
+  await waitForPendingPostgresChanges(api, organization, database, branch);
+  const change = await api.organizations.databases.branches.changes.patch({
+    path: {
+      organization,
+      database,
+      branch,
+    },
+    body: {
+      cluster_size: expectedClusterSize,
+    },
+  });
+  await waitForPendingPostgresChanges(
+    api,
+    organization,
+    database,
+    branch,
+    change.id,
+  );
+}
+
+/**
+ * Polls for a pending Postgres change to be completed.
+ */
+async function waitForPendingPostgresChanges(
+  api: PlanetScaleClient,
+  organization: string,
+  database: string,
+  branch: string,
+  changeId?: string,
+) {
+  await poll({
+    description: `changes for branch "${branch}"`,
+    fn: () =>
+      api.organizations.databases.branches.changes.list({
+        path: { organization, database, branch },
+      }),
+    predicate: (response) =>
+      response.data.every(
+        (change) =>
+          change.state === "completed" ||
+          change.state === "canceled" ||
+          (changeId && change.id === changeId),
+      ),
+  });
 }
 
 /**

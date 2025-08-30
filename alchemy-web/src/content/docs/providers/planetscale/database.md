@@ -1,13 +1,13 @@
 ---
 title: Database
-description: Learn how to create, configure, and manage PlanetScale serverless MySQL databases using Alchemy.
+description: Learn how to create, configure, and manage PlanetScale serverless MySQL and PostgreSQL databases using Alchemy.
 ---
 
-The Database resource lets you create and manage [PlanetScale databases](https://planetscale.com/docs/concepts/database) with comprehensive configuration options for scaling, migrations, and security.
+The Database resource lets you create and manage [PlanetScale databases](https://planetscale.com/docs/concepts/database) with comprehensive configuration options for scaling, migrations, and security. PlanetScale supports both MySQL and PostgreSQL databases.
 
 ## Minimal Example
 
-Create a basic database with default settings:
+Create a basic MySQL database with default settings:
 
 ```ts
 import { Database } from "alchemy/planetscale";
@@ -16,6 +16,21 @@ const database = await Database("my-app-db", {
   name: "my-app-db",
   organizationId: "my-org",
   clusterSize: "PS_10",
+});
+```
+
+## PostgreSQL Database
+
+Create a PostgreSQL database:
+
+```ts
+import { Database } from "alchemy/planetscale";
+
+const pgDatabase = await Database("my-pg-db", {
+  name: "my-pg-db",
+  organizationId: "my-org",
+  clusterSize: "PS_10",
+  kind: "postgresql",
 });
 ```
 
@@ -77,6 +92,22 @@ const database = await Database("custom-auth-db", {
   organizationId: "my-org",
   clusterSize: "PS_10",
   apiKey: alchemy.secret(process.env.CUSTOM_PLANETSCALE_TOKEN),
+});
+```
+
+## PostgreSQL with ARM Architecture
+
+Create a PostgreSQL database with ARM architecture:
+
+```ts
+import { Database } from "alchemy/planetscale";
+
+const armDatabase = await Database("arm-pg-db", {
+  name: "arm-pg-db",
+  organizationId: "my-org",
+  clusterSize: "PS_10",
+  kind: "postgresql",
+  arch: "arm",
 });
 ```
 
