@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { isSecret } from "../secret.ts";
 
 type AsyncReturnType<T> = T extends (...args: any[]) => Promise<infer R>
   ? R
@@ -25,5 +26,16 @@ export function memoize<F extends (...args: any[]) => Promise<any>>(
 }
 
 export const defaultKeyFn = (...args: any[]) => {
-  return createHash("sha256").update(JSON.stringify(args)).digest("hex");
+  return createHash("sha256")
+    .update(
+      JSON.stringify(args, (_, value) => {
+        // Secret names may differ between instantiations,
+        // so we unwrap it to make the key deterministic.
+        if (isSecret(value)) {
+          return value.unencrypted;
+        }
+        return value;
+      }),
+    )
+    .digest("hex");
 };
