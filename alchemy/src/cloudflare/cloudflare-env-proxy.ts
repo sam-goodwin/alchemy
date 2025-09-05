@@ -1,14 +1,17 @@
+import path from "node:path";
 import type { GetPlatformProxyOptions } from "wrangler";
+import type { Scope } from "../scope.ts";
 import {
   DEFAULT_CONFIG_PATH,
-  DEFAULT_PERSIST_PATH,
   validateConfigPath,
   validatePersistPath,
 } from "./miniflare/paths.ts";
 
-export const getCloudflareEnvProxy = async <E>(
-  options: GetPlatformProxyOptions = {},
-) => {
+export interface ProxyOptions extends GetPlatformProxyOptions {
+  scope?: Scope | undefined;
+}
+
+export const getCloudflareEnvProxy = async <E>(options: ProxyOptions = {}) => {
   const { getPlatformProxy } = await import("wrangler");
   const config = getPlatformProxyOptions(options);
   const proxy = await getPlatformProxy(config);
@@ -16,7 +19,7 @@ export const getCloudflareEnvProxy = async <E>(
 };
 
 export const getPlatformProxyOptions = (
-  input: GetPlatformProxyOptions = {},
+  input: ProxyOptions = {},
 ): GetPlatformProxyOptions => {
   const persist =
     input.persist === false
@@ -26,7 +29,13 @@ export const getPlatformProxyOptions = (
             typeof input.persist === "object" &&
               typeof input.persist.path === "string"
               ? input.persist.path
-              : DEFAULT_PERSIST_PATH,
+              : path.join(
+                  input.scope?.dotAlchemy ??
+                    process.env.ALCHEMY_HOME ??
+                    ".alchemy",
+                  "miniflare",
+                  "v3",
+                ),
           ),
         };
   if (!persist) {

@@ -23,10 +23,9 @@
       "./alchemy-web/**/*.mjs",
       "./scripts/**/*.ts",
       "./stacks/**/*.ts",
-      "./examples/*/src/**/*.ts",
-      "./examples/*/test/**/*.ts",
+      "./examples/**/*.ts",
       "./tests/*/**/*.ts",
-      "./examples/*/*.ts",
+      "./**/turbo.json",
       "!**/node_modules",
       "!examples/cloudflare-tanstack-start/src/routeTree.gen.ts",
       "!examples/cloudflare-redwood/worker-configuration.d.ts",
@@ -35,7 +34,8 @@
       "!examples/cloudflare-nuxt-pipeline/.output/",
       "!./alchemy/lib/",
       "!**/*.gen.ts",
-      "alchemy/src/planetscale/api/*.ts"
+      "alchemy/src/planetscale/api/*.ts",
+      "monorepo/**/*.ts"
     ],
     "experimentalScannerIgnores": ["!**/node_modules", "./alchemy/lib/**"]
   },

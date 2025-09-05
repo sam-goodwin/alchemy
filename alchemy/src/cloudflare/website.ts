@@ -204,16 +204,17 @@ export async function Website<B extends Bindings>(
         cwd,
         typeof assets === "string" ? assets : (assets?.directory ?? "dist"),
       ),
-      local: path.resolve(cwd, ".alchemy/local"),
+      local: path.resolve(cwd, ".alchemy", "local"),
       entrypoint: path.resolve(
         cwd,
-        props.entrypoint ?? ".alchemy/local/worker.js",
+        props.entrypoint ?? path.join(".alchemy", "local", "worker.js"),
       ),
       get wrangler() {
         return {
           path: path.resolve(
             cwd,
-            props.wrangler?.path ?? ".alchemy/local/wrangler.jsonc",
+            props.wrangler?.path ??
+              path.join(".alchemy", "local", "wrangler.jsonc"),
           ),
           main: props.wrangler?.main
             ? path.resolve(cwd, props.wrangler.main)

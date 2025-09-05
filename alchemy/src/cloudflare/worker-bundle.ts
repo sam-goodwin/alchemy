@@ -4,7 +4,6 @@ import { err, ok, type Result } from "neverthrow";
 import fs from "node:fs/promises";
 import path from "pathe";
 import { logger } from "../util/logger.ts";
-import { cloudflareInternalPlugin } from "./bundle/cloudflare-internal.ts";
 import { esbuildPluginAlias } from "./bundle/plugin-alias.ts";
 import { esbuildPluginAsyncLocalStorage } from "./bundle/plugin-als-external.ts";
 import { createHotReloadPlugin } from "./bundle/plugin-hot-reload.ts";
@@ -363,7 +362,6 @@ export namespace WorkerBundleSource {
         conditions: props.conditions ?? ["workerd", "worker", "browser"],
         plugins: [
           esbuildPluginAlias(props.alias ?? {}, this.props.cwd),
-          cloudflareInternalPlugin,
           ...this.getNodeJSCompatPlugins({
             mode: nodeCompat,
             compatibilityDate: this.props.compatibilityDate,

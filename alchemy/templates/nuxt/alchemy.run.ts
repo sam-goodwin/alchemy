@@ -5,7 +5,9 @@ import { Nuxt } from "alchemy/cloudflare";
 
 const app = await alchemy("{projectName}");
 
-export const worker = await Nuxt("website");
+export const worker = await Nuxt("website", {
+  name: `${app.name}-${app.stage}-website`,
+});
 
 console.log({
   url: worker.url,

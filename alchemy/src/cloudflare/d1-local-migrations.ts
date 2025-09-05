@@ -1,7 +1,9 @@
 import * as mf from "miniflare";
 import path from "node:path";
+import type { Scope } from "../scope.ts";
 
 export interface D1LocalMigrationOptions {
+  scope: Scope;
   databaseId: string;
   migrationsTable: string;
   migrations: { id: string; sql: string }[];
@@ -13,7 +15,7 @@ export const applyLocalD1Migrations = async (
   const miniflare = new mf.Miniflare({
     script: "",
     modules: true,
-    defaultPersistRoot: path.join(process.cwd(), ".alchemy/miniflare/v3"), // vite plugin forces /v3 suffix
+    defaultPersistRoot: path.join(options.scope.dotAlchemy, "miniflare", "v3"), // vite plugin forces /v3 suffix
     d1Persist: true,
     d1Databases: { DB: options.databaseId },
     log: process.env.DEBUG ? new mf.Log(mf.LogLevel.DEBUG) : undefined,

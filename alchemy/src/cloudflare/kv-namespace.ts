@@ -240,7 +240,7 @@ const _KVNamespace = Resource(
 
     if (this.phase === "delete") {
       if (this.output.dev?.id) {
-        await deleteMiniflareBinding("kv", this.output.dev.id);
+        await deleteMiniflareBinding(this.scope, "kv", this.output.dev.id);
       }
       if (this.output.namespaceId && props.delete !== false) {
         await deleteKVNamespace(api, this.output.namespaceId);

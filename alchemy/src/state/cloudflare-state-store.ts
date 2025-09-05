@@ -47,13 +47,13 @@ export class CloudflareStateStore extends StateStoreProxy {
   options: CloudflareStateStoreOptions & { stateToken: Secret<string> };
   constructor(scope: Scope, options: CloudflareStateStoreOptions = {}) {
     super(scope);
-    if (!options.stateToken && !process.env.ALCHEMY_STATE_TOKEN) {
-      throw new Error(
-        "Missing token for CloudflareStateStore. Please set ALCHEMY_STATE_TOKEN in the environment or set the `stateToken` option in the CloudflareStateStore constructor. See https://alchemy.run/guides/cloudflare-state-store/",
-      );
-    }
     const stateToken =
       options.stateToken ?? alchemy.secret(process.env.ALCHEMY_STATE_TOKEN);
+    if (!stateToken) {
+      throw new Error(
+        "Missing token for DOStateStore. Please set ALCHEMY_STATE_TOKEN in the environment or set the `stateToken` option in the DOStateStore constructor.",
+      );
+    }
     this.options = {
       ...options,
       stateToken: stateToken,

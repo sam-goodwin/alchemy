@@ -58,6 +58,7 @@ import { Workflow, isWorkflow, upsertWorkflow } from "./workflow.ts";
 // Previous versions of `Worker` used the `Bundle` resource.
 // This import is here to avoid errors when destroying the `Bundle` resource.
 import "../esbuild/bundle.ts";
+import { getPersistPath } from "./miniflare/paths.ts";
 
 /**
  * Configuration options for static assets
@@ -812,7 +813,7 @@ const _Worker = Resource(
       if (options.bundle.isOk()) {
         await options.bundle.value.delete?.();
       }
-      await deleteMiniflareWorkerData(options.name, {
+      await deleteMiniflareWorkerData(this.scope, options.name, {
         durableObjects: options.durableObjects,
         workflows: options.workflows,
       });
@@ -841,20 +842,26 @@ const _Worker = Resource(
         const { MiniflareController } = await import(
           "./miniflare/miniflare-controller.js"
         );
-        const controller = MiniflareController.singleton;
-        url = await controller.add({
-          api,
-          id,
-          name: options.name,
-          compatibilityDate: options.compatibilityDate,
-          compatibilityFlags: options.compatibilityFlags,
-          bindings: props.bindings,
-          eventSources: props.eventSources,
-          assets: props.assets,
-          bundle,
-          port: (props.dev as { port?: number } | undefined)?.port,
-        });
-        this.onCleanup(() => controller.dispose());
+        const controller = MiniflareController.get(
+          path.resolve(getPersistPath(this.scope)),
+        );
+        if (await this.scope.tryClaim(`${workerName}.claim`)) {
+          url = await controller.add({
+            api,
+            id,
+            name: options.name,
+            compatibilityDate: options.compatibilityDate,
+            compatibilityFlags: options.compatibilityFlags,
+            bindings: props.bindings,
+            eventSources: props.eventSources,
+            assets: props.assets,
+            bundle,
+            port: (props.dev as { port?: number } | undefined)?.port,
+          });
+          this.onCleanup(() => controller.dispose());
+        } else {
+          // TODO(sam): remove? i don't think we need to do that ...
+        }
       }
       await provisionResources(
         {

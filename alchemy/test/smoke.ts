@@ -33,12 +33,7 @@ async function discoverExamples(): Promise<ExampleProject[]> {
   try {
     const ls = (dir: string) =>
       readdir(dir).then((paths) => paths.map((p) => join(dir, p)));
-    const entries = (
-      await Promise.all([
-        ls(examplesDir),
-        process.argv.includes("--no-flatten") ? [] : ls(testsDir),
-      ])
-    ).flat();
+    const entries = (await Promise.all([ls(examplesDir), ls(testsDir)])).flat();
 
     for (const p of entries) {
       const stats = await stat(p);

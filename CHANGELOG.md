@@ -1,25 +1,3 @@
-## v0.64.0
-
-### &nbsp;&nbsp;&nbsp;🚀 Features
-
-- **cloudflare**: Flatten Website scope hierarchy &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/sam-goodwin/alchemy/issues/885 [<samp>(0640a)</samp>](https://github.com/sam-goodwin/alchemy/commit/0640ad86)
-
-### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
-
-- **cli**:
-  - Remove hard-coded physical names from templates &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(91cc6)</samp>](https://github.com/sam-goodwin/alchemy/commit/91cc6321)
-- **cloudflare**:
-  - Upgrade @clouflare/workers-types peer &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/sam-goodwin/alchemy/issues/915 [<samp>(059c0)</samp>](https://github.com/sam-goodwin/alchemy/commit/059c0165)
-  - Sync node compat plugin with workers-sdk &nbsp;-&nbsp; by **John Royal** in https://github.com/sam-goodwin/alchemy/issues/916 [<samp>(15cca)</samp>](https://github.com/sam-goodwin/alchemy/commit/15cca8cb)
-  - Drill jurisdiction through to Binding and wrangler.json &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/sam-goodwin/alchemy/issues/920 [<samp>(ab3d9)</samp>](https://github.com/sam-goodwin/alchemy/commit/ab3d9d09)
-  - Set bucket jurisdiction to undefined instead of 'default' &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(8a132)</samp>](https://github.com/sam-goodwin/alchemy/commit/8a132c5f)
-  - Mark cloudflare:workers as external &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(3bb5b)</samp>](https://github.com/sam-goodwin/alchemy/commit/3bb5bd24)
-  - Mark cloudflare:* as external &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(8c8bd)</samp>](https://github.com/sam-goodwin/alchemy/commit/8c8bd266)
-
-##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/sam-goodwin/alchemy/compare/v0.63.1...v0.64.0)
-
----
-
 ## v0.63.1
 
 ### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes

@@ -15,8 +15,6 @@ import {
 } from "./api.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
 
-export type R2BucketJurisdiction = "default" | "eu" | "fedramp";
-
 /**
  * Properties for creating or updating an R2 Bucket
  */
@@ -46,7 +44,7 @@ export interface BucketProps extends CloudflareApiOptions {
    * Optional jurisdiction for the bucket
    * Determines the regulatory jurisdiction the bucket data falls under
    */
-  jurisdiction?: R2BucketJurisdiction;
+  jurisdiction?: "default" | "eu" | "fedramp";
 
   /**
    * Whether to allow public access through the r2.dev subdomain
@@ -388,7 +386,7 @@ const _R2Bucket = Resource(
     if (this.phase === "delete") {
       if (props.delete !== false) {
         if (this.output.dev?.id) {
-          await deleteMiniflareBinding("r2", this.output.dev.id);
+          await deleteMiniflareBinding(this.scope, "r2", this.output.dev.id);
         }
         if (props.empty) {
           await emptyBucket(api, bucketName, props);

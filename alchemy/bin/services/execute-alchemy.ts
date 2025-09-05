@@ -7,10 +7,7 @@ import z from "zod";
 import { detectRuntime } from "../../src/util/detect-node-runtime.ts";
 import { detectPackageManager } from "../../src/util/detect-package-manager.ts";
 import { exists } from "../../src/util/exists.ts";
-import { promiseWithResolvers } from "../../src/util/promise-with-resolvers.ts";
 import { ExitSignal } from "../trpc.ts";
-import { CDPProxy } from "./cdp-manager/cdp-proxy.ts";
-import { CDPManager } from "./cdp-manager/server.ts";
 
 export const entrypoint = z
   .string()
@@ -53,20 +50,24 @@ export const execArgs = {
     .describe(
       "Specify which stage/environment to target. Defaults to your username ($USER, or $USERNAME on windows)",
     ),
-  inspect: z.boolean().optional().describe("Enable inspector"),
-  inspectBrk: z
-    .boolean()
-    .optional()
-    .describe("Enable inspector and break on start"),
-  inspectWait: z
-    .boolean()
-    .optional()
-    .describe("Enable inspector and wait for connection"),
   envFile: z
     .string()
     .optional()
     .default(".env")
     .describe("Path to environment file to load"),
+  select: z
+    .array(z.string())
+    .optional()
+    .describe(
+      "A list of applications (aka. stacks) to select for modification",
+    ),
+  rootDir: z.string().optional().describe("The root directory of the project"),
+  lock: z
+    .boolean()
+    .optional()
+    .describe(
+      "Whether to use file system locking to ensure resource updates are atomic",
+    ),
 } as const;
 
 export async function execAlchemy(
@@ -81,10 +82,10 @@ export async function execAlchemy(
     envFile,
     read,
     dev,
-    inspect,
-    inspectBrk,
-    inspectWait,
     adopt,
+    select,
+    rootDir,
+    lock,
   }: {
     cwd?: string;
     quiet?: boolean;
@@ -96,15 +97,13 @@ export async function execAlchemy(
     read?: boolean;
     dev?: boolean;
     adopt?: boolean;
-    inspect?: boolean;
-    inspectBrk?: boolean;
-    inspectWait?: boolean;
+    select?: string[];
+    rootDir?: string;
+    lock?: boolean;
   },
 ) {
   const args: string[] = [];
   const execArgs: string[] = [];
-
-  const shouldInspect = (inspect || inspectBrk || inspectWait) ?? false;
 
   if (quiet) args.push("--quiet");
   if (read) args.push("--read");
@@ -119,19 +118,14 @@ export async function execAlchemy(
     execArgs.push(`--env-file ${envFile}`);
   }
   if (dev) args.push("--dev");
-  if (inspect) execArgs.push("--inspect");
-  if (inspectWait) execArgs.push("--inspect-wait");
-  if (inspectBrk) execArgs.push("--inspect-brk");
   if (adopt) args.push("--adopt");
+  if (select) args.push(`--select ${select.join(",")}`);
+  if (rootDir) args.push(`--root-dir ${rootDir}`);
+  if (lock) args.push("--lock");
 
   // Check for alchemy.run.ts or alchemy.run.js (if not provided)
   if (!main) {
-    const candidates = [
-      "alchemy.run.ts",
-      "alchemy.run.js",
-      "alchemy.run.mts",
-      "alchemy.run.mjs",
-    ];
+    const candidates = ["alchemy.run.ts", "alchemy.run.js"];
     for (const file of candidates) {
       const resolved = resolve(cwd, file);
       if (await exists(resolved)) {
@@ -159,7 +153,7 @@ export async function execAlchemy(
   const execArgsString = execArgs.join(" ");
   // Determine the command to run based on package manager and file extension
   let command: string;
-  const isTypeScript = main.endsWith("ts");
+  const isTypeScript = main.endsWith(".ts");
 
   switch (packageManager) {
     case "bun":
@@ -193,72 +187,21 @@ export async function execAlchemy(
           break;
       }
   }
-
-  const childRuntime = command.split(" ")[0];
-
-  const { promise: inspectorUrlPromise, resolve: resolveInspectorUrl } =
-    promiseWithResolvers<string>();
-
   process.on("SIGINT", async () => {
     await exitPromise;
     process.exit(sanitizeExitCode(child.exitCode));
   });
 
+  console.log(command);
   const child = spawn(command, {
     cwd,
     shell: true,
-    stdio: ["inherit", "inherit", "pipe"],
+    stdio: "inherit",
     env: {
       ...process.env,
       FORCE_COLOR: "1",
     },
   });
-
-  if (child.stderr) {
-    child.stderr.on("data", (data) => {
-      const string = data.toString();
-      //* bun inspector url seems to always be on 6499
-      //todo(michael): support node and deno
-      const bunInspectorMatch = string.match(
-        /ws:\/\/localhost:6499\/[a-zA-z0-9]*/,
-      );
-      const nodeInspectorMatch = string.match(
-        /ws:\/\/127.0.0.1:9229\/[a-zA-z0-9-]*/,
-      );
-      if (bunInspectorMatch) {
-        const inspectorUrl = bunInspectorMatch[0];
-        resolveInspectorUrl(inspectorUrl);
-      } else if (nodeInspectorMatch) {
-        const inspectorUrl = nodeInspectorMatch[0];
-        resolveInspectorUrl(inspectorUrl);
-      }
-      process.stderr.write(data);
-    });
-  }
-
-  if (shouldInspect) {
-    const inspectorUrl = await inspectorUrlPromise;
-    //* we await to make sure bun has finished printing so we don't cut if off
-    if (childRuntime === "bun") {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    const cdpManager = new CDPManager();
-    await cdpManager.startServer();
-    const rootCDPProxy = new CDPProxy(inspectorUrl, {
-      name: "alchemy.run.ts",
-      server: cdpManager.server,
-      connect: inspectWait || inspectBrk,
-      domains:
-        childRuntime === "bun"
-          ? new Set(["Inspector", "Console", "Runtime", "Debugger", "Heap"])
-          : new Set(["Runtime", "Debugger", "Profiler", "Log"]),
-    });
-    await cdpManager.registerCDPServer(rootCDPProxy);
-    if (inspectWait || inspectBrk) {
-      console.log("Waiting for inspector to connect....");
-    }
-  }
-
   const exitPromise = once(child, "exit");
   await exitPromise.catch(() => {});
   process.exit(sanitizeExitCode(child.exitCode));

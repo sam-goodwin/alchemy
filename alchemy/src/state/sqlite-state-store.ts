@@ -80,7 +80,10 @@ export class SQLiteStateStore extends StateStoreProxy {
   }
 
   async provision(): Promise<StateStoreProxy.Dispatch> {
-    const db = await createDatabase(this.options);
+    const db = await createDatabase({
+      ...this.options,
+      filename: path.join(this.scope.dotAlchemy, "state.sqlite"),
+    });
     const { SQLiteStateStoreOperations } = await import("./operations.js");
     const operations = new SQLiteStateStoreOperations(db, {
       chain: this.scope.chain,
@@ -122,7 +125,7 @@ async function createBunSQLiteDatabase(
   const filename =
     options?.filename ??
     process.env.ALCHEMY_STATE_FILE ??
-    ".alchemy/state.sqlite";
+    path.join(".alchemy", "state.sqlite");
   ensureDirectory(filename);
   const { Database } = await import("bun:sqlite");
   const { drizzle } = await importPeer(
@@ -149,7 +152,7 @@ async function createLibSQLDatabase(
 ) {
   const url =
     options?.url ??
-    `file:${options?.filename ?? process.env.ALCHEMY_STATE_FILE ?? ".alchemy/state.sqlite"}`;
+    `file:${options?.filename ?? process.env.ALCHEMY_STATE_FILE ?? path.join(".alchemy", "state.sqlite")}`;
   const filename = url.startsWith("file:") ? url.slice(5) : undefined;
   if (filename) {
     ensureDirectory(filename);

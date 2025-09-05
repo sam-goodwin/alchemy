@@ -7,11 +7,11 @@ type AsyncReturnType<T> = T extends (...args: any[]) => Promise<infer R>
 
 export function memoize<F extends (...args: any[]) => Promise<any>>(
   fn: F,
-  keyFn: (...args: Parameters<F>) => string = defaultKeyFn,
+  keyFn?: (...args: Parameters<F>) => string,
 ) {
   const cache = new Map<string, Promise<AsyncReturnType<F>>>();
   return async (...args: Parameters<F>): Promise<AsyncReturnType<F>> => {
-    const key = keyFn(...args);
+    const key = (keyFn ?? defaultKeyFn)(...args);
     const cached = cache.get(key);
     if (cached) {
       return await cached;
@@ -25,7 +25,7 @@ export function memoize<F extends (...args: any[]) => Promise<any>>(
   };
 }
 
-export const defaultKeyFn = (...args: any[]) => {
+export function defaultKeyFn(...args: any[]) {
   return createHash("sha256")
     .update(
       JSON.stringify(args, (_, value) => {
@@ -38,4 +38,4 @@ export const defaultKeyFn = (...args: any[]) => {
       }),
     )
     .digest("hex");
-};
+}

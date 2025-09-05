@@ -1,5 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { existsSync, readlinkSync, statSync } from "node:fs";
+import path from "node:path";
+import type { Scope } from "../../scope.ts";
 
 const dynamicImportContext = new AsyncLocalStorage<boolean>();
 
@@ -10,8 +12,19 @@ export const withSkipPathValidation = <T>(callback: () => T) => {
   return dynamicImportContext.run(true, callback);
 };
 
-export const DEFAULT_CONFIG_PATH = ".alchemy/local/wrangler.jsonc";
-export const DEFAULT_PERSIST_PATH = ".alchemy/miniflare/v3";
+export const DEFAULT_CONFIG_PATH =
+  // we may set this via env variable when running `vite dev`
+  process.env.ALCHEMY_DEFAULT_CONFIG_PATH ??
+  path.join(".alchemy", "local", "wrangler.jsonc");
+
+export const DEFAULT_PERSIST_PATH =
+  // we may set this via env variable when running `vite dev`
+  process.env.ALCHEMY_DEFAULT_PERSIST_PATH ??
+  path.join(".alchemy", "miniflare", "v3");
+
+export function getPersistPath(scope: Scope) {
+  return path.join(scope.dotAlchemy, "miniflare", "v3");
+}
 
 export const validateConfigPath = (
   path = DEFAULT_CONFIG_PATH,

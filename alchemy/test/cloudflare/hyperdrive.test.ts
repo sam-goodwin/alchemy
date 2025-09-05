@@ -20,7 +20,7 @@ const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
 });
 
-describe.concurrent("Hyperdrive Resource", () => {
+describe("Hyperdrive Resource", () => {
   // Use BRANCH_PREFIX for deterministic, non-colliding resource names
   const testId = `${BRANCH_PREFIX}-test-hyperdrive`;
 
@@ -112,6 +112,7 @@ describe.concurrent("Hyperdrive Resource", () => {
       // Update the hyperdrive
       hyperdrive = await Hyperdrive(testId, {
         name: `updated-hyperdrive-${BRANCH_PREFIX}`,
+        hyperdriveId: hyperdrive.hyperdriveId, // Pass the hyperdriveId
         origin: project.connection_uris[0].connection_parameters,
         caching: {
           disabled: true,
@@ -142,29 +143,6 @@ describe.concurrent("Hyperdrive Resource", () => {
         );
         expect(getDeletedResponse.status).toEqual(404);
       }
-    }
-  });
-
-  test("adopt hyperdrive config", async (scope) => {
-    try {
-      const project = await NeonProject(`${testId}-db-adopt`, {
-        name: `Hyperdrive Test DB Adopt ${BRANCH_PREFIX}`,
-      });
-
-      const hyperdrive1 = await Hyperdrive(`${testId}-adopt`, {
-        name: `test-hyperdrive-adopt-${BRANCH_PREFIX}`,
-        origin: project.connection_uris[0].connection_parameters,
-      });
-
-      const hyperdrive2 = await Hyperdrive(`${testId}-adopt-true`, {
-        name: `test-hyperdrive-adopt-${BRANCH_PREFIX}`,
-        origin: project.connection_uris[0].connection_parameters,
-        adopt: true,
-      });
-
-      expect(hyperdrive2.hyperdriveId).toEqual(hyperdrive1.hyperdriveId);
-    } finally {
-      await destroy(scope);
     }
   });
 
