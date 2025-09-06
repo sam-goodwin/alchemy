@@ -6,6 +6,11 @@ import { Scope } from "../scope.ts";
 import { isSecret } from "../secret.ts";
 import { assertNever } from "../util/assert-never.ts";
 import {
+  createCloudflareApi,
+  type CloudflareApi,
+  type CloudflareApiOptions,
+} from "./api.ts";
+import {
   Self,
   type Bindings,
   type WorkerBindingRateLimit,
@@ -15,7 +20,8 @@ import type { DurableObjectNamespace } from "./durable-object-namespace.ts";
 import type { EventSource } from "./event-source.ts";
 import { isQueueEventSource } from "./event-source.ts";
 import { isQueue } from "./queue.ts";
-import type { Worker, WorkerProps } from "./worker.ts";
+import { getAccountSubdomain } from "./worker-subdomain.ts";
+import { Worker, type WorkerProps } from "./worker.ts";
 
 type WranglerJsonRateLimit = Omit<WorkerBindingRateLimit, "type"> & {
   type: "rate_limit";
@@ -24,7 +30,7 @@ type WranglerJsonRateLimit = Omit<WorkerBindingRateLimit, "type"> & {
 /**
  * Properties for wrangler.json configuration file
  */
-export interface WranglerJsonProps {
+export interface WranglerJsonProps extends CloudflareApiOptions {
   name?: string;
   /**
    * The worker to generate the wrangler.json file for
@@ -88,7 +94,7 @@ export interface WranglerJsonProps {
 /**
  * Output returned after WranglerJson creation/update
  */
-export interface WranglerJson extends WranglerJsonProps {
+export type WranglerJson = WranglerJsonProps & {
   /**
    * Time at which the file was created
    */
@@ -108,7 +114,7 @@ export interface WranglerJson extends WranglerJsonProps {
    * `wrangler.json` spec
    */
   spec: WranglerJsonSpec;
-}
+};
 
 // we are deprecating the WranglerJson resource (it is now just a funciton)
 // but, a user may still have a resource that depends on it, so we register a no-op dummy resource so that it can be cleanly delted
@@ -126,6 +132,7 @@ Resource("cloudflare::WranglerJson", async function (this: Context<any>) {
 export async function WranglerJson(
   props: WranglerJsonProps,
 ): Promise<WranglerJson> {
+  const api = await createCloudflareApi(props);
   const cwd = props.worker.cwd ? path.resolve(props.worker.cwd) : process.cwd();
 
   const toAbsolute = <T extends string | undefined>(input: T): T => {
@@ -170,7 +177,8 @@ export async function WranglerJson(
 
   // Process bindings if they exist
   if (worker.bindings) {
-    processBindings(
+    await processBindings(
+      api,
       spec,
       worker.bindings,
       worker.eventSources,
@@ -506,7 +514,8 @@ export interface WranglerJsonSpec {
 /**
  * Process worker bindings into wrangler.json format
  */
-function processBindings(
+async function processBindings(
+  api: CloudflareApi,
   spec: WranglerJsonSpec,
   bindings: Bindings,
   eventSources: EventSource[] | undefined,
@@ -514,7 +523,7 @@ function processBindings(
   workerCwd: string,
   writeSecrets: boolean,
   local: boolean,
-): void {
+) {
   // Arrays to collect different binding types
   const kvNamespaces: {
     binding: string;
@@ -631,6 +640,12 @@ function processBindings(
         binding: bindingName,
         service: workerName,
       });
+    } else if (binding === Worker.DevDomain || binding === Worker.DevUrl) {
+      const subdomain = await getAccountSubdomain(api);
+      // Subdomain binding
+      spec.vars ??= {};
+      spec.vars[bindingName] =
+        `${binding === Worker.DevUrl ? "https://" : ""}${workerName}.${subdomain}.workers.dev`;
     } else if (binding.type === "service") {
       // Service binding
       services.push({

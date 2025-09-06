@@ -842,4 +842,53 @@ describe("WranglerJson Resource", () => {
       await destroy(scope);
     }
   });
+
+  test("create worker with subdomain binding", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-subdomain-binding`;
+
+    const tempDir = path.join(".out", "alchemy-direct-queue-test");
+    const entrypoint = path.join(tempDir, "worker.ts");
+
+    let worker: Worker | undefined;
+    try {
+      // Create a temporary directory for the entrypoint file
+      await fs.rm(tempDir, { recursive: true, force: true });
+      await fs.mkdir(tempDir, { recursive: true });
+      await fs.writeFile(
+        entrypoint,
+        `
+          export default {
+            async fetch(request, env, ctx) {
+              return Response.json({
+                url: env.DEV_URL,
+                domain: env.DEV_DOMAIN,
+              });
+            }
+          };
+        `,
+      );
+
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        entrypoint,
+        bindings: {
+          DEV_DOMAIN: Worker.DevDomain,
+          DEV_URL: Worker.DevUrl,
+        },
+      });
+
+      const { spec } = await WranglerJson({ worker });
+
+      expect(spec).toMatchObject({
+        name: workerName,
+        vars: {
+          DEV_DOMAIN: worker.url!.replace("https://", ""),
+          DEV_URL: worker.url,
+        },
+      });
+    } finally {
+      await destroy(scope);
+    }
+  });
 });

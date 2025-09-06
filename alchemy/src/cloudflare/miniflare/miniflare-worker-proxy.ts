@@ -5,16 +5,18 @@ import type Stream from "node:stream";
 import { Readable } from "node:stream";
 import { WebSocket, WebSocketServer } from "ws";
 import { logger } from "../../util/logger.ts";
+import { promiseWithResolvers } from "../../util/promise-with-resolvers.ts";
 
 interface MiniflareWorkerProxyOptions {
   name: string;
-  port: number;
-  miniflare: miniflare.Miniflare;
+  port?: number;
+  miniflare: Promise<miniflare.Miniflare>;
 }
 
 export class MiniflareWorkerProxy {
   private server = http.createServer();
   private wss = new WebSocketServer({ noServer: true });
+  public readonly url: Promise<string>;
 
   constructor(private readonly options: MiniflareWorkerProxyOptions) {
     this.server.on("upgrade", async (req, socket, head) => {
@@ -23,7 +25,18 @@ export class MiniflareWorkerProxy {
     this.server.on("request", async (req, res) => {
       await this.handleRequest(req, res);
     });
-    this.server.listen(this.options.port);
+    const url = promiseWithResolvers<string>();
+    this.url = url.promise;
+    const server = this.server.listen(options.port, () => {
+      const address = server.address();
+      if (address && typeof address === "object") {
+        url.resolve(`http://localhost:${address.port}`);
+      } else if (typeof address === "string") {
+        url.resolve(address);
+      } else {
+        throw new Error("Failed to get port");
+      }
+    });  
   }
 
   get ready() {
@@ -33,9 +46,6 @@ export class MiniflareWorkerProxy {
     return Promise.resolve();
   }
 
-  get url() {
-    return `http://localhost:${this.options.port}`;
-  }
 
   async close() {
     await Promise.all([
@@ -64,7 +74,7 @@ export class MiniflareWorkerProxy {
   }
 
   private async createServerWebSocket(req: http.IncomingMessage) {
-    const target = await this.options.miniflare.unsafeGetDirectURL(
+    const target = await (await this.options.miniflare).unsafeGetDirectURL(
       this.options.name,
     );
     if (!target) {
@@ -96,7 +106,9 @@ export class MiniflareWorkerProxy {
     req: http.IncomingMessage,
     res: http.ServerResponse,
   ) {
-    const worker = await this.options.miniflare.getWorker(this.options.name);
+    console.log(this.options)
+    const miniflare = await this.options.miniflare
+    const worker = await miniflare.getWorker(this.options.name);
     if (!worker) {
       res.statusCode = 503;
       res.end(`[Alchemy] The worker "${this.options.name}" is not running.`);

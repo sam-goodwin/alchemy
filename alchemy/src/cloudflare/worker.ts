@@ -699,6 +699,13 @@ export function Worker<const B extends Bindings>(
   return _Worker(id, props as WorkerProps<B>);
 }
 
+export namespace Worker {
+  export type DevDomain = typeof DevDomain;
+  export const DevDomain = Symbol.for("alchemy::Worker.DevDomain");
+  export type DevUrl = typeof DevUrl;
+  export const DevUrl = Symbol.for("alchemy::Worker.DevUrl");
+}
+
 const _Worker = Resource(
   "cloudflare::Worker",
   {

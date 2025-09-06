@@ -2209,4 +2209,41 @@ describe("Worker Resource", () => {
       await assertWorkerDoesNotExist(api, workerName);
     }
   });
+
+  test("create worker with subdomain binding", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-subdomain`;
+
+    let worker: Worker | undefined;
+    try {
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return Response.json({
+                url: env.DEV_URL,
+                domain: env.DEV_DOMAIN,
+              });
+            }
+          };
+        `,
+        bindings: {
+          DEV_DOMAIN: Worker.DevDomain,
+          DEV_URL: Worker.DevUrl,
+        },
+      });
+
+      const response = await fetchAndExpectOK(worker.url!);
+      const { url, domain } = (await response.json()) as {
+        url: string;
+        domain: string;
+      };
+      expect(url).toEqual(worker.url);
+      expect(`https://${domain}`).toEqual(worker.url);
+    } finally {
+      await destroy(scope);
+      await assertWorkerDoesNotExist(api, workerName);
+    }
+  });
 });

@@ -11,7 +11,7 @@ import {
 } from "../bindings.ts";
 import { isQueueEventSource, type EventSource } from "../event-source.ts";
 import type { WorkerBundle, WorkerBundleSource } from "../worker-bundle.ts";
-import type { AssetsConfig } from "../worker.ts";
+import { Worker, type AssetsConfig } from "../worker.ts";
 import { createRemoteProxyWorker } from "./remote-binding-proxy.ts";
 
 export interface MiniflareWorkerInput {
@@ -59,6 +59,7 @@ type BaseWorkerOptions = {
 };
 
 export const buildWorkerOptions = async (
+  url: string,
   input: MiniflareWorkerInput,
 ): Promise<{
   watch: (signal: AbortSignal) => AsyncGenerator<miniflare.WorkerOptions>;
@@ -94,6 +95,10 @@ export const buildWorkerOptions = async (
     }
     if (binding === Self) {
       (options.serviceBindings ??= {})[key] = miniflare.kCurrentWorker;
+      continue;
+    }
+    if (binding === Worker.DevDomain || binding === Worker.DevUrl) {
+      (options.bindings ??= {})[key] = binding === Worker.DevUrl ? url : url.replace("http://", "").replace("https://", "");
       continue;
     }
     switch (binding.type) {
@@ -459,7 +464,7 @@ const normalizeBundle = (bundle: WorkerBundle) => {
 };
 
 const isRemoteBinding = (binding: Binding) => {
-  if (typeof binding === "string" || binding === Self) {
+  if (typeof binding === "string" || typeof binding === "symbol") {
     return false;
   }
   return (

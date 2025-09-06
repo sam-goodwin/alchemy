@@ -69,6 +69,8 @@ export type Binding =
   | string
   | VectorizeIndex
   | Worker
+  | Worker.DevDomain
+  | Worker.DevUrl
   | WorkerStub
   | WorkerRef
   | Workflow

@@ -19,7 +19,9 @@ import type {
   MultiStepMigration,
   SingleStepMigration,
 } from "./worker-migration.ts";
+import { getAccountSubdomain } from "./worker-subdomain.ts";
 import type { AssetsConfig, WorkerProps } from "./worker.ts";
+import { Worker } from "./worker.ts";
 
 /**
  * Metadata returned by Cloudflare API for a worker script
@@ -397,6 +399,13 @@ export async function prepareWorkerMetadata(
         type: "service",
         name: bindingName,
         service: props.workerName,
+      });
+    } else if (binding === Worker.DevDomain || binding === Worker.DevUrl) {
+      const subdomain = await getAccountSubdomain(api);
+      meta.bindings.push({
+        type: "plain_text",
+        name: bindingName,
+        text: `${binding === Worker.DevUrl ? "https://" : ""}${props.workerName}.${subdomain}.workers.dev`,
       });
     } else if (binding.type === "d1") {
       meta.bindings.push({

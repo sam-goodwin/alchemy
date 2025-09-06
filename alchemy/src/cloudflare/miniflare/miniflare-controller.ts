@@ -30,7 +30,13 @@ export class MiniflareController {
   }
 
   async add(input: MiniflareWorkerInput) {
-    const { watch, remoteProxy } = await buildWorkerOptions(input);
+    const proxy = new MiniflareWorkerProxy({
+      name: input.name,
+      // TODO(sam): this is a race condition. We can let it select it on server.listen(), but then it switches on each re-run
+      port: input.port ?? (await findOpenPort()),
+      miniflare: this.update(),
+    });
+    const { watch, remoteProxy } = await buildWorkerOptions(await proxy.url, input);
     if (remoteProxy) {
       this.remoteProxies.set(input.name, remoteProxy);
     }
@@ -38,17 +44,11 @@ export class MiniflareController {
     const first = await watcher.next();
     assert(first.value, "First value is undefined");
     this.options.set(input.name, first.value);
-    const miniflare = await this.update();
-    const proxy = new MiniflareWorkerProxy({
-      name: input.name,
-      port: input.port ?? (await findOpenPort()),
-      miniflare,
-    });
     this.localProxies.set(input.name, proxy);
     void this.watch(input.id, watcher);
     logger.task(input.id, {
       message: `Ready at ${proxy.url}`,
-      status: "success",
+      status: "success",  
       resource: input.id,
       prefix: "dev",
       prefixColor: "cyanBright",
@@ -87,7 +87,11 @@ export class MiniflareController {
         // to detect Alchemy-managed Durable Objects via the Wrangler dev registry.
         unsafeDevRegistryDurableObjectProxy: true,
       };
-      for (const worker of this.options.values()) {
+      const workers = Array.from(this.options.values());
+      if (workers.length === 0) {
+        return this.miniflare!;
+      }
+      for (const worker of workers) {
         options.workers.push(worker);
         // avoid creating unnecessary directories
         if (worker.analyticsEngineDatasets) {
