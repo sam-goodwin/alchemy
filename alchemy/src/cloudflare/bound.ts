@@ -19,7 +19,6 @@ import type {
   WorkerVersionMetadata,
   Workflow,
 } from "@cloudflare/workers-types";
-import type { Pipeline } from "cloudflare:pipelines";
 import type { Secret } from "../secret.ts";
 import type { AiGateway as _AiGateway } from "./ai-gateway.ts";
 import type { Ai as _Ai } from "./ai.ts";
@@ -120,3 +119,14 @@ export type Bound<T extends Binding> = T extends _DurableObjectNamespace<
                                                               Rpc.DurableObjectBranded
                                                           >
                                                         : Service;
+
+export type PipelineRecord = Record<string, unknown>;
+
+export interface Pipeline<T extends PipelineRecord = PipelineRecord> {
+  /**
+   * The Pipeline interface represents the type of a binding to a Pipeline
+   *
+   * @param records The records to send to the pipeline
+   */
+  send(records: T[]): Promise<void>;
+}
