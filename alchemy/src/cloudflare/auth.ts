@@ -1,7 +1,7 @@
 import { alchemy } from "../alchemy.ts";
 import type { Secret } from "../secret.ts";
 import type { CloudflareApiOptions } from "./api.ts";
-import { getRefreshedWranglerConfig } from "./oauth.ts";
+import { getRefreshedOAuthToken } from "./oauth.ts";
 import { getUserEmailFromApiKey } from "./user.ts";
 
 export interface CloudflareApiTokenAuthOptions {
@@ -15,14 +15,14 @@ export interface CloudflareApiKeyAuthOptions {
   apiEmail: string;
 }
 
-export interface CloudflareWranglerAuthOptions {
-  type: "wrangler";
+export interface CloudflareOAuthAuthOptions {
+  type: "oauth";
 }
 
 export type CloudflareAuthOptions =
   | CloudflareApiTokenAuthOptions
   | CloudflareApiKeyAuthOptions
-  | CloudflareWranglerAuthOptions;
+  | CloudflareOAuthAuthOptions;
 
 export const isCloudflareAuthOptions = (
   input?: CloudflareApiOptions | CloudflareAuthOptions,
@@ -32,7 +32,7 @@ export const isCloudflareAuthOptions = (
     "type" in input &&
     (input.type === "api-token" ||
       input.type === "api-key" ||
-      input.type === "wrangler")
+      input.type === "oauth")
   );
 };
 
@@ -68,7 +68,7 @@ export async function normalizeAuthOptions(
       apiToken: alchemy.secret(process.env.CLOUDFLARE_API_TOKEN),
     };
   }
-  return { type: "wrangler" };
+  return { type: "oauth" };
 }
 
 export async function getCloudflareAuthHeaders(
@@ -82,19 +82,19 @@ export async function getCloudflareAuthHeaders(
         "X-Auth-Key": authOptions.apiKey.unencrypted,
         "X-Auth-Email": authOptions.apiEmail,
       };
-    case "wrangler": {
-      const wranglerConfig = await getRefreshedWranglerConfig();
-      if (wranglerConfig.isErr()) {
+    case "oauth": {
+      const oauthResult = await getRefreshedOAuthToken();
+      if (oauthResult.isErr()) {
         throw new Error(
           [
-            wranglerConfig.error.message,
+            oauthResult.error.message,
             "Please run `alchemy login`, or set either CLOUDFLARE_API_TOKEN or CLOUDFLARE_API_KEY in your environment.",
             "Learn more: https://alchemy.run/guides/cloudflare/",
           ].join("\n"),
         );
       }
       return {
-        Authorization: `Bearer ${wranglerConfig.value.oauth_token}`,
+        Authorization: `Bearer ${oauthResult.value.access}`,
       };
     }
   }

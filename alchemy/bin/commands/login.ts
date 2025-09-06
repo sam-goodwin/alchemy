@@ -1,9 +1,9 @@
 import { cancel, intro, log, outro } from "@clack/prompts";
 import pc from "picocolors";
 import { zod as z } from "trpc-cli";
-import { DEFAULT_SCOPES, wranglerLogin } from "../../src/cloudflare/oauth.ts";
+import { DEFAULT_SCOPES, cloudflareLogin } from "../../src/cloudflare/oauth.ts";
 import { throwWithContext } from "../errors.ts";
-import { loggedProcedure, ExitSignal } from "../trpc.ts";
+import { ExitSignal, loggedProcedure } from "../trpc.ts";
 
 export const login = loggedProcedure
   .meta({
@@ -40,7 +40,7 @@ export const login = loggedProcedure
         );
         return;
       }
-      const result = await wranglerLogin(scopes, (message) => {
+      const result = await cloudflareLogin(scopes, (message) => {
         log.step(message);
       });
 

@@ -1,6 +1,4 @@
-import envPaths from "env-paths";
-import { err, ok, okAsync, ResultAsync } from "neverthrow";
-import assert from "node:assert";
+import { err, ok, ResultAsync } from "neverthrow";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -8,7 +6,6 @@ import path from "node:path";
 import open from "open";
 import pc from "picocolors";
 import { HTTPServer } from "../util/http.ts";
-import { memoize } from "../util/memoize.ts";
 import {
   detached,
   ensure,
@@ -17,114 +14,140 @@ import {
   singleFlight,
 } from "../util/neverthrow.ts";
 
-const CLIENT_ID = "54d11594-84e4-41aa-b438-e81b8fa78ee7";
-const REDIRECT_URI = "http://localhost:8976/oauth/callback";
-export const DEFAULT_SCOPES = [
+const CLIENT_ID = "6d8c2255-0773-45f6-b376-2914632e6f91";
+const REDIRECT_URI = new URL("http://localhost:9976/auth/callback");
+const CREDENTIALS_PATH = path.join(
+  os.homedir(),
+  ".alchemy",
+  "credentials",
+  "cloudflare",
+  "default.json", // TODO: allow multiple profiles
+);
+export const ALLOWED_SCOPES = new Set([
+  "access:read",
+  "access:write",
   "account:read",
+  "agw:read",
+  "agw:run",
+  "ai:read",
+  "ai:write",
+  "aiaudit:read",
+  "aiaudit:write",
+  "aig:read",
+  "aig:write",
+  "auditlogs:read",
+  "browser:read",
+  "browser:write",
+  "cfone:read",
+  "cfone:write",
+  "cloudchamber:write",
+  "constellation:write",
+  "containers:write",
+  "d1:write",
+  "dex:read",
+  "dex:write",
+  "dns_analytics:read",
+  "dns_records:edit",
+  "dns_records:read",
+  "dns_settings:read",
+  "firstpartytags:write",
+  // "images:read",
+  // "images:write",
+  "lb:edit",
+  "lb:read",
+  "logpush:read",
+  "logpush:write",
+  "notification:read",
+  "notification:write",
+  "pages:read",
+  "pages:write",
+  "pipelines:read",
+  "pipelines:setup",
+  "pipelines:write",
+  "query_cache:write",
+  "queues:write",
+  "r2_catalog:write",
+  "radar:read",
+  "rag:read",
+  "rag:write",
+  "secrets_store:read",
+  "secrets_store:write",
+  "sso-connector:read",
+  "sso-connector:write",
+  "ssl_certs:write",
+  "teams:pii",
+  "teams:read",
+  "teams:secure_location",
+  "teams:write",
+  "url_scanner:read",
+  "url_scanner:write",
   "user:read",
-  "workers:write",
+  "vectorize:write",
+  "workers:read",
+  "workers_builds:read",
+  "workers_builds:write",
   "workers_kv:write",
+  "workers_observability:read",
+  "workers_observability:write",
+  "workers_observability_telemetry:write",
   "workers_routes:write",
   "workers_scripts:write",
   "workers_tail:read",
-  "d1:write",
-  "pages:write",
   "zone:read",
-  "ssl_certs:write",
-  "ai:write",
-  "queues:write",
-  "pipelines:write",
-  "secrets_store:write",
-  "containers:write",
-  "cloudchamber:write",
-];
-const ALCHEMY_BASE_URL = "https://alchemy.run";
+  "offline_access",
+]);
+export const DEFAULT_SCOPES = [...ALLOWED_SCOPES]; // requesting all scopes for testing
 
-interface WranglerConfig {
-  oauth_token: string;
-  refresh_token: string;
-  expiration_time: Date;
+interface Credentials {
+  access: string;
+  refresh: string;
+  expires: number;
   scopes: string[];
 }
 
-let cached: WranglerConfig | undefined;
+let cached: Credentials | undefined;
 
-export const getRefreshedWranglerConfig = singleFlight(() =>
-  readWranglerConfig()
-    .andThen((config) => {
-      if (config.expiration_time.getTime() > Date.now() + 10 * 1000) {
-        return ok(config);
+export const getRefreshedOAuthToken = singleFlight(() =>
+  ResultAsync.fromPromise(
+    readCredentials(),
+    (cause) =>
+      new Error("Cloudflare credentials are missing or invalid.", { cause }),
+  )
+    .andThen((credentials) => {
+      if (credentials.expires > Date.now() + 10 * 1000) {
+        return ok(credentials);
       }
       return fetchToken({
         grant_type: "refresh_token",
-        refresh_token: config.refresh_token,
+        refresh_token: credentials.refresh,
         client_id: CLIENT_ID,
       });
     })
     .orElse((error) => {
       if (isInteractive()) {
-        return wranglerLogin();
+        return cloudflareLogin();
       }
       return err(error);
     }),
 );
 
-const getWranglerConfigPath = memoize(async () => {
-  const xdgConfigDir = envPaths(".wrangler", { suffix: "" }).config;
-  const legacyConfigDir = path.join(os.homedir(), ".wrangler");
-  const configDir = (await fs
-    .stat(legacyConfigDir)
-    .then((stat) => stat.isDirectory())
-    .catch(() => false))
-    ? legacyConfigDir
-    : xdgConfigDir;
-  return path.join(configDir, "config", "default.toml");
-});
-
-const readWranglerConfig = () => {
+const readCredentials = async () => {
   if (cached) {
-    return okAsync(cached);
+    return cached;
   }
-  return ResultAsync.fromPromise(
-    getWranglerConfigPath().then(async (path): Promise<WranglerConfig> => {
-      const text = await fs.readFile(path, "utf-8");
-      const toml = await import("@iarna/toml");
-      const config = toml.parse(text.replace(/\r\n/g, "\n"));
-      assert(typeof config.oauth_token === "string");
-      assert(typeof config.refresh_token === "string");
-      assert(!!config.expiration_time);
-      assert(Array.isArray(config.scopes));
-      return {
-        oauth_token: config.oauth_token,
-        refresh_token: config.refresh_token,
-        expiration_time: new Date(config.expiration_time as any),
-        scopes: config.scopes as string[],
-      };
-    }),
-    () => new Error("Cloudflare credentials are missing or invalid."),
-  );
+  const text = await fs.readFile(CREDENTIALS_PATH, "utf-8");
+  const credentials = JSON.parse(text) as Credentials;
+  return credentials;
 };
 
-const writeWranglerConfig = (config: WranglerConfig) => {
-  cached = config;
-  return ResultAsync.fromSafePromise(getWranglerConfigPath()).map(
-    async (configPath) => {
-      const toml = await import("@iarna/toml");
-      await fs.mkdir(path.dirname(configPath), { recursive: true });
-      await fs.writeFile(
-        configPath,
-        toml.stringify({
-          oauth_token: config.oauth_token,
-          refresh_token: config.refresh_token,
-          expiration_time: config.expiration_time,
-          scopes: config.scopes,
-        }),
-      );
-    },
-  );
+const writeCredentials = async (credentials: Credentials) => {
+  cached = credentials;
+  await fs.mkdir(path.dirname(CREDENTIALS_PATH), { recursive: true });
+  await fs.writeFile(CREDENTIALS_PATH, JSON.stringify(credentials, null, 2));
+  await fs.chmod(CREDENTIALS_PATH, 0o600);
 };
 
-export const wranglerLogin = (
+export const cloudflareLogin = (
   scopes: string[] = DEFAULT_SCOPES,
   log: (message: string) => void = console.log, // using console.log instead of logger.log to avoid bundling hell with CLI
 ) => {
@@ -140,14 +163,14 @@ export const wranglerLogin = (
     ].join("\n"),
   );
   open(challenge.url);
-  const { result, ok, err } = detached<WranglerConfig, OAuthError>();
+  const { result, ok, err } = detached<Credentials, OAuthError>();
   const renderResponse = async (type: "success" | "error") => {
-    return Response.redirect(`${ALCHEMY_BASE_URL}/auth/${type}`);
+    return Response.redirect(`http://alchemy.run/auth/${type}`);
   };
   const server = new HTTPServer({
     fetch: async (request) => {
       const url = new URL(request.url);
-      if (url.pathname !== "/oauth/callback") {
+      if (url.pathname !== REDIRECT_URI.pathname) {
         return new Response("Not found", { status: 404 });
       }
       const error = url.searchParams.get("error");
@@ -179,7 +202,7 @@ export const wranglerLogin = (
         code,
         code_verifier: challenge.verifier,
         client_id: CLIENT_ID,
-        redirect_uri: REDIRECT_URI,
+        redirect_uri: REDIRECT_URI.toString(),
       });
       if (tokens.isErr()) {
         err(tokens.error);
@@ -189,7 +212,7 @@ export const wranglerLogin = (
       return renderResponse("success");
     },
   });
-  server.listen(8976);
+  server.listen(Number(REDIRECT_URI.port));
   const timeout = setTimeout(
     () => {
       err(
@@ -219,7 +242,7 @@ const generateAuthorizationURL = (scopes: string[]) => {
   url.search = new URLSearchParams({
     response_type: "code",
     client_id: CLIENT_ID,
-    redirect_uri: "http://localhost:8976/oauth/callback",
+    redirect_uri: REDIRECT_URI.toString(),
     scope: [...scopes, "offline_access"].join(" "),
     state,
     code_challenge: challenge,
@@ -277,10 +300,10 @@ const fetchToken = (
     },
   )
     .map(
-      (tokens): WranglerConfig => ({
-        oauth_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expiration_time: new Date(Date.now() + tokens.expires_in * 1000),
+      (tokens): Credentials => ({
+        access: tokens.access_token,
+        refresh: tokens.refresh_token,
+        expires: Date.now() + tokens.expires_in * 1000,
         scopes: tokens.scope.split(" "),
       }),
     )
@@ -293,7 +316,7 @@ const fetchToken = (
           })
         : new OAuthError(error),
     )
-    .andTee((config) => writeWranglerConfig(config));
+    .andTee((credentials) => writeCredentials(credentials));
 };
 
 const isInteractive = () => {
