@@ -90,7 +90,7 @@ export async function load({ platform }) {
 }
 ```
 
-The type definitions for the Cloudflare bindings are configured in [`src/env.ts`](./src/env.ts) and [`src/app.d.ts`](./src/app.d.ts), which provide type safety for the [Cloudflare bindings](https://svelte.dev/docs/kit/adapter-cloudflare#Runtime-APIs). You can learn more about the Cloudflare bindings [here](https://developers.cloudflare.com/pages/framework-guides/deploy-a-svelte-kit-site/).
+The type definitions for the Cloudflare bindings are configured in [`src/env.d.ts`](./src/env.d.ts) and [`src/app.d.ts`](./src/app.d.ts), which provide type safety for the [Cloudflare bindings](https://svelte.dev/docs/kit/adapter-cloudflare#Runtime-APIs). You can learn more about the Cloudflare bindings [here](https://developers.cloudflare.com/pages/framework-guides/deploy-a-svelte-kit-site/).
 
 ## Cleanup
 

@@ -96,11 +96,11 @@ declare module "cloudflare:workers" {
 }
 ```
 
-Register `env.ts` in your `tsconfig.json`'s `types`.
+Register `env.d.ts` in your `tsconfig.json`'s `types`.
 ```json
 {
   "compilerOptions": {
-    "types": ["@cloudflare/workers-types", "./src/env.ts"]
+    "types": ["@cloudflare/workers-types", "./src/env.d.ts"]
   }
 }
 ```

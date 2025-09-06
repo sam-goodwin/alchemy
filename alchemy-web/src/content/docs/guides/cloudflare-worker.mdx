@@ -92,7 +92,7 @@ export default {
 
 ### Augment types of `cloudflare:workers`
 
-To make the `env` in `cloudflare:workers` type-safe, create an `env.ts` file:
+To make the `env` in `cloudflare:workers` type-safe, create an `env.d.ts` file:
 
 ```typescript
 import type { worker } from "./alchemy.run.ts";
@@ -106,12 +106,12 @@ declare module "cloudflare:workers" {
 }
 ```
 
-And register `env.ts` in your `tsconfig.json`'s `types`.
+And register `env.d.ts` in your `tsconfig.json`'s `types`.
 
 ```json
 {
   "compilerOptions": {
-    "types": ["@cloudflare/workers-types", "./src/env.ts"]
+    "types": ["@cloudflare/workers-types", "./src/env.d.ts"]
   }
 }
 ```

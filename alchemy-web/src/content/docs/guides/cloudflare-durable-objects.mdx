@@ -50,8 +50,9 @@ This is a step-by-step guide to deploy a Durable Object, for a complete API refe
 
    ```ts
    import type { worker } from "./alchemy.run";
+   import { DurableObject } from "cloudflare:workers";
 
-   export class Counter {
+   export class Counter extends DurableObject {
      declare env: typeof worker.Env;
      private count: number;
 
