@@ -312,7 +312,7 @@ export const Password = Resource(
           (prop) => prop !== "name" && prop !== "cidrs",
         )
       ) {
-        return this.replace();
+        return await this.replace();
       }
       await api.organizations.databases.branches.passwords.patch({
         path: {
