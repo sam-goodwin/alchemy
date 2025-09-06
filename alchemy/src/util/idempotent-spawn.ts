@@ -108,14 +108,31 @@ export async function idempotentSpawn({
   async function spawnLoggedChild() {
     const out = await fsp.open(outPath, "a");
 
-    // shell:true, NO args — pass a single command string
     const child = spawn(cmd, {
       shell: true,
       cwd,
-      stdio: ["ignore", out.fd, out.fd], // stdout/stderr -> files (OS-level)
+      stdio: ["ignore", "pipe", "pipe"],
       env,
       detached: false,
     });
+
+    // Tee stdout/stderr to both file and parent stdio
+    if (child.stdout) {
+      child.stdout.on("data", (chunk: Buffer) => {
+        if (!quiet) {
+          process.stdout.write(chunk);
+        }
+        out.write(chunk);
+      });
+    }
+    if (child.stderr) {
+      child.stderr.on("data", (chunk: Buffer) => {
+        if (!quiet) {
+          process.stderr.write(chunk);
+        }
+        out.write(chunk);
+      });
+    }
 
     // Child now owns dup'd fds; close our handles.
     await out.close();
