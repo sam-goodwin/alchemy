@@ -20,6 +20,8 @@ export const applyLocalD1Migrations = async (
   });
   try {
     await miniflare.ready;
+    // biome-ignore lint/suspicious/noTsIgnore: its fine
+    //@ts-ignore //todo(michael): update prisma dep once 6.16.0 is released: https://github.com/prisma/prisma/pull/27984
     const db: D1Database = await miniflare.getD1Database("DB");
     const session: D1DatabaseSession = db.withSession("first-primary");
     await session
