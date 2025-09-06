@@ -36,7 +36,7 @@ This is a step-by-step guide to deploy a Durable Object, for a complete API refe
    ```ts
    export const worker = await Worker("Worker", {
      name: "my-worker",
-     entrypoint: "./index.ts"
+     entrypoint: "./index.ts",
      bindings: {
        // bind the Durable Object namespace to your Worker
        COUNTER: counter,
@@ -50,27 +50,28 @@ This is a step-by-step guide to deploy a Durable Object, for a complete API refe
 
    ```ts
    import type { worker } from "./alchemy.run";
+   import type { DurableObjectState } from "@cloudflare/workers-types";
 
    export class Counter {
      declare env: typeof worker.Env;
-     private count: number;
+     state;
+     count;
 
-     constructor(state, env: typeof worker.Env) {
+     constructor(state: DurableObjectState, env: typeof worker.Env) {
        this.state = state;
        this.count = 0;
      }
 
-     async fetch(request) {
-       const url = new URL(request.url);
-       const path = url.pathname;
+     async fetch(request: Request) {
+       const { pathname } = new URL(request.url);
 
        // Retrieve current count
-       this.count = (await this.state.storage.get("count")) || 0;
+       this.count = (await this.state.storage.get("count") as number) ?? 0;
 
-       if (path === "/increment") {
+       if (pathname === "/increment") {
          this.count++;
          await this.state.storage.put("count", this.count);
-       } else if (path === "/decrement") {
+       } else if (pathname === "/decrement") {
          this.count--;
          await this.state.storage.put("count", this.count);
        }
