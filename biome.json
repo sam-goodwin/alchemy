@@ -104,24 +104,6 @@
     }
   },
   "formatter": {
-    "enabled": true,
-    "formatWithErrors": false,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 80,
-    "lineEnding": "lf",
-    "includes": ["**", "!**/node_modules/**", "!**/*.d.ts", "!**/*.mdx"]
-  },
-  "javascript": {
-    "formatter": {
-      "indentWidth": 2,
-      "indentStyle": "space"
-    }
-  },
-  "json": {
-    "formatter": {
-      "indentWidth": 2,
-      "indentStyle": "space"
-    }
+    "enabled": false
   }
 }

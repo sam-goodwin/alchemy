@@ -24,6 +24,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Ensure Formatting
+        uses: dprint/check@v2.3
+
       # node is needed for vitest
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
@@ -68,4 +71,3 @@ jobs:
           UPSTASH_API_KEY: ${{ env.UPSTASH_API_KEY }}
           UPSTASH_EMAIL: sam@alchemy.run
           VERCEL_ACCESS_TOKEN: ${{ env.VERCEL_ACCESS_TOKEN }}
-

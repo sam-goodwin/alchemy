@@ -1,54 +1,36 @@
 {
-  "editor.codeLens": false,
-  "editor.formatOnSave": true,
-  "editor.formatOnSaveMode": "file",
-  "editor.codeActionsOnSave": {
-    "source.fixAll.ruff": "always",
-    "source.fixAll": "explicit",
-    "source.organizeImports": "explicit",
-    "source.organizeImports.biome": "explicit"
+  "[css]": {
+    "editor.defaultFormatter": "dprint.dprint"
   },
-  "rewrap.autoWrap.enabled": false,
-  "[rust]": {
-    "editor.insertSpaces": true,
-    "editor.tabSize": 4
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "dprint.dprint"
   },
-  "[toml]": {
-    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  "[html]": {
+    "editor.defaultFormatter": "dprint.dprint"
   },
   "[json]": {
-    "editor.indentSize": 2,
-    "editor.insertSpaces": true,
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "dprint.dprint"
   },
   "[markdown]": {
-    "editor.formatOnSave": false,
-    "editor.defaultFormatter": null
+    "editor.defaultFormatter": "dprint.dprint"
   },
-  "[mdx]": {
-    "editor.defaultFormatter": null,
-    "editor.formatOnSave": false
-  },
-  "editor.inlayHints.enabled": "offUnlessPressed",
-  "files.exclude": {
-    "**/__pycache__": true,
-    "**/*.pyc": true
-  },
-  "vitest.disableWorkspaceWarning": true,
   "[typescript]": {
-    "editor.indentSize": 2,
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "dprint.dprint"
   },
-  "[javascript]": {
-    "editor.indentSize": 2,
-    "editor.defaultFormatter": "biomejs.biome"
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "dprint.dprint"
   },
-  "[tsx]": {
-    "editor.indentSize": 2,
-    "editor.defaultFormatter": "biomejs.biome"
+  "[astro]": {
+    "editor.defaultFormatter": "dprint.dprint"
   },
-  "[jsx]": {
-    "editor.indentSize": 2,
-    "editor.defaultFormatter": "biomejs.biome"
-  }
+  "[yaml]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "dprint.path": "node_modules/.bin/dprint",
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

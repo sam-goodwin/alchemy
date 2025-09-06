@@ -1,0 +1,45 @@
+[[language]]
+name = "toml"
+formatter = { command = "biome", args = ["format", "--stdin", "toml"] }
+auto-format = true
+
+[[language]]
+name = "css"
+formatter = { command = "biome", args = ["format", "--stdin", "css"] }
+auto-format = true
+
+[[language]]
+name = "html"
+formatter = { command = "dprint", args = ["fmt", "--stdin", "html"] }
+auto-format = true
+
+[[language]]
+name = "json"
+formatter = { command = "dprint", args = ["fmt", "--stdin", "json"] }
+auto-format = true
+
+[[language]]
+name = "jsonc"
+formatter = { command = "dprint", args = ["fmt", "--stdin", "json"] }
+auto-format = true
+
+[[language]]
+name = "markdown"
+formatter = { command = "biome", args = ["format", "--stdin", "md"] }
+auto-format = true
+
+[[language]]
+name = "typescript"
+formatter = { command = "biome", args = ["format", "--stdin", "ts"] }
+file-types = ["ts", "tsx"]
+auto-format = true
+
+[[language]]
+name = "astro"
+formatter = { command = "dprint", args = ["fmt", "--stdin", "astro"] }
+auto-format = true
+
+[[language]]
+name = "yaml"
+formatter = { command = "dprint", args = ["fmt", "--stdin", "yaml"] }
+auto-format = true
