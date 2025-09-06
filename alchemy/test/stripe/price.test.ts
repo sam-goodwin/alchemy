@@ -3,9 +3,9 @@ import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { destroy } from "../../src/destroy.ts";
 import { createStripeClient } from "../../src/stripe/client.ts";
+import { Meter } from "../../src/stripe/meter.ts";
 import { Price } from "../../src/stripe/price.ts";
 import { Product } from "../../src/stripe/product.ts";
-import { Meter } from "../../src/stripe/meter.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 
 import "../../src/test/vitest.ts";
@@ -253,6 +253,14 @@ describe("Price Resource", () => {
         description: "A product for graduated tiered price testing",
       });
 
+      const meter = await Meter(`${testProductId}-tiered-graduated-meter`, {
+        eventName: "alchemy.test.event.price",
+        defaultAggregation: { formula: "sum" },
+        customerMapping: { eventPayloadKey: "stripe_user_id", type: "by_id" },
+        valueSettings: { eventPayloadKey: "units" },
+        displayName: "Alchemy Test Meter - Price",
+      });
+
       // Create a graduated tiered price
       price = await Price(`${testPriceId}-tiered-graduated`, {
         product: product.id,
@@ -262,6 +270,7 @@ describe("Price Resource", () => {
         recurring: {
           interval: "month",
           usageType: "metered",
+          meter: meter,
         },
         tiers: [
           {
@@ -505,7 +514,7 @@ describe("Price Resource", () => {
         recurring: {
           interval: "month",
           usageType: "metered",
-          meter: meter.id,
+          meter: meter,
         },
         tiers: [
           {
@@ -547,33 +556,6 @@ describe("Price Resource", () => {
         await assertProductDeactivated(product.id);
       }
       // Note: Meter cleanup is handled by destroy(scope)
-    }
-  });
-
-  test("meter validation", async (scope) => {
-    const product = await Product(`${testProductId}-meter-validation`, {
-      name: `${BRANCH_PREFIX} Meter Validation Test Product`,
-      description: "A product for meter validation testing",
-    });
-
-    try {
-      // Test: meter requires metered usage type
-      await expect(
-        Price(`${testPriceId}-meter-invalid-usage`, {
-          product: product.id,
-          currency: "usd",
-          recurring: {
-            interval: "month",
-            usageType: "licensed", // Not metered
-            meter: "meter_test_invalid",
-          },
-        }),
-      ).rejects.toThrow(
-        "Meter can only be set for prices with recurring.usageType = 'metered'",
-      );
-    } finally {
-      await destroy(scope);
-      await assertProductDeactivated(product.id);
     }
   });
 

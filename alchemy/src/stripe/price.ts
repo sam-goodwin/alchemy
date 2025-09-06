@@ -4,41 +4,60 @@ import { Resource } from "../resource.ts";
 import type { Secret } from "../secret.ts";
 import { logger } from "../util/logger.ts";
 import { createStripeClient, handleStripeDeleteError } from "./client.ts";
+import type { Meter } from "./meter.ts";
 
 /**
  * Properties for price recurring configuration
  */
-export interface PriceRecurring {
-  /**
-   * Specifies billing frequency. Either 'day', 'week', 'month' or 'year'.
-   */
-  interval: Stripe.PriceCreateParams.Recurring.Interval;
+export type PriceRecurring =
+  // If usageType is 'metered', meter is required
+  | {
+      /**
+       * Specifies billing frequency. Either 'day', 'week', 'month' or 'year'.
+       */
+      interval: Stripe.PriceCreateParams.Recurring.Interval;
 
-  /**
-   * The number of intervals between subscription billings. For example, interval=month and interval_count=3 bills every 3 months.
-   */
-  intervalCount?: number;
+      /**
+       * The number of intervals between subscription billings. For example, interval=month and interval_count=3 bills every 3 months.
+       */
+      intervalCount?: number;
 
-  /**
-   * Configures how the quantity per period should be determined, can be either 'metered' or 'licensed'.
-   * 'licensed' will automatically bill the quantity set for a plan when adding it to a subscription,
-   * 'metered' will aggregate the total usage based on usage records.
-   */
-  usageType?: Stripe.PriceCreateParams.Recurring.UsageType;
+      /**
+       * Configures how the quantity per period should be determined, can be either 'metered' or 'licensed'.
+       * 'metered' will aggregate the total usage based on usage records.
+       */
+      usageType: "metered";
 
-  /**
-   * Specifies a usage aggregation strategy for prices of `usage_type=metered`. Allowed values are `sum` for summing up all usage during a period,
-   * `last_during_period` for picking the last usage record reported within a period,
-   * `last_ever` for picking the last usage record ever (across period bounds) or `max` which picks the usage record with the maximum reported usage during a period.
-   */
-  aggregateUsage?: Stripe.PriceCreateParams.Recurring.AggregateUsage;
+      /**
+       * The ID of the billing meter this price is associated with.
+       * Required when usageType = 'metered'.
+       */
+      meter: string | Meter;
+    }
+  // If usageType is 'licensed' or not provided, meter is not allowed
+  | {
+      /**
+       * Specifies billing frequency. Either 'day', 'week', 'month' or 'year'.
+       */
+      interval: Stripe.PriceCreateParams.Recurring.Interval;
 
-  /**
-   * The ID of the billing meter this price is associated with.
-   * Only applicable when usageType = 'metered'.
-   */
-  meter?: string;
-}
+      /**
+       * The number of intervals between subscription billings. For example, interval=month and interval_count=3 bills every 3 months.
+       */
+      intervalCount?: number;
+
+      /**
+       * Configures how the quantity per period should be determined, can be either 'metered' or 'licensed'.
+       * 'licensed' will automatically bill the quantity set for a plan when adding it to a subscription.
+       */
+      usageType?: "licensed" | undefined;
+
+      /**
+       * The ID of the billing meter this price is associated with.
+       * Not applicable when usageType is not 'metered'.
+       */
+      meter?: never;
+    };
 
 type TaxBehavior = Stripe.PriceCreateParams.TaxBehavior;
 type BillingScheme = Stripe.PriceCreateParams.BillingScheme;
@@ -262,19 +281,6 @@ export interface Price extends Resource<"stripe::Price">, PriceProps {
  * });
  *
  * @example
- * // Create a metered price for usage-based billing
- * const meteredPrice = await Price("storage", {
- *   currency: "usd",
- *   unitAmount: 25, // $0.25 per GB
- *   product: "prod_xyz",
- *   recurring: {
- *     interval: "month",
- *     usageType: "metered",
- *     aggregateUsage: "sum"
- *   }
- * });
- *
- * @example
  * // Create a graduated tiered price with usage-based billing
  * const tieredPrice = await Price("api-usage", {
  *   currency: "usd",
@@ -428,22 +434,21 @@ export const Price = Resource(
             interval: props.recurring.interval,
             interval_count: props.recurring.intervalCount,
             usage_type: props.recurring.usageType,
-            aggregate_usage: props.recurring.aggregateUsage,
           };
 
           // Add meter to recurring if present (only for metered usage type)
-          if (props.recurring.meter) {
-            if (props.recurring.usageType !== "metered") {
-              throw new Error(
-                "Meter can only be set for prices with recurring.usageType = 'metered'",
-              );
-            }
-            // Extend the recurring params with meter
+          if (
+            props.recurring.usageType === "metered" &&
+            props.recurring.meter
+          ) {
             (
               createParams.recurring as Stripe.PriceCreateParams.Recurring & {
                 meter: string;
               }
-            ).meter = props.recurring.meter;
+            ).meter =
+              typeof props.recurring.meter === "string"
+                ? props.recurring.meter
+                : props.recurring.meter.id;
           }
         }
 
@@ -514,8 +519,6 @@ export const Price = Resource(
             intervalCount: price.recurring.interval_count,
             usageType: price.recurring
               .usage_type as Stripe.PriceCreateParams.Recurring.UsageType,
-            aggregateUsage: price.recurring
-              .aggregate_usage as Stripe.PriceCreateParams.Recurring.AggregateUsage,
             meter: (
               price.recurring as Stripe.Price.Recurring & { meter?: string }
             ).meter,
@@ -552,7 +555,7 @@ export const Price = Resource(
         active: price.active,
         billingScheme: price.billing_scheme as BillingScheme,
         nickname: price.nickname || undefined,
-        recurring: recurring,
+        recurring: recurring as PriceRecurring,
         metadata: price.metadata || undefined,
         taxBehavior: price.tax_behavior as TaxBehavior,
         createdAt: price.created,

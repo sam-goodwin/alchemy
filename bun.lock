@@ -97,7 +97,7 @@
         "listr2": "^8.0.0",
         "nitropack": "^2.12.4",
         "rwsdk": "^0.1.36",
-        "stripe": "^17.0.0",
+        "stripe": "^18.5.0",
         "trpc-cli": "^0.10.2",
         "ts-morph": "^26.0.0",
         "tsdown": "^0.14.2",
@@ -124,7 +124,7 @@
         "astro": "^5.13.2",
         "drizzle-orm": "^0.44.2",
         "rwsdk": "^0.1.36",
-        "stripe": "^17.0.0",
+        "stripe": "^18.5.0",
       },
       "optionalPeers": [
         "@astrojs/cloudflare",
@@ -4918,7 +4918,7 @@
 
     "strip-literal": ["strip-literal@3.0.0", "", { "dependencies": { "js-tokens": "^9.0.1" } }, "sha512-TcccoMhJOM3OebGhSBEmp3UZ2SfDMZUEBdRA/9ynfLi8yYajyWX3JiXArcJt4Umh4vISpspkQIY8ZZoCqjbviA=="],
 
-    "stripe": ["stripe@17.7.0", "", { "dependencies": { "@types/node": ">=8.1.0", "qs": "^6.11.0" } }, "sha512-aT2BU9KkizY9SATf14WhhYVv2uOapBWX0OFWF4xvcj1mPaNotlSc2CsxpS4DS46ZueSppmCF5BX1sNYBtwBvfw=="],
+    "stripe": ["stripe@18.5.0", "", { "dependencies": { "qs": "^6.11.0" }, "peerDependencies": { "@types/node": ">=12.x.x" }, "optionalPeers": ["@types/node"] }, "sha512-Hp+wFiEQtCB0LlNgcFh5uVyKznpDjzyUZ+CNVEf+I3fhlYvh7rZruIg+jOwzJRCpy0ZTPMjlzm7J2/M2N6d+DA=="],
 
     "strnum": ["strnum@2.1.1", "", {}, "sha512-7ZvoFTiCnGxBtDqJ//Cu6fWtZtc7Y3x+QOirG15wztbdngGSkht27o2pyGWrVy0b4WAy3jbKmnoK6g5VlVNUUw=="],
 

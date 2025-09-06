@@ -189,7 +189,7 @@
     "astro": "^5.13.2",
     "drizzle-orm": "^0.44.2",
     "rwsdk": "^0.1.36",
-    "stripe": "^17.0.0"
+    "stripe": "^18.5.0"
   },
   "peerDependenciesMeta": {
     "@astrojs/cloudflare": {
@@ -289,7 +289,7 @@
     "listr2": "^8.0.0",
     "nitropack": "^2.12.4",
     "rwsdk": "^0.1.36",
-    "stripe": "^17.0.0",
+    "stripe": "^18.5.0",
     "trpc-cli": "^0.10.2",
     "ts-morph": "^26.0.0",
     "tsdown": "^0.14.2",

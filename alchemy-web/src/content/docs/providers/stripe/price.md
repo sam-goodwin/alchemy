@@ -42,7 +42,21 @@ const subscriptionPrice = await Price("pro-monthly", {
 Create a metered price for usage-based billing:
 
 ```ts
-import { Price } from "alchemy/stripe";
+import { Price, Meter } from "alchemy/stripe";
+
+const storageUsageMeter = await Meter("storageUsageMeter", {
+  displayName: "Storage Usage",
+  eventName: "storage.usage.recorded",
+  defaultAggregation: {
+    formula: "sum",
+  },
+  customerMapping: {
+    type: "by_id",
+  },
+  valueSettings: {
+    eventPayloadKey: "gigabytes",
+  },
+});
 
 const meteredPrice = await Price("storage", {
   currency: "usd",
@@ -52,6 +66,7 @@ const meteredPrice = await Price("storage", {
     interval: "month",
     usageType: "metered",
     aggregateUsage: "sum",
+		meter: storageUsageMeter,
   },
 });
 ```
@@ -63,7 +78,21 @@ const meteredPrice = await Price("storage", {
 With graduated tiered pricing, different portions of usage are charged at different rates:
 
 ```ts
-import { Price } from "alchemy/stripe";
+import { Price, Meter } from "alchemy/stripe";
+
+const apiUsageMeter = await Meter("apiUsageMeter", {
+  displayName: "API Usage",
+  eventName: "api.call.made",
+  defaultAggregation: {
+    formula: "sum",
+  },
+  customerMapping: {
+    type: "by_id",
+  },
+  valueSettings: {
+    eventPayloadKey: "calls",
+  },
+});
 
 const apiUsagePrice = await Price("api-usage", {
   currency: "usd",
@@ -73,6 +102,7 @@ const apiUsagePrice = await Price("api-usage", {
   recurring: {
     interval: "month",
     usageType: "metered",
+    meter: apiUsageMeter,
   },
   tiers: [
     {
@@ -128,7 +158,21 @@ const storagePrice = await Price("storage-volume", {
 Protect customers from bill shock with a flat fee cap:
 
 ```ts
-import { Price } from "alchemy/stripe";
+import { Price, Meter } from "alchemy/stripe";
+
+const cappedApiUsageMeter = await Meter("cappedApiUsageMeter", {
+  displayName: "Capped API Usage",
+  eventName: "api.call.capped",
+  defaultAggregation: {
+    formula: "sum",
+  },
+  customerMapping: {
+    type: "by_id",
+  },
+  valueSettings: {
+    eventPayloadKey: "calls",
+  },
+});
 
 const cappedUsagePrice = await Price("api-calls-capped", {
   currency: "usd",
@@ -138,6 +182,7 @@ const cappedUsagePrice = await Price("api-calls-capped", {
   recurring: {
     interval: "month",
     usageType: "metered",
+    meter: cappedApiUsageMeter,
   },
   tiers: [
     {
@@ -148,34 +193,6 @@ const cappedUsagePrice = await Price("api-calls-capped", {
       upTo: "inf",
       flatAmount: 100000, // Cap at $1000 for unlimited usage
     },
-  ],
-});
-```
-
-## Billing Meters
-
-For advanced usage tracking, you can associate a price with a Stripe Billing Meter:
-
-```ts
-import { Price } from "alchemy/stripe";
-
-// First create a meter (not shown - requires Meter resource)
-// const meter = await Meter("api-usage-meter", { ... });
-
-const meteredPrice = await Price("api-usage-with-meter", {
-  product: "prod_xyz",
-  currency: "usd",
-  billingScheme: "tiered",
-  tiersMode: "graduated",
-  recurring: {
-    interval: "month",
-    usageType: "metered", // Required for meter association
-    meter: "meter_123abc" // Associate with billing meter
-  },
-  tiers: [
-    { upTo: 10000, unitAmountDecimal: "0" },
-    { upTo: 25000, unitAmountDecimal: "0.002" },
-    { upTo: "inf", flatAmountDecimal: "3000" }
   ],
 });
 ```

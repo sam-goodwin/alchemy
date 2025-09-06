@@ -93,10 +93,6 @@ export interface CustomerProps {
    */
   balance?: number;
   /**
-   * If you provide a coupon code, the customer will have a discount applied on all recurring charges
-   */
-  coupon?: string;
-  /**
    * An arbitrary string attached to the object
    */
   description?: string;
@@ -136,10 +132,6 @@ export interface CustomerProps {
    * Customer's preferred languages, ordered by preference
    */
   preferredLocales?: string[];
-  /**
-   * The ID of a promotion code to apply to the customer
-   */
-  promotionCode?: string;
   /**
    * The customer's shipping information
    */
@@ -311,7 +303,6 @@ export const Customer = Resource(
               }
             : undefined,
           balance: props.balance,
-          coupon: props.coupon,
           description: props.description,
           email: props.email,
           invoice_prefix: props.invoicePrefix,
@@ -320,7 +311,6 @@ export const Customer = Resource(
           next_invoice_sequence: props.nextInvoiceSequence,
           phone: props.phone,
           preferred_locales: props.preferredLocales,
-          promotion_code: props.promotionCode,
           shipping: props.shipping as any,
           source: props.source,
           tax_exempt: props.taxExempt,
@@ -354,7 +344,6 @@ export const Customer = Resource(
               }
             : undefined,
           balance: props.balance,
-          coupon: props.coupon,
           description: props.description,
           email: props.email,
           invoice_prefix: props.invoicePrefix,
@@ -364,7 +353,6 @@ export const Customer = Resource(
           payment_method: props.paymentMethod,
           phone: props.phone,
           preferred_locales: props.preferredLocales,
-          promotion_code: props.promotionCode,
           shipping: props.shipping as any,
           source: props.source,
           tax_exempt: props.taxExempt,
@@ -404,7 +392,6 @@ export const Customer = Resource(
                   }
                 : undefined,
               balance: props.balance,
-              coupon: props.coupon,
               description: props.description,
               email: props.email,
               invoice_prefix: props.invoicePrefix,
@@ -413,7 +400,6 @@ export const Customer = Resource(
               next_invoice_sequence: props.nextInvoiceSequence,
               phone: props.phone,
               preferred_locales: props.preferredLocales,
-              promotion_code: props.promotionCode,
               shipping: props.shipping as any,
               source: props.source,
               tax_exempt: props.taxExempt,
