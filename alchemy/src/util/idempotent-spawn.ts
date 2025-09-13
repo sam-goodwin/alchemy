@@ -161,7 +161,7 @@ export async function idempotentSpawn({
     {
       write,
       chunkSize = 64 * 1024,
-      // tickMs = 100,
+      tickMs = 100,
     }: {
       stateKey: string;
       write: (buf: Buffer) => boolean;
@@ -229,15 +229,14 @@ export async function idempotentSpawn({
       await drain();
     });
 
-    // TODO(sam): do we need this?
-    // const tick = setInterval(() => {
-    //   drain().catch(() => {});
-    // }, tickMs);
+    const tick = setInterval(() => {
+      drain().catch(() => {});
+    }, tickMs);
 
     return async function stop() {
       closed = true;
       watcher.close();
-      // clearInterval(tick);
+      clearInterval(tick);
       await fh.close().catch(() => {});
       await persist();
     };
