@@ -27,8 +27,8 @@
     "worker:run": "rw-scripts worker-run"
   },
   "dependencies": {
-    "@prisma/adapter-d1": "~6.8.2",
-    "@prisma/client": "~6.8.2",
+    "@prisma/adapter-d1": "~6.16.1",
+    "@prisma/client": "~6.16.1",
     "@simplewebauthn/browser": "^13.1.0",
     "@simplewebauthn/server": "^13.1.1",
     "rwsdk": "^0.1.35"
@@ -39,7 +39,7 @@
     "@types/node": "^22.14.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
-    "prisma": "~6.8.2",
+    "prisma": "~6.16.1",
     "typescript": "^5.8.3",
     "vibe-rules": "^0.2.31",
     "alchemy": "workspace:*",

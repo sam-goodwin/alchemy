@@ -13,11 +13,11 @@
     "@cloudflare/workers-types": "catalog:",
     "@types/node": "^24.0.1",
     "alchemy": "workspace:*",
-    "prisma": "^6.12.0",
+    "prisma": "^6.16.1",
     "typescript": "catalog:"
   },
   "dependencies": {
-    "@prisma/adapter-d1": "^6.12.0",
-    "@prisma/client": "^6.12.0"
+    "@prisma/adapter-d1": "^6.16.1",
+    "@prisma/client": "^6.16.1"
   }
 }
