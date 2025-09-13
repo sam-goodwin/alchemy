@@ -330,11 +330,19 @@ export interface BaseWorkerProps<
          * @default false
          */
         remote?: boolean;
+        /**
+         * Whether to expose the worker via a Cloudflare Tunnel.
+         *
+         * @default false
+         */
+        tunnel?: boolean;
         url?: undefined;
       }
     | {
         url: string;
         remote?: undefined;
+        tunnel?: undefined;
+        port?: undefined;
       };
 
   /**
@@ -854,7 +862,8 @@ const _Worker = Resource(
           eventSources: props.eventSources,
           assets: props.assets,
           bundle,
-          port: (props.dev as { port?: number } | undefined)?.port,
+          port: props.dev?.port,
+          tunnel: props.dev?.tunnel,
         });
         this.onCleanup(() => controller.dispose());
       }

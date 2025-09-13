@@ -327,7 +327,9 @@ export class Scope {
   >(
     // TODO(sam): validate uniqueness? Ensure a flat .logs/${id}.log dir? Or nest in scope dirs?
     id: string,
-    options: Omit<IdempotentSpawnOptions, "log" | "stateFile">,
+    options: Omit<IdempotentSpawnOptions, "log" | "stateFile"> & {
+      extract?: E;
+    },
   ): Promise<E extends undefined ? undefined : string> {
     const logsDir = path.join(this.dotAlchemy, "logs");
     const pidsDir = path.join(this.dotAlchemy, "pids");

@@ -1,6 +1,7 @@
 import esbuild from "esbuild";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
+import pkg from "../package.json";
 
 const WORKERS_DIR = path.join(__dirname, "..", "workers");
 
@@ -17,5 +18,8 @@ await esbuild.build({
   external: ["cloudflare:*", "node:crypto"],
   loader: {
     ".sql": "text",
+  },
+  define: {
+    ALCHEMY_VERSION: JSON.stringify(pkg.version),
   },
 });

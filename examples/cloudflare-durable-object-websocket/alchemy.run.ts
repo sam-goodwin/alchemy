@@ -14,6 +14,9 @@ export const server = await Worker("server", {
       sqlite: true,
     }),
   },
+  dev: {
+    tunnel: true,
+  },
 });
 
 console.log("Server:", server.url);

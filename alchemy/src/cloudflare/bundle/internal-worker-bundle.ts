@@ -7,7 +7,8 @@ import type { WorkerBundle } from "../worker-bundle.ts";
 export type InternalWorker =
   | "cloudflare-state-store"
   | "dofs-state-store"
-  | "remote-binding-proxy";
+  | "remote-binding-proxy"
+  | "tunnel-proxy";
 
 export const getInternalWorkerBundle = memoize(async (name: InternalWorker) => {
   const content = await fs.readFile(

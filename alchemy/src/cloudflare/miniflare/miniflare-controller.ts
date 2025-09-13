@@ -10,8 +10,12 @@ import {
   buildWorkerOptions,
   type MiniflareWorkerInput,
 } from "./build-worker-options.ts";
-import { MiniflareWorkerProxy } from "./miniflare-worker-proxy.ts";
+import {
+  createMiniflareWorkerProxy,
+  type MiniflareWorkerProxy,
+} from "./miniflare-worker-proxy.ts";
 import { getDefaultPersistPath } from "./paths.ts";
+import { createTunnel, type Tunnel } from "./tunnel.ts";
 
 declare global {
   var ALCHEMY_MINIFLARE_CONTROLLER: MiniflareController | undefined;
@@ -21,6 +25,7 @@ export class MiniflareController {
   abort = new AbortController();
   miniflare: miniflare.Miniflare | undefined;
   options = new Map<string, miniflare.WorkerOptions>();
+  tunnel: Tunnel | undefined;
   localProxies = new Map<string, MiniflareWorkerProxy>();
   remoteProxies = new Map<string, HTTPServer>();
   mutex = new AsyncMutex();
@@ -40,21 +45,32 @@ export class MiniflareController {
     assert(first.value, "First value is undefined");
     this.options.set(input.name, first.value);
     const miniflare = await this.update();
-    const proxy = new MiniflareWorkerProxy({
-      name: input.name,
-      port: input.port ?? (await findOpenPort()),
-      miniflare,
-    });
-    this.localProxies.set(input.name, proxy);
+    let url: URL;
+    if (input.tunnel) {
+      this.tunnel ??= await createTunnel(miniflare);
+      url = await this.tunnel.configureWorker({
+        api: input.api,
+        name: input.name,
+      });
+    } else {
+      const proxy = await createMiniflareWorkerProxy({
+        port: input.port ?? (await findOpenPort()),
+        getWorkerName: () => input.name,
+        miniflare,
+        mode: "local",
+      });
+      this.localProxies.set(input.name, proxy);
+      url = proxy.url;
+    }
     void this.watch(input.id, watcher);
     logger.task(input.id, {
-      message: `Ready at ${proxy.url}`,
+      message: `Ready at ${url}`,
       status: "success",
       resource: input.id,
       prefix: "dev",
       prefixColor: "cyanBright",
     });
-    return proxy.url;
+    return url.toString();
   }
 
   private async watch(
@@ -76,9 +92,7 @@ export class MiniflareController {
 
   private async update() {
     return await this.mutex.lock(async () => {
-      const options: miniflare.MiniflareOptions & {
-        workers: miniflare.WorkerOptions[];
-      } = {
+      const options: miniflare.MiniflareOptions = {
         workers: [],
         defaultPersistRoot: path.resolve(
           getDefaultPersistPath(Scope.current.rootDir),
@@ -147,6 +161,7 @@ export class MiniflareController {
     this.abort.abort();
     await Promise.all([
       this.miniflare?.dispose(),
+      this.tunnel?.close(),
       ...this.localProxies.values().map((proxy) => proxy.close()),
       ...this.remoteProxies.values().map((proxy) => proxy.close()),
     ]);

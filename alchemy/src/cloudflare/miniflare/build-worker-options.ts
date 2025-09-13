@@ -25,6 +25,7 @@ export interface MiniflareWorkerInput {
   assets: AssetsConfig | undefined;
   bundle: WorkerBundleSource;
   port: number | undefined;
+  tunnel: boolean | undefined;
 }
 
 type RemoteOnlyBindingType =

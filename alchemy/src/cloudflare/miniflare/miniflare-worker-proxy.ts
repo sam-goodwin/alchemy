@@ -1,126 +1,108 @@
 import * as miniflare from "miniflare";
 import { once } from "node:events";
 import http from "node:http";
-import type Stream from "node:stream";
 import { Readable } from "node:stream";
 import { WebSocket, WebSocketServer } from "ws";
-import { logger } from "../../util/logger.ts";
 
-interface MiniflareWorkerProxyOptions {
-  name: string;
-  port: number;
-  miniflare: miniflare.Miniflare;
+export interface MiniflareWorkerProxy {
+  url: URL;
+  close: () => Promise<void>;
 }
 
-export class MiniflareWorkerProxy {
-  private server = http.createServer();
-  private wss = new WebSocketServer({ noServer: true });
+export async function createMiniflareWorkerProxy(options: {
+  port: number;
+  transformRequest?: (request: RequestInfo) => void;
+  getWorkerName: (request: miniflare.Request) => string;
+  miniflare: miniflare.Miniflare;
+  mode: "local" | "remote";
+}) {
+  const server = http.createServer();
+  const wss = new WebSocketServer({ noServer: true });
 
-  constructor(private readonly options: MiniflareWorkerProxyOptions) {
-    this.server.on("upgrade", async (req, socket, head) => {
-      await this.handleUpgrade(req, socket, head);
-    });
-    this.server.on("request", async (req, res) => {
-      await this.handleRequest(req, res);
-    });
-    this.server.listen(this.options.port);
-  }
-
-  get ready() {
-    if (!this.server.listening) {
-      return once(this.server, "listening");
-    }
-    return Promise.resolve();
-  }
-
-  get url() {
-    return `http://localhost:${this.options.port}`;
-  }
-
-  async close() {
-    await Promise.all([
-      new Promise((resolve) => this.wss.close(resolve)),
-      new Promise((resolve) => this.server.close(resolve)),
-    ]);
-  }
-
-  private async handleUpgrade(
-    req: http.IncomingMessage,
-    socket: Stream.Duplex,
-    head: Buffer,
-  ) {
-    const server = await this.createServerWebSocket(req);
-    if (!server) {
+  server.on("upgrade", async (req, socket, head) => {
+    try {
+      const server = await createServerWebSocket(req);
+      wss.handleUpgrade(req, socket, head, (client) => {
+        client.on("message", (event, binary) => server.send(event, { binary }));
+        client.on("close", (code, reason) => server.close(code, reason));
+        server.on("message", (event, binary) => client.send(event, { binary }));
+        server.on("close", (code, reason) => client.close(code, reason));
+        wss.emit("connection", client, req);
+      });
+    } catch (error) {
+      console.error(error);
       socket.destroy();
-      return;
     }
-    this.wss.handleUpgrade(req, socket, head, (client) => {
-      client.on("message", (event, binary) => server.send(event, { binary }));
-      client.on("close", (code, reason) => server.close(code, reason));
-      server.on("message", (event, binary) => client.send(event, { binary }));
-      server.on("close", (code, reason) => client.close(code, reason));
-      this.wss.emit("connection", client, req);
-    });
-  }
-
-  private async createServerWebSocket(req: http.IncomingMessage) {
-    const target = await this.options.miniflare.unsafeGetDirectURL(
-      this.options.name,
-    );
-    if (!target) {
-      logger.error(
-        `[Alchemy] Websocket connection failed: The worker "${this.options.name}" is not running.`,
+  });
+  server.on("request", async (req, res) => {
+    try {
+      const request = toMiniflareRequest(req);
+      const name = options.getWorkerName(request);
+      const worker = await options.miniflare.getWorker(name);
+      const response = await worker.fetch(request);
+      writeMiniflareResponseToNode(response, res);
+    } catch (error) {
+      console.error(error);
+      const response = MiniflareWorkerProxyError.fromUnknown(error).toResponse(
+        options.mode,
       );
-      return null;
+      writeMiniflareResponseToNode(response, res);
     }
+  });
+
+  const toMiniflareRequest = (req: http.IncomingMessage): miniflare.Request => {
+    const info = parseIncomingMessage(req);
+    options.transformRequest?.(info);
+    return new miniflare.Request(info.url, {
+      method: info.method,
+      headers: info.headers,
+      body: info.body,
+      redirect: info.redirect,
+      duplex: info.duplex,
+    });
+  };
+
+  const createServerWebSocket = async (req: http.IncomingMessage) => {
+    const name = options.getWorkerName(toMiniflareRequest(req));
+    const target = await options.miniflare.unsafeGetDirectURL(name);
     const url = new URL(req.url ?? "/", target);
     url.protocol = url.protocol.replace("http", "ws");
     const protocols = req.headers["sec-websocket-protocol"]
       ?.split(",")
       .map((p) => p.trim());
     const server = new WebSocket(url, protocols);
-    const controller = new AbortController();
-    return await Promise.race([
-      once(server, "open", { signal: controller.signal }).then(() => server),
-      once(server, "close", { signal: controller.signal }).then((args) => {
-        const [code, reason] = args as [number, string];
-        logger.error(
-          `[Alchemy] Websocket connection failed for worker "${this.options.name}": ${code} ${reason}`,
-        );
-        return null;
-      }),
-    ]).finally(() => controller.abort());
-  }
+    await once(server, "open");
+    return server;
+  };
 
-  private async handleRequest(
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-  ) {
-    const worker = await this.options.miniflare.getWorker(this.options.name);
-    if (!worker) {
-      res.statusCode = 503;
-      res.end(`[Alchemy] The worker "${this.options.name}" is not running.`);
-      return;
-    }
-    try {
-      const response = await worker.fetch(toMiniflareRequest(req));
-      writeMiniflareResponseToNode(response, res);
-    } catch (rawError) {
-      const message =
-        rawError instanceof Error
-          ? (rawError.stack ?? rawError.message)
-          : String(rawError);
-      res.statusCode = 500;
-      res.end(
-        `[Alchemy] The worker "${this.options.name}" threw an error:\n\n${message}`,
-      );
-    }
-  }
+  server.listen(options.port);
+  await once(server, "listening");
+  const url = new URL(`http://localhost:${options.port}`);
+
+  return {
+    url,
+    close: async () => {
+      await Promise.all([
+        new Promise((resolve) => server.close(resolve)),
+        new Promise((resolve) => wss.close(resolve)),
+      ]);
+    },
+  };
 }
 
-const toMiniflareRequest = (req: http.IncomingMessage) => {
+interface RequestInfo {
+  method: string;
+  url: URL;
+  headers: miniflare.Headers;
+  body: miniflare.BodyInit | undefined;
+  redirect: "manual";
+  duplex: "half" | undefined;
+}
+
+const parseIncomingMessage = (req: http.IncomingMessage): RequestInfo => {
   const method = req.method ?? "GET";
-  const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
+  const protocol = req.headers["x-forwarded-proto"] ?? "http";
+  const url = new URL(req.url ?? "/", `${protocol}://${req.headers.host}`);
   const headers = new miniflare.Headers();
   for (const [key, value] of Object.entries(req.headers)) {
     if (Array.isArray(value)) {
@@ -135,13 +117,14 @@ const toMiniflareRequest = (req: http.IncomingMessage) => {
     ["GET", "HEAD", "OPTIONS"].includes(method) || !req.readable
       ? undefined
       : Readable.toWeb(req);
-  return new miniflare.Request(url, {
+  return {
     method,
+    url,
     headers,
     body,
     redirect: "manual",
     duplex: body ? "half" : undefined,
-  });
+  };
 };
 
 const writeMiniflareResponseToNode = (
@@ -159,3 +142,40 @@ const writeMiniflareResponseToNode = (
     out.end();
   }
 };
+
+export class MiniflareWorkerProxyError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+  }
+
+  toResponse(mode: "local" | "remote"): miniflare.Response {
+    let text = `[Alchemy] ${this.message}`;
+    if (mode === "local" && this.cause) {
+      const cause =
+        this.cause instanceof Error
+          ? (this.cause.stack ?? this.cause.message)
+          : String(this.cause);
+      text += `\n\n${cause}`;
+    }
+    return new miniflare.Response(text, {
+      status: this.status,
+      headers: {
+        "Content-Type": "text/plain",
+        "Alchemy-Error": this.message,
+      },
+    });
+  }
+
+  static fromUnknown(error: unknown): MiniflareWorkerProxyError {
+    if (error instanceof MiniflareWorkerProxyError) {
+      return error;
+    }
+    return new MiniflareWorkerProxyError("An unknown error occurred.", 500, {
+      cause: error,
+    });
+  }
+}
