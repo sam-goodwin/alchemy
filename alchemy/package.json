@@ -60,6 +60,10 @@
       "bun": "./src/cloudflare/astro/plugin.ts",
       "import": "./lib/cloudflare/astro/plugin.js"
     },
+    "./cloudflare/env": {
+      "bun": "./src/cloudflare/cloudflare-env-proxy.ts",
+      "import": "./lib/cloudflare/cloudflare-env-proxy.js"
+    },
     "./cloudflare/nuxt": {
       "bun": "./src/cloudflare/nuxt/plugin.ts",
       "import": "./lib/cloudflare/nuxt/plugin.js"

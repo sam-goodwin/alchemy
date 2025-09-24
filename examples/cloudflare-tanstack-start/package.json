@@ -11,23 +11,25 @@
     "start": "vite start"
   },
   "dependencies": {
-    "@tanstack/react-router": "^1.128.3",
-    "@tanstack/react-router-devtools": "^1.128.3",
-    "@tanstack/react-start": "^1.128.3",
+    "@tanstack/react-router": "^1.132.2",
+    "@tanstack/react-router-devtools": "^1.132.2",
+    "@tanstack/react-start": "^1.132.2",
+    "@tanstack/router-plugin": "^1.132.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.13",
     "@types/node": "^22.5.4",
-    "@types/react-dom": "^19.0.3",
     "@types/react": "^19.0.8",
-    "autoprefixer": "^10.4.20",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^5.0.3",
     "alchemy": "workspace:*",
     "cloudflare": "^4.2.0",
-    "postcss": "^8.5.1",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.1.13",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }

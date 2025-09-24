@@ -15,10 +15,26 @@ export async function TanStackStart<B extends Bindings>(
   props?: Partial<TanStackStartProps<B>>,
 ): Promise<TanStackStart<B>> {
   return await Vite(id, {
+    entrypoint: "dist/server/server.js", // points to default server entrypoint after build
+    assets: "dist/client",
+
+    compatibility: "node", // (note: same as compatibility_flags: ["nodejs_compat"] with latest compatibility date)
+
+    // Disable not_found_handling: "single-page-application", which is default for Vite
+    spa: false,
+
+    // By default, Alchemy does NOT re-bundle Vite build outputs;
+    // however if we don't bundle here, we get `No such module "@tanstack/history"`
+    noBundle: false,
+
+    // Configures generated wrangler.json, which we use to integrate with the Cloudflare Vite plugin for local development
+    wrangler: {
+      // Delete `main` field to prevent error caused by entrypoint not existing prior to build
+      transform: (spec) => {
+        delete spec.main;
+        return spec;
+      },
+    },
     ...props,
-    noBundle: true,
-    entrypoint: props?.entrypoint ?? ".output/server/index.mjs",
-    compatibilityFlags: ["nodejs_compat", ...(props?.compatibilityFlags ?? [])],
-    assets: props?.assets ?? ".output/public",
   });
 }
