@@ -31,10 +31,7 @@ export async function createMiniflareWorkerProxy(options: {
   });
   server.on("request", async (req, res) => {
     try {
-      const request = toMiniflareRequest(req);
-      const name = options.getWorkerName(request);
-      const worker = await options.miniflare.getWorker(name);
-      const response = await worker.fetch(request);
+      const response = await handleFetch(req);
       writeMiniflareResponseToNode(response, res);
     } catch (error) {
       console.error(error);
@@ -45,20 +42,67 @@ export async function createMiniflareWorkerProxy(options: {
     }
   });
 
-  const toMiniflareRequest = (req: http.IncomingMessage): miniflare.Request => {
+  const handleFetch = async (
+    req: http.IncomingMessage,
+  ): Promise<miniflare.Response> => {
+    const { request, url } = toMiniflareRequest(req);
+    const name = options.getWorkerName(request);
+    const worker = await options.miniflare.getWorker(name);
+
+    // Handle scheduled events
+    // https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/#background
+    // https://github.com/cloudflare/workers-sdk/blob/7d53b9ab6b370944b7934ad51ebef43160c3c775/packages/wrangler/templates/middleware/middleware-scheduled.ts#L6
+    if (url.pathname === "/__scheduled") {
+      await worker.scheduled({
+        scheduledTime: new Date(),
+        cron: url.searchParams.get("cron") ?? undefined,
+      });
+      return new miniflare.Response("Ran scheduled function");
+    }
+
+    const result = await worker
+      .fetch(request)
+      .then((response) => ({ success: true, response }) as const)
+      .catch((error) => ({ success: false, error }) as const);
+
+    // If you open the `/__scheduled` page in a browser, the browser will automatically make a request to `/favicon.ico`.
+    // For scheduled Workers _without_ a fetch handler, this will result in an unhelpful error that we don't need to log.
+    // To avoid this, inject a 404 response to favicon.ico loads on the `/__scheduled` page
+    if (
+      request.headers.get("referer")?.endsWith("/__scheduled") &&
+      url.pathname === "/favicon.ico" &&
+      !result.success
+    ) {
+      return new miniflare.Response(null, { status: 404 });
+    }
+
+    if (!result.success) {
+      throw result.error;
+    }
+
+    return result.response;
+  };
+
+  const toMiniflareRequest = (
+    req: http.IncomingMessage,
+  ): { request: miniflare.Request; url: URL } => {
     const info = parseIncomingMessage(req);
     options.transformRequest?.(info);
-    return new miniflare.Request(info.url, {
-      method: info.method,
-      headers: info.headers,
-      body: info.body,
-      redirect: info.redirect,
-      duplex: info.duplex,
-    });
+    return {
+      request: new miniflare.Request(info.url, {
+        method: info.method,
+        headers: info.headers,
+        body: info.body,
+        redirect: info.redirect,
+        duplex: info.duplex,
+      }),
+      url: info.url,
+    };
   };
 
   const createServerWebSocket = async (req: http.IncomingMessage) => {
-    const name = options.getWorkerName(toMiniflareRequest(req));
+    const { request } = toMiniflareRequest(req);
+    const name = options.getWorkerName(request);
     const target = await options.miniflare.unsafeGetDirectURL(name);
     const url = new URL(req.url ?? "/", target);
     url.protocol = url.protocol.replace("http", "ws");
