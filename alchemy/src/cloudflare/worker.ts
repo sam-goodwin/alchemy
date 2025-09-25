@@ -61,6 +61,7 @@ import { Workflow, isWorkflow, upsertWorkflow } from "./workflow.ts";
 import "../esbuild/bundle.ts";
 import { Scope } from "../scope.ts";
 import type { WorkerRef } from "./worker-ref.ts";
+import { createEmptyWorker, exists } from "./worker-stub.ts";
 
 /**
  * Configuration options for static assets
@@ -847,13 +848,20 @@ const _Worker = Resource(
         durableObjects: options.durableObjects,
         workflows: options.workflows,
       });
-      if (!props.version && this.output?.dev?.hasRemote !== false) {
+      if (this.output?.dev?.hasRemote !== false) {
         const api = await createCloudflareApi(props);
-        await deleteQueueConsumers(api, options.name);
-        await deleteWorker(api, {
-          scriptName: options.name,
-          dispatchNamespace: options.dispatchNamespace,
-        });
+        if (props.version) {
+          //* if the worker exists we deploy an empty version so we can destroy
+          if (await exists(api, options.name)) {
+            await createEmptyWorker(api, options.name, props.version);
+          }
+        } else {
+          await deleteQueueConsumers(api, options.name);
+          await deleteWorker(api, {
+            scriptName: options.name,
+            dispatchNamespace: options.dispatchNamespace,
+          });
+        }
       }
       return this.destroy();
     }

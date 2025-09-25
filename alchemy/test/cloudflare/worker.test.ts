@@ -22,7 +22,7 @@ import { assertWorkerDoesNotExist } from "./test-helpers.ts";
 
 import { Container } from "../../src/cloudflare/container.ts";
 import { listWorkersInNamespace } from "../../src/cloudflare/dispatch-namespace.ts";
-import { DispatchNamespace } from "../../src/cloudflare/index.ts";
+import { DispatchNamespace, Queue } from "../../src/cloudflare/index.ts";
 import "../../src/test/vitest.ts";
 
 const ENABLE_WFP_TESTS = process.env.CLOUDFLARE_ACCOUNT_ENABLE_WFP !== "false";
@@ -2207,6 +2207,43 @@ describe("Worker Resource", () => {
     } finally {
       await destroy(scope);
       await assertWorkerDoesNotExist(api, workerName);
+    }
+  });
+
+  test("delete queues bound to worker versions", async (scope) => {
+    const queueName = `${BRANCH_PREFIX}-del-v-q`;
+    const workerName = `${BRANCH_PREFIX}-del-v`;
+
+    try {
+      const queue = await Queue(queueName, {
+        name: queueName,
+        adopt: true,
+      });
+
+      await Worker(workerName, {
+        adopt: true,
+        script: `
+					export default {
+						async fetch() {
+							return new Response("");
+						},
+
+						async queue(
+							batch,
+						) {
+							for (const message of batch.messages) {
+								console.log("Received", message);
+							}
+						},
+					};
+				`,
+        bindings: {
+          QUEUE: queue,
+        },
+        version: "test",
+      });
+    } finally {
+      await destroy(scope);
     }
   });
 });
