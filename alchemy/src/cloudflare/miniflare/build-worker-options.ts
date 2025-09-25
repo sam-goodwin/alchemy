@@ -69,9 +69,15 @@ export const buildWorkerOptions = async (
     compatibilityDate: input.compatibilityDate,
     compatibilityFlags: input.compatibilityFlags,
     unsafeDirectSockets: [
-      // This matches the Wrangler configuration by exposing the default handler (e.g. `export default { fetch }`).
-      // However, unlike Wrangler, we set `proxy: false` to avoid the following error when connecting via a websocket:
+      // This matches the Wrangler configuration by exposing the default handler (e.g. `export default { fetch }`) with `proxy: true`.
+      // If `proxy: true` is not set, then service bindings fail with the following error:
       // workerd/io/worker.c++:2164: info: uncaught exception; source = Uncaught (in promise); stack = TypeError: Invalid URL string.
+      {
+        entrypoint: "default",
+        proxy: true,
+      },
+      // However, if we don't also have a `proxy: false` entry, then we get that same error when using websockets.
+      // For reasons unknown to us mere mortals, this one has to come second.
       {
         entrypoint: "default",
         proxy: false,
