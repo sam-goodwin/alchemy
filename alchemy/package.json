@@ -52,6 +52,10 @@
       "bun": "./src/aws/oidc/index.ts",
       "import": "./lib/aws/oidc/index.js"
     },
+    "./clickhouse": {
+      "bun": "./src/clickhouse/index.ts",
+      "import": "./lib/clickhouse/index.js"
+    },
     "./cloudflare": {
       "bun": "./src/cloudflare/index.ts",
       "import": "./lib/cloudflare/index.js"
