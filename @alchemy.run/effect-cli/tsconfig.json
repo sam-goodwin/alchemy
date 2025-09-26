@@ -1,8 +1,7 @@
 {
-  "extends": "../tsconfig.base.json",
+  "extends": "../../tsconfig.base.json",
   "include": ["package.json", "src/**/*.ts", "src/**/*.js", "src/**/*.tsx"],
   "compilerOptions": {
-    "types": ["@cloudflare/workers-types"],
     "composite": true,
     "noEmit": false,
     "outDir": "./lib",
@@ -13,11 +12,16 @@
     "module": "Preserve",
     "moduleResolution": "Bundler",
     "target": "ESNext",
-    "allowJs": true,
-    "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true,
     // ink
     "jsx": "react",
-    "lib": ["DOM", "DOM.Iterable", "ES2023"]
-  }
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
+  },
+
+  "references": [
+    { "path": "../../alchemy/tsconfig.json" },
+    { "path": "../effect/tsconfig.json" }
+  ]
 }

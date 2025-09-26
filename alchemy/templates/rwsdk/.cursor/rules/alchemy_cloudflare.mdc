@@ -274,7 +274,7 @@ const worker = await Worker("my-worker", {
 ### 2. Enable Development Compatibility
 ```typescript
 // Generate wrangler.json for local development
-await WranglerJson({
+await WranglerJson("wrangler.json", {
   worker,
 });
 ```

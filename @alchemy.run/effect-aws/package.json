@@ -1,0 +1,54 @@
+{
+  "name": "@alchemy.run/effect-aws",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "author": "Sam Goodwin <sam@alchemy.run>",
+  "homepage": "https://alchemy.run",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sam-goodwin/alchemy.git",
+    "directory": "alchemy"
+  },
+  "type": "module",
+  "module": "./lib/index.js",
+  "sideEffects": false,
+  "files": [
+    "bin",
+    "lib",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./lib/index.js",
+      "types": "./lib/index.d.ts"
+    }
+  },
+  "peerDependencies": {
+    "@alchemy.run/effect": "workspace:*",
+    "@effect/platform-node": "*",
+    "@effect/platform": "*",
+    "alchemy": "workspace:*"
+  },
+  "dependencies": {
+    "@aws-sdk/credential-providers": "^3.0.0",
+    "@clack/prompts": "^0.11.0",
+    "@smithy/node-config-provider": "^4.0.0",
+    "@types/aws-lambda": "^8.10.152",
+    "aws4fetch": "^1.0.20",
+    "effect": "^3.17.14",
+    "esbuild": "^0.25.1",
+    "fast-xml-parser": "^5.2.5",
+    "itty-aws": "^0.3.6",
+    "picocolors": "^1.1.1",
+    "yaml": "^2.0.0"
+  },
+  "devDependencies": {
+    "@clack/prompts": "^0.11.0",
+    "@effect/platform-node": "^0.97.1",
+    "@effect/platform": "^0.91.1",
+    "@types/bun": "latest",
+    "@types/node": "latest",
+    "ink": "^6.3.1"
+  }
+}

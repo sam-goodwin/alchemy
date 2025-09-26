@@ -8,37 +8,44 @@
   "files": {
     "ignoreUnknown": true,
     "includes": [
-      "./src/**/*.ts",
-      "./**/package.json",
+      "**",
       "./**/biome.json",
-      "./alchemy/bin/**/*.ts",
-      "./alchemy/src/**/*.ts",
-      "./alchemy/workers/**/*.ts",
-      "./alchemy/scripts/**/*.ts",
-      "./alchemy/src/**/*.tsx",
-      "./alchemy/src/**/*.js",
-      "./alchemy/test/**/*.ts",
-      "./alchemy-web/**/*.ts",
+      "./**/package.json",
+      "./@alchemy.run/**/*.ts",
       "./alchemy-web/**/*.js",
       "./alchemy-web/**/*.mjs",
-      "./scripts/**/*.ts",
-      "./stacks/**/*.ts",
+      "./alchemy-web/**/*.ts",
+      "./alchemy/bin/**/*.ts",
+      "./alchemy/scripts/**/*.ts",
+      "./alchemy/src/**/*.js",
+      "./alchemy/src/**/*.ts",
+      "./alchemy/src/**/*.tsx",
+      "./alchemy/test/**/*.ts",
+      "./alchemy/workers/**/*.ts",
+      "./examples/*/*.ts",
       "./examples/*/src/**/*.ts",
       "./examples/*/test/**/*.ts",
+      "./scripts/**/*.ts",
+      "./src/**/*.ts",
+      "./stacks/**/*.ts",
       "./tests/*/**/*.ts",
-      "./examples/*/*.ts",
-      "!**/node_modules",
-      "!examples/cloudflare-tanstack-start/src/routeTree.gen.ts",
-      "!examples/cloudflare-redwood/worker-configuration.d.ts",
-      "!./alchemy/src/aws/control/types.ts",
-      "!examples/cloudflare-tanstack-start/.output/",
-      "!examples/cloudflare-nuxt-pipeline/.output/",
-      "!./alchemy/lib/",
-      "!**/*.gen.ts",
       "alchemy/src/{neon,planetscale}/api/*.ts",
+      "alchemy/src/planetscale/api/*.ts",
+      "monorepo/**/*.json",
       "monorepo/**/*.ts",
       "monorepo/**/*.tsx",
-      "monorepo/**/*.json"
+      "!./alchemy/lib/",
+      "!./alchemy/lib/",
+      "!./alchemy/src/aws/control/types.ts",
+      "!./alchemy/src/aws/control/types.ts",
+      "!**/*.gen.ts",
+      "!**/*.gen.ts",
+      "!**/node_modules",
+      "!**/node_modules",
+      "!examples/cloudflare-nuxt-pipeline/.output/",
+      "!examples/cloudflare-redwood/worker-configuration.d.ts",
+      "!examples/cloudflare-tanstack-start/.output/",
+      "!examples/cloudflare-tanstack-start/src/routeTree.gen.ts"
     ],
     "experimentalScannerIgnores": ["!**/node_modules", "./alchemy/lib/**"]
   },
@@ -61,7 +68,8 @@
           }
         },
         "noUnsafeFinally": "off",
-        "noChildrenProp": "off"
+        "noChildrenProp": "off",
+        "useYield": "off"
       },
       "a11y": {
         "useButtonType": "off",
@@ -71,7 +79,8 @@
         "noAccumulatingSpread": "off"
       },
       "complexity": {
-        "noBannedTypes": "off"
+        "noBannedTypes": "off",
+        "noCommaOperator": "off"
       },
       "suspicious": {
         "noExplicitAny": "off",

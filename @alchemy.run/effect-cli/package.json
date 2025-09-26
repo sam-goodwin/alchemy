@@ -1,0 +1,55 @@
+{
+  "name": "@alchemy.run/effect-cli",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "author": "Sam Goodwin <sam@alchemy.run>",
+  "homepage": "https://alchemy.run",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sam-goodwin/alchemy.git",
+    "directory": "alchemy"
+  },
+  "type": "module",
+  "module": "./lib/index.js",
+  "sideEffects": false,
+  "bin": {
+    "alchemy-effect": "bin/alchemy.js"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./lib/index.js"
+    }
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.11.0",
+    "effect": "^3.17.13",
+    "picocolors": "^1.1.1"
+  },
+  "peerDependencies": {
+    "@effect/platform": "*",
+    "@effect/platform-node": "*",
+    "alchemy": "workspace:*",
+    "@alchemy.run/effect": "workspace:*"
+  },
+  "devDependencies": {
+    "@clack/prompts": "^0.11.0",
+    "@effect/platform-node": "^0.97.1",
+    "@effect/platform": "^0.91.1",
+    "@types/node": "latest",
+    "@types/react": "^19.1.13",
+    "ink": "^6.3.1",
+    "react": "^19.1.1",
+    "trpc-cli": "^0.10.2",
+    "tsdown": "^0.15.4"
+  }
+}

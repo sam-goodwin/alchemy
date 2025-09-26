@@ -161,9 +161,9 @@ export class MiniflareController {
     this.abort.abort();
     await Promise.all([
       this.miniflare?.dispose(),
+      ...Array.from(this.localProxies.values()).map((proxy) => proxy.close()),
+      ...Array.from(this.remoteProxies.values()).map((proxy) => proxy.close()),
       this.tunnel?.close(),
-      ...this.localProxies.values().map((proxy) => proxy.close()),
-      ...this.remoteProxies.values().map((proxy) => proxy.close()),
     ]);
   }
 }

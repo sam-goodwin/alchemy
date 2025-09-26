@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["package.json", "src/**/*.ts", "alchemy.run.ts"],
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "outDir": "./lib",
+    "rootDir": ".",
+    "sourceMap": true,
+    "declarationMap": true,
+    "declaration": true,
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "target": "ESNext"
+  },
+  "references": [
+    { "path": "../../alchemy/tsconfig.json" },
+    { "path": "../effect/tsconfig.json" },
+    { "path": "../effect-aws/tsconfig.json" },
+    { "path": "../effect-cli/tsconfig.json" }
+  ]
+}
