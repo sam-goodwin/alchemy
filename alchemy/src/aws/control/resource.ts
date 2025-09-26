@@ -14,6 +14,7 @@ import {
   UpdateFailedError,
 } from "./error.ts";
 import readOnlyPropertiesMap from "./properties.ts";
+import updateTypesMap from "./update-types.ts";
 const compare = jsonpatch.compare;
 
 /**
@@ -104,6 +105,44 @@ function filterReadOnlyProperties(
   }
 
   return filtered;
+}
+
+/**
+ * Checks if any immutable properties have changed between current and desired state
+ * @param typeName AWS resource type name (e.g., "AWS::S3::Bucket")
+ * @param currentState Current resource state
+ * @param desiredState Desired resource state
+ * @returns true if any immutable properties have changed
+ */
+function hasImmutablePropertyChanges(
+  typeName: string,
+  currentState: Record<string, any>,
+  desiredState: Record<string, any>,
+): boolean {
+  // Parse the type name to get service and resource
+  const [service, resource] = typeName.replace("AWS::", "").split("::");
+  const propertyUpdateTypes =
+    (updateTypesMap as any)[service]?.[resource] || {};
+
+  // Check if any immutable properties have changed
+  for (const [propertyName, updateType] of Object.entries(
+    propertyUpdateTypes,
+  )) {
+    if (updateType === "Immutable") {
+      const currentValue = currentState[propertyName];
+      const desiredValue = desiredState[propertyName];
+
+      // Deep comparison of property values
+      if (JSON.stringify(currentValue) !== JSON.stringify(desiredValue)) {
+        logger.log(
+          `Immutable property '${propertyName}' changed from ${JSON.stringify(currentValue)} to ${JSON.stringify(desiredValue)}`,
+        );
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -253,6 +292,25 @@ async function CloudControlLifecycle(
 
   let response: ProgressEvent | undefined;
   if (this.phase === "update" && this.output?.id) {
+    // Check if any immutable properties have changed
+    const currentResource = await client.getResource(
+      props.typeName,
+      this.output.id,
+    );
+    if (
+      currentResource &&
+      hasImmutablePropertyChanges(
+        props.typeName,
+        currentResource,
+        props.desiredState,
+      )
+    ) {
+      logger.log(
+        `Resource ${id} has immutable property changes, requiring replacement`,
+      );
+      return this.replace();
+    }
+
     // Update existing resource
     response = await updateResourceWithPatch(
       client,

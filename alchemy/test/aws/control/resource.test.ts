@@ -146,6 +146,76 @@ describe("CloudControlResource", () => {
     }
   });
 
+  test("replace resource when immutable property changes", async (scope) => {
+    const testBucketName = `${testId}-immutable-test`;
+    let resource: CloudControlResource | undefined;
+
+    try {
+      // Create a test S3 bucket with initial configuration
+      resource = await CloudControlResource(testBucketName, {
+        typeName: "AWS::S3::Bucket",
+        desiredState: {
+          BucketName: testBucketName,
+          VersioningConfiguration: {
+            Status: "Enabled",
+          },
+        },
+        adopt: true,
+      });
+
+      expect(resource.id).toBeTruthy();
+      const originalId = resource.id;
+
+      // Verify bucket was created
+      const getResponse = (await client.getResource(
+        "AWS::S3::Bucket",
+        resource.id,
+      ))!;
+      expect(getResponse.BucketName).toEqual(testBucketName);
+
+      // Try to change the bucket name (which is immutable)
+      // This should trigger a replacement
+      const newBucketName = `${testBucketName}-replaced`;
+      resource = await CloudControlResource(testBucketName, {
+        typeName: "AWS::S3::Bucket",
+        desiredState: {
+          BucketName: newBucketName, // Changing bucket name (immutable)
+          VersioningConfiguration: {
+            Status: "Enabled",
+          },
+        },
+      });
+
+      expect(resource.id).toBeTruthy();
+      // The resource ID should be different because it was replaced
+      expect(resource.id).not.toEqual(originalId);
+
+      // Verify the new bucket has the correct name
+      const getNewResponse = (await client.getResource(
+        "AWS::S3::Bucket",
+        resource.id,
+      ))!;
+      expect(getNewResponse.BucketName).toEqual(newBucketName);
+
+      await scope.finalize();
+
+      // Verify the old bucket no longer exists
+      const oldBucketExists = await client.getResource(
+        "AWS::S3::Bucket",
+        originalId,
+      );
+      expect(oldBucketExists).toBeUndefined();
+    } finally {
+      // Always clean up
+      await destroy(scope);
+
+      // Verify bucket was deleted
+      if (resource?.id) {
+        await waitForStableDeletion("AWS::S3::Bucket", resource.id);
+      }
+    }
+  });
+
   test("wildcard deletion handler", async (scope) => {
     const bucketIds = [`${testId}-wildcard-1`, `${testId}-wildcard-2`];
     const resources: CloudControlResource[] = [];
