@@ -1123,7 +1123,7 @@ export async function getObject(
   });
 }
 
-type PutObjectObject =
+export type PutObjectObject =
   | ReadableStream
   | ArrayBuffer
   | ArrayBufferView
