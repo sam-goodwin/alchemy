@@ -14,6 +14,7 @@ import { writeMiniflareSymlink } from "./miniflare/symlink-miniflare-state.ts";
 import { type AssetsConfig, Worker, type WorkerProps } from "./worker.ts";
 import { WranglerJson, type WranglerJsonSpec } from "./wrangler.json.ts";
 
+
 export interface WebsiteProps<B extends Bindings>
   extends Omit<WorkerProps<B>, "assets" | "dev"> {
   /**
@@ -27,7 +28,7 @@ export interface WebsiteProps<B extends Bindings>
         /**
          * The command to run to build the site
          */
-        command: string;
+        command?: string;
         /**
          * Additional environment variables to set when running the build command
          */
@@ -287,7 +288,7 @@ export async function Website<B extends Bindings>(
 
   const scope = Scope.current;
 
-  if (build && !scope.local) {
+  if (build?.command && !scope.local) {
     await Exec(`${id}-build`, {
       cwd: path.relative(process.cwd(), paths.cwd),
       command: build.command,
@@ -353,3 +354,29 @@ export async function Website<B extends Bindings>(
     dev: url ? { url } : undefined,
   })) as Website<B>;
 }
+
+export const spreadBuildProps = (
+  props: { build?: WebsiteProps<Bindings>["build"] } | undefined,
+  defaultCommand: string,
+): WebsiteProps<Bindings>["build"] => {
+  if (typeof props?.build === "object") {
+    return {
+      ...props.build,
+      command: props.build.command ?? defaultCommand,
+    };
+  }
+  return props?.build ?? defaultCommand;
+};
+
+export const spreadDevProps = (
+  props: { dev?: WebsiteProps<Bindings>["dev"] } | undefined,
+  defaultCommand: string,
+): WebsiteProps<Bindings>["dev"] => {
+  if (typeof props?.dev === "object") {
+    return {
+      ...props.dev,
+      command: props.dev.command ?? defaultCommand,
+    };
+  }
+  return props?.dev ?? defaultCommand;
+};

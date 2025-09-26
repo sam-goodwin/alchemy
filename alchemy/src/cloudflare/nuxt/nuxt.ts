@@ -2,7 +2,7 @@ import path from "node:path";
 import { getPackageManagerRunner } from "../../util/detect-package-manager.ts";
 import type { Assets } from "../assets.ts";
 import type { Bindings } from "../bindings.ts";
-import { Website, type WebsiteProps } from "../website.ts";
+import { spreadBuildProps, spreadDevProps, Website, type WebsiteProps } from "../website.ts";
 import type { Worker } from "../worker.ts";
 
 /**
@@ -55,8 +55,8 @@ export async function Nuxt<B extends Bindings>(
   return await Website(id, {
     ...props,
     noBundle: props?.noBundle ?? true,
-    build: props?.build ?? `${runner} nuxt build`,
-    dev: props?.dev ?? `${runner} nuxt dev`,
+    build: spreadBuildProps(props, `${runner} nuxt build`),
+    dev: spreadDevProps(props, `${runner} nuxt dev`),
     compatibility: "node",
     // Default entry point for cloudflare-module preset
     entrypoint: props?.entrypoint ?? "./.output/server/index.mjs",

@@ -3,7 +3,7 @@ import { getPackageManagerRunner } from "../../util/detect-package-manager.ts";
 import type { Assets } from "../assets.ts";
 import type { Bindings } from "../bindings.ts";
 import { withSkipPathValidation } from "../miniflare/paths.ts";
-import { Website, type WebsiteProps } from "../website.ts";
+import { spreadBuildProps, spreadDevProps, Website, type WebsiteProps } from "../website.ts";
 import type { Worker } from "../worker.ts";
 
 /**
@@ -75,8 +75,8 @@ export async function Astro<B extends Bindings>(
   return await Website(id, {
     ...props,
     noBundle: props.noBundle ?? true,
-    build: props.build ?? `${runner} astro build`,
-    dev: props.dev ?? `${runner} astro dev`,
+    build: spreadBuildProps(props, `${runner} astro build`),
+    dev: spreadDevProps(props, `${runner} astro dev`),
     entrypoint:
       props.entrypoint ??
       (output === "server" ? "dist/_worker.js/index.js" : undefined),

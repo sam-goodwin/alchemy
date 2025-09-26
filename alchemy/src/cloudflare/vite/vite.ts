@@ -1,7 +1,7 @@
 import { getPackageManagerRunner } from "../../util/detect-package-manager.ts";
 import type { Assets } from "../assets.ts";
 import type { Bindings } from "../bindings.ts";
-import { Website, type WebsiteProps } from "../website.ts";
+import { spreadBuildProps, spreadDevProps, Website, type WebsiteProps } from "../website.ts";
 import type { Worker } from "../worker.ts";
 
 export interface ViteProps<B extends Bindings> extends WebsiteProps<B> {}
@@ -27,7 +27,7 @@ export async function Vite<B extends Bindings>(
               props.assets?.directory ??
               (props.entrypoint || props.script ? "dist/client" : "dist"),
           },
-    build: props.build ?? `${runner} vite build`,
-    dev: props.dev ?? `${runner} vite dev`,
+    build: spreadBuildProps(props, `${runner} vite build`),
+    dev: spreadDevProps(props, `${runner} vite dev`),
   });
 }
