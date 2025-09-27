@@ -301,7 +301,7 @@ const app = await alchemy("my-app", {
 ### Framework Integration (Vite/React/etc.)
 ```typescript
 const website = await Vite("website", {
-  main: "./src/worker.ts",
+  entrypoint: "./src/worker.ts",
   command: "bun run build", // Build command
   bindings: {
     API: await Worker("api", { entrypoint: "./api/worker.ts" }),
@@ -319,7 +319,7 @@ await alchemy.run("backend", async () => {
 });
 
 await alchemy.run("frontend", async () => {
-  await Vite("website", { main: "./src/worker.ts" });
+  await Vite("website", { entrypoint: "./src/worker.ts" });
 });
 ```
 

@@ -29,7 +29,7 @@ const site = await Website("my-site", {
   name: "my-site",
   build: "npm run build",
   assets: "./dist",
-  main: "./src/worker.ts",
+  entrypoint: "./src/worker.ts",
   bindings: {
     DB: database,
     API_KEY: alchemy.secret(process.env.API_KEY),
