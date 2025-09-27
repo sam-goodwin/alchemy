@@ -877,6 +877,7 @@ const _Worker = Resource(
           api,
           id,
           name: options.name,
+          cwd: options.cwd,
           compatibilityDate: options.compatibilityDate,
           compatibilityFlags: options.compatibilityFlags,
           bindings: props.bindings,
